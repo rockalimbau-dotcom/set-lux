@@ -1,0 +1,134 @@
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+}
+
+/* === MODO IMPRESIÓN controlado por #print-root.printing === */
+
+/* Ocultar elementos de pantalla en PDF */
+#print-root.printing .no-pdf {
+  display: none !important;
+}
+.only-pdf {
+  display: none;
+}
+#print-root.printing .only-pdf {
+  display: block;
+}
+
+/* Inputs/selecciones “como texto” */
+#print-root.printing input,
+#print-root.printing select,
+#print-root.printing textarea {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  height: auto !important;
+  line-height: 1.2 !important;
+  color: #e5e7eb !important;
+  -webkit-appearance: none;
+  appearance: none;
+}
+/* Quitar icono del datepicker en WebKit */
+#print-root.printing input[type='date']::-webkit-calendar-picker-indicator {
+  display: none;
+}
+
+/* Tablas con separación visible */
+#print-root.printing table.plan {
+  border-collapse: collapse !important;
+}
+#print-root.printing table.plan th,
+#print-root.printing table.plan td {
+  border: 1px solid #2f2f2f !important;
+}
+#print-root.printing table.plan th {
+  background: #2a2a2a !important;
+  color: #fff !important;
+}
+
+/* Evitar cortes internos */
+#print-root.printing table.plan,
+#print-root.printing table.plan tr,
+#print-root.printing table.plan td,
+#print-root.printing table.plan th {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+/* Tarjeta de semana: no partir y una por página */
+.wk-card {
+  border-radius: 1rem;
+} /* pantalla */
+#print-root.printing .wk-card {
+  border-radius: 1rem 1rem 0 0; /* inferiores cuadradas en PDF */
+  overflow: hidden !important;
+  break-inside: avoid-page;
+  page-break-inside: avoid;
+  break-after: page; /* ← única regla de salto */
+  page-break-after: always; /* legacy */
+}
+
+/* Títulos visibles solo en PDF (si los usas) */
+#print-root.printing .pdf-section-title {
+  font-weight: 700;
+  font-size: 18px;
+  margin: 12px 0 8px 0;
+  color: #60a5fa;
+}
+
+/* Opcional: define tamaño/ márgenes del PDF si tu exporter respeta @page */
+@page {
+  size: A4 landscape;
+  margin: 10mm;
+}
+
+/* El contenedor de exportación nunca debe estar display:none */
+#export-layer {
+  visibility: hidden;
+} /* oculto visualmente, pero ocupa tamaño */
+
+/* Evita que las tablas se recorten en el clon/exportación */
+.pdf-mode .overflow-x-auto,
+#print-root.printing .overflow-x-auto {
+  overflow: visible !important;
+}

@@ -1,0 +1,1 @@
+export { NominaMensual } from './index.ts';

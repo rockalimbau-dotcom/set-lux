@@ -1,0 +1,13 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Global */
+:root {
+  color-scheme: dark;
+}
+
+body {
+  @apply bg-neutral-bg text-neutral-text font-sans;
+  margin: 0;
+}

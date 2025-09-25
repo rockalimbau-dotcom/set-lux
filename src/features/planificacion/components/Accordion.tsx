@@ -1,0 +1,56 @@
+import React from 'react';
+import ToggleIconButton from '../../../shared/components/ToggleIconButton';
+
+type AccordionProps = {
+  title: React.ReactNode;
+  open: boolean;
+  onToggle: () => void;
+  onAdd: () => void;
+  onExport: () => void;
+  children: React.ReactNode;
+  btnExportCls?: string;
+  btnExportStyle?: React.CSSProperties;
+};
+
+export default function Accordion({
+  title,
+  open,
+  onToggle,
+  onAdd,
+  onExport,
+  children,
+  btnExportCls,
+  btnExportStyle,
+}: AccordionProps) {
+  return (
+    <section className='rounded-2xl border border-neutral-border bg-neutral-panel/90'>
+      <div className='flex items-center justify-between px-5 py-4 gap-3'>
+        <div className='flex items-center gap-3'>
+          <ToggleIconButton
+            isOpen={open}
+            onClick={onToggle}
+            className='w-8 h-8'
+          />
+          <h4 className='text-brand font-semibold'>{title}</h4>
+        </div>
+        <div className='no-pdf flex items-center gap-2'>
+          <button
+            className={btnExportCls}
+            style={btnExportStyle}
+            onClick={onExport}
+          >
+            Exportar
+          </button>
+          <button
+            onClick={onAdd}
+            className='px-3 py-2 rounded-lg border text-sm border-neutral-border hover:border-[#F59E0B]'
+            title='+ Semana'
+          >
+            + Semana
+          </button>
+        </div>
+      </div>
+      {open && <div className='px-5 pb-5 space-y-4'>{children}</div>}
+    </section>
+  );
+}
