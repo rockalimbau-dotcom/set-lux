@@ -1,1 +1,0 @@
-export { norm, parseDietas, formatDietas } from './text.ts';

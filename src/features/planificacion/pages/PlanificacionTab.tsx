@@ -1,13 +1,13 @@
 import { useLocalStorage } from '@shared/hooks/useLocalStorage';
 // import { elementOnScreenToPDF } from '@shared/lib/pdf/exporter';
 import { parseYYYYMMDD, addDays } from '@shared/utils/date';
+// Removed unused imports
 import React, { useEffect, useMemo, useState } from 'react';
 
 import PlanScopeSection from '../components/PlanScopeSection';
-import { relabelWeekByCalendar } from '../utils/calendar';
-import { DAYS } from '../constants';
+import { relabelWeekByCalendar, relabelWeekByCalendarDynamic } from '../utils/calendar';
+import { DAYS, mdKey } from '../constants';
 import { renderExportHTML } from '../utils/export';
-import { extractHolidaySets } from '../utils/holidays';
 import { sortByHierarchy, syncAllWeeks } from '../utils/sync';
 import {
   addPreWeekAction,
@@ -16,6 +16,7 @@ import {
   rebaseWeeksAround,
 } from '../utils/weekActions';
 import { storage } from '@shared/services/localStorage.service';
+import { fetchHolidays, readLocationFromSettings } from '@shared/services/holidays.service';
 
 // Minimal types
 type AnyRecord = Record<string, any>;
@@ -34,7 +35,6 @@ type PlanificacionTabProps = {
 
 export default function PlanificacionTab({
   project,
-  conditions,
   baseTeam = [],
   prelightTeam = [],
   pickupTeam = [],
@@ -55,10 +55,49 @@ export default function PlanificacionTab({
     return `plan_${base}`;
   }, [(project as AnyRecord)?.id, (project as AnyRecord)?.nombre]);
 
-  const { full: holidayFull, md: holidayMD } = useMemo(
-    () => extractHolidaySets((conditions as AnyRecord) || {}),
-    [JSON.stringify((conditions as AnyRecord) || {})]
-  );
+  // Festivos basados en Configuración (Calendarific)
+  const [holidayFull, setHolidayFull] = useState<Set<string>>(new Set());
+  const [holidayMD, setHolidayMD] = useState<Set<string>>(new Set());
+
+  // Carga inicial y cuando cambien país/región en settings
+  useEffect(() => {
+    let alive = true;
+
+    const load = async () => {
+      try {
+        const { country, region } = readLocationFromSettings();
+        const year = new Date().getFullYear();
+        const { holidays } = await fetchHolidays({ country, year, region });
+        const dates = (holidays || []).map(h => String(h.date));
+        const full = new Set<string>(dates);
+        const md = new Set<string>();
+        for (const ymd of full) {
+          const [y, m, d] = ymd.split('-').map(Number);
+          if (y && m && d) md.add(mdKey(m, d));
+        }
+        if (!alive) return;
+        setHolidayFull(full);
+        setHolidayMD(md);
+      } catch {
+        // Mantener sets vacíos si falla
+        if (!alive) return;
+        setHolidayFull(new Set());
+        setHolidayMD(new Set());
+      }
+    };
+
+    load();
+
+    // Escuchar cambios en settings_v1 desde la pestaña de Configuración
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === 'settings_v1') load();
+    };
+    window.addEventListener('storage', onStorage);
+    return () => {
+      alive = false;
+      window.removeEventListener('storage', onStorage);
+    };
+  }, []);
 
   const [isLoaded, setIsLoaded] = useState(false);
 
@@ -95,21 +134,38 @@ export default function PlanificacionTab({
   useEffect(() => {
     if (!isLoaded) return;
 
-    const relabel = (weeks: AnyRecord[]) =>
-      (weeks || []).map(w =>
-        relabelWeekByCalendar(w, w.startDate, holidayFull, holidayMD)
+    const relabelWithDynamic = async (weeks: AnyRecord[]) => {
+      return Promise.all(
+        (weeks || []).map(async w => {
+          // Try dynamic first, fallback to static
+          try {
+            return await relabelWeekByCalendarDynamic(w, w.startDate, holidayFull, holidayMD);
+          } catch {
+            return relabelWeekByCalendar(w, w.startDate, holidayFull, holidayMD);
+          }
+        })
       );
+    };
 
-    setPreWeeks(prev => {
-      const next = relabel(prev);
-      return JSON.stringify(next) === JSON.stringify(prev) ? prev : next;
-    });
+    const updateWeeks = async () => {
+      const [newPreWeeks, newProWeeks] = await Promise.all([
+        relabelWithDynamic(preWeeks),
+        relabelWithDynamic(proWeeks)
+      ]);
 
-    setProWeeks(prev => {
-      const next = relabel(prev);
-      return JSON.stringify(next) === JSON.stringify(prev) ? prev : next;
-    });
-  }, [isLoaded, holidayFull, holidayMD]);
+      setPreWeeks(prev => {
+        const next = newPreWeeks;
+        return JSON.stringify(next) === JSON.stringify(prev) ? prev : next;
+      });
+
+      setProWeeks(prev => {
+        const next = newProWeeks;
+        return JSON.stringify(next) === JSON.stringify(prev) ? prev : next;
+      });
+    };
+
+    updateWeeks();
+  }, [isLoaded, holidayFull, holidayMD, preWeeks, proWeeks]);
 
   const { baseRoster, preRoster, pickRoster, refsRoster } = useMemo(() => {
     const fromProps = {
@@ -168,7 +224,7 @@ export default function PlanificacionTab({
     reinforcements,
   ]);
 
-  const addPreWeek = () => {
+  const addPreWeek = async () => {
     const next = addPreWeekAction(
       preWeeks as any,
       baseRoster,
@@ -177,11 +233,14 @@ export default function PlanificacionTab({
       holidayFull,
       holidayMD
     );
-    // Asegura festivos aplicados inmediatamente
-    setPreWeeks((next as AnyRecord[]).map(w => relabelWeekByCalendar(w, w.startDate, holidayFull, holidayMD)) as any);
+    // Asegura festivos aplicados inmediatamente con datos dinámicos reales
+    const relabeledWeeks = await Promise.all(
+      (next as AnyRecord[]).map(async w => relabelWeekByCalendarDynamic(w, w.startDate, holidayFull, holidayMD))
+    );
+    setPreWeeks(relabeledWeeks as any);
   };
 
-  const addProWeek = () => {
+  const addProWeek = async () => {
     const next = addProWeekAction(
       preWeeks as any,
       proWeeks as any,
@@ -191,8 +250,11 @@ export default function PlanificacionTab({
       holidayFull,
       holidayMD
     );
-    // Asegura festivos aplicados inmediatamente
-    setProWeeks((next as AnyRecord[]).map(w => relabelWeekByCalendar(w, w.startDate, holidayFull, holidayMD)) as any);
+    // Asegura festivos aplicados inmediatamente con datos dinámicos reales
+    const relabeledWeeks = await Promise.all(
+      (next as AnyRecord[]).map(async w => relabelWeekByCalendarDynamic(w, w.startDate, holidayFull, holidayMD))
+    );
+    setProWeeks(relabeledWeeks as any);
   };
 
   const duplicateWeek = (scope: 'pre' | 'pro', weekId: string) => {
@@ -253,6 +315,10 @@ export default function PlanificacionTab({
         const days = w.days.map((d: AnyRecord, i: number) => {
           if (i !== dayIdx) return d;
           const next: AnyRecord = { ...d, ...patch };
+          // Si el usuario cambia el tipo explícitamente, marcar override manual
+          if (Object.prototype.hasOwnProperty.call(patch, 'tipo')) {
+            next.manualTipo = true;
+          }
           const isShooting =
             patch.tipo &&
             [

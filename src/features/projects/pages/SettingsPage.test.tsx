@@ -15,7 +15,7 @@ describe('SettingsPage', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    storage.getJSON.mockReturnValue({ theme: 'dark', chunkWarn: true });
+    storage.getJSON.mockReturnValue({ theme: 'dark', country: 'ES', region: '' });
   });
 
   it('renders header and loads settings', async () => {
@@ -26,8 +26,8 @@ describe('SettingsPage', () => {
     const select = screen.getByDisplayValue('Oscuro') as HTMLSelectElement;
     expect(select).toBeInTheDocument();
 
-    const checkbox = screen.getByRole('checkbox') as HTMLInputElement;
-    expect(checkbox.checked).toBe(true);
+    // No hay checkbox ya; comprobamos que existen selects de País y Tema
+    expect(screen.getByLabelText('País')).toBeInTheDocument();
   });
 
   it('saves settings and shows feedback', () => {
@@ -36,14 +36,12 @@ describe('SettingsPage', () => {
     const select = screen.getByDisplayValue('Oscuro') as HTMLSelectElement;
     fireEvent.change(select, { target: { value: 'light' } });
 
-    const checkbox = screen.getByRole('checkbox') as HTMLInputElement;
-    fireEvent.click(checkbox);
-
     fireEvent.click(screen.getByText('Guardar'));
 
     expect(storage.setJSON).toHaveBeenCalledWith('settings_v1', {
       theme: 'light',
-      chunkWarn: false,
+      country: 'ES',
+      region: '',
     });
 
     expect(screen.getByText('Configuración guardada ✓')).toBeInTheDocument();

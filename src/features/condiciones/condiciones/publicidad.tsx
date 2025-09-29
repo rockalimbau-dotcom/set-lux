@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState, useRef, memo } from 'react';
 
 import { PRICE_ROLES } from './shared.constants';
 import { extractFestivosDatesForPlan, renderWithParams, visibleToTemplate, loadJSON, TextAreaAuto, InfoCard, ParamInput } from './shared';
+import { DEFAULT_FESTIVOS_TEXT, generateDynamicFestivosText } from '@shared/constants/festivos';
 
 type AnyRecord = Record<string, any>;
 
@@ -14,7 +15,17 @@ Precio día extra/festivo: Equivale al precio de jornada multiplicado por {{FACT
 Travel day: Equivale al precio de jornada dividido entre {{DIV_TRAVEL}}.
 Horas extras: Resultado de dividir el precio de jornada entre las horas de jornada ({{JORNADA_TRABAJO}}h + {{JORNADA_COMIDA}}h) y bonificarlo con un factor {{FACTOR_HORA_EXTRA}}×. Se considera hora extra a partir de {{CORTESIA_MIN}} minutos después del fin de la jornada pactada. A partir de la segunda hora extra no habrá cortesía de {{CORTESIA_MIN}}′. Las horas extras son voluntarias y deberán comunicarse antes del final de la jornada pactada.`;
 
-const defaultFestivos = `La jornada y horas en días festivos tendrán un incremento del 75%. (Festivos Cataluña 2025: 1/01, 6/01, 29/03, 01/04, 01/05, 24/06, 15/08, 11/09, 12/10, 01/11, 06/12, 25/12, 26/12)`;
+// Variable global para festivos dinámicos
+let globalDynamicFestivosText = DEFAULT_FESTIVOS_TEXT;
+
+// Función para actualizar festivos dinámicos
+const updateDynamicFestivos = async () => {
+  try {
+    globalDynamicFestivosText = await generateDynamicFestivosText();
+  } catch {
+    globalDynamicFestivosText = DEFAULT_FESTIVOS_TEXT;
+  }
+};
 const defaultHorarios = `TURN AROUND: El descanso entre jornadas será de {{TA_DIARIO}}h entre días laborables y de {{TA_FINDE}}h los fines de semana. Todas las horas que no se descansen serán consideradas horas extras.
 NOCTURNIDADES: Se considerará jornada nocturna cuando el inicio o final de la jornada sea entre las {{NOCTURNO_INI}} y las {{NOCTURNO_FIN}}. Se bonificará con un complemento salarial equivalente a una hora extra a cada miembro del equipo.`;
 const defaultDietas = `Se ingresarán en nómina (importe libre de impuestos) las siguientes cantidades cuando no se disponga de manutención en el rodaje así como cuando se trabaje fuera del centro de actividades habitual. Se incrementará en un 50% fuera del territorio nacional. También se efectuará un anticipo de éstas.
@@ -49,6 +60,11 @@ function CondicionesPublicidad({
     const base = (project as AnyRecord)?.id || (project as AnyRecord)?.nombre || 'tmp';
     return `cond_${base}_publicidad`;
   }, [project?.id, project?.nombre]);
+
+  // Cargar festivos dinámicos al montar el componente
+  useEffect(() => {
+    updateDynamicFestivos();
+  }, []);
 
   const [showParams, setShowParams] = useState(false);
   const paramsRef = useRef<HTMLDivElement | null>(null);
@@ -418,7 +434,7 @@ function loadOrSeedPublicidad(storageKey: string): AnyRecord {
   const fallback: AnyRecord = {
     prices: {},
     legendTemplate: defaultLegendPubli,
-    festivosTemplate: defaultFestivos,
+    festivosTemplate: globalDynamicFestivosText,
     horariosTemplate: defaultHorarios,
     dietasTemplate: defaultDietas,
     transportesTemplate: defaultTransportes,
@@ -503,7 +519,7 @@ function loadOrSeedPublicidad(storageKey: string): AnyRecord {
     };
 
     parsed.legendTemplate = parsed.legendTemplate ?? defaultLegendPubli;
-    parsed.festivosTemplate = parsed.festivosTemplate ?? defaultFestivos;
+    parsed.festivosTemplate = parsed.festivosTemplate ?? globalDynamicFestivosText;
     parsed.horariosTemplate = parsed.horariosTemplate ?? defaultHorarios;
     parsed.dietasTemplate = parsed.dietasTemplate ?? defaultDietas;
     parsed.transportesTemplate = parsed.transportesTemplate ?? defaultTransportes;

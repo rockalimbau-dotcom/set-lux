@@ -9,16 +9,16 @@ import {
   getCondParams,
   getOvertimeWindowForPayrollMonth,
   isoInRange,
-} from '../utils/calc.js';
-import { monthKeyFromISO, monthLabelEs } from '../utils/date.js';
-import { buildNominaMonthHTML, openPrintWindow } from '../utils/export.js';
+} from '../utils/calc';
+import { monthKeyFromISO, monthLabelEs } from '../utils/date';
+import { buildNominaMonthHTML, openPrintWindow } from '../utils/export';
 import {
   usePlanWeeks,
   stripPR,
   buildRefuerzoIndex,
   weekISOdays,
   weekAllPeopleActive,
-} from '../utils/plan.js';
+} from '../utils/plan';
 
 interface ProjectLike {
   id?: string;
