@@ -81,6 +81,32 @@ export default function useAutoCalculations({
   // no-op
 
   useEffect(() => {
+    // Debug flag: habilita logs con ?debug=ta o localStorage.debug='ta'|'on'|'reportes'
+    const debugEnabled = (() => {
+      try {
+        const w: any = (typeof window !== 'undefined') ? window : undefined;
+        const qs = w ? new URLSearchParams(w.location.search).get('debug') || '' : '';
+        const ls = w?.localStorage?.getItem('debug') || '';
+        const val = String(qs || ls || '').toLowerCase();
+        return val === 'ta' || val === 'on' || val === 'reportes';
+      } catch {
+        return false;
+      }
+    })();
+    // Firma de dependencias para re-calcular cuando cambien horarios (start/end) de cualquier bloque en la semana actual
+    // Nota: usamos findWeekAndDay/getBlockWindow para derivar una huella ligera de los horarios
+    const planWindowsSignature = JSON.stringify((safeSemana as string[]).map((iso) => {
+      const ctx = findWeekAndDay(iso) as WeekAndDay;
+      const b = getBlockWindow(ctx?.day, 'base') || { start: null, end: null };
+      const p = getBlockWindow(ctx?.day, 'pre') || { start: null, end: null };
+      const k = getBlockWindow(ctx?.day, 'pick') || { start: null, end: null };
+      return {
+        iso,
+        bS: b.start || '', bE: b.end || '',
+        pS: p.start || '', pE: p.end || '',
+        kS: k.start || '', kE: k.end || '',
+      };
+    }));
     const autoByDate: AutoByDate = {};
     const { jornadaTrabajo, jornadaComida, cortesiaMin, taDiario, taFinde } = params;
 
@@ -125,6 +151,13 @@ export default function useAutoCalculations({
           if (!prevEndDT || !currStartDT) return 0;
           let crossed = false;
           if (prevStartDT && prevEndDT <= prevStartDT) crossed = true;
+          // Heurística adicional: si el turno empieza a medianoche y termina por la mañana,
+          // consideramos que finaliza al día siguiente (caso viernes 00:00-10:00 -> sábado 10:00)
+          if (!crossed && prevStartDT) {
+            const startH = prevStartDT.getHours();
+            const endH = prevEndDT.getHours();
+            if (startH === 0 && endH <= 12) crossed = true;
+          }
           if (!prevStartDT) {
             const hh = Number(String(prevEndStr).split(':')[0] || '0');
             if (hh <= 6) crossed = true;
@@ -134,8 +167,10 @@ export default function useAutoCalculations({
           const gapMin = Math.max(0, Math.round((currStartDT.getTime() - prevEndDT.getTime()) / 60000));
           // Debug TA Base
           try {
-            // eslint-disable-next-line no-console
-            console.debug('[TA.base]', { iso, prevISO, prevEndStr, start, gapMin, reqMin, ta: ceilHours(Math.max(0, reqMin - gapMin)) });
+            if (debugEnabled) {
+              // eslint-disable-next-line no-console
+              console.debug('[TA.base]', { iso, prevISO, prevEndStr, start, gapMin, reqMin, ta: ceilHours(Math.max(0, reqMin - gapMin)) });
+            }
           } catch {}
           return ceilHours(Math.max(0, reqMin - gapMin));
         } catch {
@@ -160,6 +195,11 @@ export default function useAutoCalculations({
           if (!prevEndDT || !currStartDT) return 0;
           let crossed = false;
           if (prevStartDT && prevEndDT <= prevStartDT) crossed = true;
+          if (!crossed && prevStartDT) {
+            const startH = prevStartDT.getHours();
+            const endH = prevEndDT.getHours();
+            if (startH === 0 && endH <= 12) crossed = true;
+          }
           if (!prevStartDT) {
             const hh = Number(String(prevEndStr).split(':')[0] || '0');
             if (hh <= 6) crossed = true;
@@ -190,6 +230,11 @@ export default function useAutoCalculations({
           if (!prevEndDT || !currStartDT) return 0;
           let crossed = false;
           if (prevStartDT && prevEndDT <= prevStartDT) crossed = true;
+          if (!crossed && prevStartDT) {
+            const startH = prevStartDT.getHours();
+            const endH = prevEndDT.getHours();
+            if (startH === 0 && endH <= 12) crossed = true;
+          }
           if (!prevStartDT) {
             const hh = Number(String(prevEndStr).split(':')[0] || '0');
             if (hh <= 6) crossed = true;
@@ -197,10 +242,12 @@ export default function useAutoCalculations({
           if (crossed) prevEndDT = new Date(prevEndDT.getTime() + 24 * 60 * 60 * 1000);
           const reqMin = Math.round((consecDesc >= 2 ? taF : taD) * 60);
           const gapMin = Math.max(0, Math.round((currStartDT.getTime() - prevEndDT.getTime()) / 60000));
-          // Debug TA Recogida (solo en dev, protegido)
+          // Debug TA Recogida (solo si debugEnabled)
           try {
-            // eslint-disable-next-line no-console
-            console.debug('[TA.pick]', { iso, prevISO, prevEndStr, start, gapMin, reqMin, ta: ceilHours(Math.max(0, reqMin - gapMin)) });
+            if (debugEnabled) {
+              // eslint-disable-next-line no-console
+              console.debug('[TA.pick]', { iso, prevISO, prevEndStr, start, gapMin, reqMin, ta: ceilHours(Math.max(0, reqMin - gapMin)) });
+            }
           } catch {}
           return ceilHours(Math.max(0, reqMin - gapMin));
         } catch {
@@ -242,6 +289,12 @@ export default function useAutoCalculations({
           if (iniMin < thFin || finMin < thFin) return true;
           return false;
         })(start, end)) : false;
+        try {
+          if (debugEnabled) {
+            // eslint-disable-next-line no-console
+            console.debug('[noct.check]', { iso, block, start, end, noctIni: params.nocturnoIni, noctFin: params.nocturnoFin, noct });
+          }
+        } catch {}
         const noctStr = noct ? 'SI' : '';
         return {
           extra: String(extras || 0),
@@ -288,45 +341,69 @@ export default function useAutoCalculations({
             rowBlock
           );
           try {
-            // eslint-disable-next-line no-console
-            console.debug('[work.check]', { iso, rowBlock, role: role, name, workedThisBlock });
+            if (debugEnabled) {
+              // eslint-disable-next-line no-console
+              console.debug('[work.check]', { iso, rowBlock, role: role, name, workedThisBlock });
+            }
           } catch {}
           const off = !workedThisBlock;
-          const isBlockPersona = !!(p as any)?.__block;
+          const isBlockPersona = !!(p as any)?.__block; void isBlockPersona;
+          try {
+            if (debugEnabled && off) {
+              // eslint-disable-next-line no-console
+              console.debug('[noct.off]', { iso, rowBlock, role, name, reason: 'not scheduled on this block' });
+            }
+          } catch {}
 
           next[pk]['Horas extra'] = next[pk]['Horas extra'] || {};
           const currExtra = next[pk]['Horas extra'][iso];
           const autoExtra = auto.extra ?? '';
+          const manualExtra = !!next[pk]?.__manual__?.['Horas extra']?.[iso];
           next[pk]['Horas extra'][iso] = off
             ? ''
-            : (currExtra === '' || currExtra == null || (isBlockPersona && currExtra === '0' && autoExtra !== '0'))
-              ? autoExtra
-              : currExtra;
+            : (manualExtra ? currExtra : (autoExtra !== currExtra ? autoExtra : currExtra));
 
           next[pk]['Turn Around'] = next[pk]['Turn Around'] || {};
           const currTA = next[pk]['Turn Around'][iso];
           const autoTA = auto.ta ?? '';
+          const manualTA = !!next[pk]?.__manual__?.['Turn Around']?.[iso];
           next[pk]['Turn Around'][iso] = off
             ? ''
-            : (currTA === '' || currTA == null || currTA === '0' || (isBlockPersona && currTA === '0' && autoTA !== '0'))
-              ? autoTA
-              : currTA;
+            : (manualTA ? currTA : (autoTA !== currTA ? autoTA : currTA));
 
           next[pk]['Nocturnidad'] = next[pk]['Nocturnidad'] || {};
           const currNoct = next[pk]['Nocturnidad'][iso];
           const autoNoct = auto.noct ?? '';
+          const manualNoct = !!next[pk]?.__manual__?.['Nocturnidad']?.[iso];
           next[pk]['Nocturnidad'][iso] = off
             ? ''
-            : (currNoct === '' || currNoct == null || (isBlockPersona && currNoct === '0' && autoNoct !== '0' && autoNoct !== ''))
-              ? autoNoct
-              : currNoct;
+            : (manualNoct ? currNoct : (autoNoct !== currNoct ? autoNoct : currNoct));
         }
       }
+      try {
+        const im: any = (import.meta as any);
+        if (im && im.env && im.env.DEV) {
+          (window as any).__reportesData = next;
+        }
+      } catch {}
       return next;
     });
   }, [
     JSON.stringify(safeSemana),
     JSON.stringify(params),
     JSON.stringify(safePersonas),
+    // Recalcular al cambiar cualquier start/end de la semana
+    JSON.stringify((safeSemana as string[]).map((iso) => {
+      const ctx = findWeekAndDay(iso) as WeekAndDay;
+      const b = getBlockWindow(ctx?.day, 'base') || { start: null, end: null };
+      const p = getBlockWindow(ctx?.day, 'pre') || { start: null, end: null };
+      const k = getBlockWindow(ctx?.day, 'pick') || { start: null, end: null };
+      return {
+        iso,
+        bS: b.start || '', bE: b.end || '',
+        pS: p.start || '', pE: p.end || '',
+        kS: k.start || '', kE: k.end || '',
+      };
+    })),
   ]);
 }

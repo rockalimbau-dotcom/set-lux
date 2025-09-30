@@ -11,12 +11,16 @@ interface WeekAndDay {
   day: any;
 }
 
+type ConceptValues = { [fecha: string]: string };
+type ManualFlags = { [concepto: string]: { [fecha: string]: boolean } };
+
+interface PersonaReportData {
+  [concepto: string]: ConceptValues | ManualFlags | undefined;
+  __manual__?: ManualFlags;
+}
+
 interface ReportData {
-  [personaKey: string]: {
-    [concepto: string]: {
-      [fecha: string]: string;
-    };
-  };
+  [personaKey: string]: PersonaReportData;
 }
 
 interface UseReportDataReturn {
@@ -76,6 +80,10 @@ export default function useReportData(
       next[pKey] = { ...(next[pKey] || {}) };
       next[pKey][concepto] = { ...(next[pKey][concepto] || {}) };
       next[pKey][concepto][fecha] = valor;
+      // Marcar override manual para este concepto/fecha
+      next[pKey].__manual__ = { ...(next[pKey].__manual__ || {}) };
+      next[pKey].__manual__[concepto] = { ...(next[pKey].__manual__?.[concepto] || {}) } as any;
+      (next[pKey].__manual__ as any)[concepto][fecha] = true;
       return next;
     });
 

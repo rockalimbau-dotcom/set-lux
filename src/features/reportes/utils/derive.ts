@@ -100,7 +100,9 @@ export function buildSafePersonas(
   const filtered = base.filter(p => {
     const blk = (p as any)?.__block;
     const tag = `${String(personaRole(p) || '')}__${String(personaName(p) || '')}`;
-    if (!blk && hasBlock.has(tag)) return false; // quita la fila base si existe fila de bloque
+    // Para roles normales, si existe una fila de bloque, ocultamos la fila base duplicada.
+    // Para REF, mantenemos la fila base aunque existan filas de bloque (pre/pick).
+    if (!blk && hasBlock.has(tag) && String(personaRole(p) || '') !== 'REF') return false;
     return true;
   });
   return filtered;
