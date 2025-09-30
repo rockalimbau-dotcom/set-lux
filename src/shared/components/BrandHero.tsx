@@ -1,6 +1,6 @@
 import React from 'react';
 
-import LogoIcon from './LogoIcon.jsx';
+import LogoIcon from './LogoIcon';
 
 interface BrandHeroProps {
   tagline?: string;
@@ -9,8 +9,8 @@ interface BrandHeroProps {
 const BrandHero = React.memo(function BrandHero({ tagline = 'All in One' }: BrandHeroProps) {
   return (
     <div className='text-center mb-8'>
-      <div className='mx-auto mb-4 w-20 h-20 grid place-items-center'>
-        <LogoIcon size={80} />
+      <div className='mx-auto mb-4 grid place-items-center'>
+        <LogoIcon size={120} />
       </div>
       <h1 className='text-3xl font-extrabold tracking-wide leading-tight select-none'>
         <span className='text-brand'>Set</span>
