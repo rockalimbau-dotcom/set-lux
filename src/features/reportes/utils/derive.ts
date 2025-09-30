@@ -54,24 +54,56 @@ export function buildSafePersonas(
   pickupPeople: Persona[]
 ): Persona[] {
   const base = Array.isArray(providedPersonas) ? [...providedPersonas] : [];
-  const seen = new Set(base.map(p => `${personaRole(p)}__${personaName(p)}`));
-  const add = (arr: Persona[]) => {
+  const seen = new Set<string>();
+  const keyOf = (p: Persona) => {
+    const r = String(personaRole(p) || '');
+    const n = String(personaName(p) || '');
+    const blk = (p as any)?.__block || '';
+    return `${r}__${n}__${blk}`;
+  };
+  for (const p of base) seen.add(keyOf(p));
+
+  const add = (arr: Persona[], block?: 'pre' | 'pick') => {
     for (const m of arr || []) {
-      const key = `${m.role || ''}__${m.name || ''}`;
-      if (!seen.has(key)) {
-        seen.add(key);
-        base.push({ role: m.role || '', name: m.name || '' });
+      const isRef = String(m.role || '') === 'REF' || /^REF/.test(String(m.role || '')) || isMemberRefuerzo(m as any);
+      const item: Persona = isRef
+        ? { role: 'REF', name: m.name || '', __block: block }
+        : { role: m.role || '', name: m.name || '', __block: block };
+      const k = keyOf(item as any);
+      if (!seen.has(k)) {
+        seen.add(k);
+        base.push(item);
       }
     }
   };
-  if (weekPrelightActive) add(prelightPeople);
-  if (weekPickupActive) add(pickupPeople);
+
+  // Añadir personas detectadas en prelight/pickup, marcando REF con __block
+  if (weekPrelightActive) add(prelightPeople, 'pre');
+  if (weekPickupActive) add(pickupPeople, 'pick');
+
+  // Normalizar roles REF
   for (let i = 0; i < base.length; i++) {
     const r = String(personaRole(base[i]) || '');
     const n = String(personaName(base[i]) || '');
-    if (r.startsWith('REF')) base[i] = { role: 'REF', name: n };
+    const blk = (base[i] as any)?.__block;
+    if (r.startsWith('REF')) base[i] = blk ? { role: 'REF', name: n, __block: blk } : { role: 'REF', name: n };
   }
-  return base;
+
+  // Eliminar entradas base duplicadas cuando existe una entrada de bloque (pre/pick) para la misma persona/rol
+  const hasBlock = new Set<string>();
+  for (const p of base) {
+    const blk = (p as any)?.__block;
+    if (blk === 'pre' || blk === 'pick') {
+      hasBlock.add(`${String(personaRole(p) || '')}__${String(personaName(p) || '')}`);
+    }
+  }
+  const filtered = base.filter(p => {
+    const blk = (p as any)?.__block;
+    const tag = `${String(personaRole(p) || '')}__${String(personaName(p) || '')}`;
+    if (!blk && hasBlock.has(tag)) return false; // quita la fila base si existe fila de bloque
+    return true;
+  });
+  return filtered;
 }
 
 export function buildPeopleBase(providedPersonas: Persona[], refNamesBase: Set<string>): Persona[] {
@@ -101,7 +133,7 @@ export function buildPeoplePre(
       const item: PersonaWithBlock =
         m.role === 'REF'
           ? { role: 'REF', name: m.name, __block: 'pre' }
-          : { role: m.role, name: m.name };
+          : { role: m.role, name: m.name, __block: 'pre' };
       const key = `${item.role}__${item.name}__${item.__block || ''}`;
       if (seen.has(key)) continue;
       seen.add(key);
@@ -132,7 +164,7 @@ export function buildPeoplePick(
       const item: PersonaWithBlock =
         m.role === 'REF'
           ? { role: 'REF', name: m.name, __block: 'pick' }
-          : { role: m.role, name: m.name };
+          : { role: m.role, name: m.name, __block: 'pick' };
       const key = `${item.role}__${item.name}__${item.__block || ''}`;
       if (seen.has(key)) continue;
       seen.add(key);

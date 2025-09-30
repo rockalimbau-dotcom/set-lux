@@ -30,7 +30,7 @@ export default function useReportData(
   safePersonas: Persona[],
   safeSemana: string[],
   CONCEPTS: string[],
-  isPersonScheduledOn: (fecha: string, role: string, name: string, findWeekAndDay: (iso: string) => WeekAndDay) => boolean,
+  isPersonScheduledOn: (fecha: string, role: string, name: string, findWeekAndDay: (iso: string) => WeekAndDay, block?: 'base' | 'pre' | 'pick') => boolean,
   findWeekAndDay: (iso: string) => WeekAndDay
 ): UseReportDataReturn {
   // Crear estado inicial basado en personas y conceptos
@@ -87,12 +87,27 @@ export default function useReportData(
       }
       setData((prev: ReportData) => {
         const copy = { ...(prev || {}) };
+        // Determinar bloque del originador para propagar sólo en su bloque
+        const srcBlock: 'base' | 'pre' | 'pick' = /\.pre__/.test(pKey) || /REF\.pre__/.test(pKey)
+          ? 'pre'
+          : (/\.pick__/.test(pKey) || /REF\.pick__/.test(pKey) ? 'pick' : 'base');
+        const blockOf = (key: string): 'base' | 'pre' | 'pick' =>
+          /\.pre__/.test(key) || /REF\.pre__/.test(key)
+            ? 'pre'
+            : (/\.pick__/.test(key) || /REF\.pick__/.test(key) ? 'pick' : 'base');
         for (const p of safePersonas) {
           const k = personaKey(p);
           if (k === pKey) continue;
           const r = who[k]?.role || '';
           const n = who[k]?.name || '';
-          if (isPersonScheduledOn(fecha, r, n, findWeekAndDay)) {
+          const tgtBlock = blockOf(k);
+          if (tgtBlock !== srcBlock) continue; // sólo mismo bloque
+          // Para no-REF, ajustar role con sufijo para que busque en la lista correcta
+          const roleForCheck = r === 'REF'
+            ? 'REF'
+            : (tgtBlock === 'pre' ? `${r}P` : (tgtBlock === 'pick' ? `${r}R` : r));
+          const blockForRef = roleForCheck === 'REF' ? tgtBlock : undefined;
+          if (isPersonScheduledOn(fecha, roleForCheck, n, findWeekAndDay, blockForRef as any)) {
             copy[k] = { ...(copy[k] || {}) };
             copy[k]['Dietas'] = { ...(copy[k]['Dietas'] || {}) };
             copy[k]['Dietas'][fecha] = valor;

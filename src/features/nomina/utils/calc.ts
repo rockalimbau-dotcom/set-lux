@@ -132,12 +132,16 @@ export function aggregateReports(project: any, weeks: any[], filterISO: ((iso: s
     for (const p of rawPeople) {
       const r = p.role || '';
       const n = p.name || '';
-      const storageKey = storageKeyFor(r, n);
-      if (!uniqStorageKeys.has(storageKey)) {
-        uniqStorageKeys.set(storageKey, {
-          roleVisible: visibleRoleFor(r, n),
-          name: n,
-        });
+      const roleVisible = visibleRoleFor(r, n);
+      if (roleVisible === 'REF') {
+        // Admitimos claves separadas por bloque en Reportes
+        const keys = [`REF__${n}`, `REF.pre__${n}`, `REF.pick__${n}`];
+        for (const sk of keys) if (!uniqStorageKeys.has(sk)) uniqStorageKeys.set(sk, { roleVisible, name: n });
+      } else {
+        const storageKey = storageKeyFor(r, n);
+        if (!uniqStorageKeys.has(storageKey)) {
+          uniqStorageKeys.set(storageKey, { roleVisible, name: n });
+        }
       }
     }
 
@@ -263,9 +267,16 @@ export function aggregateWindowedReport(project: any, weeks: any[], filterISO: (
     for (const p of rawPeople) {
       const r = p.role || '';
       const n = p.name || '';
-      const sk = storageKeyFor(r, n);
       const vk = visibleRoleFor(r, n);
-      if (!uniqStorage.has(sk)) uniqStorage.set(sk, vk);
+      if (vk === 'REF') {
+        // Claves posibles en Reportes por bloque
+        for (const sk of [`REF__${n}`, `REF.pre__${n}`, `REF.pick__${n}`]) {
+          if (!uniqStorage.has(sk)) uniqStorage.set(sk, vk);
+        }
+      } else {
+        const sk = storageKeyFor(r, n);
+        if (!uniqStorage.has(sk)) uniqStorage.set(sk, vk);
+      }
     }
 
     const cols = {

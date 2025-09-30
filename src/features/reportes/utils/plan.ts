@@ -38,21 +38,27 @@ export function isPersonScheduledOnBlock(
   const { day } = findWeekAndDayFn(iso);
   if (!day || day.tipo === 'Descanso') return false;
 
-  if (String(roleLabel || '') === 'REF' && blockForRef) {
-    return refWorksOnBlock(findWeekAndDayFn, iso, name, blockForRef);
+  const block = blockForRef
+    || (/P$/.test(String(roleLabel || '')) ? BLOCKS.pre
+      : /R$/.test(String(roleLabel || '')) ? BLOCKS.pick
+      : BLOCKS.base);
+  if (String(roleLabel || '') === 'REF') {
+    return refWorksOnBlock(findWeekAndDayFn, iso, name, block);
   }
 
   const baseRole = String(roleLabel || '').replace(/[PR]$/, '');
-  const suffix = /P$/.test(roleLabel || '')
-    ? 'prelight'
-    : /R$/.test(roleLabel || '')
-      ? 'pickup'
-      : 'team';
-  const list = Array.isArray(day[suffix]) ? day[suffix] : [];
+  const suffix = block === BLOCKS.pre ? 'prelight' : block === BLOCKS.pick ? 'pickup' : 'team';
+  const list: Array<{ name?: string; role?: string }> = Array.isArray((day as any)[suffix]) ? (day as any)[suffix] : [];
   return list.some(
-    m =>
-      norm(m?.name) === norm(name) &&
-      (!m?.role || norm(m?.role) === norm(baseRole) || !baseRole)
+    (m: { name?: string; role?: string }) => {
+      const memberRole = String(m?.role || '');
+      const normMemberBase = norm(memberRole).replace(/[pr]$/i, '');
+      const normBase = norm(baseRole).replace(/[pr]$/i, '');
+      return (
+        norm(m?.name) === norm(name) &&
+        (!memberRole || normMemberBase === normBase || !baseRole)
+      );
+    }
   );
 }
 
@@ -124,9 +130,15 @@ export function personWorksOn(
   const list =
     suffix === 'P' ? day.prelight : suffix === 'R' ? day.pickup : day.team;
   return (list || []).some(
-    m =>
-      norm(m?.name) === norm(personName) &&
-      (!m?.role || norm(m?.role) === norm(baseRole) || !baseRole)
+    (m: { name?: string; role?: string }) => {
+      const memberRole = String(m?.role || '');
+      const normMemberBase = norm(memberRole).replace(/[pr]$/i, '');
+      const normBase = norm(baseRole).replace(/[pr]$/i, '');
+      return (
+        norm(m?.name) === norm(personName) &&
+        (!memberRole || normMemberBase === normBase || !baseRole)
+      );
+    }
   );
 }
 

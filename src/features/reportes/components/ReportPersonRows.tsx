@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { Td } from '@shared/components';
 import { ROLE_COLORS } from '../../../shared/constants/roles';
+import { personaKey as buildPersonaKey } from '../utils/model';
 
 // Lightweight type aliases
 type AnyRecord = Record<string, any>;
@@ -46,8 +47,18 @@ function ReportPersonRows({
 }: Props) {
   if (!Array.isArray(list)) return null;
 
-  const personaKeyFrom = (role: string, name: string) =>
-    role === 'REF' ? `REF__${name}` : `${role}__${name}`;
+  const personaKeyFrom = (role: string, name: string) => {
+    // Usar la misma clave que useReportData/model para evitar mezclas entre bloques
+    const pLike: AnyRecord = { role, name };
+    if (role === 'REF') {
+      if (block === 'pre') pLike.__block = 'pre';
+      if (block === 'pick') pLike.__block = 'pick';
+    } else {
+      if (block === 'pre') pLike.__block = 'pre';
+      if (block === 'pick') pLike.__block = 'pick';
+    }
+    return buildPersonaKey(pLike);
+  };
 
   const dietasOptions = useMemo(() => (DIETAS_OPCIONES.filter(Boolean) as string[]), [DIETAS_OPCIONES]);
 

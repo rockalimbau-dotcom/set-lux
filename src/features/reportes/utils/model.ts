@@ -17,8 +17,17 @@ export function personaName(p: any): string {
 export function personaKey(p: any): string {
   const role = stripPR(personaRole(p) || '');
   const name = personaName(p) || '';
-  const roleForKey = role.startsWith('REF') ? 'REF' : role;
-  return `${roleForKey}__${name}`;
+  if (role.startsWith('REF')) {
+    const block = (p && (p.__block || p.block)) || '';
+    if (block === 'pre') return `REF.pre__${name}`;
+    if (block === 'pick') return `REF.pick__${name}`;
+    return `REF__${name}`;
+  }
+  // Roles no-REF: usar bloque explícito si viene marcado; si no, clave base sin PR
+  const block = (p && (p.__block || p.block)) || '';
+  if (block === 'pre') return `${role}.pre__${name}`;
+  if (block === 'pick') return `${role}.pick__${name}`;
+  return `${role}__${name}`;
 }
 
 export function seedWeekData(personas: any[] = [], semana: string[] = []): {
