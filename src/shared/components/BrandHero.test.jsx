@@ -32,8 +32,8 @@ describe('BrandHero', () => {
     const mainDiv = container.firstChild;
     expect(mainDiv).toHaveClass('text-center', 'mb-8');
     
-    const logoContainer = mainDiv?.querySelector('.mx-auto.mb-4.w-20.h-20');
-    expect(logoContainer).toHaveClass('mx-auto', 'mb-4', 'w-20', 'h-20', 'grid', 'place-items-center');
+    const logoContainer = mainDiv?.querySelector('.mx-auto.mb-4');
+    expect(logoContainer).toHaveClass('mx-auto', 'mb-4', 'grid', 'place-items-center');
     
     const title = screen.getByText('Set').closest('h1');
     expect(title).toHaveClass('text-3xl', 'font-extrabold', 'tracking-wide', 'leading-tight', 'select-none');

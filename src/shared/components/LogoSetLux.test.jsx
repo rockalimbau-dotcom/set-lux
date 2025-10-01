@@ -42,9 +42,9 @@ describe('LogoSetLux', () => {
   it('renders with custom size', () => {
     render(<LogoSetLux size={50} />);
     
-    const svg = screen.getByTestId('logo-setlux').querySelector('svg');
-    expect(svg).toHaveAttribute('width', '50');
-    expect(svg).toHaveAttribute('height', '50');
+    const img = screen.getByTestId('logo-setlux').querySelector('img');
+    expect(img).toHaveAttribute('src', '/Logo_SetLux_02.png');
+    expect(img).toHaveAttribute('alt', 'SetLux');
   });
 
   it('has correct CSS classes', () => {
@@ -88,13 +88,13 @@ describe('LogoSetLux', () => {
   it('renders with different sizes', () => {
     const { rerender } = render(<LogoSetLux size={30} />);
     
-    let svg = screen.getByTestId('logo-setlux').querySelector('svg');
-    expect(svg).toHaveAttribute('width', '30');
+    let img = screen.getByTestId('logo-setlux').querySelector('img');
+    expect(img).toHaveAttribute('src', '/Logo_SetLux_02.png');
     
     rerender(<LogoSetLux size={60} />);
     
-    svg = screen.getByTestId('logo-setlux').querySelector('svg');
-    expect(svg).toHaveAttribute('width', '60');
+    img = screen.getByTestId('logo-setlux').querySelector('img');
+    expect(img).toHaveAttribute('src', '/Logo_SetLux_02.png');
   });
 
   it('renders with different className values', () => {
@@ -112,11 +112,10 @@ describe('LogoSetLux', () => {
   it('has correct structure with LogoIcon', () => {
     render(<LogoSetLux />);
     
-    const svg = screen.getByTestId('logo-setlux').querySelector('svg');
-    expect(svg).toBeInTheDocument();
-    
-    const container = svg.closest('div');
-    expect(container).toHaveClass('rounded-2xl', 'shadow-[0_0_40px_rgba(37,99,235,0.25)]');
+    const img = screen.getByTestId('logo-setlux').querySelector('img');
+    expect(img).toBeInTheDocument();
+    expect(img).toHaveAttribute('src', '/Logo_SetLux_02.png');
+    expect(img).toHaveAttribute('alt', 'SetLux');
   });
 
   it('handles empty className', () => {

@@ -109,8 +109,8 @@ describe('derive', () => {
       expect(result).toHaveLength(4);
       expect(result).toContainEqual({ role: 'DIRECTOR', name: 'Juan' });
       expect(result).toContainEqual({ role: 'PRODUCTOR', name: 'María' });
-      expect(result).toContainEqual({ role: 'TÉCNICO', name: 'Carlos' });
-      expect(result).toContainEqual({ role: 'TÉCNICO', name: 'Ana' });
+      expect(result).toContainEqual({ role: 'TÉCNICO', name: 'Carlos', __block: 'pre' });
+      expect(result).toContainEqual({ role: 'TÉCNICO', name: 'Ana', __block: 'pick' });
     });
 
     it('should deduplicate personas', () => {
@@ -126,7 +126,7 @@ describe('derive', () => {
       );
 
       expect(result).toHaveLength(1);
-      expect(result[0]).toEqual({ role: 'DIRECTOR', name: 'Juan' });
+      expect(result[0]).toEqual({ role: 'DIRECTOR', name: 'Juan', __block: 'pre' });
     });
 
     it('should normalize REF roles', () => {
@@ -227,7 +227,7 @@ describe('derive', () => {
       const result = buildPeoplePre(true, prelightPeople, refNamesPre);
 
       expect(result).toEqual([
-        { role: 'TÉCNICO', name: 'Carlos' },
+        { role: 'TÉCNICO', name: 'Carlos', __block: 'pre' },
         { role: 'REF', name: 'María', __block: 'pre' },
         { role: 'REF', name: 'Ana', __block: 'pre' },
       ]);
@@ -250,8 +250,8 @@ describe('derive', () => {
 
       const result = buildPeoplePre(true, prelightPeople, new Set());
 
-      expect(result[0]).toEqual({ role: 'DIRECTOR', name: 'Juan' });
-      expect(result[1]).toEqual({ role: 'TÉCNICO', name: 'Carlos' });
+      expect(result[0]).toEqual({ role: 'DIRECTOR', name: 'Juan', __block: 'pre' });
+      expect(result[1]).toEqual({ role: 'TÉCNICO', name: 'Carlos', __block: 'pre' });
       expect(result[2]).toEqual({ role: 'REF', name: 'María', __block: 'pre' });
     });
   });
@@ -267,7 +267,7 @@ describe('derive', () => {
       const result = buildPeoplePick(true, pickupPeople, refNamesPick);
 
       expect(result).toEqual([
-        { role: 'TÉCNICO', name: 'Ana' },
+        { role: 'TÉCNICO', name: 'Ana', __block: 'pick' },
         { role: 'REF', name: 'Carlos', __block: 'pick' },
         { role: 'REF', name: 'María', __block: 'pick' },
       ]);
