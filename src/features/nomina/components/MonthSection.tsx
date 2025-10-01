@@ -111,9 +111,10 @@ function MonthSection({
 
       const keyNoPR = `${stripPR(r.role)}__${r.name}`;
       const baseRoleCode = stripPR(r.role);
+      const baseRoleLabel = roleLabelFromCode(baseRoleCode);
       const pr = refuerzoSet.has(keyNoPR)
-        ? rolePrices.getForRole('REF', baseRoleCode)
-        : rolePrices.getForRole(r.role);
+        ? rolePrices.getForRole('REF', baseRoleLabel)
+        : rolePrices.getForRole(baseRoleLabel);
 
       let roleDisplay = r.role;
       if (r.role !== 'REF') {

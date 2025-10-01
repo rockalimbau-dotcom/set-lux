@@ -9,6 +9,13 @@ export function makeRolePrices(project: any) {
   const priceRows = model?.prices || {};
   const p = model?.params || {};
 
+  // Debug: log the loaded data
+  if ((import.meta as any).env.DEV) {
+    console.debug('[NOMINA] makeRolePrices - model:', model);
+    console.debug('[NOMINA] makeRolePrices - priceRows:', priceRows);
+    console.debug('[NOMINA] makeRolePrices - params:', p);
+  }
+
   const num = (v: unknown) => {
     if (v == null || v === '') return 0;
     const s = String(v)
@@ -24,40 +31,119 @@ export function makeRolePrices(project: any) {
     return isFinite(n) ? n : 0;
   };
 
+  const normalizeStr = (s: unknown): string =>
+    String(s == null ? '' : s)
+      .replace(/[PR]$/i, '')
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/\p{Diacritic}/gu, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+  const findPriceRow = (candidates: string[]) => {
+    // 1) Exactos primero
+    for (const cand of candidates) {
+      if (cand && priceRows[cand]) return { row: priceRows[cand], key: cand };
+    }
+    // 2) Match insensible a acentos/mayúsculas/sufijo P/R
+    const candNorms = candidates.map(c => normalizeStr(c));
+    for (const key of Object.keys(priceRows)) {
+      const keyNorm = normalizeStr(key);
+      if (candNorms.includes(keyNorm)) return { row: priceRows[key], key };
+    }
+    // 3) Intento extra: si keys vienen con sufijo P/R, comparar sin sufijo
+    for (const key of Object.keys(priceRows)) {
+      const keyBaseNorm = normalizeStr(String(key).replace(/[PR]$/i, ''));
+      if (candNorms.includes(keyBaseNorm)) return { row: priceRows[key], key };
+    }
+    return { row: {} as any, key: '' };
+  };
+
+  // Intenta obtener un número desde una fila probando varias variantes de nombre de columna
+  const getNumField = (row: any, candidates: string[]): number => {
+    if (!row || typeof row !== 'object') return 0;
+    
+    // Debug: log what we're looking for and what we have
+    if ((import.meta as any).env.DEV) {
+      console.debug('[NOMINA] getNumField - candidates:', candidates);
+      console.debug('[NOMINA] getNumField - row keys:', Object.keys(row));
+      console.debug('[NOMINA] getNumField - row:', row);
+    }
+    
+    for (const key of candidates) {
+      const direct = row[key];
+      if ((import.meta as any).env.DEV) {
+        console.debug(`[NOMINA] getNumField - trying direct key "${key}":`, direct);
+      }
+      if (direct != null && direct !== '') return num(direct);
+    }
+    // Búsqueda case-insensitive por si cambian mayúsculas/acentos
+    const lowerToValue = new Map<string, unknown>();
+    for (const k of Object.keys(row)) lowerToValue.set(k.toLowerCase(), row[k]);
+    for (const key of candidates) {
+      const v = lowerToValue.get(key.toLowerCase());
+      if ((import.meta as any).env.DEV) {
+        console.debug(`[NOMINA] getNumField - trying lowercase "${key.toLowerCase()}":`, v);
+      }
+      if (v != null && v !== '') return num(v);
+    }
+    return 0;
+  };
+
   const getForRole = (roleCode: string, baseRoleCode: string | null = null) => {
     const normalized = String(roleCode || '').replace(/[PR]$/, '');
     const baseNorm =
       String(baseRoleCode || '').replace(/[PR]$/, '') || normalized;
 
-    const pickRow = (cands: string[]) => {
-      for (const k of cands) if (k && priceRows[k]) return priceRows[k];
-      return {} as any;
-    };
+    // Debug: log role processing
+    if ((import.meta as any).env.DEV) {
+      console.debug('[NOMINA] getForRole - roleCode:', roleCode, 'baseRoleCode:', baseRoleCode);
+      console.debug('[NOMINA] getForRole - normalized:', normalized, 'baseNorm:', baseNorm);
+    }
 
-    const row = pickRow([normalized]);
-    const baseRow = pickRow([baseNorm]);
-    const elecRow = pickRow(['Eléctrico', 'E']);
+    const pickedRow = findPriceRow([normalized]);
+    const row = pickedRow.row;
+    const pickedBase = findPriceRow([baseNorm]);
+    const baseRow = pickedBase.row;
+    const pickedElec = findPriceRow(['Eléctrico', 'Electrico', 'E']);
+    const elecRow = pickedElec.row;
+
+    // Debug: log row selection
+    if ((import.meta as any).env.DEV) {
+      console.debug('[NOMINA] getForRole - row for', normalized, '=> key:', pickedRow.key, row);
+      console.debug('[NOMINA] getForRole - baseRow for', baseNorm, '=> key:', pickedBase.key, baseRow);
+      console.debug('[NOMINA] getForRole - elecRow => key:', pickedElec.key, elecRow);
+    }
 
     const divTravel = num(p.divTravel) || 2;
 
     let jornada, travelDay, horaExtra;
     if (normalized === 'REF') {
-      const refFromBase = num(baseRow['Precio refuerzo']);
-      const baseJornada = num(baseRow['Precio jornada']);
-      const elecRef = num(elecRow['Precio refuerzo']);
-      const elecJor = num(elecRow['Precio jornada']);
+      const refFromBase = getNumField(baseRow, ['Precio refuerzo', 'Precio Refuerzo', 'Refuerzo']);
+      const baseJornada = getNumField(baseRow, ['Precio jornada', 'Precio Jornada', 'Jornada', 'Precio dia', 'Precio día']);
+      const elecRef = getNumField(elecRow, ['Precio refuerzo', 'Precio Refuerzo', 'Refuerzo']);
+      const elecJor = getNumField(elecRow, ['Precio jornada', 'Precio Jornada', 'Jornada', 'Precio dia', 'Precio día']);
       jornada = refFromBase || baseJornada || elecRef || elecJor || 0;
-      const travelBase = num(baseRow['Travel day']);
+      const travelBase = getNumField(baseRow, ['Travel day', 'Travel Day', 'Travel', 'Día de viaje', 'Dia de viaje', 'Día travel', 'Dia travel', 'TD']);
       travelDay = travelBase || (jornada ? jornada / divTravel : 0);
       horaExtra =
-        num(elecRow['Horas extras']) || num(baseRow['Horas extras']) || 0;
+        getNumField(elecRow, ['Horas extras', 'Horas Extras', 'Hora extra', 'Horas extra', 'HE', 'Hora Extra']) ||
+        getNumField(baseRow, ['Horas extras', 'Horas Extras', 'Hora extra', 'Horas extra', 'HE', 'Hora Extra']) ||
+        0;
     } else {
-      jornada = num(row['Precio jornada']) || 0;
-      travelDay = num(row['Travel day']) || (jornada ? jornada / divTravel : 0);
-      horaExtra = num(row['Horas extras']) || 0;
+      if ((import.meta as any).env.DEV) {
+        console.debug('[NOMINA] getForRole - calculating for non-REF role:', normalized);
+      }
+      jornada = getNumField(row, ['Precio jornada', 'Precio Jornada', 'Jornada', 'Precio dia', 'Precio día']) || 0;
+      travelDay = getNumField(row, ['Travel day', 'Travel Day', 'Travel', 'Día de viaje', 'Dia de viaje', 'Día travel', 'Dia travel', 'TD']) || (jornada ? jornada / divTravel : 0);
+      horaExtra = getNumField(row, ['Horas extras', 'Horas Extras', 'Hora extra', 'Horas extra', 'HE', 'Hora Extra']) || 0;
+      
+      if ((import.meta as any).env.DEV) {
+        console.debug('[NOMINA] getForRole - calculated values:', { jornada, travelDay, horaExtra });
+      }
     }
 
-    return {
+    const result = {
       jornada,
       travelDay,
       horaExtra,
@@ -71,10 +157,216 @@ export function makeRolePrices(project: any) {
         'Gastos de bolsillo': num(p.gastosBolsillo),
       },
     };
+
+    // Debug: log final result
+    if ((import.meta as any).env.DEV) {
+      console.debug('[NOMINA] getForRole - result for', roleCode, ':', result);
+    }
+
+    return result;
   };
 
   return { getForRole };
 }
+
+// === Shared helpers for reading Reportes data robustly ===
+const storageKeyVariants = (storageKey: string): string[] => {
+  const [rolePart, name = ''] = String(storageKey || '').split('__');
+  const baseRole = String(rolePart || '').replace(/[PR]$/, '');
+  const variants = new Set<string>();
+  
+  // Claves base
+  variants.add(`${rolePart}__${name}`);
+  variants.add(`${baseRole}__${name}`);
+  variants.add(`${baseRole}P__${name}`);
+  variants.add(`${baseRole}R__${name}`);
+  
+  // Claves específicas de Reportes (las que realmente se usan)
+  variants.add(`${baseRole}.pre__${name}`);  // G.pre__nombre
+  variants.add(`${baseRole}.pick__${name}`); // G.pick__nombre
+  
+  // Variantes históricas con guiones bajos
+  variants.add(`${baseRole}_pre__${name}`);
+  variants.add(`${baseRole}_pick__${name}`);
+  
+  // Variantes con el rol completo (ej: GP/GR) por si almacenamiento usó el rol extendido
+  variants.add(`${rolePart}.pre__${name}`);
+  variants.add(`${rolePart}.pick__${name}`);
+  variants.add(`${rolePart}_pre__${name}`);
+  variants.add(`${rolePart}_pick__${name}`);
+  
+  const result = Array.from(variants);
+  // Debug temporal
+  if (isDev()) {
+    console.debug('[NOMINA.SKV]', storageKey, '=>', result.length, 'variants:', result);
+  }
+  return result;
+};
+
+// Deprecated: usamos getCellValueCandidates
+
+// Permite probar variantes de nombre de columna (case/acentos/abreviaturas)
+const getCellValueCandidates = (
+  dataObj: any,
+  storageKeys: string[],
+  colNames: readonly string[],
+  iso: string
+) => {
+  if (isDev()) {
+    console.debug('[NOMINA.GCVC]', 'Looking for', colNames, 'on', iso, 'in keys:', storageKeys);
+  }
+  
+  // Priorizar claves específicas de GP/GR (.pre__, .pick__) sobre claves base
+  const sortedKeys = [...storageKeys].sort((a, b) => {
+    const aIsSpecific = a.includes('.pre__') || a.includes('.pick__');
+    const bIsSpecific = b.includes('.pre__') || b.includes('.pick__');
+    if (aIsSpecific && !bIsSpecific) return -1; // a primero
+    if (!aIsSpecific && bIsSpecific) return 1;  // b primero
+    return 0; // mismo orden
+  });
+  
+  for (const sk of sortedKeys) {
+    const cols = dataObj?.[sk];
+    if (!cols) {
+      if (isDev()) console.debug('[NOMINA.GCVC]', 'No data for key:', sk);
+      continue;
+    }
+    if (isDev()) {
+      console.debug('[NOMINA.GCVC]', 'Found data for key:', sk, 'columns:', Object.keys(cols));
+    }
+    // 1) Directo
+    for (const cn of colNames) {
+      const v = cols?.[cn]?.[iso];
+      if (v != null && v !== '') {
+        if (isDev()) console.debug('[NOMINA.GCVC]', 'Found direct match:', sk, cn, iso, '=', v);
+        return v;
+      }
+    }
+    // 2) Normalizado a lowercase sin tildes
+    const toKey = new Map<string, string>();
+    for (const k of Object.keys(cols)) {
+      const low = String(k)
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/\p{Diacritic}/gu, '')
+        .trim();
+      toKey.set(low, k);
+    }
+    for (const cn of colNames) {
+      const low = String(cn)
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/\p{Diacritic}/gu, '')
+        .trim();
+      const real = toKey.get(low);
+      if (real) {
+        const v = cols?.[real]?.[iso];
+        if (v != null && v !== '') {
+          if (isDev()) console.debug('[NOMINA.GCVC]', 'Found normalized match:', sk, real, iso, '=', v);
+          return v;
+        }
+      }
+    }
+  }
+  if (isDev()) console.debug('[NOMINA.GCVC]', 'No match found for', colNames, 'on', iso);
+  return undefined;
+};
+
+// Nueva función que SUMA todos los valores encontrados en lugar de solo devolver el primero
+const getCellValueSum = (
+  dataObj: any,
+  storageKeys: string[],
+  colNames: readonly string[],
+  iso: string
+) => {
+  if (isDev()) {
+    console.debug('[NOMINA.GCVS]', 'Summing', colNames, 'on', iso, 'in keys:', storageKeys);
+  }
+  let total = 0;
+  let foundAny = false;
+  
+  for (const sk of storageKeys) {
+    const cols = dataObj?.[sk];
+    if (!cols) continue;
+    
+    // 1) Directo
+    for (const cn of colNames) {
+      const v = cols?.[cn]?.[iso];
+      if (v != null && v !== '') {
+        const num = parseFloat(String(v)) || 0;
+        if (num > 0) {
+          total += num;
+          foundAny = true;
+          if (isDev()) console.debug('[NOMINA.GCVS]', 'Adding direct:', sk, cn, iso, '=', v, 'total=', total);
+        }
+      }
+    }
+    
+    // 2) Normalizado a lowercase sin tildes
+    const toKey = new Map<string, string>();
+    for (const k of Object.keys(cols)) {
+      const low = String(k)
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/\p{Diacritic}/gu, '')
+        .trim();
+      toKey.set(low, k);
+    }
+    for (const cn of colNames) {
+      const low = String(cn)
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/\p{Diacritic}/gu, '')
+        .trim();
+      const real = toKey.get(low);
+      if (real) {
+        const v = cols?.[real]?.[iso];
+        if (v != null && v !== '') {
+          const num = parseFloat(String(v)) || 0;
+          if (num > 0) {
+            total += num;
+            foundAny = true;
+            if (isDev()) console.debug('[NOMINA.GCVS]', 'Adding normalized:', sk, real, iso, '=', v, 'total=', total);
+          }
+        }
+      }
+    }
+  }
+  
+  if (isDev()) console.debug('[NOMINA.GCVS]', 'Final sum for', colNames, 'on', iso, '=', total);
+  return foundAny ? total : undefined;
+};
+
+const valIsYes = (v: unknown): boolean => {
+  const s = String(v || '')
+    .toUpperCase()
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '')
+    .trim();
+  return s === 'SI' || s === 'YES' || s === 'TRUE' || s === '1';
+};
+
+const isDev = () => {
+  try {
+    if ((import.meta as any).env?.DEV) return true;
+  } catch {}
+  try {
+    if (typeof window !== 'undefined') {
+      const q = String(window.location?.search || '');
+      if (/debug=nomAgg/i.test(q)) return true;
+      const ls = String(window.localStorage?.getItem('debug') || '');
+      if (/nomAgg/i.test(ls)) return true;
+    }
+  } catch {}
+  return false;
+};
+
+const dbgLog = (...args: any[]) => {
+  if (isDev()) {
+    // eslint-disable-next-line no-console
+    console.debug('[NOMINA.AGG]', ...args);
+  }
+};
 
 export function aggregateReports(project: any, weeks: any[], filterISO: ((iso: string) => boolean) | null = null) {
   const base = project?.id || project?.nombre || 'tmp';
@@ -97,6 +389,9 @@ export function aggregateReports(project: any, weeks: any[], filterISO: ((iso: s
     const suffix = /[PR]$/.test(roleCode || '') ? roleCode.slice(-1) : '';
     return suffix ? `${base}${suffix}` : base;
   };
+
+  // Usamos la función global storageKeyVariants que tiene todas las variantes
+  // Deprecated: usamos getCellValueCandidates
 
   const ensure = (role: string, name: string) => {
     const k = `${role}__${name}`;
@@ -125,6 +420,25 @@ export function aggregateReports(project: any, weeks: any[], filterISO: ((iso: s
       const obj = storage.getJSON<any>(weekKey);
       if (obj) data = obj;
     } catch {}
+    
+    // Debug temporal: mostrar qué datos hay en Reportes para esta semana
+    if (isDev()) {
+      console.log(`[NOMINA.DEBUG] Semana ${weekKey}:`, data);
+      console.log(`[NOMINA.DEBUG] Claves disponibles:`, Object.keys(data || {}));
+      
+      // Buscar específicamente datos para "cccc"
+      const ccccKeys = Object.keys(data || {}).filter(k => k.includes('cccc'));
+      console.log(`[NOMINA.DEBUG] Claves que contienen "cccc":`, ccccKeys);
+      
+      for (const key of ccccKeys) {
+        console.log(`[NOMINA.DEBUG] Datos para ${key}:`, data[key]);
+        if (data[key]) {
+          for (const col of Object.keys(data[key])) {
+            console.log(`[NOMINA.DEBUG] Columna ${col} en ${key}:`, data[key][col]);
+          }
+        }
+      }
+    }
 
     const rawPeople = weekAllPeopleActive(w);
 
@@ -145,30 +459,42 @@ export function aggregateReports(project: any, weeks: any[], filterISO: ((iso: s
       }
     }
 
-    const cols = {
-      extras: 'Horas extra',
-      ta: 'Turn Around',
-      noct: 'Nocturnidad',
-      dietas: 'Dietas',
-      km: 'Kilometraje',
-      transp: 'Transporte',
-      penalty: 'Penalty lunch',
-    } as const;
+  // Nota: nombres originales conservados arriba en colCandidates
+
+  const colCandidates = {
+    extras: ['Horas extra', 'Horas extras', 'HE'] as const,
+    ta: ['Turn Around', 'TA'] as const,
+    noct: ['Nocturnidad', 'Noct', 'Nocturnidades'] as const,
+    dietas: ['Dietas', 'Dietas / Ticket', 'Ticket', 'Tickets'] as const,
+    km: ['Kilometraje', 'KM', 'Km'] as const,
+    transp: ['Transporte', 'Transportes'] as const,
+    penalty: ['Penalty lunch', 'Penalty Lunch', 'Penalty', 'PL'] as const,
+  } as const;
 
     for (const [pk, info] of uniqStorageKeys) {
       const slot = ensure(info.roleVisible, info.name);
       for (const iso of days) {
-        const he = parseNum(data?.[pk]?.[cols.extras]?.[iso]);
-        const ta = parseNum(data?.[pk]?.[cols.ta]?.[iso]);
+        // Variantes para todos los NO-REF; REF solo su clave original
+        const keysToUse = info.roleVisible === 'REF' ? [pk] : storageKeyVariants(pk);
+        dbgLog('week agg person=', info.name, 'roleVis=', info.roleVisible, 'pk=', pk, 'iso=', iso, 'keysToUse=', keysToUse);
+        
+        const he = parseNum(getCellValueCandidates(data, keysToUse, colCandidates.extras, iso));
+        const ta = parseNum(getCellValueCandidates(data, keysToUse, colCandidates.ta, iso));
         slot.extras += he + ta;
-        const nVal = data?.[pk]?.[cols.noct]?.[iso];
-        if (String(nVal || '').toUpperCase() === 'SI') slot.extras += 1;
-        const pVal = data?.[pk]?.[cols.penalty]?.[iso];
-        if (String(pVal || '').toUpperCase() === 'SI') slot.extras += 1;
-        const tVal = data?.[pk]?.[cols.transp]?.[iso];
-        if (String(tVal || '').toUpperCase() === 'SI') slot.transporte += 1;
-        slot.km += parseNum(data?.[pk]?.[cols.km]?.[iso]);
-        const dVal = data?.[pk]?.[cols.dietas]?.[iso] || '';
+        const nVal = getCellValueCandidates(data, keysToUse, colCandidates.noct, iso);
+        const nYes = valIsYes(nVal);
+        if (nYes) slot.extras += 1;
+        const pVal = getCellValueCandidates(data, keysToUse, colCandidates.penalty, iso);
+        const pYes = valIsYes(pVal);
+        if (pYes) slot.extras += 1;
+        const tVal = getCellValueCandidates(data, keysToUse, colCandidates.transp, iso);
+        const tYes = valIsYes(tVal);
+        if (tYes) slot.transporte += 1;
+        dbgLog('iso', iso, 'he', he, 'ta', ta, 'noct', nVal, 'noctYes', nYes, 'pen', pVal, 'penYes', pYes, 'transp', tVal, 'transpYes', tYes);
+        slot.km += parseNum(getCellValueCandidates(data, keysToUse, colCandidates.km, iso));
+        
+        // Para dietas, usar solo la clave original para evitar "comida" fantasma
+        const dVal = getCellValueCandidates(data, [pk], colCandidates.dietas, iso) || '';
         const { labels, ticket } = parseDietasValue(dVal);
         slot.ticketTotal += ticket;
         for (const lab of labels) {
@@ -279,28 +605,39 @@ export function aggregateWindowedReport(project: any, weeks: any[], filterISO: (
       }
     }
 
-    const cols = {
-      extras: 'Horas extra',
-      ta: 'Turn Around',
-      noct: 'Nocturnidad',
-      dietas: 'Dietas',
-      km: 'Kilometraje',
-      transp: 'Transporte',
-      penalty: 'Penalty lunch',
-    } as const;
+  // Nota: nombres originales conservados arriba en colCandidates
+  const colCandidates = {
+    extras: ['Horas extra', 'Horas extras', 'HE'] as const,
+    ta: ['Turn Around', 'TA'] as const,
+    noct: ['Nocturnidad', 'Noct', 'Nocturnidades'] as const,
+    dietas: ['Dietas', 'Dietas / Ticket', 'Ticket', 'Tickets'] as const,
+    km: ['Kilometraje', 'KM', 'Km'] as const,
+    transp: ['Transporte', 'Transportes'] as const,
+    penalty: ['Penalty lunch', 'Penalty Lunch', 'Penalty', 'PL'] as const,
+  } as const;
     for (const [storageKey, visibleKey] of uniqStorage) {
       const slot = ensure(visibleKey);
       for (const iso of isoDays) {
-        slot.extras += parseNum(data?.[storageKey]?.[cols.extras]?.[iso]);
-        slot.extras += parseNum(data?.[storageKey]?.[cols.ta]?.[iso]);
-        const nVal = data?.[storageKey]?.[cols.noct]?.[iso];
-        if (String(nVal || '').toUpperCase() === 'SI') slot.extras += 1;
-        const pVal = data?.[storageKey]?.[cols.penalty]?.[iso];
-        if (String(pVal || '').toUpperCase() === 'SI') slot.extras += 1;
-        const tVal = data?.[storageKey]?.[cols.transp]?.[iso];
-        if (String(tVal || '').toUpperCase() === 'SI') slot.transporte += 1;
-        slot.km += parseNum(data?.[storageKey]?.[cols.km]?.[iso]);
-        const dVal = data?.[storageKey]?.[cols.dietas]?.[iso] || '';
+        // Variantes para todos los NO-REF; REF solo su clave original
+        const keysToUse = visibleKey === 'REF' ? [storageKey] : storageKeyVariants(storageKey);
+        dbgLog('window agg roleVis=', visibleKey, 'sk=', storageKey, 'iso=', iso, 'keysToUse=', keysToUse);
+        
+        slot.extras += parseNum(getCellValueCandidates(data, keysToUse, colCandidates.extras, iso));
+        slot.extras += parseNum(getCellValueCandidates(data, keysToUse, colCandidates.ta, iso));
+        const nVal = getCellValueCandidates(data, keysToUse, colCandidates.noct, iso);
+        const nYes = valIsYes(nVal);
+        if (nYes) slot.extras += 1;
+        const pVal = getCellValueCandidates(data, keysToUse, colCandidates.penalty, iso);
+        const pYes = valIsYes(pVal);
+        if (pYes) slot.extras += 1;
+        const tVal = getCellValueCandidates(data, keysToUse, colCandidates.transp, iso);
+        const tYes = valIsYes(tVal);
+        if (tYes) slot.transporte += 1;
+        dbgLog('iso', iso, 'he+', 'ta added', 'noct', nVal, 'noctYes', nYes, 'pen', pVal, 'penYes', pYes, 'transp', tVal, 'transpYes', tYes);
+        slot.km += parseNum(getCellValueCandidates(data, keysToUse, colCandidates.km, iso));
+        
+        // Para dietas, usar solo la clave original para evitar "comida" fantasma
+        const dVal = getCellValueCandidates(data, [storageKey], colCandidates.dietas, iso) || '';
         const { labels, ticket } = parseDietasValue(dVal);
         slot.ticketTotal += ticket;
         for (const lab of labels) {
