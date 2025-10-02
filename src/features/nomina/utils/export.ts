@@ -13,6 +13,12 @@ export function buildNominaMonthHTML(
   enrichedRows: any[],
   monthLabelEs: (key: string, withYear?: boolean) => string
 ) {
+  // Helper function to display empty string for zero values in export
+  const displayValue = (value: number | undefined | null, decimals: number = 0): string => {
+    if (value === null || value === undefined || value === 0) return '';
+    return decimals > 0 ? value.toFixed(decimals) : String(value);
+  };
+
   const head = `
       <tr>
         <th style="border:1px solid #999;padding:6px;background:#1D4ED8;color:#fff;text-align:left;">Persona</th>
@@ -38,20 +44,20 @@ export function buildNominaMonthHTML(
       r => `
       <tr>
         <td style="border:1px solid #999;padding:6px;">${esc(r.role)} — ${esc(r.name)}</td>
-        <td style="border:1px solid #999;padding:6px;text-align:right;">${esc(r._worked)}</td>
-        <td style="border:1px solid #999;padding:6px;text-align:right;">${esc(r._totalDias.toFixed(2))}</td>
-        <td style="border:1px solid #999;padding:6px;text-align:right;">${esc(r._holidays || 0)}</td>
-        <td style="border:1px solid #999;padding:6px;text-align:right;">${esc((r._totalHolidays || 0).toFixed(2))}</td>
-        <td style="border:1px solid #999;padding:6px;text-align:right;">${esc(r._travel)}</td>
-        <td style="border:1px solid #999;padding:6px;text-align:right;">${esc(r._totalTravel.toFixed(2))}</td>
-        <td style="border:1px solid #999;padding:6px;text-align:right;">${esc(r.extras)}</td>
-        <td style="border:1px solid #999;padding:6px;text-align:right;">${esc(r._totalExtras.toFixed(2))}</td>
+        <td style="border:1px solid #999;padding:6px;text-align:right;">${esc(displayValue(r._worked))}</td>
+        <td style="border:1px solid #999;padding:6px;text-align:right;">${esc(displayValue(r._totalDias, 2))}</td>
+        <td style="border:1px solid #999;padding:6px;text-align:right;">${esc(displayValue(r._holidays))}</td>
+        <td style="border:1px solid #999;padding:6px;text-align:right;">${esc(displayValue(r._totalHolidays, 2))}</td>
+        <td style="border:1px solid #999;padding:6px;text-align:right;">${esc(displayValue(r._travel))}</td>
+        <td style="border:1px solid #999;padding:6px;text-align:right;">${esc(displayValue(r._totalTravel, 2))}</td>
+        <td style="border:1px solid #999;padding:6px;text-align:right;">${esc(displayValue(r.extras))}</td>
+        <td style="border:1px solid #999;padding:6px;text-align:right;">${esc(displayValue(r._totalExtras, 2))}</td>
         <td style="border:1px solid #999;padding:6px;">${esc(r._dietasLabel)}</td>
-        <td style="border:1px solid #999;padding:6px;text-align:right;">${esc(r._totalDietas.toFixed(2))}</td>
-        <td style="border:1px solid #999;padding:6px;text-align:right;">${esc(r.transporte)}</td>
-        <td style="border:1px solid #999;padding:6px;text-align:right;">${esc(r._totalTrans.toFixed(2))}</td>
-        <td style="border:1px solid #999;padding:6px;text-align:right;">${esc((r.km || 0).toFixed(1))}</td>
-        <td style="border:1px solid #999;padding:6px;text-align:right;">${esc(r._totalKm.toFixed(2))}</td>
+        <td style="border:1px solid #999;padding:6px;text-align:right;">${esc(displayValue(r._totalDietas, 2))}</td>
+        <td style="border:1px solid #999;padding:6px;text-align:right;">${esc(displayValue(r.transporte))}</td>
+        <td style="border:1px solid #999;padding:6px;text-align:right;">${esc(displayValue(r._totalTrans, 2))}</td>
+        <td style="border:1px solid #999;padding:6px;text-align:right;">${esc(displayValue(r.km, 1))}</td>
+        <td style="border:1px solid #999;padding:6px;text-align:right;">${esc(displayValue(r._totalKm, 2))}</td>
         <td style="border:1px solid #999;padding:6px;text-align:right;font-weight:600;">${esc(r._totalBruto.toFixed(2))}</td>
       </tr>`
     )

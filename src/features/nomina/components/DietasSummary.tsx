@@ -24,7 +24,7 @@ export default function DietasSummary({ dietasCount, ticketTotal }: DietasSummar
     }
   }
   return (
-    <span className='text-xs text-zinc-200'>{parts.join(' · ') || '—'}</span>
+    <span className='text-xs text-zinc-200'>{parts.join(' · ')}</span>
   );
 }
 

@@ -8,6 +8,7 @@ type RolePrices = {
     jornada: number;
     travelDay: number;
     horaExtra: number;
+    holidayDay: number; // Added holidayDay property
     transporte: number;
     km: number;
     dietas: Record<string, number>;
@@ -73,6 +74,12 @@ function MonthSection({
   ROLE_COLORS,
   roleLabelFromCode,
 }: MonthSectionProps) {
+  // Helper function to display empty string for zero values
+  const displayValue = (value: number | undefined | null, decimals: number = 0): string => {
+    if (value === null || value === undefined || value === 0) return '';
+    return decimals > 0 ? value.toFixed(decimals) : String(value);
+  };
+
   const openKey = `${persistKeyBase}_${monthKey}_open`;
   const [open, setOpen] = useLocalStorage<boolean>(openKey, defaultOpen);
 
@@ -296,17 +303,17 @@ function MonthSection({
                       </span>
                     </Td>
 
-                    <Td className='text-right'>{r._worked}</Td>
-                    <Td className='text-right'>{r._totalDias.toFixed(2)}</Td>
+                    <Td className='text-right'>{displayValue(r._worked)}</Td>
+                    <Td className='text-right'>{displayValue(r._totalDias, 2)}</Td>
 
-                    <Td className='text-right'>{r._holidays}</Td>
-                    <Td className='text-right'>{r._totalHolidays.toFixed(2)}</Td>
+                    <Td className='text-right'>{displayValue(r._holidays)}</Td>
+                    <Td className='text-right'>{displayValue(r._totalHolidays, 2)}</Td>
 
-                    <Td className='text-right'>{r._travel}</Td>
-                    <Td className='text-right'>{r._totalTravel.toFixed(2)}</Td>
+                    <Td className='text-right'>{displayValue(r._travel)}</Td>
+                    <Td className='text-right'>{displayValue(r._totalTravel, 2)}</Td>
 
-                    <Td className='text-right'>{r.extras}</Td>
-                    <Td className='text-right'>{r._totalExtras.toFixed(2)}</Td>
+                    <Td className='text-right'>{displayValue(r.extras)}</Td>
+                    <Td className='text-right'>{displayValue(r._totalExtras, 2)}</Td>
 
                     <Td>
                       <DietasSummary
@@ -314,16 +321,16 @@ function MonthSection({
                         ticketTotal={r.ticketTotal}
                       />
                     </Td>
-                    <Td className='text-right'>{r._totalDietas.toFixed(2)}</Td>
+                    <Td className='text-right'>{displayValue(r._totalDietas, 2)}</Td>
 
-                    <Td className='text-right'>{r.transporte}</Td>
-                    <Td className='text-right'>{r._totalTrans.toFixed(2)}</Td>
+                    <Td className='text-right'>{displayValue(r.transporte)}</Td>
+                    <Td className='text-right'>{displayValue(r._totalTrans, 2)}</Td>
 
-                    <Td className='text-right'>{(r.km || 0).toFixed(1)}</Td>
-                    <Td className='text-right'>{r._totalKm.toFixed(2)}</Td>
+                    <Td className='text-right'>{displayValue(r.km, 1)}</Td>
+                    <Td className='text-right'>{displayValue(r._totalKm, 2)}</Td>
 
                     <Td className='text-right font-semibold'>
-                      {r._totalBruto.toFixed(2)}
+                      {(r._totalBruto || 0).toFixed(2)}
                     </Td>
 
                     <Td>
