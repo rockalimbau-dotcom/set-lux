@@ -1,10 +1,39 @@
-// Jerarquía para prelight / recogida
+// Jerarquía completa de roles para planificación
 const rolePriority = (role: string = ''): number => {
   const r = String(role).toUpperCase().trim();
+  
+  // EQUIPO BASE
   if (r === 'G') return 0;
   if (r === 'BB') return 1;
-  if (r === 'REF') return 1000;
-  return 10;
+  if (r === 'E') return 2;
+  if (r === 'TM') return 3;
+  if (r === 'FB') return 4;
+  if (r === 'AUX') return 5;
+  if (r === 'M') return 6;
+  
+  // REFUERZOS
+  if (r === 'REF') return 7;
+  
+  // EQUIPO PRELIGHT
+  if (r === 'GP') return 8;
+  if (r === 'BBP') return 9;
+  if (r === 'EP') return 10;
+  if (r === 'TMP') return 11;
+  if (r === 'FBP') return 12;
+  if (r === 'AUXP') return 13;
+  if (r === 'MP') return 14;
+  
+  // EQUIPO RECOGIDA
+  if (r === 'GR') return 15;
+  if (r === 'BBR') return 16;
+  if (r === 'ER') return 17;
+  if (r === 'TMR') return 18;
+  if (r === 'FBR') return 19;
+  if (r === 'AUXR') return 20;
+  if (r === 'MR') return 21;
+  
+  // Roles desconocidos al final
+  return 1000;
 };
 
 interface TeamMember {

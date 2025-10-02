@@ -76,6 +76,33 @@ describe('planificacion/utils/sync', () => {
       expect(result[1].role).toBe('G');
       expect(result[2].role).toBe('bb');
     });
+
+    it('sorts complete role hierarchy correctly', () => {
+      const members = [
+        { role: 'MR', name: 'Maquinista Recogida' },
+        { role: 'REF', name: 'Refuerzo' },
+        { role: 'GP', name: 'Gaffer Prelight' },
+        { role: 'E', name: 'Eléctrico' },
+        { role: 'G', name: 'Gaffer' },
+        { role: 'BB', name: 'Best Boy' },
+        { role: 'GR', name: 'Gaffer Recogida' },
+        { role: 'TM', name: 'Técnico' },
+        { role: 'EP', name: 'Eléctrico Prelight' },
+      ];
+
+      const result = sortByHierarchy(members);
+
+      // Verificar orden: EQUIPO BASE → REFUERZOS → EQUIPO PRELIGHT → EQUIPO RECOGIDA
+      expect(result[0].role).toBe('G');    // EQUIPO BASE
+      expect(result[1].role).toBe('BB');   // EQUIPO BASE
+      expect(result[2].role).toBe('E');    // EQUIPO BASE
+      expect(result[3].role).toBe('TM');   // EQUIPO BASE
+      expect(result[4].role).toBe('REF');  // REFUERZOS
+      expect(result[5].role).toBe('GP');   // EQUIPO PRELIGHT
+      expect(result[6].role).toBe('EP');   // EQUIPO PRELIGHT
+      expect(result[7].role).toBe('GR');   // EQUIPO RECOGIDA
+      expect(result[8].role).toBe('MR');   // EQUIPO RECOGIDA
+    });
   });
 
   describe('indexRoster', () => {

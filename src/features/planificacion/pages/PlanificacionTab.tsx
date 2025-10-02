@@ -395,9 +395,8 @@ export default function PlanificacionTab({
             },
           ];
 
-          if (listKey === 'prelight' || listKey === 'pickup') {
-            nextList = sortByHierarchy(nextList);
-          }
+          // Aplicar ordenamiento por jerarquía a todos los equipos
+          nextList = sortByHierarchy(nextList);
 
           return { ...d, [listKey]: nextList } as AnyRecord;
         });
