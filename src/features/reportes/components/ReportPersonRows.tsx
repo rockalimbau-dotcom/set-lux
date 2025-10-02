@@ -152,7 +152,7 @@ function ReportPersonRows({
                               }}
                             >
                               <option value=''>
-                                {parsed.items.size ? 'Añadir' : '—'}
+                                {parsed.items.size ? 'Añadir' : ''}
                               </option>
                               {dietasOptions.map(opt => (
                                 <option key={opt as string} value={opt as string}>
@@ -260,7 +260,7 @@ function ReportPersonRows({
                           >
                             {SI_NO.map(opt => (
                               <option key={opt} value={opt}>
-                                {opt || '—'}
+                                {opt}
                               </option>
                             ))}
                           </select>
@@ -274,13 +274,13 @@ function ReportPersonRows({
                             type: 'number' as const,
                             min: '0',
                             step: '0.1',
-                            placeholder: '0',
+                            placeholder: '',
                           }
                         : {
                             type: 'number' as const,
                             min: '0',
                             step: '1',
-                            placeholder: '0',
+                            placeholder: '',
                           };
 
                     return (

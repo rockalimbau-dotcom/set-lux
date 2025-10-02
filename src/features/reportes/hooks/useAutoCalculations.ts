@@ -297,8 +297,8 @@ export default function useAutoCalculations({
         } catch {}
         const noctStr = noct ? 'SI' : '';
         return {
-          extra: String(extras || 0),
-          ta: String(taHours || 0),
+          extra: extras > 0 ? String(extras) : '',
+          ta: taHours > 0 ? String(taHours) : '',
           noct: noctStr,
         };
       };
