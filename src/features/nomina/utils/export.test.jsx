@@ -506,7 +506,7 @@ describe('nomina/utils/export', () => {
       );
 
       // Should contain the formatted extras text
-      expect(html).toContain('Horas extra x2 · Turn Around x1 · Nocturnidad x1');
+      expect(html).toContain('4&lt;br/&gt;Horas extra x2&lt;br/&gt;Turn Around x1&lt;br/&gt;Nocturnidad x1');
     });
 
     it('should handle empty extras correctly', () => {

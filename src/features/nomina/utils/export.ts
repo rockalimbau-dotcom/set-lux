@@ -15,6 +15,7 @@ export function buildNominaMonthHTML(
 ) {
   // Helper function to generate extras summary text for export
   const generateExtrasText = (r: any): string => {
+    const totalExtras = (r.horasExtra || 0) + (r.turnAround || 0) + (r.nocturnidad || 0) + (r.penaltyLunch || 0);
     const parts: string[] = [];
     
     if ((r.horasExtra || 0) > 0) {
@@ -33,7 +34,11 @@ export function buildNominaMonthHTML(
       parts.push(`Penalty lunch x${r.penaltyLunch}`);
     }
     
-    return parts.join(' · ');
+    if (parts.length === 0) {
+      return String(totalExtras);
+    }
+    
+    return `${totalExtras}<br/>${parts.join('<br/>')}`;
   };
 
   // Helper function to display empty string for zero values in export

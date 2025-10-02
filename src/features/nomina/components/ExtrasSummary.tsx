@@ -8,6 +8,7 @@ interface ExtrasSummaryProps {
 }
 
 export default function ExtrasSummary({ horasExtra, turnAround, nocturnidad, penaltyLunch }: ExtrasSummaryProps) {
+  const totalExtras = horasExtra + turnAround + nocturnidad + penaltyLunch;
   const parts: string[] = [];
   
   if (horasExtra > 0) {
@@ -27,6 +28,15 @@ export default function ExtrasSummary({ horasExtra, turnAround, nocturnidad, pen
   }
   
   return (
-    <span className='text-xs text-zinc-200'>{parts.join(' · ')}</span>
+    <div>
+      <div className='text-right font-medium text-zinc-100 mb-1'>{totalExtras}</div>
+      {parts.length > 0 && (
+        <div className='text-[10px] text-zinc-200 space-y-0.5'>
+          {parts.map((part, index) => (
+            <div key={index}>{part}</div>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }

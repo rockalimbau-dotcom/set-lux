@@ -12,10 +12,10 @@ describe('ExtrasSummary', () => {
         penaltyLunch={0} 
       />
     );
-    expect(container.textContent).toBe('');
+    expect(container.textContent).toBe('0');
   });
 
-  it('should render horas extra when present', () => {
+  it('should render total and horas extra when present', () => {
     const { container } = render(
       <ExtrasSummary 
         horasExtra={3} 
@@ -24,10 +24,11 @@ describe('ExtrasSummary', () => {
         penaltyLunch={0} 
       />
     );
-    expect(container.textContent).toBe('Horas extra x3');
+    expect(container.textContent).toContain('3');
+    expect(container.textContent).toContain('Horas extra x3');
   });
 
-  it('should render turn around when present', () => {
+  it('should render total and turn around when present', () => {
     const { container } = render(
       <ExtrasSummary 
         horasExtra={0} 
@@ -36,10 +37,11 @@ describe('ExtrasSummary', () => {
         penaltyLunch={0} 
       />
     );
-    expect(container.textContent).toBe('Turn Around x2');
+    expect(container.textContent).toContain('2');
+    expect(container.textContent).toContain('Turn Around x2');
   });
 
-  it('should render nocturnidad when present', () => {
+  it('should render total and nocturnidad when present', () => {
     const { container } = render(
       <ExtrasSummary 
         horasExtra={0} 
@@ -48,10 +50,11 @@ describe('ExtrasSummary', () => {
         penaltyLunch={0} 
       />
     );
-    expect(container.textContent).toBe('Nocturnidad x1');
+    expect(container.textContent).toContain('1');
+    expect(container.textContent).toContain('Nocturnidad x1');
   });
 
-  it('should render penalty lunch when present', () => {
+  it('should render total and penalty lunch when present', () => {
     const { container } = render(
       <ExtrasSummary 
         horasExtra={0} 
@@ -60,10 +63,11 @@ describe('ExtrasSummary', () => {
         penaltyLunch={1} 
       />
     );
-    expect(container.textContent).toBe('Penalty lunch x1');
+    expect(container.textContent).toContain('1');
+    expect(container.textContent).toContain('Penalty lunch x1');
   });
 
-  it('should render multiple extras separated by dots', () => {
+  it('should render total and multiple extras on separate lines', () => {
     const { container } = render(
       <ExtrasSummary 
         horasExtra={2} 
@@ -72,7 +76,11 @@ describe('ExtrasSummary', () => {
         penaltyLunch={1} 
       />
     );
-    expect(container.textContent).toBe('Horas extra x2 · Turn Around x1 · Nocturnidad x1 · Penalty lunch x1');
+    expect(container.textContent).toContain('5'); // Total
+    expect(container.textContent).toContain('Horas extra x2');
+    expect(container.textContent).toContain('Turn Around x1');
+    expect(container.textContent).toContain('Nocturnidad x1');
+    expect(container.textContent).toContain('Penalty lunch x1');
   });
 
   it('should render partial combinations correctly', () => {
@@ -84,6 +92,8 @@ describe('ExtrasSummary', () => {
         penaltyLunch={0} 
       />
     );
-    expect(container.textContent).toBe('Horas extra x3 · Nocturnidad x2');
+    expect(container.textContent).toContain('5'); // Total
+    expect(container.textContent).toContain('Horas extra x3');
+    expect(container.textContent).toContain('Nocturnidad x2');
   });
 });
