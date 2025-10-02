@@ -337,6 +337,10 @@ export function aggregateReports(project: any, weeks: any[], filterISO: ((iso: s
         role,
         name,
         extras: 0,
+        horasExtra: 0,
+        turnAround: 0,
+        nocturnidad: 0,
+        penaltyLunch: 0,
         transporte: 0,
         km: 0,
         dietasCount: new Map<string, number>(),
@@ -417,14 +421,23 @@ export function aggregateReports(project: any, weeks: any[], filterISO: ((iso: s
         
         const he = parseNum(getCellValueCandidates(data, keysToUse, colCandidates.extras, iso));
         const ta = parseNum(getCellValueCandidates(data, keysToUse, colCandidates.ta, iso));
-        // Para mensual, las horas extras pueden tener un cálculo diferente
-        slot.extras += he + ta;
+        slot.horasExtra += he;
+        slot.turnAround += ta;
+        slot.extras += he + ta; // Keep total for backward compatibility
+        
         const nVal = getCellValueCandidates(data, keysToUse, colCandidates.noct, iso);
         const nYes = valIsYes(nVal);
-        if (nYes) slot.extras += 1;
+        if (nYes) {
+          slot.nocturnidad += 1;
+          slot.extras += 1; // Keep total for backward compatibility
+        }
+        
         const pVal = getCellValueCandidates(data, keysToUse, colCandidates.penalty, iso);
         const pYes = valIsYes(pVal);
-        if (pYes) slot.extras += 1;
+        if (pYes) {
+          slot.penaltyLunch += 1;
+          slot.extras += 1; // Keep total for backward compatibility
+        }
         const tVal = getCellValueCandidates(data, keysToUse, colCandidates.transp, iso);
         const tYes = valIsYes(tVal);
         if (tYes) slot.transporte += 1;
@@ -514,6 +527,10 @@ export function aggregateWindowedReport(project: any, weeks: any[], filterISO: (
     if (!totals.has(visibleKey)) {
       totals.set(visibleKey, {
         extras: 0,
+        horasExtra: 0,
+        turnAround: 0,
+        nocturnidad: 0,
+        penaltyLunch: 0,
         transporte: 0,
         km: 0,
         dietasCount: new Map<string, number>(),
@@ -569,14 +586,25 @@ export function aggregateWindowedReport(project: any, weeks: any[], filterISO: (
         const keysToUse = visibleKey === 'REF' ? [storageKey] : storageKeyVariants(storageKey);
         dbgLog('window agg roleVis=', visibleKey, 'sk=', storageKey, 'iso=', iso, 'keysToUse=', keysToUse);
         
-        slot.extras += parseNum(getCellValueCandidates(data, keysToUse, colCandidates.extras, iso));
-        slot.extras += parseNum(getCellValueCandidates(data, keysToUse, colCandidates.ta, iso));
+        const he = parseNum(getCellValueCandidates(data, keysToUse, colCandidates.extras, iso));
+        const ta = parseNum(getCellValueCandidates(data, keysToUse, colCandidates.ta, iso));
+        slot.horasExtra += he;
+        slot.turnAround += ta;
+        slot.extras += he + ta; // Keep total for backward compatibility
+        
         const nVal = getCellValueCandidates(data, keysToUse, colCandidates.noct, iso);
         const nYes = valIsYes(nVal);
-        if (nYes) slot.extras += 1;
+        if (nYes) {
+          slot.nocturnidad += 1;
+          slot.extras += 1; // Keep total for backward compatibility
+        }
+        
         const pVal = getCellValueCandidates(data, keysToUse, colCandidates.penalty, iso);
         const pYes = valIsYes(pVal);
-        if (pYes) slot.extras += 1;
+        if (pYes) {
+          slot.penaltyLunch += 1;
+          slot.extras += 1; // Keep total for backward compatibility
+        }
         const tVal = getCellValueCandidates(data, keysToUse, colCandidates.transp, iso);
         const tYes = valIsYes(tVal);
         if (tYes) slot.transporte += 1;

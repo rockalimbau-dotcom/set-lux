@@ -9,6 +9,10 @@ const mockProps = {
       role: 'GAFFER',
       name: 'Juan',
       extras: 5,
+      horasExtra: 3,
+      turnAround: 1,
+      nocturnidad: 1,
+      penaltyLunch: 0,
       transporte: 2,
       km: 50,
       dietasCount: new Map([['Comida', 3]]),
@@ -125,7 +129,7 @@ describe('MonthSection with holiday days and conditional columns', () => {
     expect(queryByText('Total días festivos')).not.toBeInTheDocument();
     expect(queryByText('Días Travel Day')).not.toBeInTheDocument();
     expect(queryByText('Total travel days')).not.toBeInTheDocument();
-    expect(queryByText('Horas extra')).not.toBeInTheDocument();
+    expect(queryByText('Horas extras')).not.toBeInTheDocument();
     expect(queryByText('Total horas extra')).not.toBeInTheDocument();
     expect(queryByText('Transportes')).not.toBeInTheDocument();
     expect(queryByText('Total transportes')).not.toBeInTheDocument();

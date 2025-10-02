@@ -191,6 +191,10 @@ export function aggregateReports(project: any, weeks: any[], filterISO: ((iso: s
         role,
         name,
         extras: 0,
+        horasExtra: 0,
+        turnAround: 0,
+        nocturnidad: 0,
+        penaltyLunch: 0,
         transporte: 0,
         km: 0,
         dietasCount: new Map<string, number>(),
@@ -281,7 +285,11 @@ export function aggregateReports(project: any, weeks: any[], filterISO: ((iso: s
           console.debug('[NOMINA.PUBLICIDAD] iso', iso, 'he', he, 'ta', ta, 'noct', noct, 'noctYes', noctYes, 'pen', pen, 'penYes', penYes, 'transp', transp, 'transpYes', transpYes);
         }
 
-        slot.extras += he + ta + (noctYes ? 1 : 0) + (penYes ? 1 : 0);
+        slot.horasExtra += he;
+        slot.turnAround += ta;
+        slot.nocturnidad += noctYes ? 1 : 0;
+        slot.penaltyLunch += penYes ? 1 : 0;
+        slot.extras += he + ta + (noctYes ? 1 : 0) + (penYes ? 1 : 0); // Keep total for backward compatibility
         slot.transporte += transpYes ? 1 : 0;
 
         slot.km += parseNum(getCellValueCandidates(data, keysToUse, colCandidates.km, iso));
@@ -364,6 +372,10 @@ export function aggregateWindowedReport(project: any, weeks: any[], filterISO: (
     if (!totals.has(visibleKey)) {
       totals.set(visibleKey, {
         extras: 0,
+        horasExtra: 0,
+        turnAround: 0,
+        nocturnidad: 0,
+        penaltyLunch: 0,
         transporte: 0,
         km: 0,
         dietasCount: new Map<string, number>(),
@@ -432,7 +444,11 @@ export function aggregateWindowedReport(project: any, weeks: any[], filterISO: (
           console.debug('[NOMINA.PUBLICIDAD] iso', iso, 'he+ ta added noct', noct, 'noctYes', noctYes, 'pen', pen, 'penYes', penYes, 'transp', transp, 'transpYes', transpYes);
         }
 
-        slot.extras += he + ta + (noctYes ? 1 : 0) + (penYes ? 1 : 0);
+        slot.horasExtra += he;
+        slot.turnAround += ta;
+        slot.nocturnidad += noctYes ? 1 : 0;
+        slot.penaltyLunch += penYes ? 1 : 0;
+        slot.extras += he + ta + (noctYes ? 1 : 0) + (penYes ? 1 : 0); // Keep total for backward compatibility
         slot.transporte += transpYes ? 1 : 0;
 
         slot.km += parseNum(getCellValueCandidates(data, keysToUse, colCandidates.km, iso));

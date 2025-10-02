@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { Th, Td } from '@shared/components';
 import { useLocalStorage } from '@shared/hooks/useLocalStorage';
 import DietasSummary from './DietasSummary.jsx';
+import ExtrasSummary from './ExtrasSummary.jsx';
 
 type RolePrices = {
   getForRole: (roleCode: string, baseRoleCode?: string | null) => {
@@ -19,6 +20,10 @@ type RowIn = {
   role: string;
   name: string;
   extras: number;
+  horasExtra: number;
+  turnAround: number;
+  nocturnidad: number;
+  penaltyLunch: number;
   transporte: number;
   km: number;
   dietasCount: Map<string, number>;
@@ -27,6 +32,10 @@ type RowIn = {
 
 type WindowOverride = Map<string, {
   extras?: number;
+  horasExtra?: number;
+  turnAround?: number;
+  nocturnidad?: number;
+  penaltyLunch?: number;
   transporte?: number;
   km?: number;
   dietasCount?: Map<string, number>;
@@ -138,6 +147,10 @@ function MonthSection({
         : null;
 
       const extrasValue = ov?.extras ?? r.extras;
+      const horasExtraValue = ov?.horasExtra ?? r.horasExtra;
+      const turnAroundValue = ov?.turnAround ?? r.turnAround;
+      const nocturnidadValue = ov?.nocturnidad ?? r.nocturnidad;
+      const penaltyLunchValue = ov?.penaltyLunch ?? r.penaltyLunch;
       const transporteValue = ov?.transporte ?? r.transporte;
       const kmValue = ov?.km ?? r.km;
       const dietasMap = ov?.dietasCount ?? r.dietasCount;
@@ -156,7 +169,7 @@ function MonthSection({
       const totalDias = workedDays * (pr.jornada || 0);
       const totalTravel = travelDays * (pr.travelDay || 0);
       const totalHolidays = holidayDays * (pr.holidayDay || 0);
-      const _totalExtras = extrasValue * (pr.horaExtra || 0);
+      const _totalExtras = (horasExtraValue + turnAroundValue + nocturnidadValue + penaltyLunchValue) * (pr.horaExtra || 0);
       const _totalTrans = transporteValue * (pr.transporte || 0);
       const _totalKm = (kmValue || 0) * (pr.km || 0);
       const _totalBruto =
@@ -190,6 +203,10 @@ function MonthSection({
         ...r,
         role: roleDisplay,
         extras: extrasValue,
+        horasExtra: horasExtraValue,
+        turnAround: turnAroundValue,
+        nocturnidad: nocturnidadValue,
+        penaltyLunch: penaltyLunchValue,
         transporte: transporteValue,
         km: kmValue,
         dietasCount: dietasMap,
@@ -280,7 +297,7 @@ function MonthSection({
                 {columnVisibility.holidays && <Th>Total días festivos</Th>}
                 {columnVisibility.travel && <Th>Días Travel Day</Th>}
                 {columnVisibility.travel && <Th>Total travel days</Th>}
-                {columnVisibility.extras && <Th>Horas extra</Th>}
+                {columnVisibility.extras && <Th>Horas extras</Th>}
                 {columnVisibility.extras && <Th>Total horas extra</Th>}
                 {columnVisibility.dietas && <Th>Dietas</Th>}
                 {columnVisibility.dietas && <Th>Total dietas</Th>}
@@ -331,7 +348,16 @@ function MonthSection({
                     {columnVisibility.travel && <Td className='text-right'>{displayValue(r._travel)}</Td>}
                     {columnVisibility.travel && <Td className='text-right'>{displayValue(r._totalTravel, 2)}</Td>}
 
-                    {columnVisibility.extras && <Td className='text-right'>{displayValue(r.extras)}</Td>}
+                    {columnVisibility.extras && (
+                      <Td>
+                        <ExtrasSummary
+                          horasExtra={r.horasExtra}
+                          turnAround={r.turnAround}
+                          nocturnidad={r.nocturnidad}
+                          penaltyLunch={r.penaltyLunch}
+                        />
+                      </Td>
+                    )}
                     {columnVisibility.extras && <Td className='text-right'>{displayValue(r._totalExtras, 2)}</Td>}
 
                     {columnVisibility.dietas && (

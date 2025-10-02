@@ -13,6 +13,29 @@ export function buildNominaMonthHTML(
   enrichedRows: any[],
   monthLabelEs: (key: string, withYear?: boolean) => string
 ) {
+  // Helper function to generate extras summary text for export
+  const generateExtrasText = (r: any): string => {
+    const parts: string[] = [];
+    
+    if ((r.horasExtra || 0) > 0) {
+      parts.push(`Horas extra x${r.horasExtra}`);
+    }
+    
+    if ((r.turnAround || 0) > 0) {
+      parts.push(`Turn Around x${r.turnAround}`);
+    }
+    
+    if ((r.nocturnidad || 0) > 0) {
+      parts.push(`Nocturnidad x${r.nocturnidad}`);
+    }
+    
+    if ((r.penaltyLunch || 0) > 0) {
+      parts.push(`Penalty lunch x${r.penaltyLunch}`);
+    }
+    
+    return parts.join(' · ');
+  };
+
   // Helper function to display empty string for zero values in export
   const displayValue = (value: number | undefined | null, decimals: number = 0): string => {
     if (value === null || value === undefined || value === 0) return '';
@@ -46,7 +69,7 @@ export function buildNominaMonthHTML(
   }
 
   if (columnVisibility.extras) {
-    headerCells.push('<th style="border:1px solid #999;padding:6px;background:#1D4ED8;color:#fff;text-align:right;">Horas extra</th>');
+    headerCells.push('<th style="border:1px solid #999;padding:6px;background:#1D4ED8;color:#fff;text-align:right;">Horas extras</th>');
     headerCells.push('<th style="border:1px solid #999;padding:6px;background:#1D4ED8;color:#fff;text-align:right;">Total horas extra</th>');
   }
 
@@ -88,7 +111,7 @@ export function buildNominaMonthHTML(
       }
 
       if (columnVisibility.extras) {
-        dataCells.push(`<td style="border:1px solid #999;padding:6px;text-align:right;">${esc(displayValue(r.extras))}</td>`);
+        dataCells.push(`<td style="border:1px solid #999;padding:6px;">${esc(generateExtrasText(r))}</td>`);
         dataCells.push(`<td style="border:1px solid #999;padding:6px;text-align:right;">${esc(displayValue(r._totalExtras, 2))}</td>`);
       }
 

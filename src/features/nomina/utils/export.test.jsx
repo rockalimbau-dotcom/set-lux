@@ -36,6 +36,10 @@ describe('nomina/utils/export', () => {
         _travel: 2,
         _totalTravel: 100.0,
         extras: 3,
+        horasExtra: 2,
+        turnAround: 1,
+        nocturnidad: 0,
+        penaltyLunch: 0,
         _totalExtras: 45.0,
         _dietasLabel: 'Comida, Cena',
         _totalDietas: 40.0,
@@ -55,6 +59,10 @@ describe('nomina/utils/export', () => {
         _travel: 1,
         _totalTravel: 40.0,
         extras: 2,
+        horasExtra: 1,
+        turnAround: 0,
+        nocturnidad: 1,
+        penaltyLunch: 0,
         _totalExtras: 24.0,
         _dietasLabel: 'Dieta completa + desayuno',
         _totalDietas: 50.0,
@@ -118,7 +126,7 @@ describe('nomina/utils/export', () => {
       expect(html).toContain('Total días');
       expect(html).toContain('Días Travel Day');
       expect(html).toContain('Total travel days');
-      expect(html).toContain('Horas extra');
+      expect(html).toContain('Horas extras');
       expect(html).toContain('Total horas extra');
       expect(html).toContain('Dietas');
       expect(html).toContain('Total dietas');
@@ -375,7 +383,7 @@ describe('nomina/utils/export', () => {
       expect(html).not.toContain('Total días festivos');
       expect(html).not.toContain('Días Travel Day');
       expect(html).not.toContain('Total travel days');
-      expect(html).not.toContain('Horas extra');
+      expect(html).not.toContain('Horas extras');
       expect(html).not.toContain('Total horas extra');
       expect(html).not.toContain('Dietas');
       expect(html).not.toContain('Total dietas');
@@ -424,7 +432,7 @@ describe('nomina/utils/export', () => {
       // Should contain headers for columns with data
       expect(html).toContain('Días festivos');
       expect(html).toContain('Total días festivos');
-      expect(html).toContain('Horas extra');
+      expect(html).toContain('Horas extras');
       expect(html).toContain('Total horas extra');
 
       // Should not contain headers for empty columns
@@ -461,6 +469,83 @@ describe('nomina/utils/export', () => {
       expect(html).toContain('87.5'); // _totalHolidays for first row
       expect(html).toContain('1'); // _holidays for second row
       expect(html).toContain('35.0'); // _totalHolidays for second row
+    });
+
+    it('should format extras correctly with pills format', () => {
+      const rowsWithExtras = [
+        {
+          role: 'Gaffer',
+          name: 'John Doe',
+          _worked: 5,
+          _totalDias: 250.0,
+          _holidays: 0,
+          _totalHolidays: 0,
+          _travel: 0,
+          _totalTravel: 0,
+          extras: 4,
+          horasExtra: 2,
+          turnAround: 1,
+          nocturnidad: 1,
+          penaltyLunch: 0,
+          _totalExtras: 60.0,
+          _dietasLabel: '',
+          _totalDietas: 0,
+          transporte: 0,
+          _totalTrans: 0,
+          km: 0,
+          _totalKm: 0,
+          _totalBruto: 310.0,
+        },
+      ];
+
+      const html = buildNominaMonthHTML(
+        mockProject,
+        mockMonthKey,
+        rowsWithExtras,
+        mockMonthLabelEs
+      );
+
+      // Should contain the formatted extras text
+      expect(html).toContain('Horas extra x2 · Turn Around x1 · Nocturnidad x1');
+    });
+
+    it('should handle empty extras correctly', () => {
+      const rowsWithoutExtras = [
+        {
+          role: 'Gaffer',
+          name: 'John Doe',
+          _worked: 5,
+          _totalDias: 250.0,
+          _holidays: 0,
+          _totalHolidays: 0,
+          _travel: 0,
+          _totalTravel: 0,
+          extras: 0,
+          horasExtra: 0,
+          turnAround: 0,
+          nocturnidad: 0,
+          penaltyLunch: 0,
+          _totalExtras: 0,
+          _dietasLabel: '',
+          _totalDietas: 0,
+          transporte: 0,
+          _totalTrans: 0,
+          km: 0,
+          _totalKm: 0,
+          _totalBruto: 250.0,
+        },
+      ];
+
+      const html = buildNominaMonthHTML(
+        mockProject,
+        mockMonthKey,
+        rowsWithoutExtras,
+        mockMonthLabelEs
+      );
+
+      // Should not contain extras columns when no data
+      expect(html).not.toContain('Horas extras');
+      expect(html).not.toContain('Total horas extra');
     });
   });
 
