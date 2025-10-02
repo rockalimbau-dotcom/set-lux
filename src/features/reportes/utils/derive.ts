@@ -2,6 +2,56 @@ import { personaRole, personaName } from './model';
 import { isMemberRefuerzo } from './plan';
 import { norm } from './text';
 
+// Jerarquía completa de roles para reportes (igual que en planificación)
+const rolePriorityForReports = (role: string = ''): number => {
+  const r = String(role).toUpperCase().trim();
+  
+  // EQUIPO BASE
+  if (r === 'G') return 0;
+  if (r === 'BB') return 1;
+  if (r === 'E') return 2;
+  if (r === 'TM') return 3;
+  if (r === 'FB') return 4;
+  if (r === 'AUX') return 5;
+  if (r === 'M') return 6;
+  
+  // REFUERZOS
+  if (r === 'REF') return 7;
+  
+  // EQUIPO PRELIGHT
+  if (r === 'GP') return 8;
+  if (r === 'BBP') return 9;
+  if (r === 'EP') return 10;
+  if (r === 'TMP') return 11;
+  if (r === 'FBP') return 12;
+  if (r === 'AUXP') return 13;
+  if (r === 'MP') return 14;
+  
+  // EQUIPO RECOGIDA
+  if (r === 'GR') return 15;
+  if (r === 'BBR') return 16;
+  if (r === 'ER') return 17;
+  if (r === 'TMR') return 18;
+  if (r === 'FBR') return 19;
+  if (r === 'AUXR') return 20;
+  if (r === 'MR') return 21;
+  
+  // Roles desconocidos al final
+  return 1000;
+};
+
+// Función de ordenamiento para reportes
+const sortByRoleHierarchy = <T extends { role?: string }>(list: T[] = []): T[] =>
+  list
+    .map((it, idx) => ({ it, idx }))
+    .sort((a, b) => {
+      const pa = rolePriorityForReports(a.it?.role);
+      const pb = rolePriorityForReports(b.it?.role);
+      if (pa !== pb) return pa - pb;
+      return a.idx - b.idx; // Mantener orden original para roles iguales
+    })
+    .map(({ it }) => it);
+
 interface WeekAndDay {
   day: any;
 }
@@ -114,12 +164,15 @@ export function buildPeopleBase(providedPersonas: Persona[], refNamesBase: Set<s
     .map(p => ({ role: personaRole(p) || '', name: personaName(p) || '' }));
   for (const n of Array.from(refNamesBase)) base.push({ role: 'REF', name: n });
   const seen = new Set<string>();
-  return base.filter(p => {
+  const filtered = base.filter(p => {
     const k = `${p.role}__${p.name}`;
     if (seen.has(k)) return false;
     seen.add(k);
     return true;
   });
+  
+  // Aplicar ordenamiento por jerarquía de roles
+  return sortByRoleHierarchy(filtered);
 }
 
 export function buildPeoplePre(
@@ -149,8 +202,11 @@ export function buildPeoplePre(
       }
     }
   }
-  normals.sort((a, b) => norm(a.role).localeCompare(norm(b.role)));
-  return [...normals, ...refs];
+  
+  // Aplicar ordenamiento por jerarquía de roles
+  const sortedNormals = sortByRoleHierarchy(normals);
+  const sortedRefs = sortByRoleHierarchy(refs);
+  return [...sortedNormals, ...sortedRefs];
 }
 
 export function buildPeoplePick(
@@ -180,8 +236,11 @@ export function buildPeoplePick(
       }
     }
   }
-  normals.sort((a, b) => norm(a.role).localeCompare(norm(b.role)));
-  return [...normals, ...refs];
+  
+  // Aplicar ordenamiento por jerarquía de roles
+  const sortedNormals = sortByRoleHierarchy(normals);
+  const sortedRefs = sortByRoleHierarchy(refs);
+  return [...sortedNormals, ...sortedRefs];
 }
 
 export function collectRefNamesForBlock(

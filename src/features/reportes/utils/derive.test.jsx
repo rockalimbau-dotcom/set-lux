@@ -214,6 +214,26 @@ describe('derive', () => {
       const uniqueResults = new Set(result.map(p => `${p.role}__${p.name}`));
       expect(uniqueResults.size).toBe(result.length);
     });
+
+    it('should sort base people by role hierarchy', () => {
+      const providedPersonas = [
+        { role: 'REF', name: 'Refuerzo' },
+        { role: 'E', name: 'Eléctrico' },
+        { role: 'G', name: 'Gaffer' },
+        { role: 'BB', name: 'Best Boy' },
+        { role: 'TM', name: 'Técnico' },
+      ];
+      const refNamesBase = new Set();
+
+      const result = buildPeopleBase(providedPersonas, refNamesBase);
+
+      // Verificar orden: EQUIPO BASE → REFUERZOS
+      expect(result[0].role).toBe('G');    // EQUIPO BASE
+      expect(result[1].role).toBe('BB');   // EQUIPO BASE
+      expect(result[2].role).toBe('E');    // EQUIPO BASE
+      expect(result[3].role).toBe('TM');   // EQUIPO BASE
+      expect(result[4].role).toBe('REF');  // REFUERZOS
+    });
   });
 
   describe('buildPeoplePre', () => {
@@ -241,18 +261,23 @@ describe('derive', () => {
       expect(result).toEqual([]);
     });
 
-    it('should sort normal people by role', () => {
+    it('should sort prelight people by role hierarchy', () => {
       const prelightPeople = [
-        { role: 'TÉCNICO', name: 'Carlos' },
-        { role: 'DIRECTOR', name: 'Juan' },
-        { role: 'REF', name: 'María' },
+        { role: 'REF', name: 'Refuerzo' },
+        { role: 'EP', name: 'Eléctrico Prelight' },
+        { role: 'GP', name: 'Gaffer Prelight' },
+        { role: 'BBP', name: 'Best Boy Prelight' },
+        { role: 'TMP', name: 'Técnico Prelight' },
       ];
 
       const result = buildPeoplePre(true, prelightPeople, new Set());
 
-      expect(result[0]).toEqual({ role: 'DIRECTOR', name: 'Juan', __block: 'pre' });
-      expect(result[1]).toEqual({ role: 'TÉCNICO', name: 'Carlos', __block: 'pre' });
-      expect(result[2]).toEqual({ role: 'REF', name: 'María', __block: 'pre' });
+      // Verificar orden: EQUIPO PRELIGHT → REFUERZOS
+      expect(result[0].role).toBe('GP');   // EQUIPO PRELIGHT
+      expect(result[1].role).toBe('BBP');  // EQUIPO PRELIGHT
+      expect(result[2].role).toBe('EP');   // EQUIPO PRELIGHT
+      expect(result[3].role).toBe('TMP');  // EQUIPO PRELIGHT
+      expect(result[4].role).toBe('REF');  // REFUERZOS
     });
   });
 
@@ -279,6 +304,25 @@ describe('derive', () => {
       const result = buildPeoplePick(false, pickupPeople, new Set());
 
       expect(result).toEqual([]);
+    });
+
+    it('should sort pickup people by role hierarchy', () => {
+      const pickupPeople = [
+        { role: 'REF', name: 'Refuerzo' },
+        { role: 'ER', name: 'Eléctrico Recogida' },
+        { role: 'GR', name: 'Gaffer Recogida' },
+        { role: 'BBR', name: 'Best Boy Recogida' },
+        { role: 'TMR', name: 'Técnico Recogida' },
+      ];
+
+      const result = buildPeoplePick(true, pickupPeople, new Set());
+
+      // Verificar orden: EQUIPO RECOGIDA → REFUERZOS
+      expect(result[0].role).toBe('GR');   // EQUIPO RECOGIDA
+      expect(result[1].role).toBe('BBR');  // EQUIPO RECOGIDA
+      expect(result[2].role).toBe('ER');   // EQUIPO RECOGIDA
+      expect(result[3].role).toBe('TMR');  // EQUIPO RECOGIDA
+      expect(result[4].role).toBe('REF');  // REFUERZOS
     });
   });
 
