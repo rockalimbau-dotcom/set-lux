@@ -55,4 +55,43 @@ describe('ReportPersonRows (smoke)', () => {
 
     fireEvent.click(screen.getByTitle('Contraer'));
   });
+
+  it('applies conditional styling when person does not work on a specific day', () => {
+    const semana = ['2025-01-06', '2025-01-07'];
+    const list = [{ role: 'EL', name: 'Juan' }];
+    const collapsed = {};
+    const setCollapsed = fn => fn(collapsed);
+
+    // Mock isPersonScheduledOnBlock to return false for the first day
+    const mockIsPersonScheduledOnBlock = (fecha, role, name) => {
+      return fecha !== '2025-01-06'; // Juan doesn't work on 2025-01-06
+    };
+
+    const { container } = render(
+      <table>
+        <tbody>
+          <ReportPersonRows
+            list={list}
+            block='base'
+            semana={semana}
+            collapsed={collapsed}
+            setCollapsed={setCollapsed}
+            data={{}}
+            setCell={noop}
+            findWeekAndDay={findWeekAndDay}
+            isPersonScheduledOnBlock={mockIsPersonScheduledOnBlock}
+            CONCEPTS={CONCEPTS}
+            DIETAS_OPCIONES={DIETAS_OPCIONES}
+            SI_NO={SI_NO}
+            parseDietas={parseDietas}
+            formatDietas={formatDietas}
+          />
+        </tbody>
+      </table>
+    );
+
+    // Check that cells for the non-working day have the conditional styling
+    const cellsWithOffStyling = container.querySelectorAll('.bg-orange-900\\/20');
+    expect(cellsWithOffStyling.length).toBeGreaterThan(0);
+  });
 });

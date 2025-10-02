@@ -107,9 +107,23 @@ function ReportPersonRows({
                 </div>
               </Td>
 
-              {semana.map(iso => (
-                <Td key={`head_${pKey}_${block || 'base'}_${iso}`}> </Td>
-              ))}
+              {semana.map(iso => {
+                const workedThisBlockHeader = isPersonScheduledOnBlock(
+                  iso,
+                  visualRole,
+                  name,
+                  findWeekAndDay,
+                  visualRole === 'REF' ? (block as any) || 'base' : undefined
+                );
+                const offHeader = !workedThisBlockHeader;
+                const headerCellClasses = offHeader 
+                  ? 'bg-orange-900/20 border-orange-800/30' 
+                  : '';
+                
+                return (
+                  <Td key={`head_${pKey}_${block || 'base'}_${iso}`} className={headerCellClasses}> </Td>
+                );
+              })}
             </tr>
 
             {!collapsed[pKey] &&
@@ -129,11 +143,16 @@ function ReportPersonRows({
                       visualRole === 'REF' ? (block as any) || 'base' : undefined
                     );
                     const off = !workedThisBlock;
+                    
+                    // Clases condicionales para celdas cuando no trabaja
+                    const cellClasses = off 
+                      ? 'bg-orange-900/20 border-orange-800/30' 
+                      : '';
 
                     if (concepto === 'Dietas') {
                       const parsed = parseDietas(val);
                       return (
-                        <Td key={`${pKey}_${concepto}_${fecha}`}>
+                        <Td key={`${pKey}_${concepto}_${fecha}`} className={cellClasses}>
                           <div className='flex flex-col gap-2'>
                             <select
                               className='w-full px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm'
@@ -249,7 +268,7 @@ function ReportPersonRows({
                       concepto === 'Penalty lunch'
                     ) {
                       return (
-                        <Td key={`${pKey}_${concepto}_${fecha}`}>
+                        <Td key={`${pKey}_${concepto}_${fecha}`} className={cellClasses}>
                           <select
                             className='w-full px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm'
                             value={val}
@@ -284,7 +303,7 @@ function ReportPersonRows({
                           };
 
                     return (
-                      <Td key={`${pKey}_${concepto}_${fecha}`}>
+                      <Td key={`${pKey}_${concepto}_${fecha}`} className={cellClasses}>
                         <input
                           {...numericProps}
                           className='w-full px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm'
