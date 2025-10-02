@@ -19,48 +19,98 @@ export function buildNominaMonthHTML(
     return decimals > 0 ? value.toFixed(decimals) : String(value);
   };
 
-  const head = `
-      <tr>
-        <th style="border:1px solid #999;padding:6px;background:#1D4ED8;color:#fff;text-align:left;">Persona</th>
-        <th style="border:1px solid #999;padding:6px;background:#1D4ED8;color:#fff;text-align:right;">Días trabajados</th>
-        <th style="border:1px solid #999;padding:6px;background:#1D4ED8;color:#fff;text-align:right;">Total días</th>
-        <th style="border:1px solid #999;padding:6px;background:#1D4ED8;color:#fff;text-align:right;">Días festivos</th>
-        <th style="border:1px solid #999;padding:6px;background:#1D4ED8;color:#fff;text-align:right;">Total días festivos</th>
-        <th style="border:1px solid #999;padding:6px;background:#1D4ED8;color:#fff;text-align:right;">Días Travel Day</th>
-        <th style="border:1px solid #999;padding:6px;background:#1D4ED8;color:#fff;text-align:right;">Total travel days</th>
-        <th style="border:1px solid #999;padding:6px;background:#1D4ED8;color:#fff;text-align:right;">Horas extra</th>
-        <th style="border:1px solid #999;padding:6px;background:#1D4ED8;color:#fff;text-align:right;">Total horas extra</th>
-        <th style="border:1px solid #999;padding:6px;background:#1D4ED8;color:#fff;text-align:left;">Dietas</th>
-        <th style="border:1px solid #999;padding:6px;background:#1D4ED8;color:#fff;text-align:right;">Total dietas</th>
-        <th style="border:1px solid #999;padding:6px;background:#1D4ED8;color:#fff;text-align:right;">Transportes</th>
-        <th style="border:1px solid #999;padding:6px;background:#1D4ED8;color:#fff;text-align:right;">Total transportes</th>
-        <th style="border:1px solid #999;padding:6px;background:#1D4ED8;color:#fff;text-align:right;">Kilometraje</th>
-        <th style="border:1px solid #999;padding:6px;background:#1D4ED8;color:#fff;text-align:right;">Total kilometraje</th>
-        <th style="border:1px solid #999;padding:6px;background:#1D4ED8;color:#fff;text-align:right;">TOTAL BRUTO</th>
-      </tr>`;
+  // Detect which columns have data to show/hide empty columns in export
+  const columnVisibility = {
+    holidays: enrichedRows.some(r => (r._holidays || 0) > 0),
+    travel: enrichedRows.some(r => (r._travel || 0) > 0),
+    extras: enrichedRows.some(r => (r.extras || 0) > 0),
+    transporte: enrichedRows.some(r => (r.transporte || 0) > 0),
+    km: enrichedRows.some(r => (r.km || 0) > 0),
+    dietas: enrichedRows.some(r => (r._totalDietas || 0) > 0),
+  };
+
+  const headerCells = [
+    '<th style="border:1px solid #999;padding:6px;background:#1D4ED8;color:#fff;text-align:left;">Persona</th>',
+    '<th style="border:1px solid #999;padding:6px;background:#1D4ED8;color:#fff;text-align:right;">Días trabajados</th>',
+    '<th style="border:1px solid #999;padding:6px;background:#1D4ED8;color:#fff;text-align:right;">Total días</th>',
+  ];
+
+  if (columnVisibility.holidays) {
+    headerCells.push('<th style="border:1px solid #999;padding:6px;background:#1D4ED8;color:#fff;text-align:right;">Días festivos</th>');
+    headerCells.push('<th style="border:1px solid #999;padding:6px;background:#1D4ED8;color:#fff;text-align:right;">Total días festivos</th>');
+  }
+
+  if (columnVisibility.travel) {
+    headerCells.push('<th style="border:1px solid #999;padding:6px;background:#1D4ED8;color:#fff;text-align:right;">Días Travel Day</th>');
+    headerCells.push('<th style="border:1px solid #999;padding:6px;background:#1D4ED8;color:#fff;text-align:right;">Total travel days</th>');
+  }
+
+  if (columnVisibility.extras) {
+    headerCells.push('<th style="border:1px solid #999;padding:6px;background:#1D4ED8;color:#fff;text-align:right;">Horas extra</th>');
+    headerCells.push('<th style="border:1px solid #999;padding:6px;background:#1D4ED8;color:#fff;text-align:right;">Total horas extra</th>');
+  }
+
+  if (columnVisibility.dietas) {
+    headerCells.push('<th style="border:1px solid #999;padding:6px;background:#1D4ED8;color:#fff;text-align:left;">Dietas</th>');
+    headerCells.push('<th style="border:1px solid #999;padding:6px;background:#1D4ED8;color:#fff;text-align:right;">Total dietas</th>');
+  }
+
+  if (columnVisibility.transporte) {
+    headerCells.push('<th style="border:1px solid #999;padding:6px;background:#1D4ED8;color:#fff;text-align:right;">Transportes</th>');
+    headerCells.push('<th style="border:1px solid #999;padding:6px;background:#1D4ED8;color:#fff;text-align:right;">Total transportes</th>');
+  }
+
+  if (columnVisibility.km) {
+    headerCells.push('<th style="border:1px solid #999;padding:6px;background:#1D4ED8;color:#fff;text-align:right;">Kilometraje</th>');
+    headerCells.push('<th style="border:1px solid #999;padding:6px;background:#1D4ED8;color:#fff;text-align:right;">Total kilometraje</th>');
+  }
+
+  headerCells.push('<th style="border:1px solid #999;padding:6px;background:#1D4ED8;color:#fff;text-align:right;">TOTAL BRUTO</th>');
+
+  const head = `<tr>${headerCells.join('')}</tr>`;
 
   const body = enrichedRows
-    .map(
-      r => `
-      <tr>
-        <td style="border:1px solid #999;padding:6px;">${esc(r.role)} — ${esc(r.name)}</td>
-        <td style="border:1px solid #999;padding:6px;text-align:right;">${esc(displayValue(r._worked))}</td>
-        <td style="border:1px solid #999;padding:6px;text-align:right;">${esc(displayValue(r._totalDias, 2))}</td>
-        <td style="border:1px solid #999;padding:6px;text-align:right;">${esc(displayValue(r._holidays))}</td>
-        <td style="border:1px solid #999;padding:6px;text-align:right;">${esc(displayValue(r._totalHolidays, 2))}</td>
-        <td style="border:1px solid #999;padding:6px;text-align:right;">${esc(displayValue(r._travel))}</td>
-        <td style="border:1px solid #999;padding:6px;text-align:right;">${esc(displayValue(r._totalTravel, 2))}</td>
-        <td style="border:1px solid #999;padding:6px;text-align:right;">${esc(displayValue(r.extras))}</td>
-        <td style="border:1px solid #999;padding:6px;text-align:right;">${esc(displayValue(r._totalExtras, 2))}</td>
-        <td style="border:1px solid #999;padding:6px;">${esc(r._dietasLabel)}</td>
-        <td style="border:1px solid #999;padding:6px;text-align:right;">${esc(displayValue(r._totalDietas, 2))}</td>
-        <td style="border:1px solid #999;padding:6px;text-align:right;">${esc(displayValue(r.transporte))}</td>
-        <td style="border:1px solid #999;padding:6px;text-align:right;">${esc(displayValue(r._totalTrans, 2))}</td>
-        <td style="border:1px solid #999;padding:6px;text-align:right;">${esc(displayValue(r.km, 1))}</td>
-        <td style="border:1px solid #999;padding:6px;text-align:right;">${esc(displayValue(r._totalKm, 2))}</td>
-        <td style="border:1px solid #999;padding:6px;text-align:right;font-weight:600;">${esc(r._totalBruto.toFixed(2))}</td>
-      </tr>`
-    )
+    .map(r => {
+      const dataCells = [
+        `<td style="border:1px solid #999;padding:6px;">${esc(r.role)} — ${esc(r.name)}</td>`,
+        `<td style="border:1px solid #999;padding:6px;text-align:right;">${esc(displayValue(r._worked))}</td>`,
+        `<td style="border:1px solid #999;padding:6px;text-align:right;">${esc(displayValue(r._totalDias, 2))}</td>`,
+      ];
+
+      if (columnVisibility.holidays) {
+        dataCells.push(`<td style="border:1px solid #999;padding:6px;text-align:right;">${esc(displayValue(r._holidays))}</td>`);
+        dataCells.push(`<td style="border:1px solid #999;padding:6px;text-align:right;">${esc(displayValue(r._totalHolidays, 2))}</td>`);
+      }
+
+      if (columnVisibility.travel) {
+        dataCells.push(`<td style="border:1px solid #999;padding:6px;text-align:right;">${esc(displayValue(r._travel))}</td>`);
+        dataCells.push(`<td style="border:1px solid #999;padding:6px;text-align:right;">${esc(displayValue(r._totalTravel, 2))}</td>`);
+      }
+
+      if (columnVisibility.extras) {
+        dataCells.push(`<td style="border:1px solid #999;padding:6px;text-align:right;">${esc(displayValue(r.extras))}</td>`);
+        dataCells.push(`<td style="border:1px solid #999;padding:6px;text-align:right;">${esc(displayValue(r._totalExtras, 2))}</td>`);
+      }
+
+      if (columnVisibility.dietas) {
+        dataCells.push(`<td style="border:1px solid #999;padding:6px;">${esc(r._dietasLabel)}</td>`);
+        dataCells.push(`<td style="border:1px solid #999;padding:6px;text-align:right;">${esc(displayValue(r._totalDietas, 2))}</td>`);
+      }
+
+      if (columnVisibility.transporte) {
+        dataCells.push(`<td style="border:1px solid #999;padding:6px;text-align:right;">${esc(displayValue(r.transporte))}</td>`);
+        dataCells.push(`<td style="border:1px solid #999;padding:6px;text-align:right;">${esc(displayValue(r._totalTrans, 2))}</td>`);
+      }
+
+      if (columnVisibility.km) {
+        dataCells.push(`<td style="border:1px solid #999;padding:6px;text-align:right;">${esc(displayValue(r.km, 1))}</td>`);
+        dataCells.push(`<td style="border:1px solid #999;padding:6px;text-align:right;">${esc(displayValue(r._totalKm, 2))}</td>`);
+      }
+
+      dataCells.push(`<td style="border:1px solid #999;padding:6px;text-align:right;font-weight:600;">${esc((r._totalBruto || 0).toFixed(2))}</td>`);
+
+      return `<tr>${dataCells.join('')}</tr>`;
+    })
     .join('');
 
   const html = `<!DOCTYPE html>

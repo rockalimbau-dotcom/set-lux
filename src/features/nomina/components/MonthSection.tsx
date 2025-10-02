@@ -220,6 +220,25 @@ function MonthSection({
     calcWorkedBreakdown,
   ]);
 
+  // Detect which columns have data to show/hide empty columns
+  const columnVisibility = useMemo(() => {
+    const hasHolidays = enriched.some(r => r._holidays > 0);
+    const hasTravel = enriched.some(r => r._travel > 0);
+    const hasExtras = enriched.some(r => r.extras > 0);
+    const hasTransporte = enriched.some(r => r.transporte > 0);
+    const hasKm = enriched.some(r => r.km > 0);
+    const hasDietas = enriched.some(r => r._totalDietas > 0);
+
+    return {
+      holidays: hasHolidays,
+      travel: hasTravel,
+      extras: hasExtras,
+      transporte: hasTransporte,
+      km: hasKm,
+      dietas: hasDietas,
+    };
+  }, [enriched]);
+
   const doExport = () => onExport?.(monthKey, enriched);
 
   return (
@@ -257,18 +276,18 @@ function MonthSection({
                 <Th>Persona</Th>
                 <Th>Días trabajados</Th>
                 <Th>Total días</Th>
-                <Th>Días festivos</Th>
-                <Th>Total días festivos</Th>
-                <Th>Días Travel Day</Th>
-                <Th>Total travel days</Th>
-                <Th>Horas extra</Th>
-                <Th>Total horas extra</Th>
-                <Th>Dietas</Th>
-                <Th>Total dietas</Th>
-                <Th>Transportes</Th>
-                <Th>Total transportes</Th>
-                <Th>Kilometraje</Th>
-                <Th>Total kilometraje</Th>
+                {columnVisibility.holidays && <Th>Días festivos</Th>}
+                {columnVisibility.holidays && <Th>Total días festivos</Th>}
+                {columnVisibility.travel && <Th>Días Travel Day</Th>}
+                {columnVisibility.travel && <Th>Total travel days</Th>}
+                {columnVisibility.extras && <Th>Horas extra</Th>}
+                {columnVisibility.extras && <Th>Total horas extra</Th>}
+                {columnVisibility.dietas && <Th>Dietas</Th>}
+                {columnVisibility.dietas && <Th>Total dietas</Th>}
+                {columnVisibility.transporte && <Th>Transportes</Th>}
+                {columnVisibility.transporte && <Th>Total transportes</Th>}
+                {columnVisibility.km && <Th>Kilometraje</Th>}
+                {columnVisibility.km && <Th>Total kilometraje</Th>}
                 <Th>TOTAL BRUTO</Th>
                 <Th>Nómina recibida</Th>
               </tr>
@@ -306,28 +325,30 @@ function MonthSection({
                     <Td className='text-right'>{displayValue(r._worked)}</Td>
                     <Td className='text-right'>{displayValue(r._totalDias, 2)}</Td>
 
-                    <Td className='text-right'>{displayValue(r._holidays)}</Td>
-                    <Td className='text-right'>{displayValue(r._totalHolidays, 2)}</Td>
+                    {columnVisibility.holidays && <Td className='text-right'>{displayValue(r._holidays)}</Td>}
+                    {columnVisibility.holidays && <Td className='text-right'>{displayValue(r._totalHolidays, 2)}</Td>}
 
-                    <Td className='text-right'>{displayValue(r._travel)}</Td>
-                    <Td className='text-right'>{displayValue(r._totalTravel, 2)}</Td>
+                    {columnVisibility.travel && <Td className='text-right'>{displayValue(r._travel)}</Td>}
+                    {columnVisibility.travel && <Td className='text-right'>{displayValue(r._totalTravel, 2)}</Td>}
 
-                    <Td className='text-right'>{displayValue(r.extras)}</Td>
-                    <Td className='text-right'>{displayValue(r._totalExtras, 2)}</Td>
+                    {columnVisibility.extras && <Td className='text-right'>{displayValue(r.extras)}</Td>}
+                    {columnVisibility.extras && <Td className='text-right'>{displayValue(r._totalExtras, 2)}</Td>}
 
-                    <Td>
-                      <DietasSummary
-                        dietasCount={r.dietasCount}
-                        ticketTotal={r.ticketTotal}
-                      />
-                    </Td>
-                    <Td className='text-right'>{displayValue(r._totalDietas, 2)}</Td>
+                    {columnVisibility.dietas && (
+                      <Td>
+                        <DietasSummary
+                          dietasCount={r.dietasCount}
+                          ticketTotal={r.ticketTotal}
+                        />
+                      </Td>
+                    )}
+                    {columnVisibility.dietas && <Td className='text-right'>{displayValue(r._totalDietas, 2)}</Td>}
 
-                    <Td className='text-right'>{displayValue(r.transporte)}</Td>
-                    <Td className='text-right'>{displayValue(r._totalTrans, 2)}</Td>
+                    {columnVisibility.transporte && <Td className='text-right'>{displayValue(r.transporte)}</Td>}
+                    {columnVisibility.transporte && <Td className='text-right'>{displayValue(r._totalTrans, 2)}</Td>}
 
-                    <Td className='text-right'>{displayValue(r.km, 1)}</Td>
-                    <Td className='text-right'>{displayValue(r._totalKm, 2)}</Td>
+                    {columnVisibility.km && <Td className='text-right'>{displayValue(r.km, 1)}</Td>}
+                    {columnVisibility.km && <Td className='text-right'>{displayValue(r._totalKm, 2)}</Td>}
 
                     <Td className='text-right font-semibold'>
                       {(r._totalBruto || 0).toFixed(2)}
@@ -355,7 +376,15 @@ function MonthSection({
 
               {enriched.length === 0 && (
                 <tr>
-                  <Td colSpan={17}>
+                  <Td colSpan={
+                    5 + // Base columns: Persona, Días trabajados, Total días, TOTAL BRUTO, Nómina recibida
+                    (columnVisibility.holidays ? 2 : 0) + // Días festivos + Total días festivos
+                    (columnVisibility.travel ? 2 : 0) + // Travel Day + Total travel days
+                    (columnVisibility.extras ? 2 : 0) + // Horas extra + Total horas extra
+                    (columnVisibility.dietas ? 2 : 0) + // Dietas + Total dietas
+                    (columnVisibility.transporte ? 2 : 0) + // Transportes + Total transportes
+                    (columnVisibility.km ? 2 : 0) // Kilometraje + Total kilometraje
+                  }>
                     <div className='text-sm text-zinc-400'>
                       No hay datos en este mes.
                     </div>

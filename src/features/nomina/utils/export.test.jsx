@@ -339,6 +339,129 @@ describe('nomina/utils/export', () => {
       expect(html).toContain('Gaffer — John Doe');
       // Should handle null/undefined values gracefully
     });
+
+    it('hides empty columns when no data is present', () => {
+      const rowsWithoutOptionalData = [
+        {
+          role: 'Gaffer',
+          name: 'John Doe',
+          _worked: 5,
+          _totalDias: 250.0,
+          _holidays: 0, // No holiday days
+          _totalHolidays: 0,
+          _travel: 0, // No travel days
+          _totalTravel: 0,
+          extras: 0, // No extras
+          _totalExtras: 0,
+          _dietasLabel: '',
+          _totalDietas: 0, // No dietas
+          transporte: 0, // No transporte
+          _totalTrans: 0,
+          km: 0, // No km
+          _totalKm: 0,
+          _totalBruto: 250.0,
+        },
+      ];
+
+      const html = buildNominaMonthHTML(
+        mockProject,
+        mockMonthKey,
+        rowsWithoutOptionalData,
+        mockMonthLabelEs
+      );
+
+      // Should not contain headers for empty columns
+      expect(html).not.toContain('Días festivos');
+      expect(html).not.toContain('Total días festivos');
+      expect(html).not.toContain('Días Travel Day');
+      expect(html).not.toContain('Total travel days');
+      expect(html).not.toContain('Horas extra');
+      expect(html).not.toContain('Total horas extra');
+      expect(html).not.toContain('Dietas');
+      expect(html).not.toContain('Total dietas');
+      expect(html).not.toContain('Transportes');
+      expect(html).not.toContain('Total transportes');
+      expect(html).not.toContain('Kilometraje');
+      expect(html).not.toContain('Total kilometraje');
+
+      // Should still contain base columns
+      expect(html).toContain('Persona');
+      expect(html).toContain('Días trabajados');
+      expect(html).toContain('Total días');
+      expect(html).toContain('TOTAL BRUTO');
+    });
+
+    it('shows only relevant columns based on data', () => {
+      const rowsWithPartialData = [
+        {
+          role: 'Gaffer',
+          name: 'John Doe',
+          _worked: 5,
+          _totalDias: 250.0,
+          _holidays: 2, // Has holiday days
+          _totalHolidays: 87.5,
+          _travel: 0, // No travel days
+          _totalTravel: 0,
+          extras: 3, // Has extras
+          _totalExtras: 45.0,
+          _dietasLabel: '',
+          _totalDietas: 0, // No dietas
+          transporte: 0, // No transporte
+          _totalTrans: 0,
+          km: 0, // No km
+          _totalKm: 0,
+          _totalBruto: 382.5,
+        },
+      ];
+
+      const html = buildNominaMonthHTML(
+        mockProject,
+        mockMonthKey,
+        rowsWithPartialData,
+        mockMonthLabelEs
+      );
+
+      // Should contain headers for columns with data
+      expect(html).toContain('Días festivos');
+      expect(html).toContain('Total días festivos');
+      expect(html).toContain('Horas extra');
+      expect(html).toContain('Total horas extra');
+
+      // Should not contain headers for empty columns
+      expect(html).not.toContain('Días Travel Day');
+      expect(html).not.toContain('Total travel days');
+      expect(html).not.toContain('Dietas');
+      expect(html).not.toContain('Total dietas');
+      expect(html).not.toContain('Transportes');
+      expect(html).not.toContain('Total transportes');
+      expect(html).not.toContain('Kilometraje');
+      expect(html).not.toContain('Total kilometraje');
+
+      // Should always contain base columns
+      expect(html).toContain('Persona');
+      expect(html).toContain('Días trabajados');
+      expect(html).toContain('Total días');
+      expect(html).toContain('TOTAL BRUTO');
+    });
+
+    it('includes holiday columns in export when present', () => {
+      const html = buildNominaMonthHTML(
+        mockProject,
+        mockMonthKey,
+        mockEnrichedRows,
+        mockMonthLabelEs
+      );
+
+      // Should contain holiday headers
+      expect(html).toContain('Días festivos');
+      expect(html).toContain('Total días festivos');
+
+      // Should contain holiday data
+      expect(html).toContain('2'); // _holidays for first row
+      expect(html).toContain('87.5'); // _totalHolidays for first row
+      expect(html).toContain('1'); // _holidays for second row
+      expect(html).toContain('35.0'); // _totalHolidays for second row
+    });
   });
 
   describe('openPrintWindow', () => {
