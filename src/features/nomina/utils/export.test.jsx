@@ -31,6 +31,8 @@ describe('nomina/utils/export', () => {
         name: 'John Doe',
         _worked: 5,
         _totalDias: 250.0,
+        _holidays: 2, // Added
+        _totalHolidays: 87.5, // Added
         _travel: 2,
         _totalTravel: 100.0,
         extras: 3,
@@ -48,6 +50,8 @@ describe('nomina/utils/export', () => {
         name: 'Jane Smith',
         _worked: 4,
         _totalDias: 200.0,
+        _holidays: 1, // Added
+        _totalHolidays: 35.0, // Added
         _travel: 1,
         _totalTravel: 40.0,
         extras: 2,

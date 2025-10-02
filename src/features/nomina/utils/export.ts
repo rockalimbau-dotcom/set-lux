@@ -18,6 +18,8 @@ export function buildNominaMonthHTML(
         <th style="border:1px solid #999;padding:6px;background:#1D4ED8;color:#fff;text-align:left;">Persona</th>
         <th style="border:1px solid #999;padding:6px;background:#1D4ED8;color:#fff;text-align:right;">Días trabajados</th>
         <th style="border:1px solid #999;padding:6px;background:#1D4ED8;color:#fff;text-align:right;">Total días</th>
+        <th style="border:1px solid #999;padding:6px;background:#1D4ED8;color:#fff;text-align:right;">Días festivos</th>
+        <th style="border:1px solid #999;padding:6px;background:#1D4ED8;color:#fff;text-align:right;">Total días festivos</th>
         <th style="border:1px solid #999;padding:6px;background:#1D4ED8;color:#fff;text-align:right;">Días Travel Day</th>
         <th style="border:1px solid #999;padding:6px;background:#1D4ED8;color:#fff;text-align:right;">Total travel days</th>
         <th style="border:1px solid #999;padding:6px;background:#1D4ED8;color:#fff;text-align:right;">Horas extra</th>
@@ -38,6 +40,8 @@ export function buildNominaMonthHTML(
         <td style="border:1px solid #999;padding:6px;">${esc(r.role)} — ${esc(r.name)}</td>
         <td style="border:1px solid #999;padding:6px;text-align:right;">${esc(r._worked)}</td>
         <td style="border:1px solid #999;padding:6px;text-align:right;">${esc(r._totalDias.toFixed(2))}</td>
+        <td style="border:1px solid #999;padding:6px;text-align:right;">${esc(r._holidays || 0)}</td>
+        <td style="border:1px solid #999;padding:6px;text-align:right;">${esc((r._totalHolidays || 0).toFixed(2))}</td>
         <td style="border:1px solid #999;padding:6px;text-align:right;">${esc(r._travel)}</td>
         <td style="border:1px solid #999;padding:6px;text-align:right;">${esc(r._totalTravel.toFixed(2))}</td>
         <td style="border:1px solid #999;padding:6px;text-align:right;">${esc(r.extras)}</td>

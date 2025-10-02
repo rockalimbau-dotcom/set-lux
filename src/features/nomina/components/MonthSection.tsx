@@ -49,7 +49,7 @@ interface MonthSectionProps {
     weeks: any[],
     filterISO: (iso: string) => boolean,
     person: { role: string; name: string }
-  ) => { workedDays: number; travelDays: number; workedBase: number; workedPre: number; workedPick: number };
+  ) => { workedDays: number; travelDays: number; workedBase: number; workedPre: number; workedPick: number; holidayDays: number };
   monthLabelEs: (key: string, withYear?: boolean) => string;
   ROLE_COLORS: Record<string, { bg: string; fg: string }>;
   roleLabelFromCode: (code: string) => string;
@@ -106,7 +106,7 @@ function MonthSection({
   const enriched = useMemo(() => {
     return rows.map(r => {
       const person = { role: r.role, name: r.name };
-      const { workedDays, travelDays, workedBase, workedPre, workedPick } =
+      const { workedDays, travelDays, workedBase, workedPre, workedPick, holidayDays } =
         calcWorkedBreakdown(weeksForMonth, filterISO, person);
 
       const keyNoPR = `${stripPR(r.role)}__${r.name}`;
@@ -148,12 +148,14 @@ function MonthSection({
 
       const totalDias = workedDays * (pr.jornada || 0);
       const totalTravel = travelDays * (pr.travelDay || 0);
+      const totalHolidays = holidayDays * (pr.holidayDay || 0);
       const _totalExtras = extrasValue * (pr.horaExtra || 0);
       const _totalTrans = transporteValue * (pr.transporte || 0);
       const _totalKm = (kmValue || 0) * (pr.km || 0);
       const _totalBruto =
         totalDias +
         totalTravel +
+        totalHolidays +
         _totalExtras +
         totalDietas +
         _totalTrans +
@@ -187,8 +189,10 @@ function MonthSection({
         ticketTotal: ticketValue,
         _worked: workedDays,
         _travel: travelDays,
+        _holidays: holidayDays,
         _totalDias: totalDias,
         _totalTravel: totalTravel,
+        _totalHolidays: totalHolidays,
         _totalExtras,
         _totalDietas: totalDietas,
         _totalTrans,
@@ -246,6 +250,8 @@ function MonthSection({
                 <Th>Persona</Th>
                 <Th>Días trabajados</Th>
                 <Th>Total días</Th>
+                <Th>Días festivos</Th>
+                <Th>Total días festivos</Th>
                 <Th>Días Travel Day</Th>
                 <Th>Total travel days</Th>
                 <Th>Horas extra</Th>
@@ -293,6 +299,9 @@ function MonthSection({
                     <Td className='text-right'>{r._worked}</Td>
                     <Td className='text-right'>{r._totalDias.toFixed(2)}</Td>
 
+                    <Td className='text-right'>{r._holidays}</Td>
+                    <Td className='text-right'>{r._totalHolidays.toFixed(2)}</Td>
+
                     <Td className='text-right'>{r._travel}</Td>
                     <Td className='text-right'>{r._totalTravel.toFixed(2)}</Td>
 
@@ -339,7 +348,7 @@ function MonthSection({
 
               {enriched.length === 0 && (
                 <tr>
-                  <Td colSpan={15}>
+                  <Td colSpan={17}>
                     <div className='text-sm text-zinc-400'>
                       No hay datos en este mes.
                     </div>

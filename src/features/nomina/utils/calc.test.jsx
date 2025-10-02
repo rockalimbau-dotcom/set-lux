@@ -74,6 +74,7 @@ describe('nomina/utils/calc', () => {
         jornada: 100,
         travelDay: 50,
         horaExtra: 15,
+        holidayDay: 0, // Added holidayDay
         transporte: 20,
         km: 0.5,
         dietas: {

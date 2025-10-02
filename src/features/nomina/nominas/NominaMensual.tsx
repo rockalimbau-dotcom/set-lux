@@ -146,6 +146,7 @@ export default function NominaMensual({ project }: NominaMensualProps) {
     let workedPick = 0;
     let workedDays = 0;
     let travelDays = 0;
+    let holidayDays = 0;
 
     const nameEq = (s: string) =>
       String(s || '')
@@ -166,7 +167,14 @@ export default function NominaMensual({ project }: NominaMensualProps) {
             (arr || []).some((m: any) => nameEq(m?.name) && /ref/i.test(String(m?.role || '')));
           if (!(anyRef(day?.team) || anyRef(day?.prelight) || anyRef(day?.pickup)))
             return;
-          workedDays += 1;
+          
+          // Separar días festivos de días normales
+          if ((day?.tipo || '') === 'Rodaje Festivo') {
+            holidayDays += 1;
+          } else {
+            workedDays += 1;
+          }
+          
           if ((day?.tipo || '') === 'Travel Day') travelDays += 1;
         } else {
           const list =
@@ -181,7 +189,14 @@ export default function NominaMensual({ project }: NominaMensualProps) {
             return !m?.role || !wantedBase || mBase === wantedBase;
           });
           if (!inBlock) return;
-          workedDays += 1;
+          
+          // Separar días festivos de días normales
+          if ((day?.tipo || '') === 'Rodaje Festivo') {
+            holidayDays += 1;
+          } else {
+            workedDays += 1;
+          }
+          
           if (wantedSuffix === 'P') workedPre += 1;
           else if (wantedSuffix === 'R') workedPick += 1;
           else workedBase += 1;
@@ -189,7 +204,7 @@ export default function NominaMensual({ project }: NominaMensualProps) {
         }
       });
     }
-    return { workedDays, travelDays, workedBase, workedPre, workedPick };
+    return { workedDays, travelDays, workedBase, workedPre, workedPick, holidayDays };
   }
 
   return (

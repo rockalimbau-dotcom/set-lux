@@ -112,7 +112,7 @@ const getNumField = (row: any, candidates: readonly string[]) => {
     // Para publicidad, el divisor de travel puede ser diferente
     const divTravel = num(p.divTravel) || 2.5; // Publicidad usa divisor 2.5
 
-    let jornada, travelDay, horaExtra;
+    let jornada, travelDay, horaExtra, holidayDay;
     if (normalized === 'REF') {
       const refFromBase = getNumField(baseRow, ['Precio refuerzo', 'Precio Refuerzo', 'Refuerzo']);
       const refFromElec = getNumField(elecRow, ['Precio refuerzo', 'Precio Refuerzo', 'Refuerzo']);
@@ -120,11 +120,14 @@ const getNumField = (row: any, candidates: readonly string[]) => {
       travelDay = jornada / divTravel;
       horaExtra = getNumField(baseRow, ['Horas extras', 'Horas Extras', 'Hora extra', 'Horas extra', 'HE', 'Hora Extra']) ||
                   getNumField(elecRow, ['Horas extras', 'Horas Extras', 'Hora extra', 'Horas extra', 'HE', 'Hora Extra']) || 0;
+      holidayDay = getNumField(baseRow, ['Precio Día extra/Festivo', 'Precio Día extra/festivo', 'Día extra/Festivo', 'Día festivo', 'Festivo']) ||
+                   getNumField(elecRow, ['Precio Día extra/Festivo', 'Precio Día extra/festivo', 'Día extra/Festivo', 'Día festivo', 'Festivo']) || 0;
     } else {
       jornada = getNumField(row, ['Precio jornada', 'Precio Jornada', 'Jornada', 'Precio dia', 'Precio día']);
       travelDay = getNumField(row, ['Travel day', 'Travel Day', 'Travel', 'Día de viaje', 'Dia de viaje', 'Día travel', 'Dia travel', 'TD']) ||
                   (jornada > 0 ? jornada / divTravel : 0);
       horaExtra = getNumField(row, ['Horas extras', 'Horas Extras', 'Hora extra', 'Horas extra', 'HE', 'Hora Extra']);
+      holidayDay = getNumField(row, ['Precio Día extra/Festivo', 'Precio Día extra/festivo', 'Día extra/Festivo', 'Día festivo', 'Festivo']) || 0;
     }
 
     // Debug: log calculated values
@@ -136,6 +139,7 @@ const getNumField = (row: any, candidates: readonly string[]) => {
       jornada,
       travelDay,
       horaExtra,
+      holidayDay,
       transporte: num(p.transporteDia) || 0,
       km: num(p.kilometrajeKm) || 0,
       dietas: {
@@ -155,17 +159,7 @@ const getNumField = (row: any, candidates: readonly string[]) => {
     return result;
   };
 
-  const result: Record<string, any> = {};
-  for (const [role, row] of Object.entries(priceRows)) {
-    result[role] = getForRole(role);
-  }
-
-  // Debug: log final result
-  if ((import.meta as any).env.DEV) {
-    console.debug('[NOMINA.PUBLICIDAD] makeRolePrices - final result:', result);
-  }
-
-  return result;
+  return { getForRole };
 }
 
 export function aggregateReports(project: any, weeks: any[], filterISO: ((iso: string) => boolean) | null = null) {

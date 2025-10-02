@@ -118,7 +118,7 @@ export function makeRolePrices(project: any) {
     // Para mensual, el divisor de travel puede ser diferente
     const divTravel = num(p.divTravel) || 3; // Mensual usa divisor 3 en lugar de 2
 
-    let jornada, travelDay, horaExtra;
+    let jornada, travelDay, horaExtra, holidayDay;
     if (normalized === 'REF') {
       const refFromBase = getNumField(baseRow, ['Precio refuerzo', 'Precio Refuerzo', 'Refuerzo']);
       const baseJornada = getNumField(baseRow, ['Precio jornada', 'Precio Jornada', 'Jornada', 'Precio dia', 'Precio día']);
@@ -131,6 +131,10 @@ export function makeRolePrices(project: any) {
         getNumField(elecRow, ['Horas extras', 'Horas Extras', 'Hora extra', 'Horas extra', 'HE', 'Hora Extra']) ||
         getNumField(baseRow, ['Horas extras', 'Horas Extras', 'Hora extra', 'Horas extra', 'HE', 'Hora Extra']) ||
         0;
+      holidayDay = 
+        getNumField(elecRow, ['Precio Día extra/Festivo', 'Precio Día extra/festivo', 'Día extra/Festivo', 'Día festivo', 'Festivo']) ||
+        getNumField(baseRow, ['Precio Día extra/Festivo', 'Precio Día extra/festivo', 'Día extra/Festivo', 'Día festivo', 'Festivo']) ||
+        0;
     } else {
       if ((import.meta as any).env.DEV) {
         console.debug('[NOMINA.MENSUAL] getForRole - calculating for non-REF role:', normalized);
@@ -138,6 +142,7 @@ export function makeRolePrices(project: any) {
       jornada = getNumField(row, ['Precio jornada', 'Precio Jornada', 'Jornada', 'Precio dia', 'Precio día']) || 0;
       travelDay = getNumField(row, ['Travel day', 'Travel Day', 'Travel', 'Día de viaje', 'Dia de viaje', 'Día travel', 'Dia travel', 'TD']) || (jornada ? jornada / divTravel : 0);
       horaExtra = getNumField(row, ['Horas extras', 'Horas Extras', 'Hora extra', 'Horas extra', 'HE', 'Hora Extra']) || 0;
+      holidayDay = getNumField(row, ['Precio Día extra/Festivo', 'Precio Día extra/festivo', 'Día extra/Festivo', 'Día festivo', 'Festivo']) || 0;
       
       if ((import.meta as any).env.DEV) {
         console.debug('[NOMINA.MENSUAL] getForRole - calculated values:', { jornada, travelDay, horaExtra });
@@ -148,6 +153,7 @@ export function makeRolePrices(project: any) {
       jornada,
       travelDay,
       horaExtra,
+      holidayDay,
       transporte: num(p.transporteDia),
       km: num(p.kilometrajeKm),
       dietas: {
