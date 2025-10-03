@@ -51,6 +51,7 @@ interface MonthSectionProps {
   defaultOpen?: boolean;
   persistKeyBase: string;
   onExport?: (monthKey: string, enrichedRows: any[]) => void;
+  onExportPDF?: (monthKey: string, enrichedRows: any[]) => void;
   windowOverrideMap?: WindowOverride | null;
   // utils
   buildRefuerzoIndex: (weeks: any[]) => Set<string>;
@@ -74,6 +75,7 @@ function MonthSection({
   defaultOpen = false,
   persistKeyBase,
   onExport,
+  onExportPDF,
   windowOverrideMap = null,
   // utils
   buildRefuerzoIndex,
@@ -257,6 +259,7 @@ function MonthSection({
   }, [enriched]);
 
   const doExport = () => onExport?.(monthKey, enriched);
+  const doExportPDF = () => onExportPDF?.(monthKey, enriched);
 
   return (
     <section className='rounded-2xl border border-neutral-border bg-neutral-panel/90'>
@@ -272,15 +275,24 @@ function MonthSection({
         <h4 className='text-brand font-semibold m-0'>
           Nómina {monthLabelEs(monthKey)}
         </h4>
-        <div className='ml-auto'>
+        <div className='ml-auto flex gap-2'>
           <button
             className={btnExportCls}
             style={btnExportStyle}
             onClick={doExport}
-            title='Exportar nómina del mes'
+            title='Exportar nómina del mes (HTML)'
             type='button'
           >
-            Exportar
+            HTML
+          </button>
+          <button
+            className={btnExportCls}
+            style={{...btnExportStyle, background: '#f97316'}}
+            onClick={doExportPDF}
+            title='Exportar nómina del mes (PDF)'
+            type='button'
+          >
+            PDF
           </button>
         </div>
       </div>

@@ -35,7 +35,7 @@ export function Th({
 }: ThProps) {
   // Base classes
   const baseClasses =
-    'border border-neutral-border px-3 py-2 text-left bg-white/5 text-sm';
+    'border border-neutral-border px-3 py-1 text-left bg-white/5 text-sm';
 
   // Alignment classes
   const alignClasses: Record<'left' | 'center' | 'right', string> = {
@@ -71,7 +71,7 @@ export function Td({
   ...rest
 }: TdProps) {
   // Base classes
-  const baseClasses = 'align-top border border-neutral-border px-2 py-2';
+  const baseClasses = 'align-top border border-neutral-border px-2 py-1';
 
   // Alignment classes
   const alignClasses: Record<'top' | 'middle' | 'bottom', string> = {
@@ -102,7 +102,7 @@ export function Td({
 export function Row({ label, children, className = '', ...rest }: RowProps) {
   return (
     <tr className={className} {...rest}>
-      <td className='border border-neutral-border px-3 py-2 font-semibold bg-white/5 whitespace-nowrap text-sm align-top'>
+      <td className='border border-neutral-border px-3 py-1 font-semibold bg-white/5 whitespace-nowrap text-sm align-top'>
         {label}
       </td>
       {children}

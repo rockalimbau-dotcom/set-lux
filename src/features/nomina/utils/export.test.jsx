@@ -41,7 +41,8 @@ describe('nomina/utils/export', () => {
         nocturnidad: 0,
         penaltyLunch: 0,
         _totalExtras: 45.0,
-        _dietasLabel: 'Comida, Cena',
+        dietasCount: new Map([['Comida', 2], ['Cena', 1]]),
+        ticketTotal: 0,
         _totalDietas: 40.0,
         transporte: 1,
         _totalTrans: 20.0,
@@ -64,7 +65,8 @@ describe('nomina/utils/export', () => {
         nocturnidad: 1,
         penaltyLunch: 0,
         _totalExtras: 24.0,
-        _dietasLabel: 'Dieta completa + desayuno',
+        dietasCount: new Map([['Dieta completa + desayuno', 1]]),
+        ticketTotal: 0,
         _totalDietas: 50.0,
         transporte: 0,
         _totalTrans: 0.0,
@@ -95,10 +97,14 @@ describe('nomina/utils/export', () => {
       expect(html).toContain('<!DOCTYPE html>');
       expect(html).toContain('<html>');
       expect(html).toContain('<head>');
-      expect(html).toContain('<body style=');
-      expect(html).toContain('<table style=');
+      expect(html).toContain('<body>');
+      expect(html).toContain('<div class="container">');
+      expect(html).toContain('<div class="header">');
+      expect(html).toContain('<div class="content">');
+      expect(html).toContain('<table>');
       expect(html).toContain('<thead>');
       expect(html).toContain('<tbody>');
+      expect(html).toContain('</html>');
     });
 
     it('includes correct title and project name', () => {
@@ -110,7 +116,8 @@ describe('nomina/utils/export', () => {
       );
 
       expect(html).toContain('<title>Test Project – Nómina Enero 2023</title>');
-      expect(html).toContain('<h2 style="margin:0 0 10px 0;">Test Project – Nómina Enero 2023</h2>');
+      expect(html).toContain('<h1>Nómina - Enero 2023</h1>');
+      expect(html).toContain('<div class="info-panel">');
     });
 
     it('includes all required table headers', () => {
@@ -146,14 +153,16 @@ describe('nomina/utils/export', () => {
       );
 
       // Check first row data
-      expect(html).toContain('Gaffer — John Doe');
+      expect(html).toContain('<span class="role-badge"');
+      expect(html).toContain('>Gaffer</span>John Doe');
       expect(html).toContain('5'); // _worked
       expect(html).toContain('250.00'); // _totalDias
       expect(html).toContain('2'); // _travel
       expect(html).toContain('100.00'); // _totalTravel
       expect(html).toContain('3'); // extras
       expect(html).toContain('45.00'); // _totalExtras
-      expect(html).toContain('Comida, Cena'); // _dietasLabel
+      expect(html).toContain('Comida x2'); // dietas pills
+      expect(html).toContain('Cena x1'); // dietas pills
       expect(html).toContain('40.00'); // _totalDietas
       expect(html).toContain('1'); // transporte
       expect(html).toContain('20.00'); // _totalTrans
@@ -170,14 +179,15 @@ describe('nomina/utils/export', () => {
         mockMonthLabelEs
       );
 
-      expect(html).toContain('Eléctrico — Jane Smith');
+      expect(html).toContain('<span class="role-badge"');
+      expect(html).toContain('>Eléctrico</span>Jane Smith');
       expect(html).toContain('4'); // _worked
       expect(html).toContain('200.00'); // _totalDias
       expect(html).toContain('1'); // _travel
       expect(html).toContain('40.00'); // _totalTravel
       expect(html).toContain('2'); // extras
       expect(html).toContain('24.00'); // _totalExtras
-      expect(html).toContain('Dieta completa + desayuno'); // _dietasLabel
+      expect(html).toContain('Dieta completa + desayuno x1'); // dietas pills
       expect(html).toContain('50.00'); // _totalDietas
       expect(html).toContain('0'); // transporte
       expect(html).toContain('0.00'); // _totalTrans
@@ -208,7 +218,7 @@ describe('nomina/utils/export', () => {
       );
 
       expect(html).toContain('<title>Proyecto – Nómina Enero 2023</title>');
-      expect(html).toContain('<h2 style="margin:0 0 10px 0;">Proyecto – Nómina Enero 2023</h2>');
+      expect(html).toContain('<h1>Nómina - Enero 2023</h1>');
     });
 
     it('handles null project', () => {
@@ -220,7 +230,7 @@ describe('nomina/utils/export', () => {
       );
 
       expect(html).toContain('<title>Proyecto – Nómina Enero 2023</title>');
-      expect(html).toContain('<h2 style="margin:0 0 10px 0;">Proyecto – Nómina Enero 2023</h2>');
+      expect(html).toContain('<h1>Nómina - Enero 2023</h1>');
     });
 
     it('escapes HTML characters in data', () => {
@@ -234,7 +244,8 @@ describe('nomina/utils/export', () => {
           _totalTravel: 100.0,
           extras: 3,
           _totalExtras: 45.0,
-          _dietasLabel: 'Comida & Cena',
+          dietasCount: new Map([['Comida', 1], ['Cena', 1]]),
+          ticketTotal: 0,
           _totalDietas: 40.0,
           transporte: 1,
           _totalTrans: 20.0,
@@ -253,7 +264,8 @@ describe('nomina/utils/export', () => {
 
       expect(html).toContain('Gaffer &amp; Director');
       expect(html).toContain('John &lt;script&gt;alert("xss")&lt;/script&gt;');
-      expect(html).toContain('Comida &amp; Cena');
+      expect(html).toContain('Comida x1');
+      expect(html).toContain('Cena x1');
       expect(html).not.toContain('<script>');
     });
 
@@ -265,7 +277,7 @@ describe('nomina/utils/export', () => {
         mockMonthLabelEs
       );
 
-      expect(html).toContain('<footer style="margin-top:30px;font-size:10px;color:#888;">Generado con SetLux</footer>');
+      expect(html).toContain('Generado automáticamente por');
     });
 
     it('applies correct CSS styles', () => {
@@ -276,12 +288,13 @@ describe('nomina/utils/export', () => {
         mockMonthLabelEs
       );
 
-      expect(html).toContain('font-family:system-ui');
-      expect(html).toContain('border:1px solid #999');
-      expect(html).toContain('background:#1D4ED8');
-      expect(html).toContain('color:#fff');
-      expect(html).toContain('text-align:right');
-      expect(html).toContain('font-weight:600');
+      expect(html).toContain('font-family: \'Segoe UI\'');
+      expect(html).toContain('@page { size: A4 landscape;');
+      expect(html).toContain('.header');
+      expect(html).toContain('.info-panel');
+      expect(html).toContain('border-bottom: 2px solid #1e40af');
+      expect(html).toContain('text-align: right');
+      expect(html).toContain('font-weight: 600');
     });
 
     it('handles rows with missing properties', () => {
@@ -295,7 +308,8 @@ describe('nomina/utils/export', () => {
           _totalTravel: 100,
           extras: 3,
           _totalExtras: 45,
-          _dietasLabel: 'Comida',
+          dietasCount: new Map([['Comida', 1]]),
+          ticketTotal: 0,
           _totalDietas: 40,
           transporte: 1,
           _totalTrans: 20,
@@ -312,7 +326,8 @@ describe('nomina/utils/export', () => {
         mockMonthLabelEs
       );
 
-      expect(html).toContain('Gaffer — John Doe');
+      expect(html).toContain('<span class="role-badge"');
+      expect(html).toContain('>Gaffer</span>John Doe');
       // Should handle undefined values gracefully
     });
 
@@ -327,7 +342,8 @@ describe('nomina/utils/export', () => {
           _totalTravel: 100,
           extras: 3,
           _totalExtras: 45,
-          _dietasLabel: 'Comida',
+          dietasCount: new Map([['Comida', 1]]),
+          ticketTotal: 0,
           _totalDietas: 40,
           transporte: 1,
           _totalTrans: 20,
@@ -344,7 +360,8 @@ describe('nomina/utils/export', () => {
         mockMonthLabelEs
       );
 
-      expect(html).toContain('Gaffer — John Doe');
+      expect(html).toContain('<span class="role-badge"');
+      expect(html).toContain('>Gaffer</span>John Doe');
       // Should handle null/undefined values gracefully
     });
 
@@ -361,7 +378,8 @@ describe('nomina/utils/export', () => {
           _totalTravel: 0,
           extras: 0, // No extras
           _totalExtras: 0,
-          _dietasLabel: '',
+          dietasCount: new Map(),
+          ticketTotal: 0,
           _totalDietas: 0, // No dietas
           transporte: 0, // No transporte
           _totalTrans: 0,
@@ -412,7 +430,8 @@ describe('nomina/utils/export', () => {
           _totalTravel: 0,
           extras: 3, // Has extras
           _totalExtras: 45.0,
-          _dietasLabel: '',
+          dietasCount: new Map(),
+          ticketTotal: 0,
           _totalDietas: 0, // No dietas
           transporte: 0, // No transporte
           _totalTrans: 0,
@@ -488,7 +507,8 @@ describe('nomina/utils/export', () => {
           nocturnidad: 1,
           penaltyLunch: 0,
           _totalExtras: 60.0,
-          _dietasLabel: '',
+          dietasCount: new Map(),
+          ticketTotal: 0,
           _totalDietas: 0,
           transporte: 0,
           _totalTrans: 0,
@@ -505,8 +525,12 @@ describe('nomina/utils/export', () => {
         mockMonthLabelEs
       );
 
-      // Should contain the formatted extras text
-      expect(html).toContain('4&lt;br/&gt;Horas extra x2&lt;br/&gt;Turn Around x1&lt;br/&gt;Nocturnidad x1');
+      // Should contain the formatted extras text with new CSS classes
+      expect(html).toContain('extras-total');
+      expect(html).toContain('extras-pills');
+      expect(html).toContain('2 h');
+      expect(html).toContain('Turn Around');
+      expect(html).toContain('Nocturnidad');
     });
 
     it('should handle empty extras correctly', () => {
@@ -526,7 +550,8 @@ describe('nomina/utils/export', () => {
           nocturnidad: 0,
           penaltyLunch: 0,
           _totalExtras: 0,
-          _dietasLabel: '',
+          dietasCount: new Map(),
+          ticketTotal: 0,
           _totalDietas: 0,
           transporte: 0,
           _totalTrans: 0,

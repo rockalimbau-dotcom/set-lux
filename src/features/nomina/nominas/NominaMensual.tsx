@@ -11,7 +11,7 @@ import {
   isoInRange,
 } from '../utils/calc';
 import { monthKeyFromISO, monthLabelEs } from '../utils/date';
-import { buildNominaMonthHTML, openPrintWindow } from '../utils/export';
+import { buildNominaMonthHTML, openPrintWindow, exportToPDF } from '../utils/export';
 import {
   usePlanWeeks,
   stripPR,
@@ -117,6 +117,20 @@ export default function NominaMensual({ project }: NominaMensualProps) {
       monthLabelEs
     );
     openPrintWindow(html);
+  };
+
+  // Export to PDF
+  const exportMonthPDF = async (monthKey: string, enrichedRows: any[]) => {
+    const success = await exportToPDF(
+      project,
+      monthKey,
+      enrichedRows,
+      monthLabelEs
+    );
+    if (!success) {
+      // Fallback to HTML if PDF fails
+      exportMonth(monthKey, enrichedRows);
+    }
   };
 
   const basePersist = `nomina_${project?.id || project?.nombre || 'tmp'}`;
@@ -244,6 +258,7 @@ export default function NominaMensual({ project }: NominaMensualProps) {
             defaultOpen={i === 0}
             persistKeyBase={basePersist}
             onExport={exportMonth}
+            onExportPDF={exportMonthPDF}
             windowOverrideMap={windowOverrideMap}
             buildRefuerzoIndex={buildRefuerzoIndex}
             stripPR={stripPR}
