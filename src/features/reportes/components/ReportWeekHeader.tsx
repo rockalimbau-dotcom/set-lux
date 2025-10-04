@@ -39,15 +39,6 @@ export default function ReportWeekHeader({
       <div className='ml-auto flex gap-2'>
         <button
           className={btnExportCls}
-          style={btnExportStyle}
-          onClick={onExportHTML}
-          title='Exportar semana (HTML)'
-          type='button'
-        >
-          HTML
-        </button>
-        <button
-          className={btnExportCls}
           style={{ ...(btnExportStyle || {}), background: '#f97316' }}
           onClick={onExportPDF}
           title='Exportar semana (PDF)'

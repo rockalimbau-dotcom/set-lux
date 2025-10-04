@@ -278,15 +278,6 @@ function MonthSection({
         <div className='ml-auto flex gap-2'>
           <button
             className={btnExportCls}
-            style={btnExportStyle}
-            onClick={doExport}
-            title='Exportar nómina del mes (HTML)'
-            type='button'
-          >
-            HTML
-          </button>
-          <button
-            className={btnExportCls}
             style={{...btnExportStyle, background: '#f97316'}}
             onClick={doExportPDF}
             title='Exportar nómina del mes (PDF)'

@@ -4,7 +4,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 import FieldRow from '../components/FieldRow';
 import ListRow from '../components/ListRow';
-import { renderExportHTML, renderExportAllHTML, buildNecesidadesHTML, exportToPDF, exportAllToPDF } from '../utils/export';
+import { exportToPDF, exportAllToPDF } from '../utils/export';
 import { storage } from '@shared/services/localStorage.service';
 
 type AnyRecord = Record<string, any>;
@@ -269,25 +269,6 @@ export default function NecesidadesTab({ project }: NecesidadesTabProps) {
     });
   };
 
-  const exportWeekHTML = (weekId: string) => {
-    const w: AnyRecord = needs[weekId];
-    if (!w) return;
-    const valuesByDay = Array.from({ length: 7 }).map((_, i) => (w.days as AnyRecord)?.[i] || {});
-    console.log('🔍 Project object:', project);
-    console.log('🔍 Project nombre:', project?.nombre);
-    console.log('🔍 Project produccion:', project?.produccion);
-    const html = buildNecesidadesHTML(
-      project,
-      w.label || 'Semana',
-      w.startDate || '',
-      valuesByDay
-    );
-    const win = window.open('', '_blank');
-    if (win) {
-      win.document.write(html);
-      win.document.close();
-    }
-  };
 
   const exportWeekPDF = async (weekId: string) => {
     const w: AnyRecord = needs[weekId];
@@ -333,18 +314,6 @@ export default function NecesidadesTab({ project }: NecesidadesTabProps) {
     border: '1px solid rgba(255,255,255,0.08)',
   } as React.CSSProperties;
 
-  const exportAllNeedsHTML = () => {
-    const html = renderExportAllHTML(
-      (project as AnyRecord)?.nombre || 'Proyecto',
-      weekEntries,
-      needs
-    );
-    const win = window.open('', '_blank');
-    if (win) {
-      win.document.write(html);
-      win.document.close();
-    }
-  };
 
   const exportAllNeedsPDF = async () => {
     try {
@@ -363,14 +332,6 @@ export default function NecesidadesTab({ project }: NecesidadesTabProps) {
     <div className='space-y-4'>
       {weekEntries.length > 0 && (
         <div className='flex items-center justify-end gap-2'>
-          <button
-            className={btnExportCls}
-            style={btnExportStyle}
-            onClick={exportAllNeedsHTML}
-            title='Exportar todas las semanas (HTML)'
-          >
-            HTML
-          </button>
           <button
             className={btnExportCls}
             style={{...btnExportStyle, background: '#f97316'}}
@@ -410,14 +371,6 @@ export default function NecesidadesTab({ project }: NecesidadesTabProps) {
                   </div>
                 </div>
                 <div className='flex items-center gap-2'>
-                  <button
-                    className={btnExportCls}
-                    style={btnExportStyle}
-                    onClick={() => exportWeekHTML(wid)}
-                    title='Exportar semana HTML'
-                  >
-                    HTML
-                  </button>
                   <button
                     className={btnExportCls}
                     style={{...btnExportStyle, background: '#f97316'}}
