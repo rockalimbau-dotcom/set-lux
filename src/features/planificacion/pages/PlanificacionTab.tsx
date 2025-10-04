@@ -8,6 +8,7 @@ import PlanScopeSection from '../components/PlanScopeSection';
 import { relabelWeekByCalendar, relabelWeekByCalendarDynamic } from '../utils/calendar';
 import { DAYS, mdKey } from '../constants';
 import { renderExportHTML } from '../utils/export';
+import { exportToPDF, exportAllToPDF } from '../utils/exportPDF';
 import { sortByHierarchy, syncAllWeeks } from '../utils/sync';
 import {
   addPreWeekAction,
@@ -479,15 +480,60 @@ export default function PlanificacionTab({
     openHtmlInNewTab(`${((project as AnyRecord)?.nombre || 'Proyecto') as string} – ${week.label}`, body);
   };
 
+  const exportWeekPDF = async (week: AnyRecord) => {
+    try {
+      await exportToPDF(
+        project,
+        [week] as any,
+        [...DAYS] as any,
+        parseYYYYMMDD,
+        addDays
+      );
+    } catch (error) {
+      console.error('Error exporting week PDF:', error);
+    }
+  };
+
+  const exportScopePDF = async (scope: 'pre' | 'pro' | 'all') => {
+    try {
+      let weeksToExport: AnyRecord[] = [];
+      
+      if (scope === 'pre') {
+        weeksToExport = preWeeks;
+      } else if (scope === 'pro') {
+        weeksToExport = proWeeks;
+      } else {
+        weeksToExport = [...preWeeks, ...proWeeks];
+      }
+
+      if (weeksToExport.length === 0) {
+        console.log(`No weeks to export for scope: ${scope}`);
+        return;
+      }
+
+      await exportAllToPDF(
+        project,
+        weeksToExport as any,
+        [...DAYS] as any,
+        parseYYYYMMDD,
+        addDays,
+        scope === 'all' ? undefined : scope
+      );
+    } catch (error) {
+      console.error('Error exporting scope PDF:', error);
+    }
+  };
+
   return (
     <div id='print-root' className='space-y-6'>
       <div className='no-pdf flex items-center justify-end gap-2'>
         <button
           className={btnExportCls}
-          style={btnExportStyle}
-          onClick={() => exportScope('all')}
+          style={{...btnExportStyle, background: '#f97316'}}
+          onClick={() => exportScopePDF('all')}
+          title='Exportar toda la planificación (PDF)'
         >
-          Exportar TODO
+          PDF Entero
         </button>
       </div>
 
@@ -497,6 +543,7 @@ export default function PlanificacionTab({
         onToggle={() => setOpenPre(v => !v)}
         onAdd={addPreWeek}
         onExport={() => exportScope('pre')}
+        onExportPDF={() => exportScopePDF('pre')}
         btnExportCls={btnExportCls}
         btnExportStyle={btnExportStyle}
         scope='pre'
@@ -513,7 +560,8 @@ export default function PlanificacionTab({
         pickupTeam={pickRoster}
         reinforcements={refsRoster}
         onExportWeek={exportWeek as any}
-        emptyText='No hay semanas de preproducción. Pulsa “+ Semana” para añadir la Semana -1.'
+        onExportWeekPDF={exportWeekPDF as any}
+        emptyText='No hay semanas de preproducción. Pulsa "+ Semana" para añadir la Semana -1.'
         containerId='pre-block'
         weeksOnlyId='pre-weeks-only'
       />
@@ -524,6 +572,7 @@ export default function PlanificacionTab({
         onToggle={() => setOpenPro(v => !v)}
         onAdd={addProWeek}
         onExport={() => exportScope('pro')}
+        onExportPDF={() => exportScopePDF('pro')}
         btnExportCls={btnExportCls}
         btnExportStyle={btnExportStyle}
         scope='pro'
@@ -540,7 +589,8 @@ export default function PlanificacionTab({
         pickupTeam={pickRoster}
         reinforcements={refsRoster}
         onExportWeek={exportWeek as any}
-        emptyText='No hay semanas de producción. Pulsa “+ Semana” para añadir la Semana 1.'
+        onExportWeekPDF={exportWeekPDF as any}
+        emptyText='No hay semanas de producción. Pulsa "+ Semana" para añadir la Semana 1.'
         containerId='pro-block'
         weeksOnlyId='pro-weeks-only'
       />

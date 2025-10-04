@@ -7,6 +7,7 @@ type AccordionProps = {
   onToggle: () => void;
   onAdd: () => void;
   onExport: () => void;
+  onExportPDF: () => void;
   children: React.ReactNode;
   btnExportCls?: string;
   btnExportStyle?: React.CSSProperties;
@@ -18,6 +19,7 @@ export default function Accordion({
   onToggle,
   onAdd,
   onExport,
+  onExportPDF,
   children,
   btnExportCls,
   btnExportStyle,
@@ -36,10 +38,11 @@ export default function Accordion({
         <div className='no-pdf flex items-center gap-2'>
           <button
             className={btnExportCls}
-            style={btnExportStyle}
-            onClick={onExport}
+            style={{...btnExportStyle, background: '#f97316'}}
+            onClick={onExportPDF}
+            title='Exportar sección (PDF)'
           >
-            Exportar
+            {title === 'Preproducción' ? 'PDF Pre' : title === 'Producción' ? 'PDF Pro' : 'PDF'}
           </button>
           <button
             onClick={onAdd}

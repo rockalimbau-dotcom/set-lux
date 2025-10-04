@@ -38,6 +38,7 @@ type WeekCardProps = {
   pickupTeam: AnyRecord[];
   reinforcements: AnyRecord[];
   onExportWeek: () => void;
+  onExportWeekPDF: () => void;
   btnExportCls?: string;
   btnExportStyle?: React.CSSProperties;
   teamList: AnyRecord[];
@@ -82,6 +83,7 @@ function WeekCard({
   pickupTeam,
   reinforcements,
   onExportWeek,
+  onExportWeekPDF,
   btnExportCls,
   btnExportStyle,
   teamList,
@@ -168,11 +170,11 @@ function WeekCard({
             variant='export'
             size='sm'
             className={`no-pdf ${btnExportCls || ''}`}
-            style={btnExportStyle}
-            onClick={onExportWeek}
-            title='Exportar semana'
+            style={{...btnExportStyle, background: '#f97316'}}
+            onClick={onExportWeekPDF}
+            title='Exportar semana (PDF)'
           >
-            Exportar semana
+            PDF
           </Button>
           <Button
             variant='duplicate'

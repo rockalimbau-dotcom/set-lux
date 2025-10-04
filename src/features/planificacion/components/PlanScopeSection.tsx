@@ -11,6 +11,7 @@ type PlanScopeSectionProps = {
   onToggle: () => void;
   onAdd: () => void;
   onExport: () => void;
+  onExportPDF: () => void;
   btnExportCls?: string;
   btnExportStyle?: React.CSSProperties;
   scope: 'pre' | 'pro';
@@ -44,6 +45,7 @@ type PlanScopeSectionProps = {
   pickupTeam: AnyRecord[];
   reinforcements: AnyRecord[];
   onExportWeek: (week: AnyRecord) => void;
+  onExportWeekPDF: (week: AnyRecord) => void;
   emptyText: string;
   containerId: string;
   weeksOnlyId: string;
@@ -56,6 +58,7 @@ function PlanScopeSection(props: PlanScopeSectionProps) {
     onToggle,
     onAdd,
     onExport,
+    onExportPDF,
     btnExportCls,
     btnExportStyle,
     scope,
@@ -72,6 +75,7 @@ function PlanScopeSection(props: PlanScopeSectionProps) {
     pickupTeam,
     reinforcements,
     onExportWeek,
+    onExportWeekPDF,
     emptyText,
     containerId,
     weeksOnlyId,
@@ -94,10 +98,11 @@ function PlanScopeSection(props: PlanScopeSectionProps) {
       pickupTeam={pickupTeam}
       reinforcements={reinforcements}
       onExportWeek={() => onExportWeek(w)}
+      onExportWeekPDF={() => onExportWeekPDF(w)}
       btnExportCls={btnExportCls}
       btnExportStyle={btnExportStyle}
     />
-  )), [weeks, scope, duplicateWeek, deleteWeek, setWeekStart, setDayField, addMemberTo, removeMemberFrom, teamList, baseTeam, prelightTeam, pickupTeam, reinforcements, onExportWeek, btnExportCls, btnExportStyle]);
+  )), [weeks, scope, duplicateWeek, deleteWeek, setWeekStart, setDayField, addMemberTo, removeMemberFrom, teamList, baseTeam, prelightTeam, pickupTeam, reinforcements, onExportWeek, onExportWeekPDF, btnExportCls, btnExportStyle]);
 
   return (
     <Accordion
@@ -106,6 +111,7 @@ function PlanScopeSection(props: PlanScopeSectionProps) {
       onToggle={onToggle}
       onAdd={onAdd}
       onExport={onExport}
+      onExportPDF={onExportPDF}
       btnExportCls={btnExportCls}
       btnExportStyle={btnExportStyle}
     >
