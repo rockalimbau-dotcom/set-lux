@@ -105,7 +105,8 @@ export default function ReportesSemana({
     const { day } = findWeekAndDay(iso);
     if (!day) return 'Añadelo en Planificación';
     if ((day.tipo || '') === 'Descanso') return 'DESCANSO';
-    const etiqueta = day.tipo && day.tipo !== 'Rodaje' ? `${day.tipo}: ` : '';
+    // Para "Rodaje Festivo", no mostrar el prefijo, solo el horario o "Añadelo en Planificación"
+    const etiqueta = day.tipo && day.tipo !== 'Rodaje' && day.tipo !== 'Rodaje Festivo' ? `${day.tipo}: ` : '';
     if (!day.start || !day.end) return `${etiqueta}Añadelo en Planificación`;
     return `${etiqueta}${day.start}–${day.end}`;
   };

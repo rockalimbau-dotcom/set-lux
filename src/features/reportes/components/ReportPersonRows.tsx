@@ -171,7 +171,6 @@ function ReportPersonRows({
                               }}
                             >
                               <option value=''>
-                                {parsed.items.size ? 'Añadir' : ''}
                               </option>
                               {dietasOptions.map(opt => (
                                 <option key={opt as string} value={opt as string}>
