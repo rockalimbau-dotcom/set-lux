@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState, useRef, memo } from 'react';
 import { PRICE_ROLES } from './shared.constants';
 import { extractFestivosDatesForPlan, renderWithParams, visibleToTemplate, loadJSON, TextAreaAuto, InfoCard, ParamInput } from './shared';
 import { DEFAULT_FESTIVOS_TEXT, generateDynamicFestivosText } from '@shared/constants/festivos';
+import { exportCondicionesToPDF } from '../utils/exportPDF';
 
 type AnyRecord = Record<string, any>;
 
@@ -55,7 +56,12 @@ const PRICE_HEADERS_PUBLI = [
 function CondicionesPublicidad({
   project,
   onChange = () => {},
-}: { project: AnyRecord | null | undefined; onChange?: (p: AnyRecord) => void }) {
+  onRegisterExport,
+}: { 
+  project: AnyRecord | null | undefined; 
+  onChange?: (p: AnyRecord) => void;
+  onRegisterExport?: (fn: () => void) => void;
+}) {
   const storageKey = useMemo(() => {
     const base = (project as AnyRecord)?.id || (project as AnyRecord)?.nombre || 'tmp';
     return `cond_${base}_publicidad`;
@@ -187,6 +193,26 @@ function CondicionesPublicidad({
   };
 
   const p: AnyRecord = model.params || {};
+
+  // Registrar función de exportación PDF
+  useEffect(() => {
+    if (onRegisterExport) {
+      onRegisterExport(async () => {
+        try {
+          await exportCondicionesToPDF(
+            project,
+            'publicidad',
+            model,
+            PRICE_HEADERS_PUBLI,
+            PRICE_ROLES
+          );
+        } catch (error) {
+          console.error('Error exporting condiciones publicidad PDF:', error);
+          alert('Error al generar el PDF. Por favor, inténtalo de nuevo.');
+        }
+      });
+    }
+  }, [model, project, onRegisterExport]);
 
   return (
     <div className='space-y-6'>

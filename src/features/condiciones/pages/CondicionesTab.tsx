@@ -26,17 +26,12 @@ export default function CondicionesTab({ project, mode, onChange = () => {} }: C
 
   const btnExportCls = 'px-3 py-2 rounded-lg text-sm font-semibold';
   const btnExportStyle: React.CSSProperties = {
-    background: '#1D4ED8',
+    background: '#f97316',
     color: '#FFFFFF',
     border: '1px solid rgba(255,255,255,0.08)',
   };
 
-  const exportLabel =
-    effectiveMode === 'semanal'
-      ? 'Exportar Semanal'
-      : effectiveMode === 'mensual'
-        ? 'Exportar Mensual'
-        : 'Exportar Publicidad';
+  const exportLabel = 'PDF';
 
   return (
     <div className='space-y-6'>

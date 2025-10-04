@@ -5,10 +5,12 @@ import { useLocalStorage } from '@shared/hooks/useLocalStorage';
 import { PRICE_HEADERS, PRICE_ROLES } from './shared.constants';
 import { extractFestivosDatesForPlan, renderWithParams, visibleToTemplate, loadJSON, TextAreaAuto, InfoCard, ParamInput } from './shared';
 import { DEFAULT_FESTIVOS_TEXT, generateDynamicFestivosText } from '@shared/constants/festivos';
+import { exportCondicionesToPDF } from '../utils/exportPDF';
 
 interface CondicionesSemanalProps {
   project: { id?: string; nombre?: string };
   onChange?: (patch: any) => void;
+  onRegisterExport?: (fn: () => void) => void;
 }
 
 /** Plantillas por defecto */
@@ -54,7 +56,7 @@ De esta forma el gaffer y best boy serán dados de alta durante la pre producci�
 
 const defaultConvenio = `También se tendrá en cuenta el convenio “Resolución de 22 de marzo de 2024, de la Dirección General de Trabajo, por la que se registra y publica el III Convenio colectivo de ámbito estatal de la industria de producción audiovisual (técnicos).`;
 
-function CondicionesSemanal({ project, onChange = () => {} }: CondicionesSemanalProps) {
+function CondicionesSemanal({ project, onChange = () => {}, onRegisterExport }: CondicionesSemanalProps) {
   const storageKey = useMemo(() => {
     const base = project?.id || project?.nombre || 'tmp';
     return `cond_${base}_semanal`;
@@ -202,6 +204,26 @@ function CondicionesSemanal({ project, onChange = () => {} }: CondicionesSemanal
   };
 
   const p = (model.params || {}) as any;
+
+  // Registrar función de exportación PDF
+  useEffect(() => {
+    if (onRegisterExport) {
+      onRegisterExport(async () => {
+        try {
+          await exportCondicionesToPDF(
+            project,
+            'semanal',
+            model,
+            PRICE_HEADERS,
+            PRICE_ROLES
+          );
+        } catch (error) {
+          console.error('Error exporting condiciones semanal PDF:', error);
+          alert('Error al generar el PDF. Por favor, inténtalo de nuevo.');
+        }
+      });
+    }
+  }, [model, project, onRegisterExport]);
 
   return (
     <div className='space-y-6'>
