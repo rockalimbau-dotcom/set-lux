@@ -206,6 +206,15 @@ export function buildNecesidadesHTML(
           font-weight: 500;
         }
         
+        .week-title {
+          font-size: 14px;
+          font-weight: 600;
+          color: #1e293b;
+          margin: 12px 0 8px 0;
+          padding: 4px 0;
+          border-bottom: 1px solid #e2e8f0;
+        }
+        
         .table-container {
           background: white;
           border-radius: 6px;
@@ -268,7 +277,7 @@ export function buildNecesidadesHTML(
     <body>
       <div class="container">
         <div class="header">
-          <h1>Necesidades - ${esc(weekLabel)}</h1>
+          <h1>Necesidades - ${weekLabel.includes('-') ? 'Preproducción' : weekLabel.match(/\d+/) ? 'Producción' : 'Semana'}</h1>
         </div>
         
         <div class="content">
@@ -282,6 +291,8 @@ export function buildNecesidadesHTML(
               <div class="info-value">${esc(project?.nombre || 'Proyecto')}</div>
             </div>
           </div>
+          
+          <div class="week-title">${esc(weekLabel)}</div>
           
           <div class="table-container">
             <table>
@@ -446,6 +457,15 @@ export function buildNecesidadesHTMLForPDF(
           font-weight: 500;
         }
         
+        .week-title {
+          font-size: 14px;
+          font-weight: 600;
+          color: #1e293b;
+          margin: 12px 0 8px 0;
+          padding: 4px 0;
+          border-bottom: 1px solid #e2e8f0;
+        }
+        
         .table-container {
           background: white;
           border-radius: 6px;
@@ -530,7 +550,7 @@ export function buildNecesidadesHTMLForPDF(
     <body>
       <div class="container-pdf">
         <div class="header">
-          <h1>Necesidades - ${esc(weekLabel)}</h1>
+          <h1>Necesidades - ${weekLabel.includes('-') ? 'Preproducción' : weekLabel.match(/\d+/) ? 'Producción' : 'Semana'}</h1>
         </div>
         
         <div class="content">
@@ -544,6 +564,8 @@ export function buildNecesidadesHTMLForPDF(
               <div class="info-value">${esc(project?.nombre || 'Proyecto')}</div>
             </div>
           </div>
+          
+          <div class="week-title">${esc(weekLabel)}</div>
           
           <div class="table-container">
             <table>
