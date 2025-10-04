@@ -5,19 +5,19 @@ export default {
     extend: {
       colors: {
         brand: {
-          light: '#60a5fa',
-          DEFAULT: '#2563eb',
-          dark: '#1e40af',
+          light: '#60a5fa', // Azul claro para enlaces y acentos
+          DEFAULT: '#f97316', // Naranja brillante principal
+          dark: '#ea580c', // Naranja más oscuro
         },
         accent: {
-          DEFAULT: '#F59E0B',
+          DEFAULT: '#60a5fa', // Azul claro para acentos
         },
         neutral: {
-          bg: '#0d0d0d',
-          panel: '#1a1a1a',
-          border: '#2d2d2d',
-          text: '#e5e5e5',
-          surface: '#141414',
+          bg: '#1a2b40', // Azul marino profundo de fondo
+          panel: '#2a4058', // Azul oscuro para paneles
+          border: '#3b5568', // Borde más suave
+          text: '#ffffff', // Texto blanco
+          surface: '#1e3a52', // Superficie de inputs
         },
       },
       fontFamily: {

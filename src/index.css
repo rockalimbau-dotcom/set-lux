@@ -8,6 +8,25 @@
 }
 
 body {
-  @apply bg-neutral-bg text-neutral-text font-sans;
+  background-color: #1a2b40 !important;
+  color: #ffffff !important;
+  font-family: 'Poppins', 'Inter', system-ui, sans-serif;
   margin: 0;
+}
+
+/* Forzar colores específicos */
+.bg-neutral-bg {
+  background-color: #1a2b40 !important;
+}
+
+.bg-neutral-panel {
+  background-color: #2a4058 !important;
+}
+
+.bg-brand {
+  background-color: #f97316 !important;
+}
+
+.text-brand-light {
+  color: #60a5fa !important;
 }

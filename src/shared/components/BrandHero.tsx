@@ -6,17 +6,16 @@ interface BrandHeroProps {
   tagline?: string;
 }
 
-const BrandHero = React.memo(function BrandHero({ tagline = 'All in One' }: BrandHeroProps) {
+const BrandHero = React.memo(function BrandHero({ tagline = 'ALL IN ONE' }: BrandHeroProps) {
   return (
-    <div className='text-center mb-8'>
-      <div className='mx-auto mb-4 grid place-items-center'>
+    <div className='text-center mb-12'>
+      <div className='mx-auto mb-6 grid place-items-center'>
         <LogoIcon size={120} />
       </div>
-      <h1 className='text-3xl font-extrabold tracking-wide leading-tight select-none'>
-        <span className='text-brand'>Set</span>
-        <span className='text-[#F59E0B]'>Lux</span>
+      <h1 className='text-6xl font-bold tracking-wide leading-tight select-none' style={{color: '#ffffff'}}>
+        SetLux
       </h1>
-      <p className='mt-1 text-sm uppercase tracking-[0.18em] text-zinc-300 select-none'>
+      <p className='mt-4 text-lg uppercase tracking-[0.2em] select-none font-medium' style={{color: '#60a5fa'}}>
         {tagline}
       </p>
     </div>

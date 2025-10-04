@@ -120,15 +120,15 @@ function AppInner() {
       <Route
         path='/'
         element={
-          <div className='min-h-screen flex items-center justify-center bg-neutral-bg text-neutral-text'>
+          <div className='min-h-screen flex items-center justify-center' style={{backgroundColor: '#1a2b40', color: '#ffffff'}}>
             <div className='w-full max-w-md'>
               <BrandHero tagline='All in One' />
 
-              <div className='rounded-3xl border border-neutral-border bg-neutral-panel/90 backdrop-blur p-8 shadow-xl'>
+              <div className='rounded-2xl border border-neutral-border backdrop-blur p-8 shadow-2xl' style={{backgroundColor: '#2a4058'}}>
                 {mode === 'login' ? (
                   <form className='space-y-6' onSubmit={handleLoginSubmit}>
                     <div className='space-y-2'>
-                      <label className='block text-sm font-medium text-zinc-300'>
+                      <label className='block text-sm font-medium text-white'>
                         Usuario
                       </label>
                       <Input
@@ -142,7 +142,7 @@ function AppInner() {
                     </div>
 
                     <div className='space-y-2'>
-                      <label className='block text-sm font-medium text-zinc-300'>
+                      <label className='block text-sm font-medium text-white'>
                         Contraseña
                       </label>
                       <Input
@@ -160,19 +160,23 @@ function AppInner() {
                       variant='primary'
                       size='lg'
                       className='w-full'
+                      style={{backgroundColor: '#f97316', borderColor: '#f97316'}}
                     >
                       Iniciar sesión
                     </Button>
 
                     <div className='text-center'>
-                      <Button
+                      <button
                         type='button'
                         onClick={() => setMode('register')}
-                        variant='ghost'
-                        className='w-full'
+                        className='text-sm transition-colors'
+                        style={{color: '#f97316'}}
                       >
-                        Regístrate
-                      </Button>
+                        ¿No tienes cuenta?{' '}
+                        <span className='font-medium hover:underline'>
+                          Regístrate
+                        </span>
+                      </button>
                     </div>
                   </form>
                 ) : (
@@ -182,7 +186,8 @@ function AppInner() {
                       onClick={() => setMode('login')}
                       variant='ghost'
                       size='sm'
-                      className='mb-6 text-zinc-400 hover:text-brand'
+                      className='mb-6'
+                      style={{color: '#f97316'}}
                     >
                       ← Volver
                     </Button>
@@ -190,7 +195,7 @@ function AppInner() {
                     <form className='space-y-5' onSubmit={handleRegisterSubmit}>
                       <div className='grid grid-cols-2 gap-4'>
                         <div className='space-y-2'>
-                          <label className='block text-sm font-medium text-zinc-300'>
+                          <label className='block text-sm font-medium text-white'>
                             Nombre
                           </label>
                           <Input
@@ -203,7 +208,7 @@ function AppInner() {
                           />
                         </div>
                         <div className='space-y-2'>
-                          <label className='block text-sm font-medium text-zinc-300'>
+                          <label className='block text-sm font-medium text-white'>
                             Apellido
                           </label>
                           <Input
@@ -218,7 +223,7 @@ function AppInner() {
                       </div>
 
                       <div className='space-y-2'>
-                        <label className='block text-sm font-medium text-zinc-300'>
+                        <label className='block text-sm font-medium text-white'>
                           Puesto
                         </label>
                         <Select
@@ -232,7 +237,7 @@ function AppInner() {
                       </div>
 
                       <div className='space-y-2'>
-                        <label className='block text-sm font-medium text-zinc-300'>
+                        <label className='block text-sm font-medium text-white'>
                           Email
                         </label>
                         <Input
@@ -246,10 +251,10 @@ function AppInner() {
                       </div>
 
                       <div className='grid grid-cols-2 gap-4'>
-                        <div className='space-y-2'>
-                          <label className='block text-sm font-medium text-zinc-300'>
-                            Contraseña
-                          </label>
+                      <div className='space-y-2'>
+                        <label className='block text-sm font-medium text-white'>
+                          Contraseña
+                        </label>
                           <Input
                             type='password'
                             value={reg.pass}
@@ -260,7 +265,7 @@ function AppInner() {
                           />
                         </div>
                         <div className='space-y-2'>
-                          <label className='block text-sm font-medium text-zinc-300'>
+                          <label className='block text-sm font-medium text-white'>
                             Repite contraseña
                           </label>
                           <Input
@@ -290,6 +295,7 @@ function AppInner() {
                         variant='primary'
                         size='lg'
                         className='w-full'
+                        style={{backgroundColor: '#f97316', borderColor: '#f97316'}}
                       >
                         Registrarse
                       </Button>
