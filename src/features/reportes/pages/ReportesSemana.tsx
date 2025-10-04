@@ -25,7 +25,7 @@ import {
   horarioPrelightFactory,
   horarioPickupFactory,
 } from '../utils/derive';
-import { buildReportWeekHTML } from '../utils/export';
+import { buildReportWeekHTML, exportReportWeekToPDF } from '../utils/export';
 import { personaKey, personaRole, personaName } from '../utils/model';
 import { storage } from '@shared/services/localStorage.service';
 import {
@@ -52,7 +52,8 @@ type Props = {
   title?: string;
   semana?: string[];
   personas?: AnyRecord[];
-  onExportWeek?: () => void;
+  onExportWeekHTML?: () => void;
+  onExportWeekPDF?: () => void;
 };
 
 export default function ReportesSemana({
@@ -60,7 +61,8 @@ export default function ReportesSemana({
   title = '',
   semana = [],
   personas = [],
-  onExportWeek,
+  onExportWeekHTML,
+  onExportWeekPDF,
 }: Props) {
   const safeSemana =
     Array.isArray(semana) && semana.length === 7 ? semana : defaultWeek();
@@ -313,9 +315,28 @@ export default function ReportesSemana({
       w.document.close();
     }
   };
-  const handleExport = () => {
-    if (typeof onExportWeek === 'function') onExportWeek();
-    else defaultExportWeek();
+  const handleExportHTML = () => {
+    if (typeof onExportWeekHTML === 'function') return onExportWeekHTML();
+    defaultExportWeek();
+  };
+
+  const handleExportPDF = async () => {
+    if (typeof onExportWeekPDF === 'function') return onExportWeekPDF();
+    const ok = await exportReportWeekToPDF({
+      project,
+      title,
+      safeSemana: [...safeSemana],
+      dayNameFromISO: (iso: string, index: number) => dayNameFromISO(iso, index, [...DAY_NAMES] as any),
+      toDisplayDate,
+      horarioTexto,
+      CONCEPTS: [...CONCEPTS],
+      data,
+      personaKey,
+      personaRole,
+      personaName,
+      orientation: 'landscape',
+    });
+    if (!ok) defaultExportWeek();
   };
 
   const contentId = 'report-week-content';
@@ -331,7 +352,8 @@ export default function ReportesSemana({
         open={open}
         title={title}
         onToggle={() => setOpen(v => !v)}
-        onExport={handleExport}
+        onExportHTML={handleExportHTML}
+        onExportPDF={handleExportPDF}
         btnExportCls={btnExportCls}
         btnExportStyle={btnExportStyle}
         contentId={contentId}

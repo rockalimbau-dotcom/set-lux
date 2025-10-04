@@ -17,6 +17,22 @@ export function personaName(p: any): string {
 export function personaKey(p: any): string {
   const role = stripPR(personaRole(p) || '');
   const name = personaName(p) || '';
+  
+  // Si no hay rol ni nombre, generar una clave única para evitar claves vacías
+  if (!role && !name) {
+    return `UNKNOWN__${Math.random().toString(36).substr(2, 9)}`;
+  }
+  
+  // Si no hay rol pero sí nombre, usar "UNKNOWN" como rol
+  if (!role && name) {
+    return `UNKNOWN__${name}`;
+  }
+  
+  // Si no hay nombre pero sí rol, usar "UNKNOWN" como nombre
+  if (role && !name) {
+    return `${role}__UNKNOWN`;
+  }
+  
   if (role.startsWith('REF')) {
     const block = (p && (p.__block || p.block)) || '';
     if (block === 'pre') return `REF.pre__${name}`;

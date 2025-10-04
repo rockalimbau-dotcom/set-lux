@@ -4,7 +4,8 @@ type Props = {
   open: boolean;
   title?: string;
   onToggle: () => void;
-  onExport: () => void;
+  onExportHTML: () => void;
+  onExportPDF: () => void;
   btnExportCls?: string;
   btnExportStyle?: React.CSSProperties;
   contentId?: string;
@@ -14,7 +15,8 @@ export default function ReportWeekHeader({
   open,
   title,
   onToggle,
-  onExport,
+  onExportHTML,
+  onExportPDF,
   btnExportCls,
   btnExportStyle,
   contentId,
@@ -34,15 +36,24 @@ export default function ReportWeekHeader({
       </button>
       <h4 className='text-brand font-semibold m-0'>{title || 'Semana'}</h4>
 
-      <div className='ml-auto'>
+      <div className='ml-auto flex gap-2'>
         <button
           className={btnExportCls}
           style={btnExportStyle}
-          onClick={onExport}
-          title='Exportar semana'
+          onClick={onExportHTML}
+          title='Exportar semana (HTML)'
           type='button'
         >
-          Exportar semana
+          HTML
+        </button>
+        <button
+          className={btnExportCls}
+          style={{ ...(btnExportStyle || {}), background: '#f97316' }}
+          onClick={onExportPDF}
+          title='Exportar semana (PDF)'
+          type='button'
+        >
+          PDF
         </button>
       </div>
     </div>
