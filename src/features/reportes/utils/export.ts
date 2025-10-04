@@ -215,11 +215,11 @@ export function buildReportWeekHTML({
 
   const headDays = `
       <tr>
-        <th style="border:1px solid #999;padding:6px;text-align:left;background:#1D4ED8;color:#fff;">&nbsp;</th>
+        <th style="border:1px solid #999;padding:6px;text-align:left;background:#1e40af;color:#fff;">&nbsp;</th>
         ${safeSemanaWithData
           .map(
             (iso, i) => `
-          <th style="border:1px solid #999;padding:6px;text-align:left;background:#1D4ED8;color:#fff;">
+          <th style="border:1px solid #999;padding:6px;text-align:left;background:#1e40af;color:#fff;">
             ${esc(dayNameFromISO(iso, i))}<br/>${esc(toDisplayDate(iso))}
           </th>`
           )
@@ -228,11 +228,11 @@ export function buildReportWeekHTML({
 
   const headHorario = `
       <tr>
-        <th style="border:1px solid #999;padding:6px;text-align:left;background:#1D4ED8;color:#fff;">Horario</th>
+        <th style="border:1px solid #999;padding:6px;text-align:left;background:#1e40af;color:#fff;">Horario</th>
         ${safeSemanaWithData
           .map(
             iso =>
-              `<th style="border:1px solid #999;padding:6px;text-align:left;background:#1D4ED8;color:#fff;">${esc(
+              `<th style="border:1px solid #999;padding:6px;text-align:left;background:#1e40af;color:#fff;">${esc(
                 horarioTexto(iso)
               )}</th>`
           )
@@ -381,10 +381,23 @@ export function buildReportWeekHTML({
     .info-label { font-size: 9px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
     .info-value { font-size: 11px; color: #1e293b; font-weight: 500; }
     .table-container { background: white; border-radius: 6px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-    table { width: 100%; border-collapse: collapse; font-size: 10px; border: 2px solid #1e40af; }
-    th { background: #1e40af; color: white; padding: 6px 6px; text-align: left; font-weight: 600; font-size: 9px; text-transform: uppercase; border: 1px solid white; }
+    table { width: 100%; border-collapse: collapse; font-size: 10px; border: 2px solid #1e3a8a; }
+    th { background: #1e3a8a; color: white; padding: 6px 6px; text-align: left; font-weight: 600; font-size: 9px; text-transform: uppercase; border: 1px solid white; }
     td { padding: 6px 6px; border: 1px solid #e2e8f0; background: white; vertical-align: top; color: #1e293b; }
-    .footer { text-align: center; padding: 6px 0; color: #64748b; font-size: 6px; border-top: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: center; gap: 2px; flex-shrink: 0; width: 100%; margin-bottom: 8px; background: #f8fafc; }
+    .footer {
+      text-align: center;
+      padding: 10px 0;
+      color: #64748b;
+      font-size: 6px;
+      border-top: 1px solid #e2e8f0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      flex-shrink: 0;
+      width: 100%;
+      margin-bottom: 8px; /* separate from bottom edge */
+    }
     .setlux-logo { font-weight: 700; }
     .setlux-logo .set { color: #f97316; }
     .setlux-logo .lux { color: #3b82f6; }
@@ -439,8 +452,10 @@ export function buildReportWeekHTML({
       </div>
     </div>
     <div class="footer">
-      <span>Generado por</span>
-      <span class="setlux-logo"><span class="set">Set</span><span class="lux">Lux</span></span>
+      <span>Generado automáticamente por</span>
+      <span class="setlux-logo">
+        <span class="set">Set</span><span class="lux">Lux</span>
+      </span>
     </div>
   </div>
 </body>
@@ -608,11 +623,11 @@ export function buildReportWeekHTMLForPDF({
 
   const headDays = `
       <tr>
-        <th style="border:1px solid #999;padding:6px;text-align:left;background:#1D4ED8;color:#fff;">&nbsp;</th>
+        <th style="border:1px solid #999;padding:6px;text-align:left;background:#1e40af;color:#fff;">&nbsp;</th>
         ${safeSemanaWithData
           .map(
             (iso, i) => `
-          <th style="border:1px solid #999;padding:6px;text-align:left;background:#1D4ED8;color:#fff;">
+          <th style="border:1px solid #999;padding:6px;text-align:left;background:#1e40af;color:#fff;">
             ${esc(dayNameFromISO(iso, i))}<br/>${esc(toDisplayDate(iso))}
           </th>`
           )
@@ -621,11 +636,11 @@ export function buildReportWeekHTMLForPDF({
 
   const headHorario = `
       <tr>
-        <th style="border:1px solid #999;padding:6px;text-align:left;background:#1D4ED8;color:#fff;">Horario</th>
+        <th style="border:1px solid #999;padding:6px;text-align:left;background:#1e40af;color:#fff;">Horario</th>
         ${safeSemanaWithData
           .map(
             iso =>
-              `<th style="border:1px solid #999;padding:6px;text-align:left;background:#1D4ED8;color:#fff;">${esc(
+              `<th style="border:1px solid #999;padding:6px;text-align:left;background:#1e40af;color:#fff;">${esc(
                 horarioTexto(iso)
               )}</th>`
           )
@@ -757,6 +772,14 @@ export function buildReportWeekHTMLForPDF({
       font-size: 12px;
     }
     .container { max-width: 100%; margin: 0 auto; background: white; min-height: 100vh; display: flex; flex-direction: column; padding-bottom: 0; position: relative; }
+    .container-pdf {
+      /* Fixed size to match html2canvas capture (A4 landscape @96dpi) */
+      width: 1123px;
+      height: 794px;
+      background: white;
+      display: flex;
+      flex-direction: column;
+    }
     .header { background: linear-gradient(135deg, #f97316 0%, #3b82f6 100%); color: white; padding: 12px 20px; text-align: center; flex-shrink: 0; }
     .header h1 { margin: 0; font-size: 16px; font-weight: 700; letter-spacing: -0.5px; }
     .content { padding: 12px 20px; flex: 1; margin-bottom: 0; }
@@ -765,10 +788,27 @@ export function buildReportWeekHTMLForPDF({
     .info-label { font-size: 9px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
     .info-value { font-size: 11px; color: #1e293b; font-weight: 500; }
     .table-container { background: white; border-radius: 6px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-    table { width: 100%; border-collapse: collapse; font-size: 10px; border: 2px solid #1e40af; }
-    th { background: #1e40af; color: white; padding: 6px 6px; text-align: left; font-weight: 600; font-size: 9px; text-transform: uppercase; border: 1px solid white; }
+    table { width: 100%; border-collapse: collapse; font-size: 10px; border: 2px solid #1e3a8a; }
+    th { background: #1e3a8a; color: white; padding: 6px 6px; text-align: left; font-weight: 600; font-size: 9px; text-transform: uppercase; border: 1px solid white; }
     td { padding: 6px 6px; border: 1px solid #e2e8f0; background: white; vertical-align: top; color: #1e293b; }
-    .footer { text-align: center; padding: 6px 0; color: #64748b; font-size: 6px; border-top: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: center; gap: 2px; flex-shrink: 0; width: 100%; margin-bottom: 8px; background: #f8fafc; }
+    .footer {
+      text-align: center;
+      padding: 10px 0;
+      color: #64748b;
+      font-size: 6px;
+      border-top: 1px solid #e2e8f0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      flex-shrink: 0;
+      width: 100%;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: white;
+    }
     .setlux-logo { font-weight: 700; }
     .setlux-logo .set { color: #f97316; }
     .setlux-logo .lux { color: #3b82f6; }
@@ -795,7 +835,7 @@ export function buildReportWeekHTMLForPDF({
   </style>
 </head>
 <body>
-  <div class="container">
+  <div class="container-pdf">
     <div class="header">
       <h1>${esc(title || 'Reporte semanal')}</h1>
     </div>
@@ -823,8 +863,10 @@ export function buildReportWeekHTMLForPDF({
       </div>
     </div>
     <div class="footer">
-      <span>Generado por</span>
-      <span class="setlux-logo"><span class="set">Set</span><span class="lux">Lux</span></span>
+      <span>Generado automáticamente por</span>
+      <span class="setlux-logo">
+        <span class="set">Set</span><span class="lux">Lux</span>
+      </span>
     </div>
   </div>
 </body>
@@ -859,7 +901,7 @@ export async function exportReportWeekToPDF(params: BuildPdfParams) {
     // Smart pagination with auto-fill logic
     const estimateContentHeight = (numPersons: number, conceptsPerPerson: number = CONCEPTS.length) => {
       const headerHeight = 80; // Header + info panel
-      const footerHeight = 25; // Footer
+      const footerHeight = 25; // Footer (reduced to allow more content)
       const tableHeaderHeight = 40; // Table headers (2 rows)
       const personHeaderHeight = 20; // Height per person header
       const conceptRowHeight = 15; // Height per concept row
@@ -869,8 +911,8 @@ export async function exportReportWeekToPDF(params: BuildPdfParams) {
     };
     
     // Smart pagination: start aggressive and adjust dynamically
-    let personsPerPage = Math.min(20, totalPersons); // Start very aggressive
-    const maxPageHeight = 750; // Available height for content
+    let personsPerPage = Math.min(15, totalPersons); // Start more aggressive
+    const maxPageHeight = 720; // Available height for content (more space for content)
     const minPersonsPerPage = 1; // Minimum to prevent infinite loops
     
     // Estimate concepts per person (average case)
@@ -908,7 +950,7 @@ export async function exportReportWeekToPDF(params: BuildPdfParams) {
     
     // Additional optimization: if concepts are few, we can be more aggressive
     if (estimatedConceptsPerPerson <= 2) {
-      const aggressiveMaxHeight = 800; // More space when concepts are few
+      const aggressiveMaxHeight = 750; // More space when concepts are few
       let aggressivePersonsPerPage = personsPerPage;
       
       for (let testPersons = personsPerPage + 1; testPersons <= totalPersons; testPersons++) {
