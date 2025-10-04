@@ -20,7 +20,7 @@ describe('PlanificacionTab (smoke)', () => {
       <PlanificacionTab project={project} conditions={{}} teamList={[]} />
     );
 
-    expect(screen.getByRole('button', { name: /Exportar TODO/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /PDF Entero/i })).toBeInTheDocument();
 
     expect(
       screen.getByText(/No hay semanas de preproducción/i)

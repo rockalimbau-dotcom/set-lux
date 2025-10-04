@@ -116,11 +116,12 @@ describe('reportes/utils/model', () => {
     });
 
     it('handles empty role and name', () => {
-      expect(personaKey({})).toBe('__');
+      const result = personaKey({});
+      expect(result).toMatch(/^UNKNOWN__[a-z0-9]{9}$/);
     });
 
     it('handles string input', () => {
-      expect(personaKey('John')).toBe('__John');
+      expect(personaKey('John')).toBe('UNKNOWN__John');
     });
   });
 

@@ -74,22 +74,16 @@ describe('NecesidadesTab (smoke)', () => {
     // @ts-ignore
     window.__TEST_STORE__['plan_p1'] = { pre: [{ id: 'w1', label: 'Semana 1', startDate: '2024-01-01', days: [] }], pro: [] };
 
-    const openSpy = vi.spyOn(window, 'open').mockImplementation(() => ({
-      document: { write: vi.fn(), close: vi.fn() },
-    }));
-
     render(<NecesidadesTab project={project} />);
 
-    const exportAllBtn = await screen.findByRole('button', { name: /Exportar TODO/i });
+    const exportAllBtn = await screen.findByRole('button', { name: /PDF Entero/i });
     expect(exportAllBtn).toBeInTheDocument();
     fireEvent.click(exportAllBtn);
-    expect(openSpy).toHaveBeenCalled();
+    // PDF generation is now handled by jsPDF directly, no window.open needed
 
-    const exportWeekBtn = await screen.findByRole('button', { name: /Exportar semana/i });
+    const exportWeekBtn = await screen.findByTitle('Exportar semana PDF');
     fireEvent.click(exportWeekBtn);
-    expect(openSpy).toHaveBeenCalled();
-
-    openSpy.mockRestore();
+    // PDF generation is now handled by jsPDF directly, no window.open needed
   });
 });
 

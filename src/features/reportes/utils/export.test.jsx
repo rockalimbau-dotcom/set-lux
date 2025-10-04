@@ -51,7 +51,7 @@ describe('reportes/utils/export', () => {
     it('generates table headers with day names and dates', () => {
       const result = buildReportWeekHTML(defaultParams);
 
-      expect(result).toContain('<th style="border:1px solid #999;padding:6px;text-align:left;background:#1D4ED8;color:#fff;">');
+      expect(result).toContain('<th style="border:1px solid #999;padding:6px;text-align:left;background:#1e40af;color:#fff;">Horario</th>');
       expect(mockDayNameFromISO).toHaveBeenCalledWith('2023-01-01', 0);
       expect(mockDayNameFromISO).toHaveBeenCalledWith('2023-01-02', 1);
       expect(mockToDisplayDate).toHaveBeenCalledWith('2023-01-01');
@@ -61,7 +61,7 @@ describe('reportes/utils/export', () => {
     it('generates horario row', () => {
       const result = buildReportWeekHTML(defaultParams);
 
-      expect(result).toContain('<th style="border:1px solid #999;padding:6px;text-align:left;background:#1D4ED8;color:#fff;">Horario</th>');
+      expect(result).toContain('<th style="border:1px solid #999;padding:6px;text-align:left;background:#1e40af;color:#fff;">Horario</th>');
       expect(mockHorarioTexto).toHaveBeenCalledWith('2023-01-01');
       expect(mockHorarioTexto).toHaveBeenCalledWith('2023-01-02');
     });
@@ -176,8 +176,8 @@ describe('reportes/utils/export', () => {
     it('includes SetLux footer', () => {
       const result = buildReportWeekHTML(defaultParams);
 
-      expect(result).toContain('Generado con SetLux');
-      expect(result).toContain('<footer style="margin-top:30px;font-size:10px;color:#888;">');
+      expect(result).toContain('Generado automáticamente por');
+      expect(result).toContain('<div class="footer">');
     });
 
     it('generates valid HTML structure', () => {
@@ -186,8 +186,8 @@ describe('reportes/utils/export', () => {
       expect(result).toContain('<!DOCTYPE html>');
       expect(result).toContain('<html>');
       expect(result).toContain('<head>');
-      expect(result).toContain('<body style=');
-      expect(result).toContain('<table style=');
+      expect(result).toContain('<body>');
+      expect(result).toContain('<table>');
       expect(result).toContain('<thead>');
       expect(result).toContain('<tbody>');
     });

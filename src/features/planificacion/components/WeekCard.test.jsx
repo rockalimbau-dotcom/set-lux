@@ -21,7 +21,7 @@ describe('WeekCard (smoke)', () => {
   };
 
   it('renders header and actions', () => {
-    const onExportWeek = vi.fn();
+    const onExportWeekPDF = vi.fn();
     const duplicateWeek = vi.fn();
     const deleteWeek = vi.fn();
     const setWeekStart = vi.fn();
@@ -43,15 +43,15 @@ describe('WeekCard (smoke)', () => {
         prelightTeam={[]}
         pickupTeam={[]}
         reinforcements={[]}
-        onExportWeek={onExportWeek}
+        onExportWeekPDF={onExportWeekPDF}
         teamList={[]}
       />
     );
 
     expect(screen.getByText('Semana 1')).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: /Exportar semana/i }));
-    expect(onExportWeek).toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: /PDF/i }));
+    expect(onExportWeekPDF).toHaveBeenCalled();
 
     fireEvent.click(screen.getByRole('button', { name: 'Duplicar' }));
     expect(duplicateWeek).toHaveBeenCalled();

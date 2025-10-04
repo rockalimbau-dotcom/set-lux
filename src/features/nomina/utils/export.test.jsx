@@ -153,8 +153,7 @@ describe('nomina/utils/export', () => {
       );
 
       // Check first row data
-      expect(html).toContain('<span class="role-badge"');
-      expect(html).toContain('>Gaffer</span>John Doe');
+      expect(html).toContain('Gaffer — John Doe');
       expect(html).toContain('5'); // _worked
       expect(html).toContain('250.00'); // _totalDias
       expect(html).toContain('2'); // _travel
@@ -179,8 +178,7 @@ describe('nomina/utils/export', () => {
         mockMonthLabelEs
       );
 
-      expect(html).toContain('<span class="role-badge"');
-      expect(html).toContain('>Eléctrico</span>Jane Smith');
+      expect(html).toContain('Eléctrico — Jane Smith');
       expect(html).toContain('4'); // _worked
       expect(html).toContain('200.00'); // _totalDias
       expect(html).toContain('1'); // _travel
@@ -292,7 +290,7 @@ describe('nomina/utils/export', () => {
       expect(html).toContain('@page { size: A4 landscape;');
       expect(html).toContain('.header');
       expect(html).toContain('.info-panel');
-      expect(html).toContain('border-bottom: 2px solid #1e40af');
+      expect(html).toContain('border: 2px solid #1e3a8a');
       expect(html).toContain('text-align: right');
       expect(html).toContain('font-weight: 600');
     });
@@ -326,8 +324,7 @@ describe('nomina/utils/export', () => {
         mockMonthLabelEs
       );
 
-      expect(html).toContain('<span class="role-badge"');
-      expect(html).toContain('>Gaffer</span>John Doe');
+      expect(html).toContain('Gaffer — John Doe');
       // Should handle undefined values gracefully
     });
 
@@ -360,8 +357,7 @@ describe('nomina/utils/export', () => {
         mockMonthLabelEs
       );
 
-      expect(html).toContain('<span class="role-badge"');
-      expect(html).toContain('>Gaffer</span>John Doe');
+      expect(html).toContain('Gaffer — John Doe');
       // Should handle null/undefined values gracefully
     });
 
@@ -525,10 +521,10 @@ describe('nomina/utils/export', () => {
         mockMonthLabelEs
       );
 
-      // Should contain the formatted extras text with new CSS classes
-      expect(html).toContain('extras-total');
-      expect(html).toContain('extras-pills');
-      expect(html).toContain('2 h');
+      // Should contain the formatted extras text
+      expect(html).toContain('Hora extra x2');
+      expect(html).toContain('Turn Around x1');
+      expect(html).toContain('Nocturnidad x1');
       expect(html).toContain('Turn Around');
       expect(html).toContain('Nocturnidad');
     });

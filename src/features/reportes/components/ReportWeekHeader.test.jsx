@@ -5,13 +5,13 @@ import ReportWeekHeader from './ReportWeekHeader.jsx';
 describe('ReportWeekHeader (smoke)', () => {
   it('renders title and triggers actions', () => {
     const onToggle = vi.fn();
-    const onExport = vi.fn();
+    const onExportPDF = vi.fn();
     render(
       <ReportWeekHeader
         open={true}
         title='Semana A'
         onToggle={onToggle}
-        onExport={onExport}
+        onExportPDF={onExportPDF}
         btnExportCls='btn'
         btnExportStyle={{}}
       />
@@ -19,8 +19,8 @@ describe('ReportWeekHeader (smoke)', () => {
 
     expect(screen.getByText('Semana A')).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Exportar semana' }));
-    expect(onExport).toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'PDF' }));
+    expect(onExportPDF).toHaveBeenCalled();
 
     fireEvent.click(screen.getByRole('button', { name: 'Alternar semana' }));
     expect(onToggle).toHaveBeenCalled();

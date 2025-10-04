@@ -16,7 +16,7 @@ describe('Accordion (smoke)', () => {
   it('renders title and buttons and triggers handlers', () => {
     const onToggle = vi.fn();
     const onAdd = vi.fn();
-    const onExport = vi.fn();
+    const onExportPDF = vi.fn();
 
     render(
       <Accordion
@@ -24,7 +24,7 @@ describe('Accordion (smoke)', () => {
         open={true}
         onToggle={onToggle}
         onAdd={onAdd}
-        onExport={onExport}
+        onExportPDF={onExportPDF}
         btnExportCls='btn'
         btnExportStyle={{}}
       >
@@ -35,8 +35,8 @@ describe('Accordion (smoke)', () => {
     expect(screen.getByText('Sección')).toBeInTheDocument();
     expect(screen.getByText('Contenido')).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: /Exportar/i }));
-    expect(onExport).toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: /PDF/i }));
+    expect(onExportPDF).toHaveBeenCalled();
 
     fireEvent.click(screen.getByRole('button', { name: '+ Semana' }));
     expect(onAdd).toHaveBeenCalled();

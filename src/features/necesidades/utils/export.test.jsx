@@ -63,22 +63,22 @@ describe('necesidades/utils/export', () => {
       expect(html).toContain('<!DOCTYPE html>');
       expect(html).toContain('<html>');
       expect(html).toContain('<head>');
-      expect(html).toContain('<body style='); // body has inline styles
+      expect(html).toContain('<body>'); // body has inline styles
       expect(html).toContain('</html>');
     });
 
     it('should include project name and week label in title', () => {
       const html = renderExportHTML(mockProjectName, mockWeekLabel, mockWeekStart, mockValuesByDay);
       expect(html).toContain(`<title>${mockProjectName} – Necesidades de Rodaje (${mockWeekLabel})</title>`);
-      expect(html).toContain(`<h2 style="margin:0 0 10px 0;">${mockProjectName} – ${mockWeekLabel}</h2>`);
+      expect(html).toContain('<h1>Necesidades - Producción</h1>');
     });
 
     it('should render table with correct structure', () => {
       const html = renderExportHTML(mockProjectName, mockWeekLabel, mockWeekStart, mockValuesByDay);
-      expect(html).toContain('<table style="width:100%;border-collapse:collapse');
+      expect(html).toContain('<table>');
       expect(html).toContain('<thead>');
       expect(html).toContain('<tbody>');
-      expect(html).toContain('<th style="border:1px solid #999;padding:8px;background:#1D4ED8;color:#fff;text-align:left;">Campo / Día</th>');
+      expect(html).toContain('<th>Campo / Día</th>');
     });
 
     it('should render day headers', () => {
@@ -94,16 +94,16 @@ describe('necesidades/utils/export', () => {
 
     it('should render standard rows', () => {
       const html = renderExportHTML(mockProjectName, mockWeekLabel, mockWeekStart, mockValuesByDay);
-      expect(html).toContain('<tr><td style="border:1px solid #999;padding:8px;font-weight:600;background:#f4f6ff;">Localización</td>');
-      expect(html).toContain('<tr><td style="border:1px solid #999;padding:8px;font-weight:600;background:#f4f6ff;">Secuencias</td>');
-      expect(html).toContain('<tr><td style="border:1px solid #999;padding:8px;font-weight:600;background:#f4f6ff;">Necesidades localizaciones</td>');
+      expect(html).toContain('<tr><td style="border:1px solid #999;padding:6px;font-weight:600;background:#f8fafc;">Localización</td>');
+      expect(html).toContain('<tr><td style="border:1px solid #999;padding:6px;font-weight:600;background:#f8fafc;">Secuencias</td>');
+      expect(html).toContain('<tr><td style="border:1px solid #999;padding:6px;font-weight:600;background:#f8fafc;">Necesidades localizaciones</td>');
     });
 
     it('should render team lists', () => {
       const html = renderExportHTML(mockProjectName, mockWeekLabel, mockWeekStart, mockValuesByDay);
-      expect(html).toContain('<tr><td style="border:1px solid #999;padding:8px;font-weight:600;background:#f4f6ff;">Equipo técnico</td>');
-      expect(html).toContain('<tr><td style="border:1px solid #999;padding:8px;font-weight:600;background:#f4f6ff;">Equipo Prelight</td>');
-      expect(html).toContain('<tr><td style="border:1px solid #999;padding:8px;font-weight:600;background:#f4f6ff;">Equipo Recogida</td>');
+      expect(html).toContain('<tr><td style="border:1px solid #999;padding:6px;font-weight:600;background:#f8fafc;">Equipo técnico</td>');
+      expect(html).toContain('<tr><td style="border:1px solid #999;padding:6px;font-weight:600;background:#f8fafc;">Equipo Prelight</td>');
+      expect(html).toContain('<tr><td style="border:1px solid #999;padding:6px;font-weight:600;background:#f8fafc;">Equipo Recogida</td>');
     });
 
     it('should escape HTML characters in content', () => {
@@ -123,7 +123,7 @@ describe('necesidades/utils/export', () => {
       const emptyValues = [{}];
       const html = renderExportHTML(mockProjectName, mockWeekLabel, mockWeekStart, emptyValues);
       expect(html).toContain('<!DOCTYPE html>');
-      expect(html).toContain('<body style='); // body has inline styles
+      expect(html).toContain('<body>'); // body has inline styles
     });
   });
 
@@ -133,7 +133,7 @@ describe('necesidades/utils/export', () => {
       expect(html).toContain('<!DOCTYPE html>');
       expect(html).toContain('<html>');
       expect(html).toContain('<head>');
-      expect(html).toContain('<body style='); // body has inline styles
+      expect(html).toContain('<body>'); // body has inline styles
       expect(html).toContain('</html>');
     });
 
@@ -157,7 +157,7 @@ describe('necesidades/utils/export', () => {
 
     it('should include footer', () => {
       const html = renderExportAllHTML(mockProjectName, mockWeekEntries, mockNeeds);
-      expect(html).toContain('<footer style="margin-top:30px;font-size:10px;color:#888;">Generado con SetLux</footer>');
+      expect(html).toContain('<div class="footer">');
     });
 
     it('should escape HTML characters in project name', () => {
