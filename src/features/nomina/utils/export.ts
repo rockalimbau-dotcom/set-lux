@@ -1,5 +1,4 @@
 // Utils to build exportable HTML for Nómina
-import { ROLE_COLORS, roleLabelFromCode } from '@shared/constants/roles';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 
@@ -48,7 +47,7 @@ export function buildNominaMonthHTML(
       return '';
     }
     
-    return `<div class="dietas-total">${totalDietas}</div><div class="dietas-pills">${parts.map(part => `<div>${part}</div>`).join('')}</div>`;
+    return `${totalDietas}<br/>${parts.join(' ')}`;
   };
 
   // Helper function to generate extras summary text for export
@@ -76,7 +75,7 @@ export function buildNominaMonthHTML(
       return '';
     }
     
-    return `<div class="extras-total">${totalExtras}</div><div class="extras-pills">${parts.join('')}</div>`;
+    return `${totalExtras}<br/>${parts.join(' ')}`;
   };
 
   // Helper function to display empty string for zero values in export
@@ -137,14 +136,9 @@ export function buildNominaMonthHTML(
 
   const body = enrichedRows
     .map(r => {
-      const roleForColor = String(r.role || '').replace(/[PR]$/, '');
-      const roleColor =
-        (ROLE_COLORS as any)[roleForColor] ||
-        (ROLE_COLORS as any)[roleLabelFromCode(roleForColor)] ||
-        (roleForColor === 'REF' ? { bg: '#F59E0B', fg: '#111' } : { bg: '#444', fg: '#fff' });
 
       const dataCells = [
-        `<td class="text-left"><span class="role-badge" style="background:${esc(roleColor.bg)};color:${esc(roleColor.fg)}">${esc(r.role)}</span>${esc(r.name)}</td>`,
+        `<td class="text-left" style="font-weight:600;">${esc(r.role)} — ${esc(r.name)}</td>`,
         `<td>${esc(displayValue(r._worked))}</td>`,
         `<td>${esc(displayValue(r._totalDias, 2))}</td>`,
       ];
@@ -213,29 +207,33 @@ export function buildNominaMonthHTML(
     .header {
       background: linear-gradient(135deg, #f97316 0%, #3b82f6 100%);
       color: white;
-      padding: 24px 32px;
+      padding: 12px 20px;
       text-align: center;
+      flex-shrink: 0;
     }
     
     .header h1 {
       margin: 0;
-      font-size: 28px;
+      font-size: 16px;
       font-weight: 700;
       letter-spacing: -0.5px;
     }
     
     .content {
-      padding: 24px 32px;
+      padding: 12px 20px;
+      flex: 1;
+      margin-bottom: 0;
     }
     
     .info-panel {
       background: #f1f5f9;
-      padding: 16px 24px;
-      border-radius: 8px;
-      margin-bottom: 24px;
+      padding: 8px 12px;
+      border-radius: 6px;
+      margin-bottom: 12px;
       display: flex;
-      gap: 48px;
+      gap: 24px;
       align-items: center;
+      justify-content: flex-start;
     }
     
     .info-item {
@@ -245,16 +243,15 @@ export function buildNominaMonthHTML(
     }
     
     .info-label {
-      font-size: 11px;
+      font-size: 9px;
       font-weight: 600;
       color: #64748b;
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      margin-bottom: 2px;
     }
     
     .info-value {
-      font-size: 14px;
+      font-size: 11px;
       color: #1e293b;
       font-weight: 500;
     }
@@ -269,35 +266,26 @@ export function buildNominaMonthHTML(
     table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 13px;
+      font-size: 10px;
       border: 2px solid #1e40af;
     }
     
     th {
       background: #1e40af;
       color: white;
-      padding: 16px 12px;
-      text-align: center;
+      padding: 6px 6px;
+      text-align: left;
       font-weight: 600;
-      font-size: 12px;
+      font-size: 9px;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
-      border-left: 1px solid white;
-      border-right: 1px solid white;
-      border-top: 1px solid white;
-      border-bottom: 1px solid white;
+      border: 1px solid white;
     }
     
     td {
-      padding: 14px 12px;
-      border-left: 1px solid #e2e8f0;
-      border-right: 1px solid #e2e8f0;
-      border-top: 1px solid #e2e8f0;
-      border-bottom: 2px solid #1e40af;
-      vertical-align: top;
+      padding: 6px 6px;
+      border: 1px solid #e2e8f0;
       background: white;
-      text-align: center;
-      font-weight: 400;
+      vertical-align: top;
       color: #1e293b;
     }
     
@@ -322,19 +310,26 @@ export function buildNominaMonthHTML(
       color: #1e293b;
     }
     
-    .role-badge {
-      display: inline-block;
-      padding: 1px 2px;
-      border-radius: 2px;
-      font-size: 6px;
-      font-weight: 700;
-      margin-right: 2px;
-    }
-    
     .total-cell {
       font-weight: 700;
       font-size: 14px;
       color: #f97316;
+    }
+    
+    .extras-cell, .dietas-cell {
+      font-size: 10px;
+    }
+    
+    .extras-cell br + *, .dietas-cell br + * {
+      font-size: 10px !important;
+    }
+    
+    .dietas-cell {
+      font-size: 10px !important;
+    }
+    
+    .dietas-cell br + * {
+      font-size: 10px !important;
     }
     
     .footer {
@@ -446,7 +441,7 @@ export function buildNominaMonthHTMLForPDF(
       return '';
     }
     
-    return `<div class="dietas-total">${totalDietas}</div><div class="dietas-pills">${parts.map(part => `<div>${part}</div>`).join('')}</div>`;
+    return `${totalDietas}<br/>${parts.join(' ')}`;
   };
 
   // Helper function to generate extras summary text for export
@@ -474,7 +469,7 @@ export function buildNominaMonthHTMLForPDF(
       return '';
     }
     
-    return `<div class="extras-total">${totalExtras}</div><div class="extras-pills">${parts.join('')}</div>`;
+    return `${totalExtras}<br/>${parts.join(' ')}`;
   };
 
   // Helper function to display empty string for zero values
@@ -537,14 +532,9 @@ export function buildNominaMonthHTMLForPDF(
   const body = enrichedRows
     .map(r => {
       // Unify role color logic with HTML export: strip P/R suffix and fallback via role label
-      const roleForColor = String(r.role || '').replace(/[PR]$/, '');
-      const roleColor =
-        (ROLE_COLORS as any)[roleForColor] ||
-        (ROLE_COLORS as any)[roleLabelFromCode(roleForColor)] ||
-        (roleForColor === 'REF' ? { bg: '#F59E0B', fg: '#111' } : { bg: '#444', fg: '#fff' });
       
       const dataCells = [
-        `<td class="text-left"><span class="role-badge" style="background:${esc(roleColor.bg)};color:${esc(roleColor.fg)}">${esc(r.role)}</span>${esc(r.name)}</td>`,
+        `<td class="text-left" style="font-weight:600;">${esc(r.role)} — ${esc(r.name)}</td>`,
         `<td>${esc(displayValue(r._worked))}</td>`,
         `<td>${esc(displayValue(r._totalDias, 2))}</td>`,
       ];
@@ -619,39 +609,33 @@ export function buildNominaMonthHTMLForPDF(
     .header {
       background: linear-gradient(135deg, #f97316 0%, #3b82f6 100%);
       color: white;
-      padding: 8px 0;
+      padding: 12px 20px;
       text-align: center;
       flex-shrink: 0;
-      width: 100%;
     }
     
     .header h1 {
       margin: 0;
-      font-size: 16px; /* moderate title */
+      font-size: 16px;
       font-weight: 700;
       letter-spacing: -0.5px;
     }
     
     .content {
-      padding: 8px 12px;
+      padding: 12px 20px;
       flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+      margin-bottom: 0;
     }
     
     .info-panel {
       background: #f1f5f9;
-      padding: 6px 12px;
-      border-radius: 4px;
-      margin-bottom: 8px;
+      padding: 8px 12px;
+      border-radius: 6px;
+      margin-bottom: 12px;
       display: flex;
-      gap: 20px;
+      gap: 24px;
       align-items: center;
-      flex-shrink: 0;
-      justify-content: center;
-      width: 100%;
-      max-width: 100%;
+      justify-content: flex-start;
     }
     
     .info-item {
@@ -691,43 +675,27 @@ export function buildNominaMonthHTMLForPDF(
     table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 10px; /* increased base cell font */
-      border: 1px solid #1e40af;
-      flex: 1;
-      table-layout: auto;
+      font-size: 10px;
+      border: 2px solid #1e40af;
     }
     
     th {
       background: #1e40af;
       color: white;
-      padding: 3px 4px; /* increased padding */
-      text-align: center;
+      padding: 6px 6px;
+      text-align: left;
       font-weight: 600;
-      font-size: 11px; /* larger header font */
+      font-size: 9px;
       text-transform: uppercase;
-      letter-spacing: 0.1px;
-      border-left: 1px solid white;
-      border-right: 1px solid white;
-      border-top: 1px solid white;
-      border-bottom: 1px solid white;
-      overflow: hidden;
-      white-space: nowrap;
-      height: 16px;
-      line-height: 14px;
+      border: 1px solid white;
     }
     
     td {
-      padding: 3px 4px; /* increased padding */
-      border-left: 1px solid #e2e8f0;
-      border-right: 1px solid #e2e8f0;
-      border-top: 1px solid #e2e8f0;
-      border-bottom: 1px solid #1e40af;
-      vertical-align: top;
+      padding: 6px 6px;
+      border: 1px solid #e2e8f0;
       background: white;
-      text-align: center;
-      font-weight: 400;
+      vertical-align: top;
       color: #1e293b;
-      font-size: 10px; /* larger cell font */
       overflow: hidden;
       height: 18px;
       line-height: 14px;
@@ -746,116 +714,26 @@ export function buildNominaMonthHTMLForPDF(
       color: #1e293b;
     }
     
-    .role-badge {
-      display: inline-block;
-      padding: 1px 2px;
-      border-radius: 2px;
-      font-size: 8px; /* slightly larger */
-      font-weight: 700;
-      margin-right: 2px;
-    }
-    
-    /* Column widths - much thinner, adapted to content */
-    th:nth-child(1), td:nth-child(1) { width: 15%; } /* Persona */
-    th:nth-child(2), td:nth-child(2) { width: 6%; }  /* Días trabajados */
-    th:nth-child(3), td:nth-child(3) { width: 7%; }  /* Total días */
-    th:nth-child(4), td:nth-child(4) { width: 5%; }  /* Días festivos */
-    th:nth-child(5), td:nth-child(5) { width: 6%; }  /* Total días festivos */
-    th:nth-child(6), td:nth-child(6) { width: 5%; }  /* Días Travel Day */
-    th:nth-child(7), td:nth-child(7) { width: 6%; }  /* Total travel days */
-    th:nth-child(8), td:nth-child(8) { width: 12%; } /* Horas extras */
-    th:nth-child(9), td:nth-child(9) { width: 6%; }  /* Total horas extra */
-    th:nth-child(10), td:nth-child(10) { width: 10%; } /* Dietas */
-    th:nth-child(11), td:nth-child(11) { width: 5%; }  /* Total dietas */
-    th:nth-child(12), td:nth-child(12) { width: 4%; }  /* Transportes */
-    th:nth-child(13), td:nth-child(13) { width: 5%; }  /* Total transportes */
-    th:nth-child(14), td:nth-child(14) { width: 4%; }  /* Kilometraje */
-    th:nth-child(15), td:nth-child(15) { width: 5%; }  /* Total kilometraje */
-    th:nth-child(16), td:nth-child(16) { width: 7%; }  /* TOTAL BRUTO */
-    
-    .extras-cell {
-      font-size: 9px; /* improve legibility */
-      line-height: 1.25;
-    }
-    
-    .extras-total {
-      font-weight: 600;
-      margin-bottom: 0px;
-      color: #1e293b;
-      font-size: 8px; /* improve legibility */
-      display: inline-block; /* allow spacing from pills */
-      margin-right: 6px;
-    }
-    
-    .extras-pills {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 2px 4px; /* separate pills */
-      align-content: flex-start;
-    }
-    
-    .extras-pills div {
-      background: #A0D3F2;
-      color: #1e293b;
-      padding: 2px 3px;
-      border-radius: 2px;
-      font-size: 6px; /* one step smaller */
-      font-weight: 500; /* not bold */
-      line-height: 1.2; /* avoid overlap */
-      display: inline-flex; /* center content */
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      margin-right: 4px;
-      margin-bottom: 2px;
-    }
-    
-    .extras-pills div.nocturnidad {
-      background: #A0D3F2;
-      color: #1e293b;
-    }
-    
-    .dietas-cell {
-      font-size: 9px; /* improve legibility */
-      line-height: 1.25;
-    }
-    
-    .dietas-total {
-      font-weight: 600;
-      margin-bottom: 0px;
-      color: #1e293b;
-      font-size: 8px; /* improve legibility */
-      display: inline-block; /* allow spacing from pills */
-      margin-right: 6px;
-    }
-    
-    .dietas-pills {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 2px 4px; /* separate pills */
-      align-content: flex-start;
-    }
-    
-    .dietas-pills div {
-      background: #A0D3F2;
-      color: #1e293b;
-      padding: 2px 3px;
-      border-radius: 2px;
-      font-size: 6px; /* one step smaller */
-      font-weight: 500; /* not bold */
-      line-height: 1.2; /* avoid overlap */
-      display: inline-flex; /* center content */
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      margin-right: 4px;
-      margin-bottom: 2px;
-    }
-    
     .total-cell {
       font-weight: 700;
       font-size: 12px;
       color: #f97316;
+    }
+    
+    .extras-cell, .dietas-cell {
+      font-size: 9px;
+    }
+    
+    .extras-cell br + *, .dietas-cell br + * {
+      font-size: 9px !important;
+    }
+    
+    .dietas-cell {
+      font-size: 9px !important;
+    }
+    
+    .dietas-cell br + * {
+      font-size: 9px !important;
     }
     
     .footer {
@@ -941,11 +819,77 @@ export async function exportToPDF(
   monthLabelEs: (key: string, withYear?: boolean) => string
 ) {
   try {
-    // Calculate how many rows fit per page (safe, bounded)
-    // Prefer a stable cap; tune if design changes
-    const DEFAULT_ROWS_PER_PAGE = 10; // estado anterior estable
-    const rowsPerPage = Math.max(1, Math.min(DEFAULT_ROWS_PER_PAGE, enrichedRows.length || DEFAULT_ROWS_PER_PAGE));
-    const totalPages = Math.ceil(enrichedRows.length / rowsPerPage) || 1;
+    // Smart pagination with auto-fill logic (copied from reportes)
+    const totalRows = enrichedRows.length;
+    
+    // Smart pagination with auto-fill logic
+    const estimateContentHeight = (numRows: number) => {
+      const headerHeight = 80; // Header + info panel
+      const footerHeight = 25; // Footer
+      const tableHeaderHeight = 40; // Table headers
+      const rowHeight = 25; // Height per row
+      
+      const totalRowsHeight = numRows * rowHeight;
+      return headerHeight + footerHeight + tableHeaderHeight + totalRowsHeight;
+    };
+    
+    // Smart pagination: start aggressive and adjust dynamically
+    let rowsPerPage = Math.min(20, totalRows); // Start very aggressive
+    const maxPageHeight = 750; // Available height for content
+    const minRowsPerPage = 1; // Minimum to prevent infinite loops
+    
+    // Dynamic adjustment
+    while (estimateContentHeight(rowsPerPage) > maxPageHeight && rowsPerPage > minRowsPerPage) {
+      rowsPerPage--;
+    }
+    
+    // Auto-fill logic: if we have space, try to add more rows
+    let optimalRowsPerPage = rowsPerPage;
+    const spaceBuffer = 20; // Buffer to maintain nice margins
+    
+    for (let testRows = rowsPerPage + 1; testRows <= totalRows; testRows++) {
+      const testHeight = estimateContentHeight(testRows);
+      const availableSpace = maxPageHeight - testHeight;
+      
+      if (testHeight <= maxPageHeight && availableSpace >= spaceBuffer) {
+        optimalRowsPerPage = testRows;
+        console.log(`🎯 Auto-fill: Can fit ${testRows} rows (height: ${testHeight}px, space left: ${availableSpace}px)`);
+      } else if (testHeight <= maxPageHeight && availableSpace < spaceBuffer) {
+        // We can fit it but would be too tight, stop here
+        console.log(`⚠️ Auto-fill: ${testRows} rows would fit but too tight (space left: ${availableSpace}px < ${spaceBuffer}px buffer)`);
+        break;
+      } else {
+        // Would exceed page height
+        console.log(`❌ Auto-fill: ${testRows} rows would exceed page height (${testHeight}px > ${maxPageHeight}px)`);
+        break;
+      }
+    }
+    
+    rowsPerPage = optimalRowsPerPage;
+    let totalPages = Math.ceil(totalRows / rowsPerPage) || 1;
+    
+    // Additional optimization: aggressive mode for better space utilization
+    const aggressiveMaxHeight = 800; // More space for aggressive mode
+    let aggressiveRowsPerPage = rowsPerPage;
+    
+    for (let testRows = rowsPerPage + 1; testRows <= totalRows; testRows++) {
+      const testHeight = estimateContentHeight(testRows);
+      if (testHeight <= aggressiveMaxHeight) {
+        aggressiveRowsPerPage = testRows;
+        console.log(`🚀 Aggressive mode: Can fit ${testRows} rows (height: ${testHeight}px)`);
+      } else {
+        break;
+      }
+    }
+    
+    if (aggressiveRowsPerPage > rowsPerPage) {
+      rowsPerPage = aggressiveRowsPerPage;
+      totalPages = Math.ceil(totalRows / rowsPerPage) || 1;
+      console.log(`🚀 Applied aggressive optimization: ${rowsPerPage} rows per page`);
+    }
+    
+    console.log(`📄 Smart Pagination: ${totalRows} rows, ${rowsPerPage} per page, ${totalPages} pages`);
+    console.log(`📏 Final height for ${rowsPerPage} rows: ${estimateContentHeight(rowsPerPage)}px`);
     
     // Create PDF
     const pdf = new jsPDF({
