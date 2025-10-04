@@ -1,4 +1,4 @@
-import LogoSetLux from '@shared/components/LogoSetLux';
+import LogoIcon from '@shared/components/LogoIcon';
 import { useEffect, useRef, useState, useMemo, memo, useCallback } from 'react';
 
 export type ProjectMode = 'semanal' | 'mensual' | 'publicidad';
@@ -83,41 +83,41 @@ function NewProjectModal({ onClose, onCreate }: NewProjectModalProps) {
   return (
     <div className='fixed inset-0 bg-black/60 grid place-items-center p-4 z-50'>
       <div className='w-full max-w-lg rounded-2xl border border-neutral-border bg-neutral-panel p-6'>
-        <h3 className='text-lg font-semibold mb-4 text-brand'>
+        <h3 className='text-lg font-semibold mb-4 text-orange-500'>
           Nuevo proyecto
         </h3>
         <div className='grid grid-cols-2 gap-4'>
           <Field label='Proyecto'>
             <input
-              className='w-full px-4 py-3 rounded-xl bg-black/40 border border-neutral-border focus:outline-none focus:ring-2 focus:ring-brand'
+              className='w-full px-4 py-3 rounded-xl bg-black/40 border border-neutral-border focus:outline-none focus:ring-2 focus:ring-blue-500'
               value={form.nombre}
               onChange={e => setForm({ ...form, nombre: e.target.value })}
             />
           </Field>
           <Field label='DoP'>
             <input
-              className='w-full px-4 py-3 rounded-xl bg-black/40 border border-neutral-border focus:outline-none focus:ring-2 focus:ring-brand'
+              className='w-full px-4 py-3 rounded-xl bg-black/40 border border-neutral-border focus:outline-none focus:ring-2 focus:ring-blue-500'
               value={form.dop}
               onChange={e => setForm({ ...form, dop: e.target.value })}
             />
           </Field>
           <Field label='Almacén'>
             <input
-              className='w-full px-4 py-3 rounded-xl bg-black/40 border border-neutral-border focus:outline-none focus:ring-2 focus:ring-brand'
+              className='w-full px-4 py-3 rounded-xl bg-black/40 border border-neutral-border focus:outline-none focus:ring-2 focus:ring-blue-500'
               value={form.almacen}
               onChange={e => setForm({ ...form, almacen: e.target.value })}
             />
           </Field>
           <Field label='Productora'>
             <input
-              className='w-full px-4 py-3 rounded-xl bg-black/40 border border-neutral-border focus:outline-none focus:ring-2 focus:ring-brand'
+              className='w-full px-4 py-3 rounded-xl bg-black/40 border border-neutral-border focus:outline-none focus:ring-2 focus:ring-blue-500'
               value={form.productora}
               onChange={e => setForm({ ...form, productora: e.target.value })}
             />
           </Field>
           <Field label='Estado'>
             <select
-              className='w-full px-4 py-3 rounded-xl bg-black/40 border border-neutral-border focus:outline-none focus:ring-2 focus:ring-brand'
+              className='w-full px-4 py-3 rounded-xl bg-black/40 border border-neutral-border focus:outline-none focus:ring-2 focus:ring-blue-500'
               value={form.estado}
               onChange={e => setForm({ ...form, estado: e.target.value as ProjectStatus })}
             >
@@ -127,7 +127,7 @@ function NewProjectModal({ onClose, onCreate }: NewProjectModalProps) {
           </Field>
           <Field label='Condiciones'>
             <select
-              className='w-full px-4 py-3 rounded-xl bg-black/40 border border-neutral-border focus:outline-none focus:ring-2 focus:ring-brand'
+              className='w-full px-4 py-3 rounded-xl bg-black/40 border border-neutral-border focus:outline-none focus:ring-2 focus:ring-blue-500'
               value={form.condicionesTipo}
               onChange={e =>
                 setForm({ ...form, condicionesTipo: e.target.value as ProjectMode })
@@ -142,7 +142,7 @@ function NewProjectModal({ onClose, onCreate }: NewProjectModalProps) {
 
         <div className='flex justify-end gap-3 mt-6'>
           <button
-            className='inline-flex items-center justify-center px-4 py-3 rounded-xl font-semibold border border-neutral-border hover:border-brand text-zinc-300 hover:text-brand transition'
+            className='inline-flex items-center justify-center px-4 py-3 rounded-xl font-semibold border border-neutral-border hover:border-orange-500 text-zinc-300 hover:text-orange-500 transition'
             onClick={onClose}
           >
             Cancelar
@@ -229,7 +229,7 @@ function EditProjectModal({ project, onClose, onSave }: EditProjectModalProps) {
         <div className='grid grid-cols-2 gap-4'>
           <Field label='Proyecto'>
             <input
-              className='w-full px-4 py-3 rounded-xl bg-black/40 border border-neutral-border focus:outline-none focus:ring-2 focus:ring-brand'
+              className='w-full px-4 py-3 rounded-xl bg-black/40 border border-neutral-border focus:outline-none focus:ring-2 focus:ring-blue-500'
               value={form.nombre}
               onChange={e => setForm({ ...form, nombre: e.target.value })}
             />
@@ -237,7 +237,7 @@ function EditProjectModal({ project, onClose, onSave }: EditProjectModalProps) {
 
           <Field label='DoP'>
             <input
-              className='w-full px-4 py-3 rounded-xl bg-black/40 border border-neutral-border focus:outline-none focus:ring-2 focus:ring-brand'
+              className='w-full px-4 py-3 rounded-xl bg-black/40 border border-neutral-border focus:outline-none focus:ring-2 focus:ring-blue-500'
               value={form.dop}
               onChange={e => setForm({ ...form, dop: e.target.value })}
             />
@@ -245,7 +245,7 @@ function EditProjectModal({ project, onClose, onSave }: EditProjectModalProps) {
 
           <Field label='Almacén'>
             <input
-              className='w-full px-4 py-3 rounded-xl bg-black/40 border border-neutral-border focus:outline-none focus:ring-2 focus:ring-brand'
+              className='w-full px-4 py-3 rounded-xl bg-black/40 border border-neutral-border focus:outline-none focus:ring-2 focus:ring-blue-500'
               value={form.almacen}
               onChange={e => setForm({ ...form, almacen: e.target.value })}
             />
@@ -253,7 +253,7 @@ function EditProjectModal({ project, onClose, onSave }: EditProjectModalProps) {
 
           <Field label='Productora'>
             <input
-              className='w-full px-4 py-3 rounded-xl bg-black/40 border border-neutral-border focus:outline-none focus:ring-2 focus:ring-brand'
+              className='w-full px-4 py-3 rounded-xl bg-black/40 border border-neutral-border focus:outline-none focus:ring-2 focus:ring-blue-500'
               value={form.productora}
               onChange={e => setForm({ ...form, productora: e.target.value })}
             />
@@ -261,7 +261,7 @@ function EditProjectModal({ project, onClose, onSave }: EditProjectModalProps) {
 
           <Field label='Estado'>
             <select
-              className='w-full px-4 py-3 rounded-xl bg-black/40 border border-neutral-border focus:outline-none focus:ring-2 focus:ring-brand'
+              className='w-full px-4 py-3 rounded-xl bg-black/40 border border-neutral-border focus:outline-none focus:ring-2 focus:ring-blue-500'
               value={form.estado}
               onChange={e => setForm({ ...form, estado: e.target.value as ProjectStatus })}
             >
@@ -272,7 +272,7 @@ function EditProjectModal({ project, onClose, onSave }: EditProjectModalProps) {
 
           <Field label='Tipo de condiciones'>
             <select
-              className='w-full px-4 py-3 rounded-xl bg-black/40 border border-neutral-border focus:outline-none focus:ring-2 focus:ring-brand'
+              className='w-full px-4 py-3 rounded-xl bg-black/40 border border-neutral-border focus:outline-none focus:ring-2 focus:ring-blue-500'
               value={form.condicionesTipo}
               onChange={e =>
                 setForm({ ...form, condicionesTipo: e.target.value as ProjectMode })
@@ -287,7 +287,7 @@ function EditProjectModal({ project, onClose, onSave }: EditProjectModalProps) {
 
         <div className='flex justify-end gap-3 mt-6'>
           <button
-            className='inline-flex items-center justify-center px-4 py-3 rounded-xl font-semibold border border-neutral-border hover:border-brand text-zinc-300 hover:text-brand transition'
+            className='inline-flex items-center justify-center px-4 py-3 rounded-xl font-semibold border border-neutral-border hover:border-orange-500 text-zinc-300 hover:text-orange-500 transition'
             onClick={onClose}
             type='button'
           >
@@ -387,11 +387,52 @@ function ProjectsScreen({
   const [menuOpen, setMenuOpen] = useState(false);
   const [editing, setEditing] = useState<Project | null>(null);
   const hasProjects = projects.length > 0;
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // Cerrar menú al hacer clic fuera
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+
+    if (menuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [menuOpen]);
 
   const handleOpen = useCallback((p: Project) => onOpen && onOpen(p), [onOpen]);
   const projectCards = useMemo(() => (
     projects.map(p => {
       const estadoVisible = p.estado;
+      const getInitials = (name: string) => {
+        return name.split(' ').map(word => word.charAt(0)).join(' ').toUpperCase();
+      };
+      
+      const getAvatarColor = (name: string) => {
+        const colors = ['#f97316', '#3b82f6', '#10b981', '#8b5cf6', '#ef4444'];
+        const index = name.length % colors.length;
+        return colors[index];
+      };
+
+      const getConditionColor = (tipo: string) => {
+        switch (tipo?.toLowerCase()) {
+          case 'semanal': return '#3b82f6';
+          case 'mensual': return '#10b981';
+          case 'publicidad': return '#8b5cf6';
+          default: return '#6b7280';
+        }
+      };
+
+      const getStatusColor = (estado: string) => {
+        return estado === 'Activo' ? '#10b981' : '#6b7280';
+      };
+
       return (
         <div
           key={p.id}
@@ -401,34 +442,65 @@ function ProjectsScreen({
           onKeyDown={e => {
             if (e.key === 'Enter' || e.key === ' ') handleOpen(p);
           }}
-          className='relative w-full text-left rounded-2xl border border-neutral-border bg-neutral-panel/90 p-5 transition hover:border-accent hover:shadow-[0_0_24px_rgba(245,158,11,0.18)] cursor-pointer'
+          className='relative w-full text-left rounded-2xl border border-neutral-border p-6 transition-all hover:border-orange-500 hover:shadow-[0_0_24px_rgba(249,115,22,0.25)] cursor-pointer group'
+          style={{backgroundColor: '#2a4058'}}
         >
-          <h3 className='text-lg font-semibold text-brand mb-1'>
-            {p.nombre}
-          </h3>
-
-          <div className='text-sm text-zinc-400 space-y-0.5'>
-            <p>📸 DoP: {p.dop || '—'}</p>
-            <p>🏠 Almacén: {p.almacen || '—'}</p>
-            <p>📽 Productora: {p.productora || '—'}</p>
-            <p>
-              ⚙️ Condiciones: {formatMode(p.conditions?.tipo || 'semanal')}
-            </p>
-            <p>📌 Estado: {estadoVisible}</p>
+          {/* Avatar y nombre del proyecto */}
+          <div className='flex items-start gap-4 mb-4'>
+            <div 
+              className='w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-base px-2'
+              style={{backgroundColor: getAvatarColor(p.nombre)}}
+            >
+              {p.nombre}
+            </div>
           </div>
 
-          <div className='absolute bottom-3 right-3 flex gap-2'>
+          {/* Detalles del proyecto */}
+          <div className='space-y-2 mb-4'>
+            <div className='flex items-center gap-2 text-sm text-zinc-300'>
+              <span>📸</span>
+              <span>DoP: {p.dop || '—'}</span>
+            </div>
+            <div className='flex items-center gap-2 text-sm text-zinc-300'>
+              <span>🏠</span>
+              <span>Almacén: {p.almacen || '—'}</span>
+            </div>
+            <div className='flex items-center gap-2 text-sm text-zinc-300'>
+              <span>📽</span>
+              <span>Productora: {p.productora || '—'}</span>
+            </div>
+          </div>
+
+          {/* Tags */}
+          <div className='flex flex-wrap gap-2 mb-4'>
+            <span 
+              className='px-3 py-1 rounded-full text-xs font-medium text-white'
+              style={{backgroundColor: getConditionColor(p.conditions?.tipo || 'semanal')}}
+            >
+              {formatMode(p.conditions?.tipo || 'semanal')}
+            </span>
+            <span 
+              className='px-3 py-1 rounded-full text-xs font-medium text-white'
+              style={{backgroundColor: getStatusColor(estadoVisible)}}
+            >
+              {estadoVisible}
+            </span>
+          </div>
+
+          {/* Botones de acción */}
+          <div className='flex gap-2'>
             <button
               type='button'
               onClick={e => {
                 e.stopPropagation();
                 setEditing(p);
               }}
-              className='text-xs px-2 py-1 rounded-lg border border-neutral-border hover:border-accent text-zinc-300 hover:text-brand bg-black/30'
+              className='flex-1 px-3 py-2 rounded-lg border border-neutral-border hover:border-orange-500 text-zinc-300 hover:text-orange-500 transition text-sm font-medium'
+              style={{backgroundColor: 'rgba(0,0,0,0.2)'}}
               title='Editar proyecto'
               aria-label={`Editar ${p.nombre}`}
             >
-              ✏️ Editar
+              Editar
             </button>
             <button
               type='button'
@@ -438,11 +510,12 @@ function ProjectsScreen({
                 if (!ok) return;
                 onDeleteProject?.(p.id);
               }}
-              className='text-xs px-2 py-1 rounded-lg border border-neutral-border hover:border-red-500 text-red-300 hover:text-red-200 bg-black/30'
+              className='flex-1 px-3 py-2 rounded-lg border border-red-500 text-red-300 hover:text-red-200 hover:bg-red-500/10 transition text-sm font-medium'
+              style={{backgroundColor: 'rgba(0,0,0,0.2)'}}
               title='Eliminar proyecto'
               aria-label={`Eliminar ${p.nombre}`}
             >
-              🗑️ Borrar
+              Borrar
             </button>
           </div>
         </div>
@@ -452,72 +525,130 @@ function ProjectsScreen({
 
   return (
     <>
-      {/* Header unificado en negro */}
-      <div className='px-6 py-6 bg-[#0D0D0D]'>
-        <div className='max-w-5xl mx-auto flex flex-col items-center gap-4'>
-          <LogoSetLux />
-          <div className='flex items-center justify-between w-full relative'>
-            <h2 className='text-xl font-bold tracking-wide text-brand'>
-              Proyectos
-            </h2>
+      {/* Header moderno y prominente */}
+      <div className='px-6 py-8' style={{backgroundColor: '#1a2b40'}}>
+        <div className='max-w-6xl mx-auto'>
+          {/* Header limpio */}
+          <div className='flex items-center justify-between mb-8'>
+            <div className='flex items-center gap-6'>
+              <LogoIcon size={80} />
+              <h1 className='text-3xl font-bold text-white'>
+                SetLux <span className='text-gray-300'>/ Proyectos</span>
+              </h1>
+            </div>
 
-            {/* Bloque Bienvenida + menú */}
-            <div className='text-sm text-zinc-300 relative'>
-              Bienvenido,{` `}
+            {/* Botón Nuevo Proyecto */}
+            <div className='flex flex-col items-end gap-2'>
               <button
-                type='button'
-                className='font-bold text-accent underline-offset-2 hover:underline'
-                title='Abrir menú de usuario'
-                onClick={() => setMenuOpen(v => !v)}
+                onClick={() => setShowNew(true)}
+                className='px-6 py-3 rounded-xl font-semibold text-white transition-all hover:shadow-lg'
+                style={{backgroundColor: '#f97316'}}
               >
-                {userName}
-              </button>{` `}
-              <span role='img' aria-label='sonrisa'>🙂</span>{` `}
-              <span role='img' aria-label='rayo'>⚡</span>
-              {menuOpen && (
-                <UserMenu
-                  onPerfil={() => {
-                    if (onOpenUsuario) onOpenUsuario();
-                    else onPerfil?.();
-                  }}
-                  onConfig={onConfig}
-                  onSalir={onSalir}
-                  onClose={() => setMenuOpen(false)}
-                />
-              )}
+                Nuevo proyecto
+              </button>
+              {/* Saludo de bienvenida */}
+              <div className='relative' ref={menuRef}>
+                <button
+                  onClick={() => setMenuOpen(!menuOpen)}
+                  className='text-sm text-zinc-300 hover:text-white transition-colors cursor-pointer'
+                >
+                  Bienvenido, <span className='font-semibold text-orange-500'>{userName}</span> ✨
+                </button>
+                
+                {/* Menú desplegable */}
+                {menuOpen && (
+                  <div className='absolute right-0 top-full mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50'>
+                    <button
+                      onClick={() => {
+                        onPerfil?.();
+                        setMenuOpen(false);
+                      }}
+                      className='w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors'
+                    >
+                      👤 Perfil
+                    </button>
+                    <button
+                      onClick={() => {
+                        onConfig?.();
+                        setMenuOpen(false);
+                      }}
+                      className='w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors'
+                    >
+                      ⚙️ Configuración
+                    </button>
+                    <button
+                      onClick={() => {
+                        onSalir?.();
+                        setMenuOpen(false);
+                      }}
+                      className='w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors'
+                    >
+                      🚪 Salir
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
+
+          {/* Barra de búsqueda y filtros */}
+          <div className='flex items-center gap-4'>
+            <div className='flex-1 relative'>
+              <div className='absolute left-4 top-1/2 transform -translate-y-1/2 text-zinc-400'>
+                🔍
+              </div>
+              <input
+                type='text'
+                placeholder='Buscar...'
+                className='w-full pl-12 pr-4 py-3 rounded-xl border border-neutral-border focus:outline-none focus:ring-1 focus:ring-orange-500'
+                style={{backgroundColor: '#2a4058', color: '#ffffff'}}
+              />
+            </div>
+            <button
+              className='px-4 py-3 rounded-xl border border-neutral-border hover:border-orange-500 transition'
+              style={{backgroundColor: '#2a4058', color: '#ffffff'}}
+            >
+              <span className='flex items-center gap-2'>
+                🔽 Filtro
+              </span>
+            </button>
+            <button
+              className='px-4 py-3 rounded-xl border border-neutral-border hover:border-orange-500 transition'
+              style={{backgroundColor: '#2a4058', color: '#ffffff'}}
+            >
+              <span className='flex items-center gap-2'>
+                ↕️ Ordenar
+              </span>
+            </button>
+          </div>
+
         </div>
       </div>
 
       {/* Grid de proyectos */}
-      <div className='max-w-5xl mx-auto p-6'>
+      <div className='max-w-6xl mx-auto p-6'>
         <div
-          className={`grid gap-4 ${
-            hasProjects ? 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3' : ''
+          className={`grid gap-6 ${
+            hasProjects ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : ''
           }`}
         >
           {/* Tarjeta + grande si no hay proyectos */}
           {!hasProjects && (
             <div
-              className='grid place-items-center rounded-2xl border-2 border-dashed border-neutral-border bg-neutral-surface cursor-pointer transition aspect-[4/3] text-5xl text-brand hover:border-accent hover:shadow-[0_0_24px_rgba(245,158,11,0.25)]'
+              className='grid place-items-center rounded-2xl border-2 border-dashed border-neutral-border cursor-pointer transition-all aspect-[4/3] hover:border-orange-500 hover:shadow-[0_0_24px_rgba(249,115,22,0.25)] group'
+              style={{backgroundColor: '#2a4058'}}
               onClick={() => setShowNew(true)}
               title='Añadir proyecto'
             >
-              +
+              <div className='text-center'>
+                <div className='w-16 h-16 rounded-full flex items-center justify-center text-4xl text-white mb-4 group-hover:scale-110 transition-transform' style={{backgroundColor: '#3b82f6'}}>
+                  +
+                </div>
+                <p className='text-lg font-semibold text-white'>Crear proyecto</p>
+              </div>
             </div>
           )}
 
-          {/* Si hay proyectos, mantenemos tarjeta + como primera */}
-          {hasProjects && (
-            <button
-              onClick={() => setShowNew(true)}
-              className='grid place-items-center rounded-2xl border-2 border-dashed border-neutral-border bg-neutral-surface cursor-pointer transition aspect-[4/3] text-4xl text-brand hover:border-accent hover:shadow-[0_0_24px_rgba(245,158,11,0.25)]'
-              title='Añadir proyecto'
-            >
-              +
-            </button>
-          )}
 
           {/* Tarjetas existentes */}
           {projectCards}
