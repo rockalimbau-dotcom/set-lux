@@ -11,24 +11,24 @@ function renderTab(mode) {
 }
 
 describe('CondicionesTab (smoke)', () => {
-	it('renderiza semanal y botón Exportar', () => {
+	it('renderiza semanal y botón PDF', () => {
 		renderTab('semanal')
-		expect(screen.getByRole('button', { name: /exportar semanal/i })).toBeInTheDocument()
+		expect(screen.getByRole('button', { name: /pdf/i })).toBeInTheDocument()
 	})
 
-	it('renderiza mensual y botón Exportar', () => {
+	it('renderiza mensual y botón PDF', () => {
 		renderTab('mensual')
-		expect(screen.getByRole('button', { name: /exportar mensual/i })).toBeInTheDocument()
+		expect(screen.getByRole('button', { name: /pdf/i })).toBeInTheDocument()
 	})
 
-	it('renderiza publicidad y botón Exportar', () => {
+	it('renderiza publicidad y botón PDF', () => {
 		renderTab('publicidad')
-		expect(screen.getByRole('button', { name: /exportar publicidad/i })).toBeInTheDocument()
+		expect(screen.getByRole('button', { name: /pdf/i })).toBeInTheDocument()
 	})
 
-	it('permite click en Exportar sin crash', async () => {
+	it('permite click en PDF sin crash', async () => {
 		renderTab('semanal')
-		await userEvent.click(screen.getByRole('button', { name: /exportar semanal/i }))
+		await userEvent.click(screen.getByRole('button', { name: /pdf/i }))
 		// No assert de efecto: es smoke para que no explote
 	})
 })
