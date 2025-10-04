@@ -427,7 +427,7 @@ export function buildReportWeekHTML({
 <body>
   <div class="container">
     <div class="header">
-      <h1>Reportes</h1>
+      <h1>Reportes - ${title?.includes('-') ? 'Preproducción' : title?.match(/\d+/) ? 'Producción' : 'Semana'}</h1>
     </div>
     <div class="content">
       <div class="info-panel">
@@ -840,7 +840,7 @@ export function buildReportWeekHTMLForPDF({
 <body>
   <div class="container-pdf">
     <div class="header">
-      <h1>Reportes</h1>
+      <h1>Reportes - ${title?.includes('-') ? 'Preproducción' : title?.match(/\d+/) ? 'Producción' : 'Semana'}</h1>
     </div>
     <div class="content">
       <div class="info-panel">
