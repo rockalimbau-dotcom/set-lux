@@ -258,16 +258,16 @@ export function buildNominaMonthHTML(
     
     .table-container {
       background: white;
-      border-radius: 8px;
+      border-radius: 6px;
       overflow: hidden;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
     
     table {
       width: 100%;
       border-collapse: collapse;
       font-size: 10px;
-      border: 2px solid #1e40af;
+      border: 2px solid #1e3a8a;
     }
     
     th {
@@ -283,7 +283,7 @@ export function buildNominaMonthHTML(
     
     td {
       padding: 6px 6px;
-      border: 1px solid #e2e8f0;
+      border: 1px solid #999;
       background: white;
       vertical-align: top;
       color: #1e293b;
@@ -661,22 +661,16 @@ export function buildNominaMonthHTMLForPDF(
     
     .table-container {
       background: white;
-      border-radius: 4px;
+      border-radius: 6px;
       overflow: hidden;
-      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      width: 100%;
-      max-width: 1000px;
-      margin: 0 auto; /* center horizontally */
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
     
     table {
       width: 100%;
       border-collapse: collapse;
       font-size: 10px;
-      border: 2px solid #1e40af;
+      border: 2px solid #1e3a8a;
     }
     
     th {
@@ -692,13 +686,10 @@ export function buildNominaMonthHTMLForPDF(
     
     td {
       padding: 6px 6px;
-      border: 1px solid #e2e8f0;
+      border: 1px solid #999;
       background: white;
       vertical-align: top;
       color: #1e293b;
-      overflow: hidden;
-      height: 18px;
-      line-height: 14px;
     }
     
     td.text-right {
@@ -825,7 +816,7 @@ export async function exportToPDF(
     // Smart pagination with auto-fill logic
     const estimateContentHeight = (numRows: number) => {
       const headerHeight = 80; // Header + info panel
-      const footerHeight = 25; // Footer
+      const footerHeight = 25; // Footer (same as reportes)
       const tableHeaderHeight = 40; // Table headers
       const rowHeight = 25; // Height per row
       
@@ -834,8 +825,8 @@ export async function exportToPDF(
     };
     
     // Smart pagination: start aggressive and adjust dynamically
-    let rowsPerPage = Math.min(20, totalRows); // Start very aggressive
-    const maxPageHeight = 750; // Available height for content
+    let rowsPerPage = Math.min(25, totalRows); // Start more aggressive
+    const maxPageHeight = 720; // Available height for content (more space for content)
     const minRowsPerPage = 1; // Minimum to prevent infinite loops
     
     // Dynamic adjustment
