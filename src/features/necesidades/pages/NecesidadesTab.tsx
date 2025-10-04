@@ -338,7 +338,7 @@ export default function NecesidadesTab({ project }: NecesidadesTabProps) {
             onClick={exportAllNeedsPDF}
             title='Exportar todas las semanas (PDF)'
           >
-            PDF
+            PDF Entero
           </button>
         </div>
       )}
