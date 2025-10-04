@@ -150,6 +150,14 @@ export default function AppRouter({
               const pid = proj.id;
               navigate(`/project/${pid}`);
             }}
+            onUpdateProject={(updatedProject: UIProject) => {
+              setProjects((prev: UIProject[]) => {
+                if (!Array.isArray(prev)) return [updatedProject];
+                return prev.map((p: UIProject) => 
+                  p.id === updatedProject.id ? updatedProject : p
+                );
+              });
+            }}
             onDeleteProject={(projectId: string) => {
               setProjects((prev: UIProject[]) => (Array.isArray(prev) ? prev.filter((x: UIProject) => x?.id !== projectId) : prev));
             }}
@@ -185,6 +193,15 @@ export default function AppRouter({
                   setMode('projects');
                   navigate('/projects');
                 }}
+                onUpdateProject={(updatedProject: UIProject) => {
+                  setProjects((prev: UIProject[]) => {
+                    if (!Array.isArray(prev)) return [updatedProject];
+                    return prev.map((p: UIProject) => 
+                      p.id === updatedProject.id ? updatedProject : p
+                    );
+                  });
+                  setActiveProject(updatedProject);
+                }}
               />
             }
           />
@@ -198,6 +215,15 @@ export default function AppRouter({
                 onBack={() => {
                   setMode('projects');
                   navigate('/projects');
+                }}
+                onUpdateProject={(updatedProject: UIProject) => {
+                  setProjects((prev: UIProject[]) => {
+                    if (!Array.isArray(prev)) return [updatedProject];
+                    return prev.map((p: UIProject) => 
+                      p.id === updatedProject.id ? updatedProject : p
+                    );
+                  });
+                  setActiveProject(updatedProject);
                 }}
               />
             }
@@ -213,6 +239,15 @@ export default function AppRouter({
                   setMode('projects');
                   navigate('/projects');
                 }}
+                onUpdateProject={(updatedProject: UIProject) => {
+                  setProjects((prev: UIProject[]) => {
+                    if (!Array.isArray(prev)) return [updatedProject];
+                    return prev.map((p: UIProject) => 
+                      p.id === updatedProject.id ? updatedProject : p
+                    );
+                  });
+                  setActiveProject(updatedProject);
+                }}
               />
             }
           />
@@ -226,6 +261,15 @@ export default function AppRouter({
                 onBack={() => {
                   setMode('projects');
                   navigate('/projects');
+                }}
+                onUpdateProject={(updatedProject: UIProject) => {
+                  setProjects((prev: UIProject[]) => {
+                    if (!Array.isArray(prev)) return [updatedProject];
+                    return prev.map((p: UIProject) => 
+                      p.id === updatedProject.id ? updatedProject : p
+                    );
+                  });
+                  setActiveProject(updatedProject);
                 }}
               />
             }
@@ -241,6 +285,15 @@ export default function AppRouter({
                   setMode('projects');
                   navigate('/projects');
                 }}
+                onUpdateProject={(updatedProject: UIProject) => {
+                  setProjects((prev: UIProject[]) => {
+                    if (!Array.isArray(prev)) return [updatedProject];
+                    return prev.map((p: UIProject) => 
+                      p.id === updatedProject.id ? updatedProject : p
+                    );
+                  });
+                  setActiveProject(updatedProject);
+                }}
               />
             }
           />
@@ -255,6 +308,15 @@ export default function AppRouter({
                   setMode('projects');
                   navigate('/projects');
                 }}
+                onUpdateProject={(updatedProject: UIProject) => {
+                  setProjects((prev: UIProject[]) => {
+                    if (!Array.isArray(prev)) return [updatedProject];
+                    return prev.map((p: UIProject) => 
+                      p.id === updatedProject.id ? updatedProject : p
+                    );
+                  });
+                  setActiveProject(updatedProject);
+                }}
               />
             }
           />
@@ -268,6 +330,15 @@ export default function AppRouter({
                 onBack={() => {
                   setMode('projects');
                   navigate('/projects');
+                }}
+                onUpdateProject={(updatedProject: UIProject) => {
+                  setProjects((prev: UIProject[]) => {
+                    if (!Array.isArray(prev)) return [updatedProject];
+                    return prev.map((p: UIProject) => 
+                      p.id === updatedProject.id ? updatedProject : p
+                    );
+                  });
+                  setActiveProject(updatedProject);
                 }}
               />
             }
