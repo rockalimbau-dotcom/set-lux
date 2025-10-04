@@ -7,49 +7,45 @@ describe('BrandHero', () => {
   it('renders without crashing', () => {
     render(<BrandHero />);
     
-    expect(screen.getByText('Set')).toBeInTheDocument();
-    expect(screen.getByText('Lux')).toBeInTheDocument();
-    expect(screen.getByText('All in One')).toBeInTheDocument();
+    expect(screen.getByText('SetLux')).toBeInTheDocument();
+    expect(screen.getByText('ALL IN ONE')).toBeInTheDocument();
   });
 
   it('renders with custom tagline', () => {
     render(<BrandHero tagline="Custom Tagline" />);
     
-    expect(screen.getByText('Set')).toBeInTheDocument();
-    expect(screen.getByText('Lux')).toBeInTheDocument();
+    expect(screen.getByText('SetLux')).toBeInTheDocument();
     expect(screen.getByText('Custom Tagline')).toBeInTheDocument();
   });
 
   it('renders with default tagline when no prop provided', () => {
     render(<BrandHero />);
     
-    expect(screen.getByText('All in One')).toBeInTheDocument();
+    expect(screen.getByText('ALL IN ONE')).toBeInTheDocument();
   });
 
   it('has correct CSS classes', () => {
     const { container } = render(<BrandHero />);
     
     const mainDiv = container.firstChild;
-    expect(mainDiv).toHaveClass('text-center', 'mb-8');
+    expect(mainDiv).toHaveClass('text-center', 'mb-12');
     
-    const logoContainer = mainDiv?.querySelector('.mx-auto.mb-4');
-    expect(logoContainer).toHaveClass('mx-auto', 'mb-4', 'grid', 'place-items-center');
+    const logoContainer = mainDiv?.querySelector('.mx-auto.mb-6');
+    expect(logoContainer).toHaveClass('mx-auto', 'mb-6', 'grid', 'place-items-center');
     
-    const title = screen.getByText('Set').closest('h1');
-    expect(title).toHaveClass('text-3xl', 'font-extrabold', 'tracking-wide', 'leading-tight', 'select-none');
+    const title = screen.getByText('SetLux').closest('h1');
+    expect(title).toHaveClass('text-6xl', 'font-bold', 'tracking-wide', 'leading-tight', 'select-none');
     
-    const tagline = screen.getByText('All in One');
-    expect(tagline).toHaveClass('mt-1', 'text-sm', 'uppercase', 'tracking-[0.18em]', 'text-zinc-300', 'select-none');
+    const tagline = screen.getByText('ALL IN ONE');
+    expect(tagline).toHaveClass('mt-4', 'text-lg', 'uppercase', 'tracking-[0.2em]', 'select-none', 'font-medium');
   });
 
   it('has correct text content structure', () => {
     render(<BrandHero tagline="Test Tagline" />);
     
-    const setSpan = screen.getByText('Set');
-    const luxSpan = screen.getByText('Lux');
+    const title = screen.getByText('SetLux');
     
-    expect(setSpan).toHaveClass('text-brand');
-    expect(luxSpan).toHaveClass('text-[#F59E0B]');
+    expect(title).toHaveClass('text-6xl', 'font-bold', 'tracking-wide', 'leading-tight', 'select-none');
   });
 
   it('is memoized correctly', () => {

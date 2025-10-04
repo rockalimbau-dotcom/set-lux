@@ -43,13 +43,15 @@ describe('ProjectsScreen', () => {
 
   it('renders without crashing', () => {
     render(<ProjectsScreen {...mockProps} />);
-    expect(screen.getByText('Proyectos')).toBeInTheDocument();
+    expect(screen.getByText('SetLux')).toBeInTheDocument();
+    expect(screen.getByText('/ Proyectos')).toBeInTheDocument();
   });
 
   it('displays user name and welcome message', () => {
     render(<ProjectsScreen {...mockProps} />);
     expect(screen.getByText('Test User')).toBeInTheDocument();
-    expect(screen.getByText('Bienvenido,')).toBeInTheDocument();
+    expect(screen.getByText(/Bienvenido,/)).toBeInTheDocument();
+    expect(screen.getByText(/✨/)).toBeInTheDocument();
   });
 
   it('renders projects list with details', () => {
@@ -64,7 +66,7 @@ describe('ProjectsScreen', () => {
 
   it('shows create project button', () => {
     render(<ProjectsScreen {...mockProps} />);
-    expect(screen.getByTitle('Añadir proyecto')).toBeInTheDocument();
+    expect(screen.getByText('Nuevo proyecto')).toBeInTheDocument();
   });
 
   it('shows empty state when no projects', () => {
@@ -72,7 +74,7 @@ describe('ProjectsScreen', () => {
     render(<ProjectsScreen {...emptyProps} />);
     
     // Should show the large + button for empty state
-    const addButtons = screen.getAllByTitle('Añadir proyecto');
+    const addButtons = screen.getAllByText('Nuevo proyecto');
     expect(addButtons).toHaveLength(1);
   });
 
@@ -80,10 +82,10 @@ describe('ProjectsScreen', () => {
     const user = userEvent.setup();
     render(<ProjectsScreen {...mockProps} />);
     
-    const createButton = screen.getByTitle('Añadir proyecto');
+    const createButton = screen.getAllByText('Nuevo proyecto')[0];
     await user.click(createButton);
     
-    expect(screen.getByText('Nuevo proyecto')).toBeInTheDocument();
+    expect(screen.getAllByText('Nuevo proyecto')).toHaveLength(2);
     expect(screen.getByText('Crear')).toBeInTheDocument();
     expect(screen.getByText('Cancelar')).toBeInTheDocument();
   });
@@ -93,23 +95,36 @@ describe('ProjectsScreen', () => {
     render(<ProjectsScreen {...mockProps} />);
     
     // Open modal
-    const createButton = screen.getByTitle('Añadir proyecto');
+    const createButton = screen.getAllByText('Nuevo proyecto')[0];
     await user.click(createButton);
     
-    // Fill form - get the first input (Proyecto field)
-    const inputs = screen.getAllByDisplayValue('');
-    const nombreInput = inputs[0]; // First input is the project name
+    // Wait for modal to appear
+    await waitFor(() => {
+      expect(screen.getByText('Crear')).toBeInTheDocument();
+    });
+    
+    // Fill form - get the first input (Proyecto field) by label
+    const nombreInput = screen.getByLabelText('Proyecto');
     await user.type(nombreInput, 'Nuevo Proyecto');
+    
+    // Verify the input has the value
+    expect(nombreInput).toHaveValue('Nuevo Proyecto');
     
     // Submit form
     const createBtn = screen.getByText('Crear');
     await user.click(createBtn);
     
+    // Verify that onCreateProject was called with the correct data
     expect(mockProps.onCreateProject).toHaveBeenCalledWith(
       expect.objectContaining({
         nombre: 'Nuevo Proyecto',
+        dop: '',
+        almacen: '',
+        productora: '',
         estado: 'Activo',
-        conditions: { tipo: 'semanal' },
+        conditions: {
+          tipo: 'semanal'
+        }
       })
     );
   });
@@ -118,7 +133,7 @@ describe('ProjectsScreen', () => {
     const user = userEvent.setup();
     render(<ProjectsScreen {...mockProps} />);
     
-    const editButtons = screen.getAllByText('✏️ Editar');
+    const editButtons = screen.getAllByText('Editar');
     await user.click(editButtons[0]);
     
     expect(screen.getByText('Editar proyecto')).toBeInTheDocument();
@@ -130,7 +145,7 @@ describe('ProjectsScreen', () => {
     render(<ProjectsScreen {...mockProps} />);
     
     // Open edit modal
-    const editButtons = screen.getAllByText('✏️ Editar');
+    const editButtons = screen.getAllByText('Editar');
     await user.click(editButtons[0]);
     
     // Modify project name
@@ -172,9 +187,9 @@ describe('ProjectsScreen', () => {
     const userNameButton = screen.getByText('Test User');
     await user.click(userNameButton);
     
-    expect(screen.getByText('Perfil')).toBeInTheDocument();
-    expect(screen.getByText('Configuración')).toBeInTheDocument();
-    expect(screen.getByText('Salir')).toBeInTheDocument();
+    expect(screen.getByText('👤 Perfil')).toBeInTheDocument();
+    expect(screen.getByText('⚙️ Configuración')).toBeInTheDocument();
+    expect(screen.getByText('🚪 Salir')).toBeInTheDocument();
   });
 
   it('shows user menu options when user name is clicked', async () => {
@@ -187,13 +202,13 @@ describe('ProjectsScreen', () => {
     
     // Wait for menu to appear
     await waitFor(() => {
-      expect(screen.getByText('Perfil')).toBeInTheDocument();
+      expect(screen.getByText('👤 Perfil')).toBeInTheDocument();
     });
     
     // Verify menu options are visible
-    expect(screen.getByText('Perfil')).toBeInTheDocument();
-    expect(screen.getByText('Configuración')).toBeInTheDocument();
-    expect(screen.getByText('Salir')).toBeInTheDocument();
+    expect(screen.getByText('👤 Perfil')).toBeInTheDocument();
+    expect(screen.getByText('⚙️ Configuración')).toBeInTheDocument();
+    expect(screen.getByText('🚪 Salir')).toBeInTheDocument();
   });
 
   it('calls onSalir when Salir is clicked in user menu', async () => {
@@ -205,7 +220,7 @@ describe('ProjectsScreen', () => {
     await user.click(userNameButton);
     
     // Click Salir
-    const salirButton = screen.getByText('Salir');
+    const salirButton = screen.getByText('🚪 Salir');
     await user.click(salirButton);
     
     expect(mockProps.onSalir).toHaveBeenCalled();
@@ -216,14 +231,14 @@ describe('ProjectsScreen', () => {
     render(<ProjectsScreen {...mockProps} />);
     
     // Open modal
-    const createButton = screen.getByTitle('Añadir proyecto');
+    const createButton = screen.getByText('Nuevo proyecto');
     await user.click(createButton);
     
     // Click cancel
     const cancelButton = screen.getByText('Cancelar');
     await user.click(cancelButton);
     
-    expect(screen.queryByText('Nuevo proyecto')).not.toBeInTheDocument();
+    expect(screen.queryByText('Editar proyecto')).not.toBeInTheDocument();
   });
 
   it('formats project mode correctly', () => {
@@ -253,7 +268,7 @@ describe('ProjectsScreen', () => {
     const user = userEvent.setup();
     render(<ProjectsScreen {...mockProps} />);
     
-    const editButton = screen.getAllByText('✏️ Editar')[0];
+    const editButton = screen.getAllByText('Editar')[0];
     await user.click(editButton);
     
     // Should open edit modal but not trigger project open

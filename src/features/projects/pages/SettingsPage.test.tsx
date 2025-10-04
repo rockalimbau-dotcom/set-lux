@@ -20,7 +20,8 @@ describe('SettingsPage', () => {
 
   it('renders header and loads settings', async () => {
     render(<SettingsPage />);
-    expect(await screen.findByText('Configuración')).toBeInTheDocument();
+    expect(await screen.findByText('SetLux')).toBeInTheDocument();
+    expect(screen.getByText('/ Configuración')).toBeInTheDocument();
     expect(screen.getByText('Preferencias')).toBeInTheDocument();
 
     const select = screen.getByDisplayValue('Oscuro') as HTMLSelectElement;
