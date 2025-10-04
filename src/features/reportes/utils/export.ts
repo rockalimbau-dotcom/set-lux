@@ -380,6 +380,7 @@ export function buildReportWeekHTML({
     .info-item { display: flex; flex-direction: column; align-items: flex-start; }
     .info-label { font-size: 9px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
     .info-value { font-size: 11px; color: #1e293b; font-weight: 500; }
+    .week-title { font-size: 14px; font-weight: 600; color: #1e293b; margin: 12px 0 8px 0; padding: 4px 0; border-bottom: 1px solid #e2e8f0; }
     .table-container { background: white; border-radius: 6px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
     table { width: 100%; border-collapse: collapse; font-size: 10px; border: 2px solid #1e3a8a; }
     th { background: #1e3a8a; color: white; padding: 6px 6px; text-align: left; font-weight: 600; font-size: 9px; text-transform: uppercase; border: 1px solid white; }
@@ -426,7 +427,7 @@ export function buildReportWeekHTML({
 <body>
   <div class="container">
     <div class="header">
-      <h1>${esc(title || 'Reporte semanal')}</h1>
+      <h1>Reportes</h1>
     </div>
     <div class="content">
       <div class="info-panel">
@@ -439,6 +440,7 @@ export function buildReportWeekHTML({
           <div class="info-value">${esc(project?.nombre || 'Proyecto')}</div>
         </div>
       </div>
+      <div class="week-title">${esc(title || 'Semana')}</div>
       <div class="table-container">
         <table>
           <thead>
@@ -787,6 +789,7 @@ export function buildReportWeekHTMLForPDF({
     .info-item { display: flex; flex-direction: column; align-items: flex-start; }
     .info-label { font-size: 9px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
     .info-value { font-size: 11px; color: #1e293b; font-weight: 500; }
+    .week-title { font-size: 14px; font-weight: 600; color: #1e293b; margin: 12px 0 8px 0; padding: 4px 0; border-bottom: 1px solid #e2e8f0; }
     .table-container { background: white; border-radius: 6px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
     table { width: 100%; border-collapse: collapse; font-size: 10px; border: 2px solid #1e3a8a; }
     th { background: #1e3a8a; color: white; padding: 6px 6px; text-align: left; font-weight: 600; font-size: 9px; text-transform: uppercase; border: 1px solid white; }
@@ -837,7 +840,7 @@ export function buildReportWeekHTMLForPDF({
 <body>
   <div class="container-pdf">
     <div class="header">
-      <h1>${esc(title || 'Reporte semanal')}</h1>
+      <h1>Reportes</h1>
     </div>
     <div class="content">
       <div class="info-panel">
@@ -850,6 +853,7 @@ export function buildReportWeekHTMLForPDF({
           <div class="info-value">${esc(project?.nombre || 'Proyecto')}</div>
         </div>
       </div>
+      <div class="week-title">${esc(title || 'Semana')}</div>
       <div class="table-container">
         <table>
           <thead>
