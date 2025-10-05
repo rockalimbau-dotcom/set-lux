@@ -185,7 +185,8 @@ export default function ProjectDetail({
   }, [proj?.estado]);
 
   const estadoText = isActive ? 'Activo' : 'Cerrado';
-  const estadoBg = isActive ? '#f97316' : '#64748b';
+  const themeGlobal = (typeof document !== 'undefined' && document.documentElement.getAttribute('data-theme')) || 'dark';
+  const estadoBg = isActive ? (themeGlobal === 'light' ? '#1D4ED8' : '#f97316') : '#64748b';
 
   // Lista de equipo simplificada para Planificación
   const teamList = useMemo(() => {
@@ -246,10 +247,12 @@ export default function ProjectDetail({
     return activeTab;
   }, [activeTab, condModeLabel]);
 
+  const themeNow = (typeof document !== 'undefined' && document.documentElement.getAttribute('data-theme')) || 'dark';
+  const isLightTheme = themeNow === 'light';
   return (
     <div>
       {/* Header con los mismos tamaños que ProjectsScreen y flecha debajo del título */}
-      <div className='px-6 pt-8 pb-12' style={{backgroundColor: '#1a2b40'}}>
+      <div className='px-6 pt-8 pb-12' style={{backgroundColor: 'var(--bg)'}}>
         <div className='max-w-6xl mx-auto'>
           <div className='flex items-center justify-between mb-8'>
             <div className='flex items-center gap-6'>
@@ -258,7 +261,8 @@ export default function ProjectDetail({
                 {activeTab === null ? (
                   <button
                     onClick={onBack}
-                    className='absolute left-1/2 -translate-x-1/2 top-full mt-2 w-10 h-10 rounded-xl border border-neutral-border hover:border-orange-500 text-white flex items-center justify-center'
+                    className='absolute left-1/2 -translate-x-1/2 top-full mt-2 w-10 h-10 rounded-xl border border-neutral-border hover:border-[#1D4ED8] flex items-center justify-center'
+                    style={{color: (document.documentElement.getAttribute('data-theme')||'dark')==='light' ? '#111827' : '#ffffff'}}
                     title='Volver'
                   >
                     ←
@@ -269,15 +273,16 @@ export default function ProjectDetail({
                       setActiveTab(null);
                       navigate(`/project/${pid}`, { replace: true });
                     }}
-                    className='absolute left-[100%] -translate-x-1/2 top-full mt-2 px-5 py-2 rounded-xl border border-neutral-border hover:border-orange-500 text-white flex items-center justify-center text-sm whitespace-nowrap'
+                    className='absolute left-[100%] -translate-x-1/2 top-full mt-2 px-5 py-2 rounded-xl border border-neutral-border hover:border-[#1D4ED8] flex items-center justify-center text-sm whitespace-nowrap'
+                    style={{color: (document.documentElement.getAttribute('data-theme')||'dark')==='light' ? '#111827' : '#ffffff'}}
                     title='Volver a fases'
                   >
                     ← Volver a fases
                   </button>
                 )}
               </div>
-              <h1 className='text-3xl font-bold text-white'>
-                SetLux <span className='text-gray-300'>/ {proj?.nombre}{activePhaseLabel ? ` / ${activePhaseLabel}` : ''}</span>
+              <h1 className='text-3xl font-bold' style={{color: 'var(--text)'}}>
+                {(() => { const isLight = (document.documentElement.getAttribute('data-theme')||'dark')==='light'; return `SetLux`; })()} <span className='text-gray-300' style={{color: (document.documentElement.getAttribute('data-theme')||'dark')==='light' ? '#374151' : '#d1d5db'}}>/ {proj?.nombre}{activePhaseLabel ? ` / ${activePhaseLabel}` : ''}</span>
               </h1>
             </div>
 
@@ -432,16 +437,16 @@ function PhaseCard({ title, icon, desc, onClick }: PhaseCardProps) {
   return (
     <button
       onClick={onClick}
-      className='group text-left rounded-2xl border border-neutral-border p-6 hover:border-orange-500 hover:shadow-[0_0_24px_rgba(249,115,22,0.25)] transition'
-      style={{backgroundColor: '#2a4058'}}
+      className='group text-left rounded-2xl border border-neutral-border p-6 transition hover:border-[#1D4ED8]'
+      style={{backgroundColor: 'var(--panel)'}}
     >
       <div className='flex items-center gap-4 mb-2'>
-        <div className='w-12 h-12 rounded-xl border border-neutral-border bg-black/20 flex items-center justify-center text-2xl'>
+        <div className='w-12 h-12 rounded-xl border border-neutral-border flex items-center justify-center text-2xl' style={{backgroundColor: (typeof document!=='undefined' && document.documentElement.getAttribute('data-theme')==='light') ? '#ffffff' : 'rgba(0,0,0,0.2)'}}>
           {icon}
         </div>
-        <div className='text-[#f97316] text-xl font-semibold'>{title}</div>
+        <div className='text-xl font-semibold' style={{color: (typeof document!=='undefined' && document.documentElement.getAttribute('data-theme')==='light') ? '#1D4ED8' : '#f97316'}}>{title}</div>
       </div>
-      <div className='text-sm text-zinc-300'>{desc}</div>
+      <div className='text-sm' style={{color: (typeof document!=='undefined' && document.documentElement.getAttribute('data-theme')==='light') ? '#111827' : '#d1d5db'}}>{desc}</div>
     </button>
   );
 }
@@ -449,8 +454,9 @@ function PhaseCard({ title, icon, desc, onClick }: PhaseCardProps) {
 // Monochrome project icons (orange/blue friendly). Using currentColor so parent can control color
 function PhaseIcon({ name, color = '#60a5fa', stroke = '#ffffff' }: { name: 'condiciones' | 'equipo' | 'planificacion' | 'reportes' | 'nomina' | 'necesidades'; color?: string; stroke?: string }) {
   const common = { width: 24, height: 24, viewBox: '0 0 24 24' } as const;
-  const fill = color;
-  const strokeColor = stroke;
+  const themeNow = (typeof document !== 'undefined' && document.documentElement.getAttribute('data-theme')) || 'dark';
+  const fill = themeNow === 'light' ? '#f97316' : color;
+  const strokeColor = themeNow === 'light' ? '#111827' : stroke;
   switch (name) {
     case 'condiciones':
       return (

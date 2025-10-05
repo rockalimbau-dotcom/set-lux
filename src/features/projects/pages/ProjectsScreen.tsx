@@ -409,29 +409,44 @@ function ProjectsScreen({
   const handleOpen = useCallback((p: Project) => onOpen && onOpen(p), [onOpen]);
   const projectCards = useMemo(() => (
     projects.map(p => {
+      const theme = document.documentElement.getAttribute('data-theme') || 'dark';
+      const isLight = theme === 'light';
       const estadoVisible = p.estado;
       const getInitials = (name: string) => {
         return name.split(' ').map(word => word.charAt(0)).join(' ').toUpperCase();
       };
       
       const getAvatarColor = (_name: string) => {
-        // Use a single warm orange tone for all project title pills (consistent branding)
-        return '#f59e0b';
+        // Usa el color primario del tema activo
+        try {
+          const css = getComputedStyle(document.documentElement);
+          const v = css.getPropertyValue('--brand').trim();
+          if (v) return v;
+        } catch {}
+        const themeFallback = document.documentElement.getAttribute('data-theme') || 'dark';
+        return themeFallback === 'light' ? '#1D4ED8' : '#f59e0b';
       };
 
       const getConditionColor = (tipo: string) => {
-        // Blue-only palette (dark, base, light) to differentiate conditions
-        switch (tipo?.toLowerCase()) {
-          case 'semanal': return '#1e3a8a';      // Dark blue
-          case 'mensual': return '#3b82f6';      // Blue
-          case 'publicidad': return '#60a5fa';   // Light blue
-          default: return '#64748b';             // Slate gray
+        const v = tipo?.toLowerCase();
+        if (isLight) {
+          // Tonalidades de naranja en modo claro
+          if (v === 'semanal') return '#ea580c';     // orange-600
+          if (v === 'mensual') return '#f59e0b';     // amber-500
+          if (v === 'publicidad') return '#fdba74';  // orange-300
+          return '#a3a3a3';
         }
+        // Paleta azul en oscuro
+        if (v === 'semanal') return '#1e3a8a';
+        if (v === 'mensual') return '#3b82f6';
+        if (v === 'publicidad') return '#60a5fa';
+        return '#64748b';
       };
 
       const getStatusColor = (estado: string) => {
-        // Align status colors to theme: active in orange, closed in slate gray
-        return estado === 'Activo' ? '#f97316' : '#64748b';
+        const theme = document.documentElement.getAttribute('data-theme') || 'dark';
+        const activeColor = theme === 'light' ? '#1D4ED8' : '#f97316';
+        return estado === 'Activo' ? activeColor : '#64748b';
       };
 
       return (
@@ -443,14 +458,17 @@ function ProjectsScreen({
           onKeyDown={e => {
             if (e.key === 'Enter' || e.key === ' ') handleOpen(p);
           }}
-          className='relative w-full text-left rounded-2xl border border-neutral-border p-6 transition-all hover:border-orange-500 hover:shadow-[0_0_24px_rgba(249,115,22,0.25)] cursor-pointer group'
-          style={{backgroundColor: '#2a4058'}}
+          className='relative w-full text-left rounded-2xl border border-neutral-border p-6 transition-all cursor-pointer group hover:border-[var(--hover-border)]'
+          style={{
+            backgroundColor: 'var(--panel)',
+            borderColor: 'var(--border)'
+          }}
         >
           {/* Avatar y nombre del proyecto */}
           <div className='flex items-start gap-4 mb-4'>
             <div 
-              className='w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-base px-2'
-              style={{backgroundColor: getAvatarColor(p.nombre)}}
+              className='w-12 h-12 rounded-full flex items-center justify-center font-bold text-base px-2 border border-transparent hover:border-[var(--hover-border)] transition'
+              style={{backgroundColor: getAvatarColor(p.nombre), color: '#ffffff'}}
             >
               {p.nombre}
             </div>
@@ -458,15 +476,15 @@ function ProjectsScreen({
 
           {/* Detalles del proyecto */}
           <div className='space-y-2 mb-4'>
-            <div className='flex items-center gap-2 text-sm text-zinc-300'>
+            <div className='flex items-center gap-2 text-sm' style={{color: isLight ? '#111827' : '#d1d5db'}}>
               <span>📸</span>
               <span>DoP: {p.dop || '—'}</span>
             </div>
-            <div className='flex items-center gap-2 text-sm text-zinc-300'>
+            <div className='flex items-center gap-2 text-sm' style={{color: isLight ? '#111827' : '#d1d5db'}}>
               <span>🏠</span>
               <span>Almacén: {p.almacen || '—'}</span>
             </div>
-            <div className='flex items-center gap-2 text-sm text-zinc-300'>
+            <div className='flex items-center gap-2 text-sm' style={{color: isLight ? '#111827' : '#d1d5db'}}>
               <span>📽</span>
               <span>Productora: {p.productora || '—'}</span>
             </div>
@@ -475,13 +493,13 @@ function ProjectsScreen({
           {/* Tags */}
           <div className='flex flex-wrap gap-2 mb-4'>
             <span 
-              className='px-3 py-1 rounded-full text-xs font-medium text-white'
+              className='px-3 py-1 rounded-full text-xs font-medium text-white hover:ring-1 hover:ring-[var(--hover-border)] transition'
               style={{backgroundColor: getConditionColor(p.conditions?.tipo || 'semanal')}}
             >
               {formatMode(p.conditions?.tipo || 'semanal')}
             </span>
             <span 
-              className='px-3 py-1 rounded-full text-xs font-medium text-white'
+              className='px-3 py-1 rounded-full text-xs font-medium text-white hover:ring-1 hover:ring-[var(--hover-border)] transition'
               style={{backgroundColor: getStatusColor(estadoVisible)}}
             >
               {estadoVisible}
@@ -496,12 +514,16 @@ function ProjectsScreen({
                 e.stopPropagation();
                 setEditing(p);
               }}
-              className='flex-1 px-3 py-2 rounded-lg border border-neutral-border hover:border-orange-500 text-zinc-300 hover:text-orange-500 transition text-sm font-medium'
-              style={{backgroundColor: 'rgba(0,0,0,0.2)'}}
+              className='flex-1 px-3 py-2 rounded-lg border transition text-sm font-medium hover:border-[var(--hover-border)]'
+              style={{
+                borderColor: 'var(--border)',
+                backgroundColor: isLight ? '#ffffff' : 'rgba(0,0,0,0.2)',
+                color: isLight ? '#111827' : '#d1d5db'
+              }}
               title='Editar proyecto'
               aria-label={`Editar ${p.nombre}`}
             >
-              Editar
+              <span style={{color: isLight ? '#1D4ED8' : undefined}}>Editar</span>
             </button>
             <button
               type='button'
@@ -511,8 +533,12 @@ function ProjectsScreen({
                 if (!ok) return;
                 onDeleteProject?.(p.id);
               }}
-              className='flex-1 px-3 py-2 rounded-lg border border-red-500 text-red-300 hover:text-red-200 hover:bg-red-500/10 transition text-sm font-medium'
-              style={{backgroundColor: 'rgba(0,0,0,0.2)'}}
+              className='flex-1 px-3 py-2 rounded-lg border transition text-sm font-medium hover:border-[var(--hover-border)]'
+              style={{
+                borderColor: isLight ? '#fecaca' : '#ef4444',
+                color: isLight ? '#b91c1c' : '#fca5a5',
+                backgroundColor: isLight ? '#ffffff' : 'rgba(0,0,0,0.2)'
+              }}
               title='Eliminar proyecto'
               aria-label={`Eliminar ${p.nombre}`}
             >
@@ -524,17 +550,19 @@ function ProjectsScreen({
     })
   ), [projects, handleOpen]);
 
+  const theme = document.documentElement.getAttribute('data-theme') || 'dark';
+  const isLight = theme === 'light';
   return (
     <>
       {/* Header moderno y prominente */}
-      <div className='px-6 py-8' style={{backgroundColor: '#1a2b40'}}>
+      <div className='px-6 py-8' style={{backgroundColor: 'var(--bg)', ...(isLight ? ({ ['--hover-border']: '#f59e0b' } as React.CSSProperties) : {})}}>
         <div className='max-w-6xl mx-auto'>
           {/* Header limpio */}
           <div className='flex items-center justify-between mb-8'>
             <div className='flex items-center gap-6'>
               <LogoIcon size={80} />
-              <h1 className='text-3xl font-bold text-white'>
-                SetLux <span className='text-gray-300'>/ Proyectos</span>
+              <h1 className='text-3xl font-bold' style={{color: 'var(--text)'}}>
+                SetLux <span className='text-gray-300' style={{color: (document.documentElement.getAttribute('data-theme')||'dark')==='light' ? '#374151' : '#d1d5db'}}>/ Proyectos</span>
               </h1>
             </div>
 
@@ -542,8 +570,8 @@ function ProjectsScreen({
             <div className='flex flex-col items-end gap-2'>
               <button
                 onClick={() => setShowNew(true)}
-                className='px-6 py-3 rounded-xl font-semibold text-white transition-all hover:shadow-lg'
-                style={{backgroundColor: '#f97316'}}
+                className='px-6 py-3 rounded-xl font-semibold text-white transition-all hover:shadow-lg border border-transparent hover:border-[var(--hover-border)]'
+                style={{backgroundColor: 'var(--brand)'}}
               >
                 Nuevo proyecto
               </button>
@@ -553,7 +581,8 @@ function ProjectsScreen({
                   onClick={() => setMenuOpen(!menuOpen)}
                   className='text-sm text-zinc-300 hover:text-white transition-colors cursor-pointer'
                 >
-                  Bienvenido, <span className='font-semibold text-orange-500'>{userName}</span> ✨
+                  <span style={{color: (document.documentElement.getAttribute('data-theme')||'dark')==='light' ? '#111827' : undefined}}>Bienvenido, </span>
+                  <span className='font-semibold' style={{color: (document.documentElement.getAttribute('data-theme')||'dark')==='light' ? '#1D4ED8' : '#f97316'}}>{userName}</span> ✨
                 </button>
                 
                 {/* Menú desplegable */}
@@ -602,20 +631,20 @@ function ProjectsScreen({
                 type='text'
                 placeholder='Buscar...'
                 className='w-full pl-12 pr-4 py-3 rounded-xl border border-neutral-border focus:outline-none focus:ring-1 focus:ring-orange-500'
-                style={{backgroundColor: '#2a4058', color: '#ffffff'}}
+                style={{backgroundColor: 'var(--panel)', color: 'var(--text)'}}
               />
             </div>
             <button
-              className='px-4 py-3 rounded-xl border border-neutral-border hover:border-orange-500 transition'
-              style={{backgroundColor: '#2a4058', color: '#ffffff'}}
+              className='px-4 py-3 rounded-xl border border-neutral-border hover:border-[var(--hover-border)] transition'
+              style={{backgroundColor: 'var(--panel)', color: 'var(--text)'}}
             >
               <span className='flex items-center gap-2'>
                 🔽 Filtro
               </span>
             </button>
             <button
-              className='px-4 py-3 rounded-xl border border-neutral-border hover:border-orange-500 transition'
-              style={{backgroundColor: '#2a4058', color: '#ffffff'}}
+              className='px-4 py-3 rounded-xl border border-neutral-border hover:border-[var(--hover-border)] transition'
+              style={{backgroundColor: 'var(--panel)', color: 'var(--text)'}}
             >
               <span className='flex items-center gap-2'>
                 ↕️ Ordenar
@@ -627,7 +656,7 @@ function ProjectsScreen({
       </div>
 
       {/* Grid de proyectos */}
-      <div className='max-w-6xl mx-auto p-6'>
+      <div className='max-w-6xl mx-auto p-6' style={isLight ? ({ ['--hover-border']: '#f59e0b' } as React.CSSProperties) : undefined}>
         <div
           className={`grid gap-6 ${
             hasProjects ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : ''

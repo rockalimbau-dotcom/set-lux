@@ -71,6 +71,12 @@ export default function SettingsPage() {
     setRegion(s.region || '');
   }, []);
 
+  // Apply live preview to body when theme changes (local preview only)
+  useEffect(() => {
+    // Set attribute for global theming
+    document.documentElement.setAttribute('data-theme', theme);
+  }, [theme]);
+
   // Load festivos when country/region changes (used internally, not displayed)
   useEffect(() => {
     const loadFestivos = async () => {
@@ -97,17 +103,33 @@ export default function SettingsPage() {
 
   const availableRegions = REGIONS[country as keyof typeof REGIONS] || [];
 
+  const isLight = theme === 'light';
+  const colors = {
+    pageBg: isLight ? '#FFF7ED' : '#1a2b40',
+    pageText: isLight ? '#111827' : '#ffffff',
+    headerBg: isLight ? '#FFF7ED' : '#1a2b40',
+    panelBg: isLight ? '#ffffff' : '#2a4058',
+    panelBorder: isLight ? '#e5e7eb' : '#3b5568',
+    inputBg: isLight ? '#ffffff' : 'rgba(0,0,0,0.4)',
+    inputText: isLight ? '#111827' : '#ffffff',
+    inputBorder: isLight ? '#e5e7eb' : '#3b5568',
+    primary: isLight ? '#1D4ED8' : '#f97316', // azul corporativo en claro, naranja en oscuro
+    accentText: isLight ? '#1f2937' : '#ffffff',
+    mutedText: isLight ? '#6b7280' : '#d1d5db',
+    titleMain: isLight ? '#000000' : '#ffffff', // SetLux color
+  } as const;
+
   return (
-    <div className='min-h-screen' style={{backgroundColor: '#1a2b40', color: '#ffffff'}}>
+    <div className='min-h-screen' style={{backgroundColor: colors.pageBg, color: colors.pageText}}>
       {/* Header moderno y prominente */}
-      <div className='px-6 py-8' style={{backgroundColor: '#1a2b40'}}>
+      <div className='px-6 py-8' style={{backgroundColor: colors.headerBg}}>
         <div className='max-w-6xl mx-auto'>
           {/* Header limpio */}
           <div className='flex items-center justify-between mb-8'>
             <div className='flex items-center gap-6'>
               <LogoIcon size={80} />
-              <h1 className='text-3xl font-bold text-white'>
-                SetLux <span className='text-gray-300'>/ Configuración</span>
+              <h1 className='text-3xl font-bold' style={{color: colors.titleMain}}>
+                SetLux <span className='text-gray-300' style={{color: isLight ? '#374151' : '#d1d5db'}}>/ Configuración</span>
               </h1>
             </div>
           </div>
@@ -115,15 +137,15 @@ export default function SettingsPage() {
       </div>
 
       <div className='max-w-6xl mx-auto p-6 flex justify-center'>
-        <div className='max-w-2xl w-full rounded-2xl border p-8' style={{backgroundColor: '#2a4058', borderColor: '#3b5568'}}>
-          <h3 className='text-orange-500 text-xl font-semibold mb-6'>Preferencias</h3>
+        <div className='max-w-2xl w-full rounded-2xl border p-8' style={{backgroundColor: colors.panelBg, borderColor: colors.panelBorder}}>
+          <h3 className='text-xl font-semibold mb-6' style={{color: colors.primary}}>Preferencias</h3>
 
           <div className='space-y-6'>
             <label className='block space-y-2'>
-              <span className='text-sm font-medium text-zinc-300'>Tema</span>
+              <span className='text-sm font-medium' style={{color: colors.mutedText}}>Tema</span>
               <select
-                className='w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-1 focus:ring-orange-500 transition-colors'
-                style={{backgroundColor: 'rgba(0,0,0,0.4)', color: '#ffffff', borderColor: '#3b5568'}}
+                className='w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-1 transition-colors'
+                style={{backgroundColor: colors.inputBg, color: colors.inputText, borderColor: colors.inputBorder, boxShadow: `0 0 0 1px transparent`}}
                 value={theme}
                 onChange={e => setTheme(e.target.value as any)}
               >
@@ -133,10 +155,10 @@ export default function SettingsPage() {
             </label>
 
             <label className='block space-y-2'>
-              <span className='text-sm font-medium text-zinc-300'>País</span>
+              <span className='text-sm font-medium' style={{color: colors.mutedText}}>País</span>
               <select
-                className='w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-1 focus:ring-orange-500 transition-colors'
-                style={{backgroundColor: 'rgba(0,0,0,0.4)', color: '#ffffff', borderColor: '#3b5568'}}
+                className='w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-1 transition-colors'
+                style={{backgroundColor: colors.inputBg, color: colors.inputText, borderColor: colors.inputBorder}}
                 value={country}
                 onChange={e => {
                   setCountry(e.target.value);
@@ -153,10 +175,10 @@ export default function SettingsPage() {
 
             {availableRegions.length > 0 && (
               <label className='block space-y-2'>
-                <span className='text-sm font-medium text-zinc-300'>Región (opcional)</span>
+                <span className='text-sm font-medium' style={{color: colors.mutedText}}>Región (opcional)</span>
                 <select
-                  className='w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-1 focus:ring-orange-500 transition-colors'
-                  style={{backgroundColor: 'rgba(0,0,0,0.4)', color: '#ffffff', borderColor: '#3b5568'}}
+                  className='w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-1 transition-colors'
+                  style={{backgroundColor: colors.inputBg, color: colors.inputText, borderColor: colors.inputBorder}}
                   value={region}
                   onChange={e => setRegion(e.target.value)}
                 >
@@ -172,17 +194,17 @@ export default function SettingsPage() {
           </div>
 
           {/* Festivos Debug Section (Calendarific) - oculto para producción */}
-          <div className='hidden mt-6 p-4 bg-black/20 rounded-xl border border-neutral-border'>
-            <h4 className='text-sm font-semibold text-brand mb-2'>Festivos Cargados</h4>
+          <div className='hidden mt-6 p-4 rounded-xl border' style={{backgroundColor: isLight ? '#f3f4f6' : 'rgba(0,0,0,0.2)', borderColor: colors.panelBorder}}>
+            <h4 className='text-sm font-semibold mb-2' style={{color: colors.primary}}>Festivos Cargados</h4>
             {loadingFestivos ? (
-              <div className='text-sm text-zinc-400'>Cargando festivos...</div>
+              <div className='text-sm' style={{color: colors.mutedText}}>Cargando festivos...</div>
             ) : festivos.length > 0 ? (
               <div>
-                <div className='text-sm text-zinc-300 mb-2'>
+                <div className='text-sm mb-2' style={{color: colors.mutedText}}>
                   {festivos.length} festivos encontrados para {country === 'ES' ? 'España' : country}
                   {region && country === 'ES' && ` - ${REGION_NAMES[region] || region}`}
                 </div>
-                <div className='text-xs text-zinc-400 max-h-20 overflow-y-auto'>
+                <div className='text-xs max-h-20 overflow-y-auto' style={{color: colors.mutedText}}>
                   {festivos
                     .slice(0, 10)
                     .map(formatYMDToDMY)
@@ -191,29 +213,29 @@ export default function SettingsPage() {
                 </div>
               </div>
             ) : (
-              <div className='text-sm text-zinc-400'>No se pudieron cargar los festivos</div>
+              <div className='text-sm' style={{color: colors.mutedText}}>No se pudieron cargar los festivos</div>
             )}
           </div>
 
           <div className='flex justify-end gap-4 mt-8'>
             <a 
               href='/projects' 
-              className='px-6 py-3 rounded-xl border hover:border-orange-500 text-zinc-300 hover:text-orange-500 transition-colors font-medium'
-              style={{borderColor: '#3b5568'}}
+              className='px-6 py-3 rounded-xl border transition-colors font-medium'
+              style={{borderColor: colors.panelBorder, color: isLight ? '#374151' : '#d1d5db'}}
             >
               Volver
             </a>
             <button 
               onClick={save} 
               className='px-6 py-3 rounded-xl font-semibold text-white transition-all hover:shadow-lg'
-              style={{backgroundColor: '#f97316'}}
+              style={{backgroundColor: colors.primary, borderColor: colors.primary}}
             >
               Guardar
             </button>
           </div>
 
           {saved && (
-            <div className='mt-4 text-sm text-green-400 font-medium'>Configuración guardada ✓</div>
+            <div className='mt-4 text-sm font-medium' style={{color: isLight ? '#059669' : '#34d399'}}>Configuración guardada ✓</div>
           )}
         </div>
       </div>

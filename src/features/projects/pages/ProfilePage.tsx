@@ -21,17 +21,19 @@ export default function ProfilePage() {
     setTimeout(() => setSaved(false), 1200);
   };
 
+  const theme = (typeof document !== 'undefined' && document.documentElement.getAttribute('data-theme')) || 'dark';
+  const isLight = theme === 'light';
   return (
-    <div className='min-h-screen' style={{backgroundColor: '#1a2b40', color: '#ffffff'}}>
+    <div className='min-h-screen' style={{backgroundColor: 'var(--bg)', color: 'var(--text)'}}>
       {/* Header moderno y prominente */}
-      <div className='px-6 py-8' style={{backgroundColor: '#1a2b40'}}>
+      <div className='px-6 py-8' style={{backgroundColor: 'var(--bg)'}}>
         <div className='max-w-6xl mx-auto'>
           {/* Header limpio */}
           <div className='flex items-center justify-between mb-8'>
             <div className='flex items-center gap-6'>
               <LogoIcon size={80} />
-              <h1 className='text-3xl font-bold text-white'>
-                SetLux <span className='text-gray-300'>/ Perfil</span>
+              <h1 className='text-3xl font-bold' style={{color: 'var(--text)'}}>
+                SetLux <span className='text-gray-300' style={{color: isLight ? '#374151' : '#d1d5db'}}>/ Perfil</span>
               </h1>
             </div>
           </div>
@@ -39,15 +41,15 @@ export default function ProfilePage() {
       </div>
 
       <div className='max-w-6xl mx-auto p-6 flex justify-center'>
-        <div className='max-w-2xl w-full rounded-2xl border p-8' style={{backgroundColor: '#2a4058', borderColor: '#3b5568'}}>
-          <h3 className='text-orange-500 text-xl font-semibold mb-6'>Datos de usuario</h3>
+        <div className='max-w-2xl w-full rounded-2xl border p-8' style={{backgroundColor: 'var(--panel)', borderColor: 'var(--border)'}}>
+          <h3 className='text-xl font-semibold mb-6' style={{color: isLight ? '#1D4ED8' : '#f97316'}}>Datos de usuario</h3>
 
         <div className='space-y-6'>
           <label className='block space-y-2'>
-            <span className='text-sm font-medium text-zinc-300'>Nombre</span>
+            <span className='text-sm font-medium' style={{color: isLight ? '#6b7280' : '#d1d5db'}}>Nombre</span>
             <input
-              className='w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-1 focus:ring-orange-500 transition-colors'
-              style={{backgroundColor: 'rgba(0,0,0,0.4)', color: '#ffffff', borderColor: '#3b5568'}}
+              className='w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-1 transition-colors'
+              style={{backgroundColor: isLight ? '#ffffff' : 'rgba(0,0,0,0.4)', color: 'var(--text)', borderColor: 'var(--border)', boxShadow: '0 0 0 1px transparent'}}
               value={name}
               onChange={e => setName(e.target.value)}
               placeholder='Tu nombre'
@@ -55,11 +57,11 @@ export default function ProfilePage() {
           </label>
 
           <label className='block space-y-2'>
-            <span className='text-sm font-medium text-zinc-300'>Email</span>
+            <span className='text-sm font-medium' style={{color: isLight ? '#6b7280' : '#d1d5db'}}>Email</span>
             <input
               type='email'
-              className='w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-1 focus:ring-orange-500 transition-colors'
-              style={{backgroundColor: 'rgba(0,0,0,0.4)', color: '#ffffff', borderColor: '#3b5568'}}
+              className='w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-1 transition-colors'
+              style={{backgroundColor: isLight ? '#ffffff' : 'rgba(0,0,0,0.4)', color: 'var(--text)', borderColor: 'var(--border)'}}
               value={email}
               onChange={e => setEmail(e.target.value)}
               placeholder='tucorreo@ejemplo.com'
@@ -67,10 +69,10 @@ export default function ProfilePage() {
           </label>
 
           <label className='block space-y-2'>
-            <span className='text-sm font-medium text-zinc-300'>Rol</span>
+            <span className='text-sm font-medium' style={{color: isLight ? '#6b7280' : '#d1d5db'}}>Rol</span>
             <input
-              className='w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-1 focus:ring-orange-500 transition-colors'
-              style={{backgroundColor: 'rgba(0,0,0,0.4)', color: '#ffffff', borderColor: '#3b5568'}}
+              className='w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-1 transition-colors'
+              style={{backgroundColor: isLight ? '#ffffff' : 'rgba(0,0,0,0.4)', color: 'var(--text)', borderColor: 'var(--border)'}}
               value={role}
               onChange={e => setRole(e.target.value)}
               placeholder='Tu rol'
@@ -81,15 +83,15 @@ export default function ProfilePage() {
         <div className='flex justify-end gap-4 mt-8'>
           <a 
             href='/projects' 
-            className='px-6 py-3 rounded-xl border hover:border-orange-500 text-zinc-300 hover:text-orange-500 transition-colors font-medium'
-            style={{borderColor: '#3b5568'}}
+            className='px-6 py-3 rounded-xl border transition-colors font-medium'
+            style={{borderColor: 'var(--border)', color: isLight ? '#374151' : '#d1d5db'}}
           >
             Volver
           </a>
           <button 
             onClick={save} 
-            className='px-6 py-3 rounded-xl font-semibold text-white transition-all hover:shadow-lg'
-            style={{backgroundColor: '#f97316'}}
+            className='px-6 py-3 rounded-xl font-semibold text-white transition-colors'
+            style={{backgroundColor: isLight ? '#1D4ED8' : '#f97316'}}
           >
             Guardar
           </button>
