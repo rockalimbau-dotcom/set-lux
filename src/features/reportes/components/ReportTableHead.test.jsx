@@ -1,10 +1,11 @@
-import React from 'react';
 import { render, screen } from '@testing-library/react';
+import React from 'react';
+
 import ReportTableHead from './ReportTableHead.jsx';
 
 const DAY_NAMES = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
 const dayNameFromISO = (iso, i, names) => names[i % names.length];
-const toDisplayDate = (iso) => iso;
+const toDisplayDate = iso => iso;
 const horarioTexto = () => '08:00–17:00';
 
 describe('ReportTableHead (smoke)', () => {

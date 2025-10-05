@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+
 import {
   ROLE_ORDER,
   ROLES,
@@ -11,7 +12,16 @@ import {
 describe('roles', () => {
   describe('ROLE_ORDER', () => {
     it('contains all role codes in correct order', () => {
-      expect(ROLE_ORDER).toEqual(['G', 'BB', 'E', 'TM', 'FB', 'AUX', 'M', 'REF']);
+      expect(ROLE_ORDER).toEqual([
+        'G',
+        'BB',
+        'E',
+        'TM',
+        'FB',
+        'AUX',
+        'M',
+        'REF',
+      ]);
     });
 
     it('has 8 role codes', () => {
@@ -22,7 +32,7 @@ describe('roles', () => {
   describe('ROLES', () => {
     it('contains all roles with correct structure', () => {
       expect(ROLES).toHaveLength(8);
-      
+
       ROLES.forEach(role => {
         expect(role).toHaveProperty('code');
         expect(role).toHaveProperty('label');
@@ -46,7 +56,7 @@ describe('roles', () => {
         'Finger Boy',
         'Auxiliar',
         'Meritorio',
-        'Refuerzo Eléctrico'
+        'Refuerzo Eléctrico',
       ]);
     });
   });

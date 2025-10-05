@@ -1,5 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { toDisplayDate, dayNameFromISO, mondayOf, toISO, defaultWeek } from './date.ts';
+
+import {
+  toDisplayDate,
+  dayNameFromISO,
+  mondayOf,
+  toISO,
+  defaultWeek,
+} from './date.ts';
 
 describe('date utils', () => {
   describe('toDisplayDate', () => {
@@ -60,7 +67,7 @@ describe('date utils', () => {
     it('should handle different dates', () => {
       const date1 = new Date('2024-12-31T00:00:00');
       expect(toISO(date1)).toBe('2024-12-31');
-      
+
       const date2 = new Date('2024-02-29T00:00:00');
       expect(toISO(date2)).toBe('2024-02-29');
     });

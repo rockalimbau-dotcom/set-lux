@@ -1,6 +1,7 @@
+import { render, screen, fireEvent } from '@testing-library/react';
 import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+
 import WeekCard from './WeekCard.tsx';
 
 vi.mock('@shared/hooks/useLocalStorage', () => ({
@@ -17,7 +18,10 @@ describe('WeekCard (smoke)', () => {
     id: 'w1',
     label: 'Semana 1',
     startDate: '2024-01-01',
-    days: Array.from({ length: 7 }).map((_, i) => ({ name: `D${i}`, tipo: 'Rodaje' })),
+    days: Array.from({ length: 7 }).map((_, i) => ({
+      name: `D${i}`,
+      tipo: 'Rodaje',
+    })),
   };
 
   it('renders header and actions', () => {

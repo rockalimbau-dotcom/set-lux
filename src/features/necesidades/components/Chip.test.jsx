@@ -1,6 +1,7 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
 import React from 'react';
+import { describe, it, expect, vi } from 'vitest';
+
 import Chip from './Chip.tsx';
 
 describe('Chip (smoke)', () => {
@@ -12,5 +13,3 @@ describe('Chip (smoke)', () => {
     expect(onRemove).toHaveBeenCalled();
   });
 });
-
-

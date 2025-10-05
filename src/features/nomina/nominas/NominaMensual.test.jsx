@@ -1,5 +1,6 @@
-import { describe, it, expect, vi } from 'vitest';
 import { render } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
+
 import NominaMensual from './NominaMensual';
 
 // Mock the hooks and utilities
@@ -34,10 +35,18 @@ vi.mock('../utils/calc', () => ({
 }));
 
 vi.mock('@shared/utils/date', () => ({
-  weekISOdays: () => ['2025-01-06', '2025-01-07', '2025-01-08', '2025-01-09', '2025-01-10', '2025-01-11', '2025-01-12'],
-  monthLabelEs: (key) => key,
-  parseYYYYMMDD: (str) => new Date(str),
-  toYYYYMMDD: (date) => date.toISOString().split('T')[0],
+  weekISOdays: () => [
+    '2025-01-06',
+    '2025-01-07',
+    '2025-01-08',
+    '2025-01-09',
+    '2025-01-10',
+    '2025-01-11',
+    '2025-01-12',
+  ],
+  monthLabelEs: key => key,
+  parseYYYYMMDD: str => new Date(str),
+  toYYYYMMDD: date => date.toISOString().split('T')[0],
 }));
 
 describe('NominaMensual - calcWorkedBreakdown with holidayDays', () => {
@@ -64,7 +73,7 @@ describe('NominaMensual - calcWorkedBreakdown with holidayDays', () => {
     ];
 
     const { container } = render(<NominaMensual project={mockProject} />);
-    
+
     // Get the calcWorkedBreakdown function from the component
     // This is a bit tricky to test directly, but we can verify the component renders without errors
     expect(container).toBeTruthy();
@@ -75,7 +84,10 @@ describe('NominaMensual - calcWorkedBreakdown with holidayDays', () => {
       {
         startDate: '2025-01-06',
         days: [
-          { tipo: 'Rodaje Festivo', team: [{ role: 'ELÉCTRICO', name: 'Pedro' }] }, // Juan not working
+          {
+            tipo: 'Rodaje Festivo',
+            team: [{ role: 'ELÉCTRICO', name: 'Pedro' }],
+          }, // Juan not working
           { tipo: 'Rodaje Festivo', team: [{ role: 'GAFFER', name: 'Juan' }] }, // Juan working on holiday
           { tipo: 'Rodaje', team: [{ role: 'GAFFER', name: 'Juan' }] },
           { tipo: 'Descanso', team: [] },
@@ -87,7 +99,7 @@ describe('NominaMensual - calcWorkedBreakdown with holidayDays', () => {
     ];
 
     const { container } = render(<NominaMensual project={mockProject} />);
-    
+
     // Component should render without errors
     expect(container).toBeTruthy();
   });
@@ -97,17 +109,17 @@ describe('NominaMensual - calcWorkedBreakdown with holidayDays', () => {
       {
         startDate: '2025-01-06',
         days: [
-          { 
-            tipo: 'Rodaje Festivo', 
+          {
+            tipo: 'Rodaje Festivo',
             team: [{ role: 'REF', name: 'Carlos' }],
             prelight: [{ role: 'REF', name: 'Carlos' }],
-            pickup: []
+            pickup: [],
           },
-          { 
-            tipo: 'Rodaje', 
+          {
+            tipo: 'Rodaje',
             team: [{ role: 'REF', name: 'Carlos' }],
             prelight: [],
-            pickup: []
+            pickup: [],
           },
           { tipo: 'Descanso', team: [] },
           { tipo: 'Descanso', team: [] },
@@ -119,7 +131,7 @@ describe('NominaMensual - calcWorkedBreakdown with holidayDays', () => {
     ];
 
     const { container } = render(<NominaMensual project={mockProject} />);
-    
+
     // Component should render without errors
     expect(container).toBeTruthy();
   });

@@ -23,11 +23,11 @@ describe('exporter', () => {
     mockElement = document.createElement('div');
     mockElement.id = 'test-element';
     document.querySelector = vi.fn().mockReturnValue(mockElement);
-    
+
     // Mock document.title
     originalDocumentTitle = document.title;
     document.title = 'Original Title';
-    
+
     // Mock document.documentElement.classList
     originalClassList = document.documentElement.classList;
     const mockClassList = {
@@ -35,7 +35,7 @@ describe('exporter', () => {
       remove: vi.fn(),
     };
     document.documentElement.classList = mockClassList;
-    
+
     vi.clearAllMocks();
   });
 
@@ -47,7 +47,7 @@ describe('exporter', () => {
   describe('elementOnScreenToPDF', () => {
     it('exports element with default options', async () => {
       await elementOnScreenToPDF('#test-element');
-      
+
       expect(document.querySelector).toHaveBeenCalledWith('#test-element');
       expect(mockHtml2pdf.set).toHaveBeenCalledWith({
         margin: 10,
@@ -76,9 +76,9 @@ describe('exporter', () => {
         backgroundColor: '#000000',
         applyPdfMode: true,
       };
-      
+
       await elementOnScreenToPDF('#test-element', options);
-      
+
       expect(mockHtml2pdf.set).toHaveBeenCalledWith({
         margin: 20,
         filename: 'custom.pdf',
@@ -97,14 +97,14 @@ describe('exporter', () => {
 
     it('accepts element directly', async () => {
       await elementOnScreenToPDF(mockElement);
-      
+
       expect(document.querySelector).not.toHaveBeenCalled();
       expect(mockHtml2pdf.from).toHaveBeenCalledWith(mockElement);
     });
 
     it('throws error when element not found', async () => {
       document.querySelector.mockReturnValue(null);
-      
+
       await expect(elementOnScreenToPDF('#nonexistent')).rejects.toThrow(
         'elementOnScreenToPDF: selector no encontrado'
       );
@@ -112,31 +112,31 @@ describe('exporter', () => {
 
     it('handles applyPdfMode correctly', async () => {
       await elementOnScreenToPDF('#test-element', { applyPdfMode: true });
-      
+
       // Note: classList methods are mocked but not easily testable as spies
     });
 
     it('does not apply pdf mode when disabled', async () => {
       await elementOnScreenToPDF('#test-element', { applyPdfMode: false });
-      
+
       // Note: classList methods are mocked but not easily testable as spies
     });
 
     it('sets custom title when provided', async () => {
       await elementOnScreenToPDF('#test-element', { title: 'Test Title' });
-      
+
       expect(document.title).toBe('Test Title');
     });
 
     it('does not change title when not provided', async () => {
       await elementOnScreenToPDF('#test-element');
-      
+
       expect(document.title).toBe('Original Title');
     });
 
     it('handles landscape orientation', async () => {
       await elementOnScreenToPDF('#test-element', { landscape: true });
-      
+
       expect(mockHtml2pdf.set).toHaveBeenCalledWith(
         expect.objectContaining({
           jsPDF: expect.objectContaining({
@@ -148,7 +148,7 @@ describe('exporter', () => {
 
     it('handles portrait orientation', async () => {
       await elementOnScreenToPDF('#test-element', { landscape: false });
-      
+
       expect(mockHtml2pdf.set).toHaveBeenCalledWith(
         expect.objectContaining({
           jsPDF: expect.objectContaining({
@@ -160,7 +160,7 @@ describe('exporter', () => {
 
     it('handles different formats', async () => {
       await elementOnScreenToPDF('#test-element', { format: 'a3' });
-      
+
       expect(mockHtml2pdf.set).toHaveBeenCalledWith(
         expect.objectContaining({
           jsPDF: expect.objectContaining({
@@ -172,7 +172,7 @@ describe('exporter', () => {
 
     it('handles different scales', async () => {
       await elementOnScreenToPDF('#test-element', { scale: 3 });
-      
+
       expect(mockHtml2pdf.set).toHaveBeenCalledWith(
         expect.objectContaining({
           html2canvas: expect.objectContaining({
@@ -184,7 +184,7 @@ describe('exporter', () => {
 
     it('handles different margins', async () => {
       await elementOnScreenToPDF('#test-element', { margin: 15 });
-      
+
       expect(mockHtml2pdf.set).toHaveBeenCalledWith(
         expect.objectContaining({
           margin: 15,
@@ -193,8 +193,10 @@ describe('exporter', () => {
     });
 
     it('handles different background colors', async () => {
-      await elementOnScreenToPDF('#test-element', { backgroundColor: '#ff0000' });
-      
+      await elementOnScreenToPDF('#test-element', {
+        backgroundColor: '#ff0000',
+      });
+
       expect(mockHtml2pdf.set).toHaveBeenCalledWith(
         expect.objectContaining({
           html2canvas: expect.objectContaining({
@@ -206,7 +208,7 @@ describe('exporter', () => {
 
     it('handles different filenames', async () => {
       await elementOnScreenToPDF('#test-element', { filename: 'test.pdf' });
-      
+
       expect(mockHtml2pdf.set).toHaveBeenCalledWith(
         expect.objectContaining({
           filename: 'test.pdf',
@@ -216,17 +218,21 @@ describe('exporter', () => {
 
     it('cleans up pdf mode even if error occurs', async () => {
       mockHtml2pdf.save.mockRejectedValue(new Error('PDF generation failed'));
-      
-      await expect(elementOnScreenToPDF('#test-element', { applyPdfMode: true })).rejects.toThrow();
-      
+
+      await expect(
+        elementOnScreenToPDF('#test-element', { applyPdfMode: true })
+      ).rejects.toThrow();
+
       // Note: classList methods are mocked but not easily testable as spies
     });
 
     it('cleans up title even if error occurs', async () => {
       mockHtml2pdf.save.mockRejectedValue(new Error('PDF generation failed'));
-      
-      await expect(elementOnScreenToPDF('#test-element', { title: 'Test Title' })).rejects.toThrow();
-      
+
+      await expect(
+        elementOnScreenToPDF('#test-element', { title: 'Test Title' })
+      ).rejects.toThrow();
+
       expect(document.title).toBe('Test Title');
     });
   });

@@ -258,8 +258,11 @@ export default function ProjectDetail({
                 {activeTab === null ? (
                   <button
                     onClick={onBack}
-                    className='absolute left-1/2 -translate-x-1/2 top-full mt-2 w-10 h-10 rounded-xl border border-neutral-border hover:border-[#1D4ED8] flex items-center justify-center'
-                    style={{color: (document.documentElement.getAttribute('data-theme')||'dark')==='light' ? '#111827' : '#ffffff'}}
+                    className='absolute left-1/2 -translate-x-1/2 top-full mt-2 w-10 h-10 rounded-xl border border-neutral-border hover:border-[var(--hover-border)] flex items-center justify-center'
+                    style={{
+                      color: (document.documentElement.getAttribute('data-theme')||'dark')==='light' ? '#111827' : '#ffffff',
+                      borderColor: (document.documentElement.getAttribute('data-theme')||'dark')==='light' ? 'rgba(229,231,235,0.6)' : 'var(--border)'
+                    }}
                     title='Volver'
                   >
                     ←
@@ -270,8 +273,11 @@ export default function ProjectDetail({
                       setActiveTab(null);
                       navigate(`/project/${pid}`, { replace: true });
                     }}
-                    className='absolute left-[100%] -translate-x-1/2 top-full mt-2 px-5 py-2 rounded-xl border border-neutral-border hover:border-[#1D4ED8] flex items-center justify-center text-sm whitespace-nowrap'
-                    style={{color: (document.documentElement.getAttribute('data-theme')||'dark')==='light' ? '#111827' : '#ffffff'}}
+                    className='absolute left-[100%] -translate-x-1/2 top-full mt-2 px-5 py-2 rounded-xl border border-neutral-border hover:border-[var(--hover-border)] flex items-center justify-center text-sm whitespace-nowrap'
+                    style={{
+                      color: (document.documentElement.getAttribute('data-theme')||'dark')==='light' ? '#111827' : '#ffffff',
+                      borderColor: (document.documentElement.getAttribute('data-theme')||'dark')==='light' ? 'rgba(229,231,235,0.6)' : 'var(--border)'
+                    }}
                     title='Volver a fases'
                   >
                     ← Volver a fases
@@ -307,7 +313,7 @@ export default function ProjectDetail({
       <div className='max-w-6xl mx-auto p-6'>
       {/* Parrilla de fases (tarjetas) */}
       {activeTab === null && (
-        <div className='grid grid-cols-1 sm:grid-cols-2 gap-4' style={(typeof document!=='undefined' && document.documentElement.getAttribute('data-theme')==='light') ? ({ ['--hover-border']: '#f59e0b' } as React.CSSProperties) : undefined}>
+        <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
           <PhaseCard
             title={`Condiciones ${condModeLabel}`}
             icon={<PhaseIcon name='condiciones' color='#60a5fa' />}
@@ -352,7 +358,12 @@ export default function ProjectDetail({
 
       {/* Contenido de la fase seleccionada */}
         {activeTab !== null && (
-         <div className='-mt-1 rounded-2xl border border-neutral-border bg-neutral-panel/90 p-5'>
+         <div
+           className='-mt-1 rounded-2xl border border-neutral-border bg-neutral-panel/90 p-5'
+           style={{
+             borderColor: (document.documentElement.getAttribute('data-theme')||'dark')==='light' ? 'rgba(229,231,235,0.6)' : 'var(--border)'
+           }}
+         >
 
           {activeTab === 'planificacion' && (
             <PlanificacionTab
@@ -435,10 +446,18 @@ function PhaseCard({ title, icon, desc, onClick }: PhaseCardProps) {
     <button
       onClick={onClick}
       className='group text-left rounded-2xl border border-neutral-border p-6 transition hover:border-[var(--hover-border)]'
-      style={{backgroundColor: 'var(--panel)'}}
+      style={{
+        backgroundColor: 'var(--panel)',
+        borderColor: (typeof document!=='undefined' && document.documentElement.getAttribute('data-theme')==='light') ? 'rgba(229,231,235,0.6)' : 'var(--border)'
+      }}
     >
       <div className='flex items-center gap-4 mb-2'>
-        <div className='w-12 h-12 rounded-xl border border-neutral-border flex items-center justify-center text-2xl' style={{backgroundColor: (typeof document!=='undefined' && document.documentElement.getAttribute('data-theme')==='light') ? '#ffffff' : 'rgba(0,0,0,0.2)'}}>
+        <div
+          className='w-12 h-12 rounded-xl border border-neutral-border flex items-center justify-center text-2xl'
+          style={{
+            backgroundColor: (typeof document!=='undefined' && document.documentElement.getAttribute('data-theme')==='light') ? '#ffffff' : 'rgba(0,0,0,0.2)'
+          }}
+        >
           {icon}
         </div>
         <div className='text-xl font-semibold' style={{color: (typeof document!=='undefined' && document.documentElement.getAttribute('data-theme')==='light') ? '#1D4ED8' : '#f97316'}}>{title}</div>

@@ -1,5 +1,6 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+
 import {
   usePlanWeeks,
   stripPR,
@@ -56,13 +57,19 @@ describe('nomina/utils/plan', () => {
     it('uses project id for storage key', () => {
       const { result } = renderHook(() => usePlanWeeks({ id: 'test-project' }));
 
-      expect(localStorageMock.getItem).toHaveBeenCalledWith('plan_test-project');
+      expect(localStorageMock.getItem).toHaveBeenCalledWith(
+        'plan_test-project'
+      );
     });
 
     it('uses project nombre when id is not available', () => {
-      const { result } = renderHook(() => usePlanWeeks({ nombre: 'test-project-name' }));
+      const { result } = renderHook(() =>
+        usePlanWeeks({ nombre: 'test-project-name' })
+      );
 
-      expect(localStorageMock.getItem).toHaveBeenCalledWith('plan_test-project-name');
+      expect(localStorageMock.getItem).toHaveBeenCalledWith(
+        'plan_test-project-name'
+      );
     });
 
     it('uses demo as fallback when no id or nombre', () => {
@@ -210,12 +217,8 @@ describe('nomina/utils/plan', () => {
                 { role: 'G', name: 'John', refuerzo: true },
                 { role: 'E', name: 'Jane' },
               ],
-              prelight: [
-                { role: 'REF', name: 'Bob' },
-              ],
-              pickup: [
-                { role: 'G', name: 'Alice', refuerzo: true },
-              ],
+              prelight: [{ role: 'REF', name: 'Bob' }],
+              pickup: [{ role: 'G', name: 'Alice', refuerzo: true }],
             },
           ],
         },
@@ -342,12 +345,8 @@ describe('nomina/utils/plan', () => {
               { role: 'G', name: 'John' },
               { role: 'E', name: 'Jane' },
             ],
-            prelight: [
-              { role: 'G', name: 'Bob' },
-            ],
-            pickup: [
-              { role: 'E', name: 'Alice' },
-            ],
+            prelight: [{ role: 'G', name: 'Bob' }],
+            pickup: [{ role: 'E', name: 'Alice' }],
           },
         ],
       };
@@ -365,15 +364,9 @@ describe('nomina/utils/plan', () => {
       const week = {
         days: [
           {
-            team: [
-              { role: 'G', name: 'John' },
-            ],
-            prelight: [
-              { role: 'G', name: 'John' },
-            ],
-            pickup: [
-              { role: 'G', name: 'John' },
-            ],
+            team: [{ role: 'G', name: 'John' }],
+            prelight: [{ role: 'G', name: 'John' }],
+            pickup: [{ role: 'G', name: 'John' }],
           },
         ],
       };

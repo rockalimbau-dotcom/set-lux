@@ -1,5 +1,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { installExportCSS, ensureExportDiv, waitForStylesToApply, waitForFonts } from './exportRuntime.ts';
+
+import {
+  installExportCSS,
+  ensureExportDiv,
+  waitForStylesToApply,
+  waitForFonts,
+} from './exportRuntime.ts';
 
 // Mock DOM APIs
 const mockDocument = {
@@ -24,7 +30,7 @@ Object.defineProperty(global, 'document', {
 });
 
 // Mock requestAnimationFrame
-global.requestAnimationFrame = vi.fn((cb) => setTimeout(cb, 0));
+global.requestAnimationFrame = vi.fn(cb => setTimeout(cb, 0));
 
 describe('exportRuntime', () => {
   beforeEach(() => {
@@ -85,7 +91,9 @@ describe('exportRuntime', () => {
       expect(css).toContain('.export-doc h2{margin:12px 0 8px');
       expect(css).toContain('.export-doc .wk{break-after:page');
       expect(css).toContain('.export-doc table{width:100%');
-      expect(css).toContain('.export-doc th,.export-doc td{border:1px solid #222');
+      expect(css).toContain(
+        '.export-doc th,.export-doc td{border:1px solid #222'
+      );
       expect(css).toContain('.export-doc thead th{background:#eee}');
     });
   });
@@ -140,19 +148,21 @@ describe('exportRuntime', () => {
   describe('waitForStylesToApply', () => {
     it('should resolve after two animation frames', async () => {
       const promise = waitForStylesToApply();
-      
+
       expect(global.requestAnimationFrame).toHaveBeenCalledTimes(1);
-      
+
       // Simulate first animation frame
-      const firstCallback = vi.mocked(global.requestAnimationFrame).mock.calls[0][0];
+      const firstCallback = vi.mocked(global.requestAnimationFrame).mock
+        .calls[0][0];
       firstCallback();
-      
+
       expect(global.requestAnimationFrame).toHaveBeenCalledTimes(2);
-      
+
       // Simulate second animation frame
-      const secondCallback = vi.mocked(global.requestAnimationFrame).mock.calls[1][0];
+      const secondCallback = vi.mocked(global.requestAnimationFrame).mock
+        .calls[1][0];
       secondCallback();
-      
+
       await promise;
       expect(global.requestAnimationFrame).toHaveBeenCalledTimes(2);
     });
@@ -161,25 +171,25 @@ describe('exportRuntime', () => {
   describe('waitForFonts', () => {
     it('should resolve immediately when document.fonts is not available', async () => {
       delete global.document.fonts;
-      
+
       await expect(waitForFonts()).resolves.toBeUndefined();
     });
 
     it('should wait for fonts when document.fonts is available', async () => {
       const mockFontsReady = Promise.resolve();
       mockDocument.fonts = { ready: mockFontsReady };
-      
+
       const promise = waitForFonts();
-      
+
       await expect(promise).resolves.toBeUndefined();
     });
 
     it('should handle fonts.ready rejection gracefully', async () => {
       const mockFontsReady = Promise.reject(new Error('Font loading failed'));
       mockDocument.fonts = { ready: mockFontsReady };
-      
+
       const promise = waitForFonts();
-      
+
       await expect(promise).resolves.toBeUndefined();
     });
   });
@@ -192,10 +202,10 @@ describe('exportRuntime', () => {
 
       // Install CSS
       installExportCSS();
-      
+
       // Ensure export div
       const div = ensureExportDiv();
-      
+
       // Wait for styles and fonts
       await waitForStylesToApply();
       await waitForFonts();

@@ -1,5 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { stripPR, personaRole, personaName, personaKey, seedWeekData } from './model.ts';
+
+import {
+  stripPR,
+  personaRole,
+  personaName,
+  personaKey,
+  seedWeekData,
+} from './model.ts';
 
 describe('reportes/utils/model', () => {
   describe('stripPR', () => {
@@ -82,7 +89,9 @@ describe('reportes/utils/model', () => {
     });
 
     it('prefers name over other properties', () => {
-      expect(personaName({ name: 'John', nombre: 'Juan', label: 'Johnny' })).toBe('John');
+      expect(
+        personaName({ name: 'John', nombre: 'Juan', label: 'Johnny' })
+      ).toBe('John');
     });
 
     it('handles null or undefined input', () => {
@@ -112,7 +121,9 @@ describe('reportes/utils/model', () => {
     });
 
     it('handles roles that start with REF', () => {
-      expect(personaKey({ role: 'REFERENCIA', name: 'John' })).toBe('REF__John');
+      expect(personaKey({ role: 'REFERENCIA', name: 'John' })).toBe(
+        'REF__John'
+      );
     });
 
     it('handles empty role and name', () => {
@@ -145,7 +156,15 @@ describe('reportes/utils/model', () => {
       expect(result['E2__Jane']).toBeDefined();
 
       // Check concepts
-      const concepts = ['Dietas', 'Transporte', 'Kilometraje', 'Nocturnidad', 'Horas extra', 'Turn Around', 'Penalty lunch'];
+      const concepts = [
+        'Dietas',
+        'Transporte',
+        'Kilometraje',
+        'Nocturnidad',
+        'Horas extra',
+        'Turn Around',
+        'Penalty lunch',
+      ];
       expect(Object.keys(result['G1__John'])).toEqual(concepts);
 
       // Check dates

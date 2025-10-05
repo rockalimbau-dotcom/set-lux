@@ -1,14 +1,9 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import React from 'react';
 import { render, screen } from '@testing-library/react';
+import React from 'react';
 import { MemoryRouter } from 'react-router-dom';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-import { 
-  customRender, 
-  mockProject, 
-  mockUser, 
-  mockProjects
-} from './utils.tsx';
+import { customRender, mockProject, mockUser, mockProjects } from './utils.tsx';
 
 // Test component to verify rendering
 const TestComponent = ({ testId = 'test-component' }) => (
@@ -23,7 +18,7 @@ describe('utils.tsx', () => {
   describe('customRender', () => {
     it('renders component with default providers', () => {
       const { container } = customRender(<TestComponent />);
-      
+
       expect(container).toBeInTheDocument();
       expect(screen.getByTestId('test-component')).toBeInTheDocument();
       expect(screen.getByTestId('auth-provider')).toBeInTheDocument();
@@ -36,9 +31,9 @@ describe('utils.tsx', () => {
         setMode: vi.fn(),
         setUserName: vi.fn(),
       };
-      
+
       customRender(<TestComponent />, { authValue: customAuthValue });
-      
+
       expect(screen.getByTestId('test-component')).toBeInTheDocument();
       expect(screen.getByTestId('auth-provider')).toBeInTheDocument();
     });
@@ -47,9 +42,9 @@ describe('utils.tsx', () => {
       const routerOptions = {
         initialEntries: ['/test-path'],
       };
-      
+
       customRender(<TestComponent />, { routerOptions });
-      
+
       expect(screen.getByTestId('test-component')).toBeInTheDocument();
     });
 
@@ -57,18 +52,18 @@ describe('utils.tsx', () => {
       const { container } = customRender(<TestComponent />, {
         container: document.body,
       });
-      
+
       expect(container).toBeInTheDocument();
     });
 
     it('works with multiple components', () => {
       const { container } = customRender(
         <div>
-          <TestComponent testId="component-1" />
-          <TestComponent testId="component-2" />
+          <TestComponent testId='component-1' />
+          <TestComponent testId='component-2' />
         </div>
       );
-      
+
       expect(screen.getByTestId('component-1')).toBeInTheDocument();
       expect(screen.getByTestId('component-2')).toBeInTheDocument();
     });
@@ -81,7 +76,7 @@ describe('utils.tsx', () => {
       expect(mockProject).toHaveProperty('estado');
       expect(mockProject).toHaveProperty('team');
       expect(mockProject).toHaveProperty('conditions');
-      
+
       expect(typeof mockProject.id).toBe('string');
       expect(typeof mockProject.nombre).toBe('string');
       expect(['activo', 'inactivo']).toContain(mockProject.estado);
@@ -93,7 +88,7 @@ describe('utils.tsx', () => {
       expect(mockProject.team).toHaveProperty('prelight');
       expect(mockProject.team).toHaveProperty('pickup');
       expect(mockProject.team).toHaveProperty('enabledGroups');
-      
+
       expect(Array.isArray(mockProject.team.base)).toBe(true);
       expect(Array.isArray(mockProject.team.reinforcements)).toBe(true);
       expect(Array.isArray(mockProject.team.prelight)).toBe(true);
@@ -103,7 +98,9 @@ describe('utils.tsx', () => {
 
     it('has correct conditions structure', () => {
       expect(mockProject.conditions).toHaveProperty('tipo');
-      expect(['semanal', 'mensual', 'publicidad']).toContain(mockProject.conditions?.tipo);
+      expect(['semanal', 'mensual', 'publicidad']).toContain(
+        mockProject.conditions?.tipo
+      );
     });
 
     it('has correct enabledGroups structure', () => {
@@ -118,7 +115,7 @@ describe('utils.tsx', () => {
     it('has correct structure and types', () => {
       expect(mockUser).toHaveProperty('nombreCompleto');
       expect(mockUser).toHaveProperty('roleCode');
-      
+
       expect(typeof mockUser.nombreCompleto).toBe('string');
       expect(typeof mockUser.roleCode).toBe('string');
     });
@@ -141,12 +138,12 @@ describe('utils.tsx', () => {
 
     it('has second project with correct structure', () => {
       const secondProject = mockProjects[1];
-      
+
       expect(secondProject).toHaveProperty('id');
       expect(secondProject).toHaveProperty('nombre');
       expect(secondProject).toHaveProperty('estado');
       expect(secondProject).toHaveProperty('team');
-      
+
       expect(secondProject.id).toBe('test-project-2');
       expect(secondProject.nombre).toBe('Otro Proyecto');
       expect(secondProject.estado).toBe('inactivo');
@@ -180,7 +177,7 @@ describe('utils.tsx', () => {
         },
         conditions: { tipo: 'semanal' },
       };
-      
+
       expect(testProject).toBeDefined();
       expect(testProject.estado).toBe('activo');
     });
@@ -190,7 +187,7 @@ describe('utils.tsx', () => {
         nombreCompleto: 'Test User',
         roleCode: 'user',
       };
-      
+
       expect(testUser).toBeDefined();
       expect(testUser.nombreCompleto).toBe('Test User');
     });
@@ -202,7 +199,7 @@ describe('utils.tsx', () => {
         setMode: vi.fn(),
         setUserName: vi.fn(),
       };
-      
+
       expect(testAuthValue).toBeDefined();
       expect(testAuthValue.mode).toBe('login');
     });
@@ -227,7 +224,7 @@ describe('utils.tsx', () => {
       // Test that customRender works without additional routers
       // since it already includes BrowserRouter
       const { container } = customRender(<TestComponent />);
-      
+
       expect(container).toBeInTheDocument();
       expect(screen.getByTestId('test-component')).toBeInTheDocument();
     });

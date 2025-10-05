@@ -1,6 +1,12 @@
 import { describe, it, expect } from 'vitest';
 
-import { pad2, toYYYYMMDD, parseYYYYMMDD, addDays, formatDDMMYYYY } from './date.ts';
+import {
+  pad2,
+  toYYYYMMDD,
+  parseYYYYMMDD,
+  addDays,
+  formatDDMMYYYY,
+} from './date.ts';
 
 describe('date utils', () => {
   describe('pad2', () => {
@@ -72,12 +78,12 @@ describe('date utils', () => {
       expect(result.getDate()).toBe(1); // Defaults to 1st
     });
 
-  it('handles number input', () => {
-    const result = parseYYYYMMDD('2023-12-25');
-    expect(result.getFullYear()).toBe(2023);
-    expect(result.getMonth()).toBe(11);
-    expect(result.getDate()).toBe(25);
-  });
+    it('handles number input', () => {
+      const result = parseYYYYMMDD('2023-12-25');
+      expect(result.getFullYear()).toBe(2023);
+      expect(result.getMonth()).toBe(11);
+      expect(result.getDate()).toBe(25);
+    });
   });
 
   describe('addDays', () => {
@@ -139,7 +145,7 @@ describe('date utils', () => {
       const originalDate = new Date(2023, 11, 25);
       const formatted = toYYYYMMDD(originalDate);
       const parsed = parseYYYYMMDD(formatted);
-      
+
       expect(parsed.getFullYear()).toBe(originalDate.getFullYear());
       expect(parsed.getMonth()).toBe(originalDate.getMonth());
       expect(parsed.getDate()).toBe(originalDate.getDate());
@@ -149,7 +155,7 @@ describe('date utils', () => {
       const date = new Date(2023, 11, 25);
       const newDate = addDays(date, 7);
       const formatted = formatDDMMYYYY(newDate);
-      
+
       expect(formatted).toBe('01/01/2024');
     });
 
@@ -159,7 +165,7 @@ describe('date utils', () => {
       const formatted = toYYYYMMDD(added);
       const parsed = parseYYYYMMDD(formatted);
       const finalFormatted = formatDDMMYYYY(parsed);
-      
+
       expect(finalFormatted).toBe('01/01/2024');
     });
   });

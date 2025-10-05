@@ -1,6 +1,7 @@
-import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { describe, it, expect, vi } from 'vitest';
+
 import Select from './Select.tsx';
 
 describe('Select', () => {
@@ -30,17 +31,17 @@ describe('Select', () => {
       render(
         <Select
           options={defaultOptions}
-          value="option2"
-          placeholder="Choose an option"
+          value='option2'
+          placeholder='Choose an option'
           disabled
           required
-          className="custom-class"
-          id="test-select"
-          name="test-name"
-          title="Test title"
+          className='custom-class'
+          id='test-select'
+          name='test-name'
+          title='Test title'
         />
       );
-      
+
       const select = screen.getByRole('combobox');
       expect(select).toHaveValue('option2');
       expect(select).toBeDisabled();
@@ -55,7 +56,7 @@ describe('Select', () => {
   describe('options rendering', () => {
     it('renders object options correctly', () => {
       render(<Select options={defaultOptions} />);
-      
+
       expect(screen.getByText('Option 1')).toBeInTheDocument();
       expect(screen.getByText('Option 2')).toBeInTheDocument();
       expect(screen.getByText('Option 3')).toBeInTheDocument();
@@ -63,7 +64,7 @@ describe('Select', () => {
 
     it('renders string options correctly', () => {
       render(<Select options={stringOptions} />);
-      
+
       expect(screen.getByText('Option A')).toBeInTheDocument();
       expect(screen.getByText('Option B')).toBeInTheDocument();
       expect(screen.getByText('Option C')).toBeInTheDocument();
@@ -77,8 +78,10 @@ describe('Select', () => {
     });
 
     it('renders placeholder option when provided', () => {
-      render(<Select options={defaultOptions} placeholder="Select an option" />);
-      
+      render(
+        <Select options={defaultOptions} placeholder='Select an option' />
+      );
+
       const placeholderOption = screen.getByText('Select an option');
       expect(placeholderOption).toBeInTheDocument();
       expect(placeholderOption).toHaveAttribute('disabled');
@@ -93,7 +96,7 @@ describe('Select', () => {
 
   describe('sizes', () => {
     it('applies small size classes', () => {
-      render(<Select options={defaultOptions} size="sm" />);
+      render(<Select options={defaultOptions} size='sm' />);
       const select = screen.getByRole('combobox');
       expect(select).toHaveClass('px-2', 'py-1', 'text-xs');
     });
@@ -105,7 +108,7 @@ describe('Select', () => {
     });
 
     it('applies large size classes', () => {
-      render(<Select options={defaultOptions} size="lg" />);
+      render(<Select options={defaultOptions} size='lg' />);
       const select = screen.getByRole('combobox');
       expect(select).toHaveClass('px-6', 'py-4', 'text-base');
     });
@@ -130,17 +133,25 @@ describe('Select', () => {
     it('applies focus classes', () => {
       render(<Select options={defaultOptions} />);
       const select = screen.getByRole('combobox');
-      expect(select).toHaveClass('focus:outline-none', 'focus:ring-2', 'focus:ring-blue-500', 'focus:border-blue-500');
+      expect(select).toHaveClass(
+        'focus:outline-none',
+        'focus:ring-2',
+        'focus:ring-blue-500',
+        'focus:border-blue-500'
+      );
     });
 
     it('applies disabled classes', () => {
       render(<Select options={defaultOptions} disabled />);
       const select = screen.getByRole('combobox');
-      expect(select).toHaveClass('disabled:opacity-50', 'disabled:cursor-not-allowed');
+      expect(select).toHaveClass(
+        'disabled:opacity-50',
+        'disabled:cursor-not-allowed'
+      );
     });
 
     it('applies custom className', () => {
-      render(<Select options={defaultOptions} className="custom-class" />);
+      render(<Select options={defaultOptions} className='custom-class' />);
       const select = screen.getByRole('combobox');
       expect(select).toHaveClass('custom-class');
     });
@@ -150,16 +161,16 @@ describe('Select', () => {
     it('calls onChange when option is selected', async () => {
       const user = userEvent.setup();
       const handleChange = vi.fn();
-      
+
       render(<Select options={defaultOptions} onChange={handleChange} />);
-      
+
       const select = screen.getByRole('combobox');
       await user.selectOptions(select, 'option2');
-      
+
       expect(handleChange).toHaveBeenCalledTimes(1);
       expect(handleChange).toHaveBeenCalledWith(
         expect.objectContaining({
-          target: expect.objectContaining({ value: 'option2' })
+          target: expect.objectContaining({ value: 'option2' }),
         })
       );
     });
@@ -167,23 +178,27 @@ describe('Select', () => {
     it('does not call onChange when disabled', async () => {
       const user = userEvent.setup();
       const handleChange = vi.fn();
-      
-      render(<Select options={defaultOptions} onChange={handleChange} disabled />);
-      
+
+      render(
+        <Select options={defaultOptions} onChange={handleChange} disabled />
+      );
+
       const select = screen.getByRole('combobox');
       await user.selectOptions(select, 'option2');
-      
+
       expect(handleChange).not.toHaveBeenCalled();
     });
 
     it('updates value when controlled', () => {
-      const { rerender } = render(<Select options={defaultOptions} value="option1" />);
-      
+      const { rerender } = render(
+        <Select options={defaultOptions} value='option1' />
+      );
+
       let select = screen.getByRole('combobox');
       expect(select).toHaveValue('option1');
-      
-      rerender(<Select options={defaultOptions} value="option2" />);
-      
+
+      rerender(<Select options={defaultOptions} value='option2' />);
+
       select = screen.getByRole('combobox');
       expect(select).toHaveValue('option2');
     });
@@ -194,13 +209,13 @@ describe('Select', () => {
       render(
         <Select
           options={defaultOptions}
-          id="test-select"
-          name="test-name"
+          id='test-select'
+          name='test-name'
           required
           disabled
         />
       );
-      
+
       const select = screen.getByRole('combobox');
       expect(select).toHaveAttribute('id', 'test-select');
       expect(select).toHaveAttribute('name', 'test-name');
@@ -209,8 +224,8 @@ describe('Select', () => {
     });
 
     it('has proper title attribute', () => {
-      render(<Select options={defaultOptions} title="Test title" />);
-      
+      render(<Select options={defaultOptions} title='Test title' />);
+
       const select = screen.getByRole('combobox');
       expect(select).toHaveAttribute('title', 'Test title');
     });
@@ -219,11 +234,11 @@ describe('Select', () => {
   describe('option attributes', () => {
     it('renders options with correct values and labels', () => {
       render(<Select options={defaultOptions} />);
-      
+
       const option1 = screen.getByText('Option 1');
       const option2 = screen.getByText('Option 2');
       const option3 = screen.getByText('Option 3');
-      
+
       expect(option1).toHaveValue('option1');
       expect(option2).toHaveValue('option2');
       expect(option3).toHaveValue('option3');
@@ -231,10 +246,11 @@ describe('Select', () => {
 
     it('renders options with correct CSS classes', () => {
       render(<Select options={defaultOptions} />);
-      
+
       const options = screen.getAllByRole('option');
       options.forEach(option => {
-        if (option.value !== '') { // Skip placeholder
+        if (option.value !== '') {
+          // Skip placeholder
           expect(option).toHaveClass('bg-gray-800', 'text-white');
         }
       });
@@ -246,9 +262,9 @@ describe('Select', () => {
         { value: 2, label: 'Two' },
         { value: 3, label: 'Three' },
       ];
-      
+
       render(<Select options={numericOptions} />);
-      
+
       expect(screen.getByText('One')).toHaveValue('1');
       expect(screen.getByText('Two')).toHaveValue('2');
       expect(screen.getByText('Three')).toHaveValue('3');
@@ -259,7 +275,7 @@ describe('Select', () => {
     it('handles empty string options', () => {
       const emptyStringOptions = ['', 'Option 1', 'Option 2'];
       render(<Select options={emptyStringOptions} />);
-      
+
       expect(screen.getByText('Option 1')).toBeInTheDocument();
       expect(screen.getByText('Option 2')).toBeInTheDocument();
     });
@@ -270,7 +286,7 @@ describe('Select', () => {
         { value: 'same', label: 'Second' },
       ];
       render(<Select options={duplicateOptions} />);
-      
+
       expect(screen.getByText('First')).toBeInTheDocument();
       expect(screen.getByText('Second')).toBeInTheDocument();
     });
@@ -281,7 +297,7 @@ describe('Select', () => {
         { value: 'quotes"test', label: 'Quotes "Test"' },
       ];
       render(<Select options={specialOptions} />);
-      
+
       expect(screen.getByText('Special & Characters')).toBeInTheDocument();
       expect(screen.getByText('Quotes "Test"')).toBeInTheDocument();
     });
@@ -290,7 +306,7 @@ describe('Select', () => {
   describe('SelectSizes export', () => {
     it('exports SelectSizes correctly', async () => {
       const { SelectSizes } = await import('./Select.tsx');
-      
+
       expect(SelectSizes).toBeDefined();
       expect(SelectSizes.SM).toBe('sm');
       expect(SelectSizes.MD).toBe('md');

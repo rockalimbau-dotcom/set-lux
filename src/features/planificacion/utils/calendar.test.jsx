@@ -1,16 +1,17 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+
 import { relabelWeekByCalendar } from './calendar.ts';
 
 // Mock shared utils
 vi.mock('../../../shared/utils/date', () => ({
-  pad2: vi.fn((n) => String(n).padStart(2, '0')),
-  toYYYYMMDD: vi.fn((date) => {
+  pad2: vi.fn(n => String(n).padStart(2, '0')),
+  toYYYYMMDD: vi.fn(date => {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
   }),
-  parseYYYYMMDD: vi.fn((str) => new Date(str)),
+  parseYYYYMMDD: vi.fn(str => new Date(str)),
   addDays: vi.fn((date, days) => {
     const newDate = new Date(date);
     newDate.setDate(date.getDate() + days);
@@ -20,7 +21,9 @@ vi.mock('../../../shared/utils/date', () => ({
 
 // Mock constants
 vi.mock('../constants', () => ({
-  mdKey: vi.fn((m, d) => `${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`),
+  mdKey: vi.fn(
+    (m, d) => `${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+  ),
 }));
 
 describe('planificacion/utils/calendar', () => {
@@ -53,15 +56,22 @@ describe('planificacion/utils/calendar', () => {
         newDate.setDate(date.getDate() + days);
         return newDate;
       });
-      toYYYYMMDD.mockImplementation((date) => {
+      toYYYYMMDD.mockImplementation(date => {
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, '0');
         const day = String(date.getDate()).padStart(2, '0');
         return `${year}-${month}-${day}`;
       });
-      mdKey.mockImplementation((m, d) => `${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`);
+      mdKey.mockImplementation(
+        (m, d) => `${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+      );
 
-      const result = relabelWeekByCalendar(week, mondayDateStr, holidayFull, holidayMD);
+      const result = relabelWeekByCalendar(
+        week,
+        mondayDateStr,
+        holidayFull,
+        holidayMD
+      );
 
       expect(result.startDate).toBe(mondayDateStr);
       expect(result.id).toBe('test-week');
@@ -96,15 +106,22 @@ describe('planificacion/utils/calendar', () => {
         newDate.setDate(date.getDate() + days);
         return newDate;
       });
-      toYYYYMMDD.mockImplementation((date) => {
+      toYYYYMMDD.mockImplementation(date => {
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, '0');
         const day = String(date.getDate()).padStart(2, '0');
         return `${year}-${month}-${day}`;
       });
-      mdKey.mockImplementation((m, d) => `${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`);
+      mdKey.mockImplementation(
+        (m, d) => `${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+      );
 
-      const result = relabelWeekByCalendar(week, mondayDateStr, holidayFull, holidayMD);
+      const result = relabelWeekByCalendar(
+        week,
+        mondayDateStr,
+        holidayFull,
+        holidayMD
+      );
 
       // Saturday (index 5) and Sunday (index 6) should be Descanso
       expect(result.days[5].tipo).toBe('Descanso');
@@ -138,15 +155,22 @@ describe('planificacion/utils/calendar', () => {
         newDate.setDate(date.getDate() + days);
         return newDate;
       });
-      toYYYYMMDD.mockImplementation((date) => {
+      toYYYYMMDD.mockImplementation(date => {
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, '0');
         const day = String(date.getDate()).padStart(2, '0');
         return `${year}-${month}-${day}`;
       });
-      mdKey.mockImplementation((m, d) => `${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`);
+      mdKey.mockImplementation(
+        (m, d) => `${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+      );
 
-      const result = relabelWeekByCalendar(week, mondayDateStr, holidayFull, holidayMD);
+      const result = relabelWeekByCalendar(
+        week,
+        mondayDateStr,
+        holidayFull,
+        holidayMD
+      );
 
       expect(result.days[0].tipo).toBe('Rodaje Festivo');
     });
@@ -174,15 +198,22 @@ describe('planificacion/utils/calendar', () => {
         newDate.setDate(date.getDate() + days);
         return newDate;
       });
-      toYYYYMMDD.mockImplementation((date) => {
+      toYYYYMMDD.mockImplementation(date => {
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, '0');
         const day = String(date.getDate()).padStart(2, '0');
         return `${year}-${month}-${day}`;
       });
-      mdKey.mockImplementation((m, d) => `${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`);
+      mdKey.mockImplementation(
+        (m, d) => `${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+      );
 
-      const result = relabelWeekByCalendar(week, mondayDateStr, holidayFull, holidayMD);
+      const result = relabelWeekByCalendar(
+        week,
+        mondayDateStr,
+        holidayFull,
+        holidayMD
+      );
 
       expect(result.days[0].tipo).toBe('Rodaje Festivo');
     });
@@ -210,15 +241,22 @@ describe('planificacion/utils/calendar', () => {
         newDate.setDate(date.getDate() + days);
         return newDate;
       });
-      toYYYYMMDD.mockImplementation((date) => {
+      toYYYYMMDD.mockImplementation(date => {
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, '0');
         const day = String(date.getDate()).padStart(2, '0');
         return `${year}-${month}-${day}`;
       });
-      mdKey.mockImplementation((m, d) => `${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`);
+      mdKey.mockImplementation(
+        (m, d) => `${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+      );
 
-      const result = relabelWeekByCalendar(week, mondayDateStr, holidayFull, holidayMD);
+      const result = relabelWeekByCalendar(
+        week,
+        mondayDateStr,
+        holidayFull,
+        holidayMD
+      );
 
       expect(result.days[0].tipo).toBe('Rodaje Festivo');
     });
@@ -251,15 +289,22 @@ describe('planificacion/utils/calendar', () => {
         newDate.setDate(date.getDate() + days);
         return newDate;
       });
-      toYYYYMMDD.mockImplementation((date) => {
+      toYYYYMMDD.mockImplementation(date => {
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, '0');
         const day = String(date.getDate()).padStart(2, '0');
         return `${year}-${month}-${day}`;
       });
-      mdKey.mockImplementation((m, d) => `${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`);
+      mdKey.mockImplementation(
+        (m, d) => `${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+      );
 
-      const result = relabelWeekByCalendar(week, mondayDateStr, holidayFull, holidayMD);
+      const result = relabelWeekByCalendar(
+        week,
+        mondayDateStr,
+        holidayFull,
+        holidayMD
+      );
 
       expect(result.days[5].tipo).toBe('Descanso');
       expect(result.days[6].tipo).toBe('Descanso');
@@ -288,15 +333,22 @@ describe('planificacion/utils/calendar', () => {
         newDate.setDate(date.getDate() + days);
         return newDate;
       });
-      toYYYYMMDD.mockImplementation((date) => {
+      toYYYYMMDD.mockImplementation(date => {
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, '0');
         const day = String(date.getDate()).padStart(2, '0');
         return `${year}-${month}-${day}`;
       });
-      mdKey.mockImplementation((m, d) => `${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`);
+      mdKey.mockImplementation(
+        (m, d) => `${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+      );
 
-      const result = relabelWeekByCalendar(week, mondayDateStr, holidayFull, holidayMD);
+      const result = relabelWeekByCalendar(
+        week,
+        mondayDateStr,
+        holidayFull,
+        holidayMD
+      );
 
       expect(result.days[0].tipo).toBe('Rodaje Festivo');
     });
@@ -304,7 +356,11 @@ describe('planificacion/utils/calendar', () => {
     it('clears DESCANSO location for non-weekend days', async () => {
       const week = {
         days: [
-          { tipo: 'Rodaje', team: [{ role: 'G', name: 'John' }], loc: 'DESCANSO' },
+          {
+            tipo: 'Rodaje',
+            team: [{ role: 'G', name: 'John' }],
+            loc: 'DESCANSO',
+          },
           { tipo: 'Rodaje', team: [{ role: 'E', name: 'Jane' }] },
         ],
       };
@@ -324,15 +380,22 @@ describe('planificacion/utils/calendar', () => {
         newDate.setDate(date.getDate() + days);
         return newDate;
       });
-      toYYYYMMDD.mockImplementation((date) => {
+      toYYYYMMDD.mockImplementation(date => {
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, '0');
         const day = String(date.getDate()).padStart(2, '0');
         return `${year}-${month}-${day}`;
       });
-      mdKey.mockImplementation((m, d) => `${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`);
+      mdKey.mockImplementation(
+        (m, d) => `${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+      );
 
-      const result = relabelWeekByCalendar(week, mondayDateStr, holidayFull, holidayMD);
+      const result = relabelWeekByCalendar(
+        week,
+        mondayDateStr,
+        holidayFull,
+        holidayMD
+      );
 
       expect(result.days[0].loc).toBe('');
     });
@@ -357,15 +420,22 @@ describe('planificacion/utils/calendar', () => {
         newDate.setDate(date.getDate() + days);
         return newDate;
       });
-      toYYYYMMDD.mockImplementation((date) => {
+      toYYYYMMDD.mockImplementation(date => {
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, '0');
         const day = String(date.getDate()).padStart(2, '0');
         return `${year}-${month}-${day}`;
       });
-      mdKey.mockImplementation((m, d) => `${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`);
+      mdKey.mockImplementation(
+        (m, d) => `${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+      );
 
-      const result = relabelWeekByCalendar(week, mondayDateStr, holidayFull, holidayMD);
+      const result = relabelWeekByCalendar(
+        week,
+        mondayDateStr,
+        holidayFull,
+        holidayMD
+      );
 
       expect(result.days).toEqual([]);
     });
@@ -388,15 +458,22 @@ describe('planificacion/utils/calendar', () => {
         newDate.setDate(date.getDate() + days);
         return newDate;
       });
-      toYYYYMMDD.mockImplementation((date) => {
+      toYYYYMMDD.mockImplementation(date => {
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, '0');
         const day = String(date.getDate()).padStart(2, '0');
         return `${year}-${month}-${day}`;
       });
-      mdKey.mockImplementation((m, d) => `${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`);
+      mdKey.mockImplementation(
+        (m, d) => `${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+      );
 
-      const result = relabelWeekByCalendar(week, mondayDateStr, holidayFull, holidayMD);
+      const result = relabelWeekByCalendar(
+        week,
+        mondayDateStr,
+        holidayFull,
+        holidayMD
+      );
 
       expect(result.days).toEqual([]);
     });

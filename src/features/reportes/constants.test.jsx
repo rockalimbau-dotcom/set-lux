@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+
 import { DAY_NAMES, CONCEPTS, DIETAS_OPCIONES, SI_NO } from './constants.ts';
 
 describe('reportes/constants', () => {
@@ -8,7 +9,15 @@ describe('reportes/constants', () => {
     });
 
     it('has correct day names', () => {
-      expect(DAY_NAMES).toEqual(['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom']);
+      expect(DAY_NAMES).toEqual([
+        'Lun',
+        'Mar',
+        'Mié',
+        'Jue',
+        'Vie',
+        'Sáb',
+        'Dom',
+      ]);
     });
 
     it('is readonly', () => {

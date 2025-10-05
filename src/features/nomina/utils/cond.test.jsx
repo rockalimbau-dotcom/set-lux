@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+
 import { loadCondModel } from './cond.ts';
 
 // Mock localStorage
@@ -39,7 +40,9 @@ describe('nomina/utils/cond', () => {
 
       const result = loadCondModel(mockProject);
 
-      expect(localStorageMock.getItem).toHaveBeenCalledWith('cond_test-project_semanal');
+      expect(localStorageMock.getItem).toHaveBeenCalledWith(
+        'cond_test-project_semanal'
+      );
       expect(result).toEqual(mockModel);
     });
 
@@ -58,7 +61,9 @@ describe('nomina/utils/cond', () => {
 
       const result = loadCondModel(mockProject);
 
-      expect(localStorageMock.getItem).toHaveBeenCalledWith('cond_test-project-name_mensual');
+      expect(localStorageMock.getItem).toHaveBeenCalledWith(
+        'cond_test-project-name_mensual'
+      );
       expect(result).toEqual(mockModel);
     });
 
@@ -79,7 +84,9 @@ describe('nomina/utils/cond', () => {
 
       const result = loadCondModel(mockProject);
 
-      expect(localStorageMock.getItem).toHaveBeenCalledWith('cond_test-project_publicidad');
+      expect(localStorageMock.getItem).toHaveBeenCalledWith(
+        'cond_test-project_publicidad'
+      );
       expect(result).toEqual(mockModel);
     });
 
@@ -100,7 +107,9 @@ describe('nomina/utils/cond', () => {
 
       const result = loadCondModel(mockProject);
 
-      expect(localStorageMock.getItem).toHaveBeenCalledWith('cond_test-project_semanal');
+      expect(localStorageMock.getItem).toHaveBeenCalledWith(
+        'cond_test-project_semanal'
+      );
       expect(result).toEqual(mockModel);
     });
 
@@ -118,7 +127,9 @@ describe('nomina/utils/cond', () => {
 
       const result = loadCondModel(mockProject);
 
-      expect(localStorageMock.getItem).toHaveBeenCalledWith('cond_test-project_semanal');
+      expect(localStorageMock.getItem).toHaveBeenCalledWith(
+        'cond_test-project_semanal'
+      );
       expect(result).toEqual(mockModel);
     });
 
@@ -137,7 +148,9 @@ describe('nomina/utils/cond', () => {
 
       const result = loadCondModel(mockProject, 'publicidad');
 
-      expect(localStorageMock.getItem).toHaveBeenCalledWith('cond_test-project_publicidad');
+      expect(localStorageMock.getItem).toHaveBeenCalledWith(
+        'cond_test-project_publicidad'
+      );
       expect(result).toEqual(mockModel);
     });
 
@@ -159,8 +172,12 @@ describe('nomina/utils/cond', () => {
 
       const result = loadCondModel(mockProject);
 
-      expect(localStorageMock.getItem).toHaveBeenCalledWith('cond_test-project_custom');
-      expect(localStorageMock.getItem).toHaveBeenCalledWith('cond_test-project_mensual');
+      expect(localStorageMock.getItem).toHaveBeenCalledWith(
+        'cond_test-project_custom'
+      );
+      expect(localStorageMock.getItem).toHaveBeenCalledWith(
+        'cond_test-project_mensual'
+      );
       expect(result).toEqual(mockModel);
     });
 
@@ -243,7 +260,9 @@ describe('nomina/utils/cond', () => {
 
       const result = loadCondModel(mockProject);
 
-      expect(localStorageMock.getItem).toHaveBeenCalledWith('cond_test-project_semanal');
+      expect(localStorageMock.getItem).toHaveBeenCalledWith(
+        'cond_test-project_semanal'
+      );
       expect(result).toEqual(mockModel);
     });
 
@@ -277,7 +296,9 @@ describe('nomina/utils/cond', () => {
 
       const result = loadCondModel(mockProject);
 
-      expect(localStorageMock.getItem).toHaveBeenCalledWith('cond_test-project_semanal');
+      expect(localStorageMock.getItem).toHaveBeenCalledWith(
+        'cond_test-project_semanal'
+      );
       expect(result).toEqual({});
     });
 
@@ -291,7 +312,9 @@ describe('nomina/utils/cond', () => {
 
       const result = loadCondModel(mockProject);
 
-      expect(localStorageMock.getItem).toHaveBeenCalledWith('cond_test-project_semanal');
+      expect(localStorageMock.getItem).toHaveBeenCalledWith(
+        'cond_test-project_semanal'
+      );
       expect(result).toEqual({});
     });
 
@@ -305,7 +328,9 @@ describe('nomina/utils/cond', () => {
 
       const result = loadCondModel(mockProject);
 
-      expect(localStorageMock.getItem).toHaveBeenCalledWith('cond_test-project_semanal');
+      expect(localStorageMock.getItem).toHaveBeenCalledWith(
+        'cond_test-project_semanal'
+      );
       expect(result).toEqual({});
     });
   });

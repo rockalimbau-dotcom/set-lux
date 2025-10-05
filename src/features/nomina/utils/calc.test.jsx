@@ -1,5 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { makeRolePrices, aggregateReports, getCondParams, getOvertimeWindowForPayrollMonth, isoInRange, aggregateWindowedReport } from './calc.ts';
+
+import {
+  makeRolePrices,
+  aggregateReports,
+  getCondParams,
+  getOvertimeWindowForPayrollMonth,
+  isoInRange,
+  aggregateWindowedReport,
+} from './calc.ts';
 
 // Mock dependencies
 vi.mock('./cond.ts', () => ({
@@ -49,8 +57,16 @@ describe('nomina/utils/calc', () => {
 
       const mockModel = {
         prices: {
-          G: { 'Precio jornada': '100', 'Travel day': '50', 'Horas extras': '15' },
-          E: { 'Precio jornada': '80', 'Travel day': '40', 'Horas extras': '12' },
+          G: {
+            'Precio jornada': '100',
+            'Travel day': '50',
+            'Horas extras': '15',
+          },
+          E: {
+            'Precio jornada': '80',
+            'Travel day': '40',
+            'Horas extras': '12',
+          },
         },
         params: {
           divTravel: '2',
@@ -91,8 +107,16 @@ describe('nomina/utils/calc', () => {
       const mockProject = { id: 'test' };
       const mockModel = {
         prices: {
-          BB: { 'Precio jornada': '90', 'Travel day': '45', 'Horas extras': '14' },
-          E: { 'Precio refuerzo': '70', 'Precio jornada': '80', 'Horas extras': '12' },
+          BB: {
+            'Precio jornada': '90',
+            'Travel day': '45',
+            'Horas extras': '14',
+          },
+          E: {
+            'Precio refuerzo': '70',
+            'Precio jornada': '80',
+            'Horas extras': '12',
+          },
         },
         params: { divTravel: '2' },
       };
@@ -129,7 +153,11 @@ describe('nomina/utils/calc', () => {
       const mockProject = { id: 'test' };
       const mockModel = {
         prices: {
-          G: { 'Precio jornada': '100', 'Travel day': '50', 'Horas extras': '15' },
+          G: {
+            'Precio jornada': '100',
+            'Travel day': '50',
+            'Horas extras': '15',
+          },
         },
         params: { divTravel: '2' },
       };
@@ -184,26 +212,27 @@ describe('nomina/utils/calc', () => {
         'G__John Doe': {
           'Horas extra': { '2023-01-01': '2' },
           'Turn Around': { '2023-01-01': '1' },
-          'Nocturnidad': { '2023-01-01': 'SI' },
-          'Dietas': { '2023-01-01': 'Comida' },
-          'Kilometraje': { '2023-01-01': '50' },
-          'Transporte': { '2023-01-01': 'SI' },
+          Nocturnidad: { '2023-01-01': 'SI' },
+          Dietas: { '2023-01-01': 'Comida' },
+          Kilometraje: { '2023-01-01': '50' },
+          Transporte: { '2023-01-01': 'SI' },
         },
       };
 
       localStorageMock.getItem.mockReturnValue(JSON.stringify(mockData));
 
-      const { weekISOdays, weekAllPeopleActive, buildRefuerzoIndex, stripPR } = await import('./plan.ts');
+      const { weekISOdays, weekAllPeopleActive, buildRefuerzoIndex, stripPR } =
+        await import('./plan.ts');
       weekISOdays.mockReturnValue(['2023-01-01', '2023-01-02']);
       weekAllPeopleActive.mockReturnValue([
         { role: 'G', name: 'John Doe' },
         { role: 'E', name: 'Jane Smith' },
       ]);
       buildRefuerzoIndex.mockReturnValue(new Set());
-      stripPR.mockImplementation((role) => role.replace(/[PR]$/, ''));
+      stripPR.mockImplementation(role => role.replace(/[PR]$/, ''));
 
       const { parseNum, parseDietasValue } = await import('./parse.ts');
-      parseNum.mockImplementation((val) => Number(val) || 0);
+      parseNum.mockImplementation(val => Number(val) || 0);
       parseDietasValue.mockReturnValue({ labels: ['Comida'], ticket: 0 });
 
       const result = aggregateReports(mockProject, mockWeeks);
@@ -227,7 +256,7 @@ describe('nomina/utils/calc', () => {
     it('filters by ISO dates when filter provided', async () => {
       const mockProject = { id: 'test' };
       const mockWeeks = [{ startDate: '2023-01-01' }];
-      const filterISO = (iso) => iso === '2023-01-01';
+      const filterISO = iso => iso === '2023-01-01';
 
       const { weekISOdays, weekAllPeopleActive } = await import('./plan.ts');
       weekISOdays.mockReturnValue(['2023-01-01', '2023-01-02']);
@@ -258,18 +287,19 @@ describe('nomina/utils/calc', () => {
       const mockWeeks = [{ startDate: '2023-01-01' }];
 
       const mockData = {
-        'G__John': {
+        G__John: {
           'Penalty lunch': { '2023-01-01': 'SI' },
         },
       };
 
       localStorageMock.getItem.mockReturnValue(JSON.stringify(mockData));
 
-      const { weekISOdays, weekAllPeopleActive, buildRefuerzoIndex, stripPR } = await import('./plan.ts');
+      const { weekISOdays, weekAllPeopleActive, buildRefuerzoIndex, stripPR } =
+        await import('./plan.ts');
       weekISOdays.mockReturnValue(['2023-01-01']);
       weekAllPeopleActive.mockReturnValue([{ role: 'G', name: 'John' }]);
       buildRefuerzoIndex.mockReturnValue(new Set());
-      stripPR.mockImplementation((role) => role.replace(/[PR]$/, ''));
+      stripPR.mockImplementation(role => role.replace(/[PR]$/, ''));
 
       const { parseNum, parseDietasValue } = await import('./parse.ts');
       parseNum.mockReturnValue(0);
@@ -402,25 +432,26 @@ describe('nomina/utils/calc', () => {
     it('aggregates windowed reports correctly', async () => {
       const mockProject = { id: 'test' };
       const mockWeeks = [{ startDate: '2023-01-01' }];
-      const filterISO = (iso) => iso === '2023-01-01';
+      const filterISO = iso => iso === '2023-01-01';
 
       const mockData = {
-        'G__John': {
+        G__John: {
           'Horas extra': { '2023-01-01': '2' },
-          'Dietas': { '2023-01-01': 'Comida' },
+          Dietas: { '2023-01-01': 'Comida' },
         },
       };
 
       localStorageMock.getItem.mockReturnValue(JSON.stringify(mockData));
 
-      const { weekISOdays, weekAllPeopleActive, stripPR, buildRefuerzoIndex } = await import('./plan.ts');
+      const { weekISOdays, weekAllPeopleActive, stripPR, buildRefuerzoIndex } =
+        await import('./plan.ts');
       weekISOdays.mockReturnValue(['2023-01-01', '2023-01-02']);
       weekAllPeopleActive.mockReturnValue([{ role: 'G', name: 'John' }]);
-      stripPR.mockImplementation((role) => role.replace(/[PR]$/, ''));
+      stripPR.mockImplementation(role => role.replace(/[PR]$/, ''));
       buildRefuerzoIndex.mockReturnValue(new Set());
 
       const { parseNum, parseDietasValue } = await import('./parse.ts');
-      parseNum.mockImplementation((val) => Number(val) || 0);
+      parseNum.mockImplementation(val => Number(val) || 0);
       parseDietasValue.mockReturnValue({ labels: ['Comida'], ticket: 0 });
 
       const result = aggregateWindowedReport(mockProject, mockWeeks, filterISO);
@@ -444,13 +475,18 @@ describe('nomina/utils/calc', () => {
         throw new Error('Storage error');
       });
 
-      const { weekISOdays, weekAllPeopleActive, stripPR, buildRefuerzoIndex } = await import('./plan.ts');
+      const { weekISOdays, weekAllPeopleActive, stripPR, buildRefuerzoIndex } =
+        await import('./plan.ts');
       weekISOdays.mockReturnValue(['2023-01-01']);
       weekAllPeopleActive.mockReturnValue([]);
-      stripPR.mockImplementation((role) => role.replace(/[PR]$/, ''));
+      stripPR.mockImplementation(role => role.replace(/[PR]$/, ''));
       buildRefuerzoIndex.mockReturnValue(new Set());
 
-      const result = aggregateWindowedReport(mockProject, mockWeeks, () => true);
+      const result = aggregateWindowedReport(
+        mockProject,
+        mockWeeks,
+        () => true
+      );
       expect(result).toBeInstanceOf(Map);
       expect(result.size).toBe(0);
     });

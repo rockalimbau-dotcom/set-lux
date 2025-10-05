@@ -1,32 +1,41 @@
+/* stylelint-disable-next-line at-rule-no-unknown */
 @tailwind base;
+/* stylelint-disable-next-line at-rule-no-unknown */
 @tailwind components;
+/* stylelint-disable-next-line at-rule-no-unknown */
 @tailwind utilities;
 
 /* Global theme variables */
 :root[data-theme='dark'] {
   --bg: #1a2b40;
-  --text: #ffffff;
+  --text: #fff;
   --panel: #2a4058;
   --border: #3b5568;
   --brand: #f97316;
   --accent: #60a5fa;
+  --hover-border: #fff; /* hover highlight (dark) */
+  --hover-text: #fff;   /* hover text (dark) */
+
   color-scheme: dark;
 }
 
 :root[data-theme='light'] {
   --bg: #FFF7ED;     /* naranja muy claro */
   --text: #111827;
-  --panel: #ffffff;
+  --panel: #fff;
   --border: #e5e7eb;
   --brand: #1D4ED8;  /* azul corporativo */
   --accent: #1D4ED8;
+  --hover-border: #1D4ED8; /* hover highlight (light) azul */
+  --hover-text: #1D4ED8;   /* hover text (light) azul */
+
   color-scheme: light;
 }
 
 body {
   background-color: var(--bg) !important;
   color: var(--text) !important;
-  font-family: 'Poppins', 'Inter', system-ui, sans-serif;
+  font-family: Poppins, Inter, system-ui, sans-serif;
   margin: 0;
 }
 
@@ -38,3 +47,55 @@ body {
 .bg-brand { background-color: var(--brand) !important; }
 
 .text-brand-light { color: var(--accent) !important; }
+
+/* Theme-scoped interactive hover rules */
+
+/* Dark mode: highlight in white */
+[data-theme='dark'] button:hover,
+[data-theme='dark'] [role='button']:hover,
+[data-theme='dark'] .cursor-pointer:hover,
+[data-theme='dark'] a:hover {
+  border-color: var(--hover-border) !important;
+}
+
+[data-theme='dark'] input:hover,
+[data-theme='dark'] select:hover,
+[data-theme='dark'] textarea:hover,
+[data-theme='dark'] button:hover {
+  border-color: var(--hover-border) !important;
+}
+
+/* Dark mode: keep default focus highlight from components */
+[data-theme='dark'] input:focus,
+[data-theme='dark'] select:focus,
+[data-theme='dark'] textarea:focus {
+  /* Force Tailwind ring utilities to use white in dark mode */
+  --tw-ring-color: #fff !important;
+
+  border-color: #fff !important;
+}
+
+/* Light mode: force white focus ring/border on form fields */
+[data-theme='light'] input:focus,
+[data-theme='light'] select:focus,
+[data-theme='light'] textarea:focus {
+  /* Use theme blue in light mode */
+  --tw-ring-color: var(--accent) !important; /* #1D4ED8 */
+
+  border-color: var(--accent) !important;
+}
+
+/* Light mode: highlight in near-black */
+[data-theme='light'] button:hover,
+[data-theme='light'] [role='button']:hover,
+[data-theme='light'] .cursor-pointer:hover,
+[data-theme='light'] a:hover {
+  border-color: var(--hover-border) !important;
+}
+
+[data-theme='light'] input:hover,
+[data-theme='light'] select:hover,
+[data-theme='light'] textarea:hover,
+[data-theme='light'] button:hover {
+  border-color: var(--hover-border) !important;
+}

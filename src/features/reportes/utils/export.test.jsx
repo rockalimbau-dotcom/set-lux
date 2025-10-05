@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
+
 import { buildReportWeekHTML } from './export.ts';
 
 describe('reportes/utils/export', () => {
@@ -19,7 +20,7 @@ describe('reportes/utils/export', () => {
       horarioTexto: mockHorarioTexto,
       CONCEPTS: ['Dietas', 'Transporte'],
       data: {
-        'G1__John': {
+        G1__John: {
           Dietas: { '2023-01-01': '10', '2023-01-02': '20' },
           Transporte: { '2023-01-01': '5', '2023-01-02': '15' },
         },
@@ -51,7 +52,9 @@ describe('reportes/utils/export', () => {
     it('generates table headers with day names and dates', () => {
       const result = buildReportWeekHTML(defaultParams);
 
-      expect(result).toContain('<th style="border:1px solid #999;padding:6px;text-align:left;background:#1e40af;color:#fff;">Horario</th>');
+      expect(result).toContain(
+        '<th style="border:1px solid #999;padding:6px;text-align:left;background:#1e40af;color:#fff;">Horario</th>'
+      );
       expect(mockDayNameFromISO).toHaveBeenCalledWith('2023-01-01', 0);
       expect(mockDayNameFromISO).toHaveBeenCalledWith('2023-01-02', 1);
       expect(mockToDisplayDate).toHaveBeenCalledWith('2023-01-01');
@@ -61,7 +64,9 @@ describe('reportes/utils/export', () => {
     it('generates horario row', () => {
       const result = buildReportWeekHTML(defaultParams);
 
-      expect(result).toContain('<th style="border:1px solid #999;padding:6px;text-align:left;background:#1e40af;color:#fff;">Horario</th>');
+      expect(result).toContain(
+        '<th style="border:1px solid #999;padding:6px;text-align:left;background:#1e40af;color:#fff;">Horario</th>'
+      );
       expect(mockHorarioTexto).toHaveBeenCalledWith('2023-01-01');
       expect(mockHorarioTexto).toHaveBeenCalledWith('2023-01-02');
     });
@@ -70,7 +75,9 @@ describe('reportes/utils/export', () => {
       const result = buildReportWeekHTML(defaultParams);
 
       expect(result).toContain('G1 — John');
-      expect(result).toContain('<td style="border:1px solid #999;padding:6px;font-weight:600;background:#f5f5f5;">');
+      expect(result).toContain(
+        '<td style="border:1px solid #999;padding:6px;font-weight:600;background:#f5f5f5;">'
+      );
     });
 
     it('generates concept rows for each person', () => {
@@ -114,7 +121,10 @@ describe('reportes/utils/export', () => {
     });
 
     it('escapes HTML characters in project name', () => {
-      const params = { ...defaultParams, project: { nombre: 'Test & <Project>' } };
+      const params = {
+        ...defaultParams,
+        project: { nombre: 'Test & <Project>' },
+      };
       const result = buildReportWeekHTML(params);
 
       expect(result).toContain('Test &amp; &lt;Project&gt;');
@@ -131,7 +141,7 @@ describe('reportes/utils/export', () => {
       const params = {
         ...defaultParams,
         data: {
-          'G1__John': {
+          G1__John: {
             Dietas: { '2023-01-01': 'Test & <Value>' },
           },
         },
@@ -145,10 +155,10 @@ describe('reportes/utils/export', () => {
       const params = {
         ...defaultParams,
         data: {
-          'G1__John': {
+          G1__John: {
             Dietas: { '2023-01-01': '10' },
           },
-          'E2__Jane': {
+          E2__Jane: {
             Dietas: { '2023-01-01': '20' },
           },
         },
@@ -163,7 +173,7 @@ describe('reportes/utils/export', () => {
       const params = {
         ...defaultParams,
         data: {
-          '__John': {
+          __John: {
             Dietas: { '2023-01-01': '10' },
           },
         },

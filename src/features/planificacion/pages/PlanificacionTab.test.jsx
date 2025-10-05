@@ -1,6 +1,7 @@
+import { render, screen, fireEvent } from '@testing-library/react';
 import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+
 import PlanificacionTab from './PlanificacionTab.tsx';
 
 vi.mock('@shared/hooks/useLocalStorage', () => ({
@@ -20,7 +21,9 @@ describe('PlanificacionTab (smoke)', () => {
       <PlanificacionTab project={project} conditions={{}} teamList={[]} />
     );
 
-    expect(screen.getByRole('button', { name: /PDF Entero/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /PDF Entero/i })
+    ).toBeInTheDocument();
 
     expect(
       screen.getByText(/No hay semanas de preproducción/i)

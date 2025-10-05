@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 import UsuarioScreen from './UsuarioScreen.tsx';
 
@@ -40,7 +40,7 @@ describe('UsuarioScreen', () => {
         <UsuarioScreen onClose={mockOnClose} />
       </MemoryRouter>
     );
-    
+
     expect(screen.getByText('Perfil')).toBeInTheDocument();
     expect(screen.getByText('Configuración')).toBeInTheDocument();
     expect(screen.getByText('Salir')).toBeInTheDocument();
@@ -52,7 +52,7 @@ describe('UsuarioScreen', () => {
         <UsuarioScreen onClose={mockOnClose} />
       </MemoryRouter>
     );
-    
+
     expect(screen.getByText('Perfil')).toBeInTheDocument();
     expect(screen.getByText('Configuración')).toBeInTheDocument();
     expect(screen.getByText('Cambiar contraseña')).toBeInTheDocument();
@@ -67,11 +67,13 @@ describe('UsuarioScreen', () => {
         <UsuarioScreen onClose={mockOnClose} />
       </MemoryRouter>
     );
-    
+
     const perfilButton = screen.getByText('Perfil');
     fireEvent.click(perfilButton);
-    
-    expect(mockAlert).toHaveBeenCalledWith('Abrir perfil (pendiente de implementar)');
+
+    expect(mockAlert).toHaveBeenCalledWith(
+      'Abrir perfil (pendiente de implementar)'
+    );
   });
 
   it('calls handleConfiguracion when Configuración is clicked', () => {
@@ -80,11 +82,13 @@ describe('UsuarioScreen', () => {
         <UsuarioScreen onClose={mockOnClose} />
       </MemoryRouter>
     );
-    
+
     const configButton = screen.getByText('Configuración');
     fireEvent.click(configButton);
-    
-    expect(mockAlert).toHaveBeenCalledWith('Abrir configuración (pendiente de implementar)');
+
+    expect(mockAlert).toHaveBeenCalledWith(
+      'Abrir configuración (pendiente de implementar)'
+    );
   });
 
   it('calls handleCambiarContraseña when Cambiar contraseña is clicked', () => {
@@ -93,11 +97,13 @@ describe('UsuarioScreen', () => {
         <UsuarioScreen onClose={mockOnClose} />
       </MemoryRouter>
     );
-    
+
     const passwordButton = screen.getByText('Cambiar contraseña');
     fireEvent.click(passwordButton);
-    
-    expect(mockAlert).toHaveBeenCalledWith('Cambiar contraseña (pendiente de implementar)');
+
+    expect(mockAlert).toHaveBeenCalledWith(
+      'Cambiar contraseña (pendiente de implementar)'
+    );
   });
 
   it('calls handleAtajos when Atajos de teclado is clicked', () => {
@@ -106,11 +112,13 @@ describe('UsuarioScreen', () => {
         <UsuarioScreen onClose={mockOnClose} />
       </MemoryRouter>
     );
-    
+
     const shortcutsButton = screen.getByText('Atajos de teclado');
     fireEvent.click(shortcutsButton);
-    
-    expect(mockAlert).toHaveBeenCalledWith('Mostrar atajos de teclado (pendiente de implementar)');
+
+    expect(mockAlert).toHaveBeenCalledWith(
+      'Mostrar atajos de teclado (pendiente de implementar)'
+    );
   });
 
   it('calls handleAyuda when Centro de ayuda / Feedback is clicked', () => {
@@ -119,11 +127,13 @@ describe('UsuarioScreen', () => {
         <UsuarioScreen onClose={mockOnClose} />
       </MemoryRouter>
     );
-    
+
     const helpButton = screen.getByText('Centro de ayuda / Feedback');
     fireEvent.click(helpButton);
-    
-    expect(mockAlert).toHaveBeenCalledWith('Abrir centro de ayuda / feedback (pendiente de implementar)');
+
+    expect(mockAlert).toHaveBeenCalledWith(
+      'Abrir centro de ayuda / feedback (pendiente de implementar)'
+    );
   });
 
   it('handles logout when Salir is clicked', () => {
@@ -132,10 +142,10 @@ describe('UsuarioScreen', () => {
         <UsuarioScreen onClose={mockOnClose} />
       </MemoryRouter>
     );
-    
+
     const salirButton = screen.getByText('Salir');
     fireEvent.click(salirButton);
-    
+
     expect(mockLocalStorage.removeItem).toHaveBeenCalledWith('currentUser');
     expect(mockNavigate).toHaveBeenCalledWith('/', { replace: true });
     expect(mockOnClose).toHaveBeenCalled();
@@ -147,10 +157,10 @@ describe('UsuarioScreen', () => {
         <UsuarioScreen />
       </MemoryRouter>
     );
-    
+
     const salirButton = screen.getByText('Salir');
     fireEvent.click(salirButton);
-    
+
     expect(mockLocalStorage.removeItem).toHaveBeenCalledWith('currentUser');
     expect(mockNavigate).toHaveBeenCalledWith('/', { replace: true });
   });
@@ -160,16 +170,16 @@ describe('UsuarioScreen', () => {
     mockLocalStorage.removeItem.mockImplementation(() => {
       throw new Error('localStorage error');
     });
-    
+
     render(
       <MemoryRouter>
         <UsuarioScreen onClose={mockOnClose} />
       </MemoryRouter>
     );
-    
+
     const salirButton = screen.getByText('Salir');
     fireEvent.click(salirButton);
-    
+
     // Should still navigate and call onClose even if localStorage fails
     expect(mockNavigate).toHaveBeenCalledWith('/', { replace: true });
     expect(mockOnClose).toHaveBeenCalled();
@@ -181,15 +191,32 @@ describe('UsuarioScreen', () => {
         <UsuarioScreen onClose={mockOnClose} />
       </MemoryRouter>
     );
-    
+
     const container = screen.getByText('Perfil').closest('div');
-    expect(container).toHaveClass('absolute', 'right-6', 'top-16', 'w-48', 'rounded-xl', 'border', 'border-neutral-border', 'bg-neutral-panel', 'shadow-lg', 'z-50');
-    
+    expect(container).toHaveClass(
+      'absolute',
+      'right-6',
+      'top-16',
+      'w-48',
+      'rounded-xl',
+      'border',
+      'border-neutral-border',
+      'bg-neutral-panel',
+      'shadow-lg',
+      'z-50'
+    );
+
     const list = screen.getByText('Perfil').closest('ul');
     expect(list).toHaveClass('text-sm', 'text-zinc-200');
-    
+
     const salirButton = screen.getByText('Salir');
-    expect(salirButton).toHaveClass('px-4', 'py-2', 'hover:bg-red-500/20', 'hover:text-red-400', 'cursor-pointer');
+    expect(salirButton).toHaveClass(
+      'px-4',
+      'py-2',
+      'hover:bg-red-500/20',
+      'hover:text-red-400',
+      'cursor-pointer'
+    );
   });
 
   it('has proper accessibility attributes', () => {
@@ -198,10 +225,10 @@ describe('UsuarioScreen', () => {
         <UsuarioScreen onClose={mockOnClose} />
       </MemoryRouter>
     );
-    
+
     const menuItems = screen.getAllByRole('listitem');
     expect(menuItems).toHaveLength(6);
-    
+
     // All items should be clickable
     menuItems.forEach(item => {
       expect(item).toHaveClass('cursor-pointer');

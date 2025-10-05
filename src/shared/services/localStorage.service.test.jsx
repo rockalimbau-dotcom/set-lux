@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+
 import '../../test/setup.ts';
 import { storage } from './localStorage.service';
 
@@ -9,12 +10,19 @@ describe('shared/services/localStorage.service', () => {
     // Provide an in-memory localStorage for this test suite (overrides global mock spies)
     const store = new Map();
     const mem = {
-      getItem: vi.fn((k) => (store.has(k) ? store.get(k) : null)),
-      setItem: vi.fn((k, v) => { store.set(k, String(v)); }),
-      removeItem: vi.fn((k) => { store.delete(k); }),
+      getItem: vi.fn(k => (store.has(k) ? store.get(k) : null)),
+      setItem: vi.fn((k, v) => {
+        store.set(k, String(v));
+      }),
+      removeItem: vi.fn(k => {
+        store.delete(k);
+      }),
       clear: vi.fn(() => store.clear()),
     };
-    Object.defineProperty(window, 'localStorage', { value: mem, configurable: true });
+    Object.defineProperty(window, 'localStorage', {
+      value: mem,
+      configurable: true,
+    });
     store.clear();
   });
 
@@ -44,15 +52,21 @@ describe('shared/services/localStorage.service', () => {
   });
 
   it('methods are resilient to localStorage errors', () => {
-    const setSpy = vi.spyOn(window.localStorage, 'setItem').mockImplementation(() => {
-      throw new Error('set fail');
-    });
-    const getSpy = vi.spyOn(window.localStorage, 'getItem').mockImplementation(() => {
-      throw new Error('get fail');
-    });
-    const remSpy = vi.spyOn(window.localStorage, 'removeItem').mockImplementation(() => {
-      throw new Error('rem fail');
-    });
+    const setSpy = vi
+      .spyOn(window.localStorage, 'setItem')
+      .mockImplementation(() => {
+        throw new Error('set fail');
+      });
+    const getSpy = vi
+      .spyOn(window.localStorage, 'getItem')
+      .mockImplementation(() => {
+        throw new Error('get fail');
+      });
+    const remSpy = vi
+      .spyOn(window.localStorage, 'removeItem')
+      .mockImplementation(() => {
+        throw new Error('rem fail');
+      });
 
     // Should not throw
     expect(() => storage.setString(KEY, 'x')).not.toThrow();
@@ -65,5 +79,3 @@ describe('shared/services/localStorage.service', () => {
     remSpy.mockRestore();
   });
 });
-
-

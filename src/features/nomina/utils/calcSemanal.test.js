@@ -1,6 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { makeRolePrices } from './calcSemanal';
 import { storage } from '@shared/services/localStorage.service';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+
+import { makeRolePrices } from './calcSemanal';
 
 // Mock the storage service
 vi.mock('@shared/services/localStorage.service', () => ({
@@ -23,7 +24,7 @@ describe('calcSemanal - makeRolePrices with holidayDay', () => {
     // Mock the storage to return the conditions data
     storage.getJSON.mockReturnValue({
       prices: {
-        'GAFFER': {
+        GAFFER: {
           'Precio jornada': '150',
           'Travel day': '75',
           'Horas extras': '25',
@@ -60,11 +61,11 @@ describe('calcSemanal - makeRolePrices with holidayDay', () => {
     // Mock the storage to return the conditions data
     storage.getJSON.mockReturnValue({
       prices: {
-        'GAFFER': {
+        GAFFER: {
           'Precio refuerzo': '120',
           'Precio Día extra/Festivo': '210', // 120 * 1.75
         },
-        'ELÉCTRICO': {
+        ELÉCTRICO: {
           'Precio refuerzo': '100',
           'Precio Día extra/Festivo': '175', // 100 * 1.75
         },
@@ -96,7 +97,7 @@ describe('calcSemanal - makeRolePrices with holidayDay', () => {
     // Mock the storage to return the conditions data
     storage.getJSON.mockReturnValue({
       prices: {
-        'GAFFER': {
+        GAFFER: {
           'Precio jornada': '150',
           // No 'Precio Día extra/Festivo' defined
         },

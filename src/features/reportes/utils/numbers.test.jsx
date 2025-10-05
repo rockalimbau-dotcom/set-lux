@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+
 import { parseNum, parseHHMM, diffMinutes, ceilHours } from './numbers.ts';
 
 describe('numbers utils', () => {

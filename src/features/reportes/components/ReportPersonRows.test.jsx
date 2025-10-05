@@ -1,5 +1,6 @@
-import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
+import React from 'react';
+
 import ReportPersonRows from './ReportPersonRows.jsx';
 
 const CONCEPTS = ['Dietas', 'Kilometraje'];
@@ -8,10 +9,18 @@ const SI_NO = ['—', 'Sí', 'No'];
 
 function noop() {}
 
-function findWeekAndDay() { return { day: { tipo: 'Rodaje', team: [{ name: 'Juan', role: 'EL' }] } }; }
-function isPersonScheduledOnBlock() { return true; }
-function parseDietas(raw) { return { items: new Set(), ticket: null }; }
-function formatDietas(items, ticket) { return ''; }
+function findWeekAndDay() {
+  return { day: { tipo: 'Rodaje', team: [{ name: 'Juan', role: 'EL' }] } };
+}
+function isPersonScheduledOnBlock() {
+  return true;
+}
+function parseDietas(raw) {
+  return { items: new Set(), ticket: null };
+}
+function formatDietas(items, ticket) {
+  return '';
+}
 
 describe('ReportPersonRows (smoke)', () => {
   it('renders a person row and allows collapse toggle', () => {
@@ -91,7 +100,9 @@ describe('ReportPersonRows (smoke)', () => {
     );
 
     // Check that cells for the non-working day have the conditional styling
-    const cellsWithOffStyling = container.querySelectorAll('.bg-orange-900\\/20');
+    const cellsWithOffStyling = container.querySelectorAll(
+      '.bg-orange-900\\/20'
+    );
     expect(cellsWithOffStyling.length).toBeGreaterThan(0);
   });
 });

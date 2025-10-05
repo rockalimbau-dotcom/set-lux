@@ -1,5 +1,6 @@
-import React from 'react';
 import { render, screen } from '@testing-library/react';
+import React from 'react';
+
 import ReportBlockScheduleRow from './ReportBlockScheduleRow.jsx';
 
 describe('ReportBlockScheduleRow (smoke)', () => {
@@ -18,7 +19,11 @@ describe('ReportBlockScheduleRow (smoke)', () => {
     render(
       <table>
         <tbody>
-          <ReportBlockScheduleRow label='Horario Prelight' semana={semana} valueForISO={valueForISO} />
+          <ReportBlockScheduleRow
+            label='Horario Prelight'
+            semana={semana}
+            valueForISO={valueForISO}
+          />
         </tbody>
       </table>
     );

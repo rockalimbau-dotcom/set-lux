@@ -489,7 +489,7 @@ function ProjectsScreen({
   return (
     <>
       {/* Header moderno y prominente */}
-      <div className='px-6 py-8' style={{backgroundColor: 'var(--bg)', ...(isLight ? ({ ['--hover-border']: '#f59e0b' } as React.CSSProperties) : {})}}>
+      <div className='px-6 py-8' style={{backgroundColor: 'var(--bg)'}}>
         <div className='max-w-6xl mx-auto'>
           {/* Header limpio */}
           <div className='flex items-center justify-between mb-8'>
@@ -564,13 +564,21 @@ function ProjectsScreen({
               <input
                 type='text'
                 placeholder='Buscar...'
-                className='w-full pl-12 pr-4 py-3 rounded-xl border border-neutral-border focus:outline-none focus:ring-1 focus:ring-orange-500'
-                style={{backgroundColor: 'var(--panel)', color: 'var(--text)'}}
+                className='w-full pl-12 pr-4 py-3 rounded-xl border border-neutral-border focus:outline-none focus:ring-1 focus:ring-orange-500 hover:border-[var(--hover-border)]'
+                style={{
+                  backgroundColor: 'var(--panel)',
+                  color: 'var(--text)',
+                  borderColor: isLight ? 'rgba(229,231,235,0.6)' : 'var(--border)'
+                }}
               />
             </div>
             <button
               className='px-4 py-3 rounded-xl border border-neutral-border hover:border-[var(--hover-border)] transition'
-              style={{backgroundColor: 'var(--panel)', color: 'var(--text)'}}
+              style={{
+                backgroundColor: 'var(--panel)',
+                color: 'var(--text)',
+                borderColor: isLight ? 'rgba(229,231,235,0.6)' : 'var(--border)'
+              }}
             >
               <span className='flex items-center gap-2'>
                 🔽 Filtro
@@ -578,7 +586,11 @@ function ProjectsScreen({
             </button>
             <button
               className='px-4 py-3 rounded-xl border border-neutral-border hover:border-[var(--hover-border)] transition'
-              style={{backgroundColor: 'var(--panel)', color: 'var(--text)'}}
+              style={{
+                backgroundColor: 'var(--panel)',
+                color: 'var(--text)',
+                borderColor: isLight ? 'rgba(229,231,235,0.6)' : 'var(--border)'
+              }}
             >
               <span className='flex items-center gap-2'>
                 ↕️ Ordenar
@@ -590,7 +602,7 @@ function ProjectsScreen({
       </div>
 
       {/* Grid de proyectos */}
-      <div className='max-w-6xl mx-auto p-6' style={isLight ? ({ ['--hover-border']: '#f59e0b' } as React.CSSProperties) : undefined}>
+      <div className='max-w-6xl mx-auto p-6'>
         <div
           className={`grid gap-6 ${
             hasProjects ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : ''

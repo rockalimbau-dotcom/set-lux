@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+
 import {
   pad2,
   toISO,
@@ -228,7 +229,7 @@ describe('nomina/utils/date', () => {
       const originalDate = new Date(2023, 5, 15); // June 15, 2023
       const isoString = toISO(originalDate);
       const parsedDate = parseYYYYMMDD(isoString);
-      
+
       expect(parsedDate.getFullYear()).toBe(originalDate.getFullYear());
       expect(parsedDate.getMonth()).toBe(originalDate.getMonth());
       expect(parsedDate.getDate()).toBe(originalDate.getDate());
@@ -239,7 +240,7 @@ describe('nomina/utils/date', () => {
       const isoString = toISO(date);
       const monthKey = monthKeyFromISO(isoString);
       const monthLabel = monthLabelEs(monthKey);
-      
+
       expect(monthKey).toBe('2023-03');
       expect(monthLabel).toBe('Marzo');
     });
@@ -248,7 +249,7 @@ describe('nomina/utils/date', () => {
       const date = new Date(2023, 0, 15); // January 15, 2023
       const newDate = addDays(date, 30);
       const isoString = toISO(newDate);
-      
+
       expect(isoString).toBe('2023-02-14');
     });
   });

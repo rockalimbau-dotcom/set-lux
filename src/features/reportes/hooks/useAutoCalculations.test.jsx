@@ -1,5 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+
 import useAutoCalculations from './useAutoCalculations';
 
 // Mock useLocalStorage
@@ -16,7 +17,7 @@ vi.mock('../utils/numbers', () => ({
     if (start === '22:00' && end === '06:00') return 480; // Night shift
     return 0;
   }),
-  ceilHours: vi.fn((minutes) => Math.ceil(minutes / 60)),
+  ceilHours: vi.fn(minutes => Math.ceil(minutes / 60)),
 }));
 
 vi.mock('../utils/runtime', () => ({
@@ -49,14 +50,19 @@ describe('useAutoCalculations', () => {
   };
 
   const mockFunctions = {
-    findWeekAndDay: vi.fn((iso) => ({ week: 0, day: 0 })),
+    findWeekAndDay: vi.fn(iso => ({ week: 0, day: 0 })),
     getBlockWindow: vi.fn(() => ({ start: '09:00', end: '17:00' })),
-    calcHorasExtraMin: vi.fn((worked, base, cortes) => Math.max(0, worked - base * 60)),
+    calcHorasExtraMin: vi.fn((worked, base, cortes) =>
+      Math.max(0, worked - base * 60)
+    ),
     buildDateTime: vi.fn((iso, time) => new Date(`${iso}T${time}:00`)),
-    findPrevWorkingContext: vi.fn(() => ({ lastEnd: '17:00', lastDate: '2024-01-14' })),
-    personaKey: vi.fn((p) => `${p.role}__${p.name}`),
-    personaRole: vi.fn((p) => p.role),
-    personaName: vi.fn((p) => p.name),
+    findPrevWorkingContext: vi.fn(() => ({
+      lastEnd: '17:00',
+      lastDate: '2024-01-14',
+    })),
+    personaKey: vi.fn(p => `${p.role}__${p.name}`),
+    personaRole: vi.fn(p => p.role),
+    personaName: vi.fn(p => p.name),
     blockKeyForPerson: vi.fn(() => 'block-key'),
     isPersonScheduledOnBlock: vi.fn(() => true),
     setData: vi.fn(),
@@ -243,7 +249,7 @@ describe('useAutoCalculations', () => {
 
   it('should handle persona key generation', () => {
     const testPersona = { role: 'DIRECTOR', name: 'Juan' };
-    
+
     expect(() => {
       renderHook(() =>
         useAutoCalculations({
@@ -338,10 +344,17 @@ describe('useAutoCalculations', () => {
   it('should return empty strings for zero values instead of "0"', () => {
     const mockSetData = vi.fn();
     const mockCalcHorasExtraMin = vi.fn(() => 0); // Return 0 extra hours
-    const mockFindWeekAndDay = vi.fn(() => ({ day: { start: '09:00', end: '17:00' } }));
+    const mockFindWeekAndDay = vi.fn(() => ({
+      day: { start: '09:00', end: '17:00' },
+    }));
     const mockGetBlockWindow = vi.fn(() => ({ start: '09:00', end: '17:00' }));
-    const mockBuildDateTime = vi.fn((iso, time) => new Date(`${iso}T${time}:00`));
-    const mockFindPrevWorkingContext = vi.fn(() => ({ prevISO: null, consecDesc: 0 }));
+    const mockBuildDateTime = vi.fn(
+      (iso, time) => new Date(`${iso}T${time}:00`)
+    );
+    const mockFindPrevWorkingContext = vi.fn(() => ({
+      prevISO: null,
+      consecDesc: 0,
+    }));
 
     renderHook(() =>
       useAutoCalculations({
@@ -371,7 +384,7 @@ describe('useAutoCalculations', () => {
 
     // Verificar que setData fue llamado
     expect(mockSetData).toHaveBeenCalled();
-    
+
     // El test principal es que la función no arroje errores y que los valores 0
     // se conviertan en cadenas vacías en lugar de "0"
     // Esto se verifica implícitamente por el cambio en el código:

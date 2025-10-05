@@ -11,9 +11,11 @@
   will-change: filter;
   transition: filter 300ms;
 }
+
 .logo:hover {
   filter: drop-shadow(0 0 2em #646cffaa);
 }
+
 .logo.react:hover {
   filter: drop-shadow(0 0 2em #61dafbaa);
 }
@@ -22,6 +24,7 @@
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
@@ -47,9 +50,11 @@
 #print-root.printing .no-pdf {
   display: none !important;
 }
+
 .only-pdf {
   display: none;
 }
+
 #print-root.printing .only-pdf {
   display: block;
 }
@@ -65,9 +70,9 @@
   height: auto !important;
   line-height: 1.2 !important;
   color: #e5e7eb !important;
-  -webkit-appearance: none;
   appearance: none;
 }
+
 /* Quitar icono del datepicker en WebKit */
 #print-root.printing input[type='date']::-webkit-calendar-picker-indicator {
   display: none;
@@ -77,10 +82,12 @@
 #print-root.printing table.plan {
   border-collapse: collapse !important;
 }
+
 #print-root.printing table.plan th,
 #print-root.printing table.plan td {
   border: 1px solid #2f2f2f !important;
 }
+
 #print-root.printing table.plan th {
   background: #2a2a2a !important;
   color: #fff !important;
@@ -92,7 +99,6 @@
 #print-root.printing table.plan td,
 #print-root.printing table.plan th {
   break-inside: avoid;
-  page-break-inside: avoid;
 }
 
 /* Tarjeta de semana: no partir y una por página */
@@ -103,22 +109,22 @@
   border-radius: 1rem 1rem 0 0; /* inferiores cuadradas en PDF */
   overflow: hidden !important;
   break-inside: avoid-page;
-  page-break-inside: avoid;
+  break-inside: avoid;
   break-after: page; /* ← única regla de salto */
-  page-break-after: always; /* legacy */
+  break-after: always; /* legacy */
 }
 
 /* Títulos visibles solo en PDF (si los usas) */
 #print-root.printing .pdf-section-title {
   font-weight: 700;
   font-size: 18px;
-  margin: 12px 0 8px 0;
+  margin: 12px 0 8px;
   color: #60a5fa;
 }
 
 /* Opcional: define tamaño/ márgenes del PDF si tu exporter respeta @page */
 @page {
-  size: A4 landscape;
+  size: a4 landscape;
   margin: 10mm;
 }
 

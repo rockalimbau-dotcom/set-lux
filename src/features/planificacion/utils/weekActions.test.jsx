@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+
 import {
   nextStartForPro,
   nextStartForPre,
@@ -10,13 +11,13 @@ import {
 
 // Mock shared utils
 vi.mock('../../../shared/utils/date', () => ({
-  toYYYYMMDD: vi.fn((date) => {
+  toYYYYMMDD: vi.fn(date => {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
   }),
-  parseYYYYMMDD: vi.fn((str) => new Date(str)),
+  parseYYYYMMDD: vi.fn(str => new Date(str)),
   addDays: vi.fn((date, days) => {
     const newDate = new Date(date);
     newDate.setDate(date.getDate() + days);
@@ -95,7 +96,9 @@ describe('planificacion/utils/weekActions', () => {
       const preWeeks = [];
       const proWeeks = [];
 
-      const { toYYYYMMDD } = vi.mocked(await import('../../../shared/utils/date'));
+      const { toYYYYMMDD } = vi.mocked(
+        await import('../../../shared/utils/date')
+      );
       toYYYYMMDD.mockReturnValue('2023-01-02');
 
       const result = nextStartForPro(preWeeks, proWeeks);
@@ -129,9 +132,7 @@ describe('planificacion/utils/weekActions', () => {
 
     it('returns Monday before first pro week when no pre weeks', async () => {
       const preWeeks = [];
-      const proWeeks = [
-        { id: 'week1', startDate: '2023-01-09' },
-      ];
+      const proWeeks = [{ id: 'week1', startDate: '2023-01-09' }];
 
       const { toYYYYMMDD, addDays, parseYYYYMMDD } = vi.mocked(
         await import('../../../shared/utils/date')
@@ -152,7 +153,9 @@ describe('planificacion/utils/weekActions', () => {
       const preWeeks = [];
       const proWeeks = [];
 
-      const { toYYYYMMDD } = vi.mocked(await import('../../../shared/utils/date'));
+      const { toYYYYMMDD } = vi.mocked(
+        await import('../../../shared/utils/date')
+      );
       toYYYYMMDD.mockReturnValue('2022-12-26');
 
       const result = nextStartForPre(preWeeks, proWeeks);
@@ -163,9 +166,7 @@ describe('planificacion/utils/weekActions', () => {
 
   describe('addPreWeekAction', () => {
     it('adds new pre week and sorts by date', async () => {
-      const preWeeks = [
-        { id: 'pre1', startDate: '2023-01-09' },
-      ];
+      const preWeeks = [{ id: 'pre1', startDate: '2023-01-09' }];
       const baseRoster = [{ role: 'G', name: 'John' }];
       const preRoster = [{ role: 'E', name: 'Jane' }];
       const pickRoster = [{ role: 'BB', name: 'Bob' }];
@@ -187,7 +188,14 @@ describe('planificacion/utils/weekActions', () => {
         days: [],
       });
 
-      const result = addPreWeekAction(preWeeks, baseRoster, preRoster, pickRoster, holidayFull, holidayMD);
+      const result = addPreWeekAction(
+        preWeeks,
+        baseRoster,
+        preRoster,
+        pickRoster,
+        holidayFull,
+        holidayMD
+      );
 
       expect(result).toHaveLength(2);
       expect(result[0].startDate).toBe('2023-01-09'); // Original week first
@@ -206,12 +214,8 @@ describe('planificacion/utils/weekActions', () => {
 
   describe('addProWeekAction', () => {
     it('adds new pro week', async () => {
-      const preWeeks = [
-        { id: 'pre1', startDate: '2023-01-02' },
-      ];
-      const proWeeks = [
-        { id: 'week1', startDate: '2023-01-09' },
-      ];
+      const preWeeks = [{ id: 'pre1', startDate: '2023-01-02' }];
+      const proWeeks = [{ id: 'week1', startDate: '2023-01-09' }];
       const baseRoster = [{ role: 'G', name: 'John' }];
       const preRoster = [{ role: 'E', name: 'Jane' }];
       const pickRoster = [{ role: 'BB', name: 'Bob' }];
@@ -233,7 +237,15 @@ describe('planificacion/utils/weekActions', () => {
         days: [],
       });
 
-      const result = addProWeekAction(preWeeks, proWeeks, baseRoster, preRoster, pickRoster, holidayFull, holidayMD);
+      const result = addProWeekAction(
+        preWeeks,
+        proWeeks,
+        baseRoster,
+        preRoster,
+        pickRoster,
+        holidayFull,
+        holidayMD
+      );
 
       expect(result).toHaveLength(2);
       expect(result[1].startDate).toBe('2023-01-16');
@@ -298,7 +310,7 @@ describe('planificacion/utils/weekActions', () => {
         randomUUID: vi.fn(() => mockUUID),
       });
 
-      const makeLabel = (count) => `Custom Week ${count}`;
+      const makeLabel = count => `Custom Week ${count}`;
       const result = duplicateWeekAction(weeks, 'week1', 1, makeLabel);
 
       expect(result[1].label).toBe('Custom Week 2');
@@ -357,13 +369,13 @@ describe('planificacion/utils/weekActions', () => {
       );
       const { relabelWeekByCalendar } = vi.mocked(await import('./calendar'));
 
-      parseYYYYMMDD.mockImplementation((str) => new Date(str));
+      parseYYYYMMDD.mockImplementation(str => new Date(str));
       addDays.mockImplementation((date, days) => {
         const newDate = new Date(date);
         newDate.setDate(date.getDate() + days);
         return newDate;
       });
-      toYYYYMMDD.mockImplementation((date) => {
+      toYYYYMMDD.mockImplementation(date => {
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, '0');
         const day = String(date.getDate()).padStart(2, '0');
@@ -378,7 +390,14 @@ describe('planificacion/utils/weekActions', () => {
       const holidayFull = new Set();
       const holidayMD = new Set();
 
-      const result = rebaseWeeksAround(preWeeks, proWeeks, weekId, monday, holidayFull, holidayMD);
+      const result = rebaseWeeksAround(
+        preWeeks,
+        proWeeks,
+        weekId,
+        monday,
+        holidayFull,
+        holidayMD
+      );
 
       expect(result.pre).toHaveLength(2);
       expect(result.pro).toHaveLength(2);
@@ -386,16 +405,19 @@ describe('planificacion/utils/weekActions', () => {
     });
 
     it('returns original weeks when anchor not found', () => {
-      const preWeeks = [
-        { id: 'pre1', startDate: '2023-01-02' },
-      ];
-      const proWeeks = [
-        { id: 'week1', startDate: '2023-01-09' },
-      ];
+      const preWeeks = [{ id: 'pre1', startDate: '2023-01-02' }];
+      const proWeeks = [{ id: 'week1', startDate: '2023-01-09' }];
       const weekId = 'nonexistent';
       const monday = new Date('2023-02-06');
 
-      const result = rebaseWeeksAround(preWeeks, proWeeks, weekId, monday, new Set(), new Set());
+      const result = rebaseWeeksAround(
+        preWeeks,
+        proWeeks,
+        weekId,
+        monday,
+        new Set(),
+        new Set()
+      );
 
       expect(result.pre).toEqual(preWeeks);
       expect(result.pro).toEqual(proWeeks);
@@ -406,9 +428,7 @@ describe('planificacion/utils/weekActions', () => {
         { id: 'pre1', startDate: '2023-01-09' },
         { id: 'pre2', startDate: '2023-01-02' },
       ];
-      const proWeeks = [
-        { id: 'week1', startDate: '2023-01-16' },
-      ];
+      const proWeeks = [{ id: 'week1', startDate: '2023-01-16' }];
       const weekId = 'week1';
       const monday = new Date('2023-02-06');
 
@@ -417,13 +437,13 @@ describe('planificacion/utils/weekActions', () => {
       );
       const { relabelWeekByCalendar } = vi.mocked(await import('./calendar'));
 
-      parseYYYYMMDD.mockImplementation((str) => new Date(str));
+      parseYYYYMMDD.mockImplementation(str => new Date(str));
       addDays.mockImplementation((date, days) => {
         const newDate = new Date(date);
         newDate.setDate(date.getDate() + days);
         return newDate;
       });
-      toYYYYMMDD.mockImplementation((date) => {
+      toYYYYMMDD.mockImplementation(date => {
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, '0');
         const day = String(date.getDate()).padStart(2, '0');
@@ -435,7 +455,14 @@ describe('planificacion/utils/weekActions', () => {
         startDate,
       }));
 
-      const result = rebaseWeeksAround(preWeeks, proWeeks, weekId, monday, new Set(), new Set());
+      const result = rebaseWeeksAround(
+        preWeeks,
+        proWeeks,
+        weekId,
+        monday,
+        new Set(),
+        new Set()
+      );
 
       // Check that weeks are sorted by date
       const allWeeks = [...result.pre, ...result.pro];

@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+
 import {
   sortByHierarchy,
   indexRoster,
@@ -93,15 +94,15 @@ describe('planificacion/utils/sync', () => {
       const result = sortByHierarchy(members);
 
       // Verificar orden: EQUIPO BASE → REFUERZOS → EQUIPO PRELIGHT → EQUIPO RECOGIDA
-      expect(result[0].role).toBe('G');    // EQUIPO BASE
-      expect(result[1].role).toBe('BB');   // EQUIPO BASE
-      expect(result[2].role).toBe('E');    // EQUIPO BASE
-      expect(result[3].role).toBe('TM');   // EQUIPO BASE
-      expect(result[4].role).toBe('REF');  // REFUERZOS
-      expect(result[5].role).toBe('GP');   // EQUIPO PRELIGHT
-      expect(result[6].role).toBe('EP');   // EQUIPO PRELIGHT
-      expect(result[7].role).toBe('GR');   // EQUIPO RECOGIDA
-      expect(result[8].role).toBe('MR');   // EQUIPO RECOGIDA
+      expect(result[0].role).toBe('G'); // EQUIPO BASE
+      expect(result[1].role).toBe('BB'); // EQUIPO BASE
+      expect(result[2].role).toBe('E'); // EQUIPO BASE
+      expect(result[3].role).toBe('TM'); // EQUIPO BASE
+      expect(result[4].role).toBe('REF'); // REFUERZOS
+      expect(result[5].role).toBe('GP'); // EQUIPO PRELIGHT
+      expect(result[6].role).toBe('EP'); // EQUIPO PRELIGHT
+      expect(result[7].role).toBe('GR'); // EQUIPO RECOGIDA
+      expect(result[8].role).toBe('MR'); // EQUIPO RECOGIDA
     });
   });
 
@@ -225,9 +226,7 @@ describe('planificacion/utils/sync', () => {
     });
 
     it('adds missing roles from roster', () => {
-      const dayList = [
-        { role: 'G', name: 'John' },
-      ];
+      const dayList = [{ role: 'G', name: 'John' }];
 
       const rosterList = [
         { role: 'G', name: 'John' },
@@ -261,9 +260,7 @@ describe('planificacion/utils/sync', () => {
 
     it('handles non-array day list', () => {
       const dayList = null;
-      const rosterList = [
-        { role: 'G', name: 'John' },
-      ];
+      const rosterList = [{ role: 'G', name: 'John' }];
 
       const result = syncDayListWithRoster(dayList, rosterList);
 
@@ -286,7 +283,11 @@ describe('planificacion/utils/sync', () => {
         { role: 'BB', name: 'New Bob' },
       ];
 
-      const result = syncDayListWithRosterBlankOnly(dayList, rosterList, 'fallback');
+      const result = syncDayListWithRosterBlankOnly(
+        dayList,
+        rosterList,
+        'fallback'
+      );
 
       expect(result[0].name).toBe('John'); // Not updated
       expect(result[1].name).toBe('Jane'); // Updated from blank
@@ -305,7 +306,11 @@ describe('planificacion/utils/sync', () => {
         { role: 'E', name: 'New Jane' },
       ];
 
-      const result = syncDayListWithRosterBlankOnly(dayList, rosterList, 'fallback');
+      const result = syncDayListWithRosterBlankOnly(
+        dayList,
+        rosterList,
+        'fallback'
+      );
 
       expect(result[0].name).toBe('John'); // Updated from whitespace
       expect(result[1].name).toBe('Jane'); // Not updated
@@ -323,7 +328,11 @@ describe('planificacion/utils/sync', () => {
         { role: 'E', name: 'Jane' },
       ];
 
-      const result = syncDayListWithRosterBlankOnly(dayList, rosterList, 'fallback');
+      const result = syncDayListWithRosterBlankOnly(
+        dayList,
+        rosterList,
+        'fallback'
+      );
 
       expect(result[0].name).toBe('John');
       expect(result[1].name).toBe('Jane');

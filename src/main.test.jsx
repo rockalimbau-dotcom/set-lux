@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import React from 'react';
 import { render } from '@testing-library/react';
+import React from 'react';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 // Mock ReactDOM
 const mockRender = vi.fn();
@@ -14,7 +14,7 @@ vi.mock('react-dom/client', () => ({
 
 // Mock App component
 vi.mock('./App.tsx', () => ({
-  default: () => <div data-testid="app">App Component</div>,
+  default: () => <div data-testid='app'>App Component</div>,
 }));
 
 // Mock CSS import
@@ -28,7 +28,7 @@ describe('main.tsx', () => {
     vi.clearAllMocks();
     originalConsoleError = console.error;
     console.error = vi.fn();
-    
+
     // Mock document.getElementById
     mockGetElementById = vi.fn(() => ({
       id: 'root',
@@ -52,7 +52,7 @@ describe('main.tsx', () => {
 
   it('handles missing root element gracefully', () => {
     mockGetElementById.mockReturnValue(null);
-    
+
     // Test that the main.tsx handles missing root element
     // The main.tsx uses the non-null assertion operator (!)
     // so it should handle this case
@@ -63,9 +63,9 @@ describe('main.tsx', () => {
     const TestComponent = () => {
       throw new Error('Test error');
     };
-    
+
     const consoleSpy = vi.spyOn(console, 'error');
-    
+
     // Test the error boundary directly
     const ErrorBoundary = class extends React.Component {
       constructor(props) {
@@ -92,15 +92,21 @@ describe('main.tsx', () => {
         return this.props.children;
       }
     };
-    
+
     const { container } = render(
       <ErrorBoundary>
         <TestComponent />
       </ErrorBoundary>
     );
-    
-    expect(container.querySelector('h3')).toHaveTextContent('💥 Error cargando la aplicación');
-    expect(consoleSpy).toHaveBeenCalledWith('Root boundary:', expect.any(Error), expect.any(Object));
+
+    expect(container.querySelector('h3')).toHaveTextContent(
+      '💥 Error cargando la aplicación'
+    );
+    expect(consoleSpy).toHaveBeenCalledWith(
+      'Root boundary:',
+      expect.any(Error),
+      expect.any(Object)
+    );
   });
 
   it('error boundary renders children when no error', () => {
@@ -129,15 +135,17 @@ describe('main.tsx', () => {
         return this.props.children;
       }
     };
-    
+
     const { render } = require('@testing-library/react');
     const { container } = render(
       <ErrorBoundary>
-        <div data-testid="child">Child Component</div>
+        <div data-testid='child'>Child Component</div>
       </ErrorBoundary>
     );
-    
-    expect(container.querySelector('[data-testid="child"]')).toHaveTextContent('Child Component');
+
+    expect(container.querySelector('[data-testid="child"]')).toHaveTextContent(
+      'Child Component'
+    );
   });
 
   it('error boundary displays error stack trace', () => {
@@ -166,20 +174,20 @@ describe('main.tsx', () => {
         return this.props.children;
       }
     };
-    
+
     const TestComponent = () => {
       const error = new Error('Test error message');
       error.stack = 'Error: Test error message\n    at TestComponent';
       throw error;
     };
-    
+
     const { render } = require('@testing-library/react');
     const { container } = render(
       <ErrorBoundary>
         <TestComponent />
       </ErrorBoundary>
     );
-    
+
     const preElement = container.querySelector('pre');
     expect(preElement).toHaveTextContent('Error: Test error message');
   });
@@ -210,20 +218,20 @@ describe('main.tsx', () => {
         return this.props.children;
       }
     };
-    
+
     const TestComponent = () => {
       const error = new Error('Test error message');
       error.stack = undefined;
       throw error;
     };
-    
+
     const { render } = require('@testing-library/react');
     const { container } = render(
       <ErrorBoundary>
         <TestComponent />
       </ErrorBoundary>
     );
-    
+
     const preElement = container.querySelector('pre');
     expect(preElement).toHaveTextContent('Error: Test error message');
   });

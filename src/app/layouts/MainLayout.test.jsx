@@ -1,6 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { BrowserRouter, MemoryRouter } from 'react-router-dom';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+
 import MainLayout from './MainLayout.tsx';
 
 // Mock react-router-dom hooks
@@ -20,7 +21,7 @@ vi.mock('react-router-dom', async () => {
         {children}
       </a>
     ),
-    Outlet: () => <div data-testid="outlet">Outlet Content</div>,
+    Outlet: () => <div data-testid='outlet'>Outlet Content</div>,
   };
 });
 
@@ -44,7 +45,7 @@ describe('MainLayout', () => {
         <MainLayout project={mockProject} onBack={mockOnBack} />
       </BrowserRouter>
     );
-    
+
     expect(screen.getByText('Test Project')).toBeInTheDocument();
     expect(screen.getByText('← Volver a proyectos')).toBeInTheDocument();
   });
@@ -55,19 +56,21 @@ describe('MainLayout', () => {
         <MainLayout project={mockProject} onBack={mockOnBack} />
       </BrowserRouter>
     );
-    
+
     expect(screen.getByText('Test Project')).toBeInTheDocument();
   });
 
   it('shows navigation links when not on index page', () => {
-    mockUseLocation.mockReturnValue({ pathname: '/project/test-project-1/planificacion' });
-    
+    mockUseLocation.mockReturnValue({
+      pathname: '/project/test-project-1/planificacion',
+    });
+
     render(
       <BrowserRouter>
         <MainLayout project={mockProject} onBack={mockOnBack} />
       </BrowserRouter>
     );
-    
+
     expect(screen.getByText('Planificación')).toBeInTheDocument();
     expect(screen.getByText('Equipo')).toBeInTheDocument();
     expect(screen.getByText('Necesidades')).toBeInTheDocument();
@@ -77,13 +80,13 @@ describe('MainLayout', () => {
 
   it('hides navigation links when on index page', () => {
     mockUseLocation.mockReturnValue({ pathname: '/project/test-project-1' });
-    
+
     render(
       <BrowserRouter>
         <MainLayout project={mockProject} onBack={mockOnBack} />
       </BrowserRouter>
     );
-    
+
     expect(screen.queryByText('Planificación')).not.toBeInTheDocument();
     expect(screen.queryByText('Equipo')).not.toBeInTheDocument();
   });
@@ -94,7 +97,7 @@ describe('MainLayout', () => {
         <MainLayout project={mockProject} onBack={mockOnBack} />
       </BrowserRouter>
     );
-    
+
     fireEvent.click(screen.getByText('← Volver a proyectos'));
     expect(mockOnBack).toHaveBeenCalledTimes(1);
   });
@@ -105,7 +108,7 @@ describe('MainLayout', () => {
         <MainLayout project={mockProject} onBack={mockOnBack} />
       </BrowserRouter>
     );
-    
+
     expect(screen.getByTestId('outlet')).toBeInTheDocument();
   });
 
@@ -115,7 +118,7 @@ describe('MainLayout', () => {
         <MainLayout project={null} onBack={mockOnBack} />
       </BrowserRouter>
     );
-    
+
     expect(screen.getAllByText('Proyecto')).toHaveLength(2); // Label and fallback text
   });
 });

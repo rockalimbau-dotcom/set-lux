@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+
 import { parseNum, parseDietasValue } from './parse.ts';
 
 describe('nomina/utils/parse', () => {
@@ -163,15 +164,24 @@ describe('nomina/utils/parse', () => {
     });
 
     it('normalizes diet labels', () => {
-      const result = parseDietasValue('dieta completa + comida + cena + gastos');
+      const result = parseDietasValue(
+        'dieta completa + comida + cena + gastos'
+      );
       expect(result).toEqual({
-        labels: ['Dieta completa + desayuno', 'Comida', 'Cena', 'Gastos de bolsillo'],
+        labels: [
+          'Dieta completa + desayuno',
+          'Comida',
+          'Cena',
+          'Gastos de bolsillo',
+        ],
         ticket: 0,
       });
     });
 
     it('normalizes specific diet labels', () => {
-      const result = parseDietasValue('dieta sin pernoctar + gastos de bolsillo');
+      const result = parseDietasValue(
+        'dieta sin pernoctar + gastos de bolsillo'
+      );
       expect(result).toEqual({
         labels: ['Dieta sin pernoctar', 'Gastos de bolsillo'],
         ticket: 0,
@@ -235,7 +245,8 @@ describe('nomina/utils/parse', () => {
     });
 
     it('handles very long input', () => {
-      const longInput = 'Comida + Cena + Dieta sin pernoctar + Gastos de bolsillo + Dieta completa + desayuno + Ticket(50)';
+      const longInput =
+        'Comida + Cena + Dieta sin pernoctar + Gastos de bolsillo + Dieta completa + desayuno + Ticket(50)';
       const result = parseDietasValue(longInput);
       expect(result.labels).toContain('Comida');
       expect(result.labels).toContain('Cena');

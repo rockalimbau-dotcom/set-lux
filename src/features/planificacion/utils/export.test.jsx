@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+
 import { renderExportHTML, openPrintWindow } from './export.ts';
 
 // Mock window.open
@@ -25,7 +26,7 @@ vi.useFakeTimers();
 describe('planificacion/utils/export', () => {
   const mockParseYYYYMMDD = vi.fn();
   const mockAddDays = vi.fn();
-  
+
   const mockDAYS = [
     { idx: 0, key: 'mon', name: 'Lunes' },
     { idx: 1, key: 'tue', name: 'Martes' },
@@ -50,12 +51,8 @@ describe('planificacion/utils/export', () => {
           { role: 'DIRECTOR', name: 'Juan', source: 'base' },
           { role: 'PRODUCTOR', name: 'María', source: 'base' },
         ],
-        prelight: [
-          { role: 'TÉCNICO', name: 'Carlos', source: 'pre' },
-        ],
-        pickup: [
-          { role: 'TÉCNICO', name: 'Ana', source: 'pick' },
-        ],
+        prelight: [{ role: 'TÉCNICO', name: 'Carlos', source: 'pre' }],
+        pickup: [{ role: 'TÉCNICO', name: 'Ana', source: 'pick' }],
         prelightStart: '08:00',
         prelightEnd: '09:00',
         pickupStart: '18:00',
@@ -63,7 +60,12 @@ describe('planificacion/utils/export', () => {
         issue: 'Sin incidencias',
       },
       // More days...
-      {}, {}, {}, {}, {}, {}, // Empty days for simplicity
+      {},
+      {},
+      {},
+      {},
+      {},
+      {}, // Empty days for simplicity
     ],
   };
 
@@ -106,7 +108,9 @@ describe('planificacion/utils/export', () => {
         mockAddDays
       );
 
-      expect(html).toContain('&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;');
+      expect(html).toContain(
+        '&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;'
+      );
       expect(html).not.toContain('<script>');
     });
 
@@ -246,7 +250,11 @@ describe('planificacion/utils/export', () => {
           {
             ...mockWeek.days[0],
             team: [
-              { role: 'DIRECTOR', name: 'Juan <script>alert("xss")</script>', source: 'base' },
+              {
+                role: 'DIRECTOR',
+                name: 'Juan <script>alert("xss")</script>',
+                source: 'base',
+              },
             ],
           },
           ...mockWeek.days.slice(1),
@@ -261,7 +269,9 @@ describe('planificacion/utils/export', () => {
         mockAddDays
       );
 
-      expect(html).toContain('DIRECTOR Juan &lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;');
+      expect(html).toContain(
+        'DIRECTOR Juan &lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;'
+      );
       expect(html).not.toContain('<script>');
     });
 
@@ -334,7 +344,7 @@ describe('planificacion/utils/export', () => {
 
     it('should call print after timeout', () => {
       vi.useFakeTimers();
-      
+
       const mockWin = {
         ...mockWindow,
         focus: vi.fn(),
@@ -349,13 +359,13 @@ describe('planificacion/utils/export', () => {
 
       expect(mockWin.focus).toHaveBeenCalled();
       expect(mockWin.print).toHaveBeenCalled();
-      
+
       vi.useRealTimers();
     });
 
     it('should handle print errors gracefully', () => {
       vi.useFakeTimers();
-      
+
       const mockWin = {
         ...mockWindow,
         focus: vi.fn(),
@@ -369,7 +379,7 @@ describe('planificacion/utils/export', () => {
         openPrintWindow('<div>Test HTML</div>', 'Test Title');
         vi.advanceTimersByTime(150);
       }).not.toThrow();
-      
+
       vi.useRealTimers();
     });
 
@@ -377,10 +387,15 @@ describe('planificacion/utils/export', () => {
       const mockWin = { ...mockWindow };
       mockWindow.open.mockReturnValue(mockWin);
 
-      openPrintWindow('<div>Test HTML</div>', 'Test <script>alert("xss")</script> Title');
+      openPrintWindow(
+        '<div>Test HTML</div>',
+        'Test <script>alert("xss")</script> Title'
+      );
 
       expect(mockWin.document.write).toHaveBeenCalledWith(
-        expect.stringContaining('<title>Test <script>alert("xss")</script> Title</title>')
+        expect.stringContaining(
+          '<title>Test <script>alert("xss")</script> Title</title>'
+        )
       );
     });
   });

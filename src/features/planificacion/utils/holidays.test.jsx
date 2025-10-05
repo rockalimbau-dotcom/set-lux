@@ -1,9 +1,12 @@
 import { describe, it, expect, vi } from 'vitest';
+
 import { extractHolidaySets } from './holidays.ts';
 
 // Mock constants
 vi.mock('../constants', () => ({
-  mdKey: vi.fn((m, d) => `${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`),
+  mdKey: vi.fn(
+    (m, d) => `${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+  ),
 }));
 
 describe('planificacion/utils/holidays', () => {
@@ -41,7 +44,9 @@ describe('planificacion/utils/holidays', () => {
       };
 
       const { mdKey } = vi.mocked(await import('../constants'));
-      mdKey.mockImplementation((m, d) => `${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`);
+      mdKey.mockImplementation(
+        (m, d) => `${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+      );
 
       const result = extractHolidaySets(conditions);
 
@@ -90,7 +95,9 @@ describe('planificacion/utils/holidays', () => {
       };
 
       const { mdKey } = vi.mocked(await import('../constants'));
-      mdKey.mockImplementation((m, d) => `${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`);
+      mdKey.mockImplementation(
+        (m, d) => `${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+      );
 
       const result = extractHolidaySets(conditions);
 
@@ -115,7 +122,9 @@ describe('planificacion/utils/holidays', () => {
       };
 
       const { mdKey } = vi.mocked(await import('../constants'));
-      mdKey.mockImplementation((m, d) => `${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`);
+      mdKey.mockImplementation(
+        (m, d) => `${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+      );
 
       const result = extractHolidaySets(conditions);
 
@@ -134,7 +143,9 @@ describe('planificacion/utils/holidays', () => {
       };
 
       const { mdKey } = vi.mocked(await import('../constants'));
-      mdKey.mockImplementation((m, d) => `${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`);
+      mdKey.mockImplementation(
+        (m, d) => `${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+      );
 
       const result = extractHolidaySets(conditions);
 
@@ -175,7 +186,9 @@ describe('planificacion/utils/holidays', () => {
       };
 
       const { mdKey } = vi.mocked(await import('../constants'));
-      mdKey.mockImplementation((m, d) => `${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`);
+      mdKey.mockImplementation(
+        (m, d) => `${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+      );
 
       const result = extractHolidaySets(conditions);
 
@@ -189,11 +202,14 @@ describe('planificacion/utils/holidays', () => {
 
     it('handles complex template text with multiple dates', async () => {
       const conditions = {
-        festivosTemplate: 'Navidad: 25/12/2023, Año Nuevo: 1/1/24, Reyes: 6/1, Verano: 15-08',
+        festivosTemplate:
+          'Navidad: 25/12/2023, Año Nuevo: 1/1/24, Reyes: 6/1, Verano: 15-08',
       };
 
       const { mdKey } = vi.mocked(await import('../constants'));
-      mdKey.mockImplementation((m, d) => `${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`);
+      mdKey.mockImplementation(
+        (m, d) => `${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+      );
 
       const result = extractHolidaySets(conditions);
 
@@ -228,7 +244,9 @@ describe('planificacion/utils/holidays', () => {
       };
 
       const { mdKey } = vi.mocked(await import('../constants'));
-      mdKey.mockImplementation((m, d) => `${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`);
+      mdKey.mockImplementation(
+        (m, d) => `${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+      );
 
       const result = extractHolidaySets(conditions);
 

@@ -1,11 +1,19 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
 import React from 'react';
+import { describe, it, expect, vi } from 'vitest';
+
 import ListRow from './ListRow.tsx';
 
 vi.mock('@shared/components', () => ({
   Row: ({ label, children }) => (
-    <table><tbody><tr><td>{label}</td>{children}</tr></tbody></table>
+    <table>
+      <tbody>
+        <tr>
+          <td>{label}</td>
+          {children}
+        </tr>
+      </tbody>
+    </table>
   ),
   Td: ({ children }) => <td>{children}</td>,
 }));
@@ -13,14 +21,20 @@ vi.mock('@shared/components', () => ({
 vi.mock('./Chip', () => ({
   __esModule: true,
   default: ({ name, onRemove }) => (
-    <button onClick={onRemove} aria-label={`chip-${name}`}>{name}</button>
+    <button onClick={onRemove} aria-label={`chip-${name}`}>
+      {name}
+    </button>
   ),
 }));
 
 vi.mock('./TextAreaAuto', () => ({
   __esModule: true,
   default: ({ value, onChange }) => (
-    <textarea aria-label='notes' value={value} onChange={e => onChange(e.target.value)} />
+    <textarea
+      aria-label='notes'
+      value={value}
+      onChange={e => onChange(e.target.value)}
+    />
   ),
 }));
 
@@ -46,5 +60,3 @@ describe('ListRow (smoke)', () => {
     expect(removeFromList).toHaveBeenCalledWith('w1', 0, 'crewList', 0);
   });
 });
-
-

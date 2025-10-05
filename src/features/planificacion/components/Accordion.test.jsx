@@ -1,12 +1,17 @@
+import { render, screen, fireEvent } from '@testing-library/react';
 import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+
 import Accordion from './Accordion.tsx';
 
 vi.mock('../../../shared/components/ToggleIconButton', () => ({
   __esModule: true,
   default: ({ isOpen, onClick, className }) => (
-    <button title={isOpen ? 'Cerrar' : 'Abrir'} onClick={onClick} className={className}>
+    <button
+      title={isOpen ? 'Cerrar' : 'Abrir'}
+      onClick={onClick}
+      className={className}
+    >
       {isOpen ? '−' : '+'}
     </button>
   ),

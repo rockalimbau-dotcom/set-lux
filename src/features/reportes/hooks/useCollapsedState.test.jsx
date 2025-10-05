@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import useCollapsedState from './useCollapsedState.ts';
+import useCollapsedState from './useCollapsedState';
 
 // Mock useLocalStorage
 vi.mock('@shared/hooks/useLocalStorage', () => ({
@@ -13,8 +13,8 @@ vi.mock('../utils/model', () => ({
 }));
 
 describe('reportes/hooks/useCollapsedState', () => {
-  let mockUseLocalStorage: any;
-  let mockPersonaKey: any;
+  let mockUseLocalStorage;
+  let mockPersonaKey;
 
   beforeEach(async () => {
     const useLocalStorageModule = await import('@shared/hooks/useLocalStorage');

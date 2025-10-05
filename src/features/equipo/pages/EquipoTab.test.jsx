@@ -1,6 +1,7 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
 import React from 'react';
+import { describe, it, expect, vi } from 'vitest';
+
 import EquipoTab from './EquipoTab.jsx';
 
 // Mock useLocalStorage to avoid touching real storage and control initial state
@@ -25,7 +26,7 @@ vi.mock('@shared/constants/roles', () => ({
     { code: 'E', label: 'Eléctrico' },
     { code: 'REF', label: 'Refuerzo' },
   ],
-  roleRank: (code) => (code === 'REF' ? 2 : 1),
+  roleRank: code => (code === 'REF' ? 2 : 1),
 }));
 
 describe('EquipoTab (smoke)', () => {
@@ -41,12 +42,20 @@ describe('EquipoTab (smoke)', () => {
       />
     );
 
-    expect(screen.getByRole('heading', { name: 'Equipo base' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Refuerzos' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: 'Equipo base' })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: 'Refuerzos' })
+    ).toBeInTheDocument();
     expect(screen.getByText(/Tip:/i)).toBeInTheDocument();
 
-    expect(screen.getByRole('button', { name: '+ Prelight' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '+ Recogida' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: '+ Prelight' })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: '+ Recogida' })
+    ).toBeInTheDocument();
   });
 
   it('permite activar y eliminar el grupo Prelight', () => {
@@ -66,5 +75,3 @@ describe('EquipoTab (smoke)', () => {
     expect(screen.queryByText('Equipo Prelight')).not.toBeInTheDocument();
   });
 });
-
-

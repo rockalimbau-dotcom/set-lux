@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
 import React from 'react';
+import { describe, it, expect, vi } from 'vitest';
 
 // Allow tests to pre-seed values via globals
 // @ts-ignore
@@ -18,14 +18,23 @@ vi.mock('@shared/hooks/useLocalStorage', () => ({
         initial = pre;
       } else {
         const stored = window.localStorage.getItem(key);
-        initial = stored ? JSON.parse(stored) : (initialValue instanceof Function ? initialValue() : initialValue);
+        initial = stored
+          ? JSON.parse(stored)
+          : initialValue instanceof Function
+            ? initialValue()
+            : initialValue;
       }
     } catch {
-      initial = initialValue instanceof Function ? initialValue() : initialValue;
+      initial =
+        initialValue instanceof Function ? initialValue() : initialValue;
     }
     const [value, setValue] = React.useState(initial);
     React.useEffect(() => {
-      try { window.localStorage.setItem(key, JSON.stringify(value)); } catch {}
+      try {
+        window.localStorage.setItem(key, JSON.stringify(value));
+      } catch {
+        void 0; // ignore errors writing to localStorage in tests
+      }
     }, [key, value]);
     return [value, setValue];
   }),
@@ -39,12 +48,20 @@ vi.mock('@shared/components', () => ({
 // Mock FieldRow and ListRow to avoid complex internals
 vi.mock('../components/FieldRow', () => ({
   __esModule: true,
-  default: ({ label }) => <tr><td>{label}</td></tr>,
+  default: ({ label }) => (
+    <tr>
+      <td>{label}</td>
+    </tr>
+  ),
 }));
 
 vi.mock('../components/ListRow', () => ({
   __esModule: true,
-  default: ({ label }) => <tr><td>{label}</td></tr>,
+  default: ({ label }) => (
+    <tr>
+      <td>{label}</td>
+    </tr>
+  ),
 }));
 
 // Mock export utils to intercept HTML generation and window.open
@@ -53,7 +70,7 @@ vi.mock('../utils/export', () => ({
   renderExportAllHTML: vi.fn(() => '<html></html>'),
 }));
 
-import NecesidadesTab from './NecesidadesTab.tsx';
+import NecesidadesTab from './NecesidadesTab.jsx';
 
 describe('NecesidadesTab (smoke)', () => {
   const project = { id: 'p1', nombre: 'Proyecto Test' };
@@ -72,11 +89,16 @@ describe('NecesidadesTab (smoke)', () => {
       w1: { label: 'Semana 1', startDate: '2024-01-01', open: true, days: {} },
     };
     // @ts-ignore
-    window.__TEST_STORE__['plan_p1'] = { pre: [{ id: 'w1', label: 'Semana 1', startDate: '2024-01-01', days: [] }], pro: [] };
+    window.__TEST_STORE__['plan_p1'] = {
+      pre: [{ id: 'w1', label: 'Semana 1', startDate: '2024-01-01', days: [] }],
+      pro: [],
+    };
 
     render(<NecesidadesTab project={project} />);
 
-    const exportAllBtn = await screen.findByRole('button', { name: /PDF Entero/i });
+    const exportAllBtn = await screen.findByRole('button', {
+      name: /PDF Entero/i,
+    });
     expect(exportAllBtn).toBeInTheDocument();
     fireEvent.click(exportAllBtn);
     // PDF generation is now handled by jsPDF directly, no window.open needed
@@ -86,5 +108,3 @@ describe('NecesidadesTab (smoke)', () => {
     // PDF generation is now handled by jsPDF directly, no window.open needed
   });
 });
-
-

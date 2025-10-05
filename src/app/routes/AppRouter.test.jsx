@@ -1,6 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+
 import AppRouter from './AppRouter.tsx';
 
 // Mock react-router-dom hooks
@@ -15,9 +16,9 @@ vi.mock('react-router-dom', async () => {
     useNavigate: () => mockNavigate,
     useParams: () => mockUseParams(),
     useLocation: () => mockUseLocation(),
-    Routes: ({ children }) => <div data-testid="routes">{children}</div>,
-    Route: ({ element }) => <div data-testid="route">{element}</div>,
-    Navigate: () => <div data-testid="navigate">Navigate</div>,
+    Routes: ({ children }) => <div data-testid='routes'>{children}</div>,
+    Route: ({ element }) => <div data-testid='route'>{element}</div>,
+    Navigate: () => <div data-testid='navigate'>Navigate</div>,
   };
 });
 
@@ -25,9 +26,11 @@ vi.mock('react-router-dom', async () => {
 vi.mock('../../features/projects/pages/ProjectDetail.tsx', () => ({
   __esModule: true,
   default: ({ project, onBack }) => (
-    <div data-testid="project-detail">
+    <div data-testid='project-detail'>
       <div>Project: {project?.nombre || 'No project'}</div>
-      <button onClick={onBack} data-testid="back-button">Back</button>
+      <button onClick={onBack} data-testid='back-button'>
+        Back
+      </button>
     </div>
   ),
 }));
@@ -35,11 +38,21 @@ vi.mock('../../features/projects/pages/ProjectDetail.tsx', () => ({
 vi.mock('../../features/projects/pages/ProjectsScreen.tsx', () => ({
   __esModule: true,
   default: ({ userName, projects, onCreateProject, onOpen }) => (
-    <div data-testid="projects-screen">
+    <div data-testid='projects-screen'>
       <div>User: {userName}</div>
       <div>Projects: {projects.length}</div>
-      <button onClick={() => onCreateProject({ nombre: 'New Project' })} data-testid="create-project">Create</button>
-      <button onClick={() => onOpen({ id: '1', nombre: 'Test Project' })} data-testid="open-project">Open</button>
+      <button
+        onClick={() => onCreateProject({ nombre: 'New Project' })}
+        data-testid='create-project'
+      >
+        Create
+      </button>
+      <button
+        onClick={() => onOpen({ id: '1', nombre: 'Test Project' })}
+        data-testid='open-project'
+      >
+        Open
+      </button>
     </div>
   ),
 }));
@@ -73,19 +86,19 @@ describe('AppRouter', () => {
 
   it('renders ProjectsScreen when mode is projects', () => {
     const propsWithProjectsMode = { ...mockProps, mode: 'projects' };
-    
+
     render(
       <MemoryRouter>
         <AppRouter {...propsWithProjectsMode} />
       </MemoryRouter>
     );
-    
+
     expect(screen.getByTestId('projects-screen')).toBeInTheDocument();
   });
 
   it('renders ProjectsScreen when on projects path', async () => {
     mockUseLocation.mockReturnValue({ pathname: '/projects' });
-    
+
     render(
       <MemoryRouter>
         <AppRouter {...mockProps} />
@@ -98,7 +111,7 @@ describe('AppRouter', () => {
   it('renders nothing while lazy loads when on project path with no active project', async () => {
     mockUseLocation.mockReturnValue({ pathname: '/project/test-project-1' });
     const propsWithProjectMode = { ...mockProps, mode: 'project' };
-    
+
     render(
       <MemoryRouter>
         <AppRouter {...propsWithProjectMode} />
@@ -112,46 +125,50 @@ describe('AppRouter', () => {
 
   it('renders ProjectDetail when project is active', async () => {
     const activeProject = { id: 'test-project-1', nombre: 'Test Project' };
-    const propsWithActiveProject = { 
-      ...mockProps, 
-      mode: 'project', 
-      activeProject 
+    const propsWithActiveProject = {
+      ...mockProps,
+      mode: 'project',
+      activeProject,
     };
     mockUseLocation.mockReturnValue({ pathname: '/project/test-project-1' });
-    
+
     render(
       <MemoryRouter>
         <AppRouter {...propsWithActiveProject} />
       </MemoryRouter>
     );
-    
+
     // Check that project-detail exists (there might be multiple routes)
-    expect((await screen.findAllByTestId('project-detail')).length).toBeGreaterThan(0);
-    expect((await screen.findAllByText('Project: Test Project')).length).toBeGreaterThan(0);
+    expect(
+      (await screen.findAllByTestId('project-detail')).length
+    ).toBeGreaterThan(0);
+    expect(
+      (await screen.findAllByText('Project: Test Project')).length
+    ).toBeGreaterThan(0);
   });
 
   it('handles project creation', () => {
     const propsWithProjectsMode = { ...mockProps, mode: 'projects' };
-    
+
     render(
       <MemoryRouter>
         <AppRouter {...propsWithProjectsMode} />
       </MemoryRouter>
     );
-    
+
     fireEvent.click(screen.getByTestId('create-project'));
     expect(mockProps.setProjects).toHaveBeenCalled();
   });
 
   it('handles project opening', () => {
     const propsWithProjectsMode = { ...mockProps, mode: 'projects' };
-    
+
     render(
       <MemoryRouter>
         <AppRouter {...propsWithProjectsMode} />
       </MemoryRouter>
     );
-    
+
     fireEvent.click(screen.getByTestId('open-project'));
     expect(mockProps.setActiveProject).toHaveBeenCalled();
     expect(mockProps.setMode).toHaveBeenCalledWith('project');

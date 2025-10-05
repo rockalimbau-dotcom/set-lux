@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+
 import { buildNominaMonthHTML, openPrintWindow } from './export.ts';
 
 // Mock window.open
@@ -41,7 +42,10 @@ describe('nomina/utils/export', () => {
         nocturnidad: 0,
         penaltyLunch: 0,
         _totalExtras: 45.0,
-        dietasCount: new Map([['Comida', 2], ['Cena', 1]]),
+        dietasCount: new Map([
+          ['Comida', 2],
+          ['Cena', 1],
+        ]),
         ticketTotal: 0,
         _totalDietas: 40.0,
         transporte: 1,
@@ -242,7 +246,10 @@ describe('nomina/utils/export', () => {
           _totalTravel: 100.0,
           extras: 3,
           _totalExtras: 45.0,
-          dietasCount: new Map([['Comida', 1], ['Cena', 1]]),
+          dietasCount: new Map([
+            ['Comida', 1],
+            ['Cena', 1],
+          ]),
           ticketTotal: 0,
           _totalDietas: 40.0,
           transporte: 1,
@@ -286,7 +293,7 @@ describe('nomina/utils/export', () => {
         mockMonthLabelEs
       );
 
-      expect(html).toContain('font-family: \'Segoe UI\'');
+      expect(html).toContain("font-family: 'Segoe UI'");
       expect(html).toContain('@page { size: A4 landscape;');
       expect(html).toContain('.header');
       expect(html).toContain('.info-panel');
@@ -593,7 +600,7 @@ describe('nomina/utils/export', () => {
       mockWindowOpen.mockReturnValue(null);
 
       const html = '<html><body>Test</body></html>';
-      
+
       // Should not throw error
       expect(() => openPrintWindow(html)).not.toThrow();
     });
@@ -604,7 +611,7 @@ describe('nomina/utils/export', () => {
       delete global.window;
 
       const html = '<html><body>Test</body></html>';
-      
+
       // Should not throw error
       expect(() => openPrintWindow(html)).not.toThrow();
 
@@ -637,7 +644,8 @@ describe('nomina/utils/export', () => {
 
       mockWindowOpen.mockReturnValue(mockWindow);
 
-      const html = '<html><body>Test & "quotes" & \'apostrophes\'</body></html>';
+      const html =
+        '<html><body>Test & "quotes" & \'apostrophes\'</body></html>';
       openPrintWindow(html);
 
       expect(mockWindow.document.write).toHaveBeenCalledWith(html);

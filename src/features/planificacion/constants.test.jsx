@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+
 import { DAYS, mdKey } from './constants.ts';
 
 describe('planificacion/constants', () => {
@@ -31,7 +32,15 @@ describe('planificacion/constants', () => {
     });
 
     it('has correct Spanish names', () => {
-      const expectedNames = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+      const expectedNames = [
+        'Lunes',
+        'Martes',
+        'Miércoles',
+        'Jueves',
+        'Viernes',
+        'Sábado',
+        'Domingo',
+      ];
       DAYS.forEach((day, index) => {
         expect(day.name).toBe(expectedNames[index]);
       });

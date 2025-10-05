@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
+
 import {
   collectWeekTeamWithSuffixFactory,
   buildSafePersonas,
@@ -12,16 +13,18 @@ import {
 
 // Mock dependencies
 vi.mock('./model.ts', () => ({
-  personaRole: vi.fn((p) => p.role || ''),
-  personaName: vi.fn((p) => p.name || ''),
+  personaRole: vi.fn(p => p.role || ''),
+  personaName: vi.fn(p => p.name || ''),
 }));
 
 vi.mock('./plan.ts', () => ({
-  isMemberRefuerzo: vi.fn((m) => m.role === 'REF' || m.role?.includes('REFUERZO')),
+  isMemberRefuerzo: vi.fn(
+    m => m.role === 'REF' || m.role?.includes('REFUERZO')
+  ),
 }));
 
 vi.mock('./text.ts', () => ({
-  norm: vi.fn((s) => s?.toLowerCase() || ''),
+  norm: vi.fn(s => s?.toLowerCase() || ''),
 }));
 
 describe('derive', () => {
@@ -43,7 +46,10 @@ describe('derive', () => {
       };
       mockFindWeekAndDay.mockReturnValue({ day: mockDay });
 
-      const collectFn = collectWeekTeamWithSuffixFactory(mockFindWeekAndDay, mockSafeSemana);
+      const collectFn = collectWeekTeamWithSuffixFactory(
+        mockFindWeekAndDay,
+        mockSafeSemana
+      );
       const result = collectFn('team', 'P');
 
       expect(result).toEqual([
@@ -57,7 +63,10 @@ describe('derive', () => {
       const mockDay = { team: [] };
       mockFindWeekAndDay.mockReturnValue({ day: mockDay });
 
-      const collectFn = collectWeekTeamWithSuffixFactory(mockFindWeekAndDay, mockSafeSemana);
+      const collectFn = collectWeekTeamWithSuffixFactory(
+        mockFindWeekAndDay,
+        mockSafeSemana
+      );
       const result = collectFn('team', 'P');
 
       expect(result).toEqual([]);
@@ -72,7 +81,10 @@ describe('derive', () => {
       };
       mockFindWeekAndDay.mockReturnValue({ day: mockDay });
 
-      const collectFn = collectWeekTeamWithSuffixFactory(mockFindWeekAndDay, mockSafeSemana);
+      const collectFn = collectWeekTeamWithSuffixFactory(
+        mockFindWeekAndDay,
+        mockSafeSemana
+      );
       const result = collectFn('team', 'P');
 
       expect(result).toHaveLength(1);
@@ -82,7 +94,10 @@ describe('derive', () => {
     it('should handle missing day data', () => {
       mockFindWeekAndDay.mockReturnValue({ day: null });
 
-      const collectFn = collectWeekTeamWithSuffixFactory(mockFindWeekAndDay, mockSafeSemana);
+      const collectFn = collectWeekTeamWithSuffixFactory(
+        mockFindWeekAndDay,
+        mockSafeSemana
+      );
       const result = collectFn('team', 'P');
 
       expect(result).toEqual([]);
@@ -109,8 +124,16 @@ describe('derive', () => {
       expect(result).toHaveLength(4);
       expect(result).toContainEqual({ role: 'DIRECTOR', name: 'Juan' });
       expect(result).toContainEqual({ role: 'PRODUCTOR', name: 'María' });
-      expect(result).toContainEqual({ role: 'TÉCNICO', name: 'Carlos', __block: 'pre' });
-      expect(result).toContainEqual({ role: 'TÉCNICO', name: 'Ana', __block: 'pick' });
+      expect(result).toContainEqual({
+        role: 'TÉCNICO',
+        name: 'Carlos',
+        __block: 'pre',
+      });
+      expect(result).toContainEqual({
+        role: 'TÉCNICO',
+        name: 'Ana',
+        __block: 'pick',
+      });
     });
 
     it('should deduplicate personas', () => {
@@ -126,7 +149,11 @@ describe('derive', () => {
       );
 
       expect(result).toHaveLength(1);
-      expect(result[0]).toEqual({ role: 'DIRECTOR', name: 'Juan', __block: 'pre' });
+      expect(result[0]).toEqual({
+        role: 'DIRECTOR',
+        name: 'Juan',
+        __block: 'pre',
+      });
     });
 
     it('should normalize REF roles', () => {
@@ -135,13 +162,7 @@ describe('derive', () => {
         { role: 'REF', name: 'Carlos' },
       ];
 
-      const result = buildSafePersonas(
-        providedPersonas,
-        false,
-        [],
-        false,
-        []
-      );
+      const result = buildSafePersonas(providedPersonas, false, [], false, []);
 
       expect(result).toEqual([
         { role: 'REF', name: 'María' },
@@ -228,11 +249,11 @@ describe('derive', () => {
       const result = buildPeopleBase(providedPersonas, refNamesBase);
 
       // Verificar orden: EQUIPO BASE → REFUERZOS
-      expect(result[0].role).toBe('G');    // EQUIPO BASE
-      expect(result[1].role).toBe('BB');   // EQUIPO BASE
-      expect(result[2].role).toBe('E');    // EQUIPO BASE
-      expect(result[3].role).toBe('TM');   // EQUIPO BASE
-      expect(result[4].role).toBe('REF');  // REFUERZOS
+      expect(result[0].role).toBe('G'); // EQUIPO BASE
+      expect(result[1].role).toBe('BB'); // EQUIPO BASE
+      expect(result[2].role).toBe('E'); // EQUIPO BASE
+      expect(result[3].role).toBe('TM'); // EQUIPO BASE
+      expect(result[4].role).toBe('REF'); // REFUERZOS
     });
   });
 
@@ -273,11 +294,11 @@ describe('derive', () => {
       const result = buildPeoplePre(true, prelightPeople, new Set());
 
       // Verificar orden: EQUIPO PRELIGHT → REFUERZOS
-      expect(result[0].role).toBe('GP');   // EQUIPO PRELIGHT
-      expect(result[1].role).toBe('BBP');  // EQUIPO PRELIGHT
-      expect(result[2].role).toBe('EP');   // EQUIPO PRELIGHT
-      expect(result[3].role).toBe('TMP');  // EQUIPO PRELIGHT
-      expect(result[4].role).toBe('REF');  // REFUERZOS
+      expect(result[0].role).toBe('GP'); // EQUIPO PRELIGHT
+      expect(result[1].role).toBe('BBP'); // EQUIPO PRELIGHT
+      expect(result[2].role).toBe('EP'); // EQUIPO PRELIGHT
+      expect(result[3].role).toBe('TMP'); // EQUIPO PRELIGHT
+      expect(result[4].role).toBe('REF'); // REFUERZOS
     });
   });
 
@@ -318,11 +339,11 @@ describe('derive', () => {
       const result = buildPeoplePick(true, pickupPeople, new Set());
 
       // Verificar orden: EQUIPO RECOGIDA → REFUERZOS
-      expect(result[0].role).toBe('GR');   // EQUIPO RECOGIDA
-      expect(result[1].role).toBe('BBR');  // EQUIPO RECOGIDA
-      expect(result[2].role).toBe('ER');   // EQUIPO RECOGIDA
-      expect(result[3].role).toBe('TMR');  // EQUIPO RECOGIDA
-      expect(result[4].role).toBe('REF');  // REFUERZOS
+      expect(result[0].role).toBe('GR'); // EQUIPO RECOGIDA
+      expect(result[1].role).toBe('BBR'); // EQUIPO RECOGIDA
+      expect(result[2].role).toBe('ER'); // EQUIPO RECOGIDA
+      expect(result[3].role).toBe('TMR'); // EQUIPO RECOGIDA
+      expect(result[4].role).toBe('REF'); // REFUERZOS
     });
   });
 
@@ -337,7 +358,11 @@ describe('derive', () => {
       };
       mockFindWeekAndDay.mockReturnValue({ day: mockDay });
 
-      const result = collectRefNamesForBlock(mockSafeSemana, mockFindWeekAndDay, 'team');
+      const result = collectRefNamesForBlock(
+        mockSafeSemana,
+        mockFindWeekAndDay,
+        'team'
+      );
 
       expect(result).toEqual(new Set(['María', 'Carlos']));
     });
@@ -346,7 +371,11 @@ describe('derive', () => {
       const mockDay = { team: [] };
       mockFindWeekAndDay.mockReturnValue({ day: mockDay });
 
-      const result = collectRefNamesForBlock(mockSafeSemana, mockFindWeekAndDay, 'team');
+      const result = collectRefNamesForBlock(
+        mockSafeSemana,
+        mockFindWeekAndDay,
+        'team'
+      );
 
       expect(result).toEqual(new Set());
     });
@@ -354,7 +383,11 @@ describe('derive', () => {
     it('should handle missing day data', () => {
       mockFindWeekAndDay.mockReturnValue({ day: null });
 
-      const result = collectRefNamesForBlock(mockSafeSemana, mockFindWeekAndDay, 'team');
+      const result = collectRefNamesForBlock(
+        mockSafeSemana,
+        mockFindWeekAndDay,
+        'team'
+      );
 
       expect(result).toEqual(new Set());
     });

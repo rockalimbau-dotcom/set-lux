@@ -1,6 +1,7 @@
+import { render, screen } from '@testing-library/react';
 import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+
 import PlanScopeSection from './PlanScopeSection.tsx';
 
 vi.mock('./WeekCard', () => ({
@@ -15,7 +16,16 @@ vi.mock('./WeekCard', () => ({
 
 vi.mock('./Accordion', () => ({
   __esModule: true,
-  default: ({ title, open, onToggle, onAdd, onExport, children, btnExportCls, btnExportStyle }) => (
+  default: ({
+    title,
+    open,
+    onToggle,
+    onAdd,
+    onExport,
+    children,
+    btnExportCls,
+    btnExportStyle,
+  }) => (
     <section>
       <h4>{title}</h4>
       <button onClick={onExport}>Exportar</button>
