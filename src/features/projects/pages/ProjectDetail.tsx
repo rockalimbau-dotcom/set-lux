@@ -5,6 +5,7 @@ import NominaTab from '@features/nomina/pages/NominaTab.jsx';
 import PlanificacionTab from '@features/planificacion/pages/PlanificacionTab.jsx';
 import ReportesTab from '@features/reportes/pages/ReportesTab.jsx';
 import LogoSetLux from '@shared/components/LogoSetLux';
+import LogoIcon from '@shared/components/LogoIcon';
 import { useLocalStorage } from '@shared/hooks/useLocalStorage';
 import { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
@@ -184,9 +185,7 @@ export default function ProjectDetail({
   }, [proj?.estado]);
 
   const estadoText = isActive ? 'Activo' : 'Cerrado';
-  const estadoClasses = isActive
-    ? 'bg-green-600 text-white border-green-500'
-    : 'bg-red-600 text-white border-red-500';
+  const estadoBg = isActive ? '#f97316' : '#64748b';
 
   // Lista de equipo simplificada para Planificación
   const teamList = useMemo(() => {
@@ -236,84 +235,88 @@ export default function ProjectDetail({
   const condModeLabel = formatMode(condModeRaw);
 
   return (
-    <div className='max-w-6xl mx-auto px-4 py-6'>
-      {/* Header (back + logo centrado) */}
-      <div className='flex items-center justify-center relative mb-6'>
-        {/* Botón volver a la izquierda, usando absolute */}
-        <button
-          onClick={onBack}
-          className='absolute left-0 w-10 h-10 rounded-xl border border-neutral-border hover:border-[#F59E0B] flex items-center justify-center'
-          title='Volver'
-        >
-          ←
-        </button>
+    <div>
+      {/* Header con los mismos tamaños que ProjectsScreen y flecha debajo del título */}
+      <div className='px-6 pt-8 pb-12' style={{backgroundColor: '#1a2b40'}}>
+        <div className='max-w-6xl mx-auto'>
+          <div className='flex items-center justify-between mb-8'>
+            <div className='flex items-center gap-6'>
+              <div className='relative h-20 flex items-center'>
+                <LogoIcon size={80} />
+                <button
+                  onClick={onBack}
+                  className='absolute left-1/2 -translate-x-1/2 top-full mt-2 w-10 h-10 rounded-xl border border-neutral-border hover:border-orange-500 text-white flex items-center justify-center'
+                  title='Volver'
+                >
+                  ←
+                </button>
+              </div>
+              <h1 className='text-3xl font-bold text-white'>
+                SetLux <span className='text-gray-300'>/ {proj?.nombre}</span>
+              </h1>
+            </div>
 
-        {/* Logo centrado */}
-        <LogoSetLux />
+            <span
+              onClick={() => {
+                const nextEstado: ProjectStatus = isActive ? 'Cerrado' : 'Activo';
+                setProj(p => {
+                  const updated = { ...p, estado: nextEstado };
+                  try {
+                    onUpdateProject?.(updated);
+                  } catch {}
+                  return updated;
+                });
+              }}
+              className={`px-3 py-2 rounded-lg text-sm font-medium border cursor-pointer`}
+              style={{backgroundColor: estadoBg, borderColor: estadoBg, color: '#ffffff'}}
+              title={`Cambiar estado (actual: ${estadoText})`}
+            >
+              {estadoText}
+            </span>
+          </div>
+        </div>
       </div>
 
-      {/* Título del proyecto + estado (misma línea, fuera del header) */}
-      <div className='flex items-center justify-between mb-6'>
-        <h2 className='text-xl font-semibold text-brand m-0'>{proj?.nombre}</h2>
-
-        <span
-          onClick={() => {
-            const nextEstado: ProjectStatus = isActive ? 'Cerrado' : 'Activo';
-            setProj(p => {
-              const updated = { ...p, estado: nextEstado };
-              // Notifica al padre para que refresque su lista (si lo pasó)
-              try {
-                onUpdateProject?.(updated);
-              } catch {}
-              return updated;
-            });
-          }}
-          className={`px-3 py-2 rounded-lg text-sm font-medium border cursor-pointer ${estadoClasses}`}
-          title={`Cambiar estado (actual: ${estadoText})`}
-        >
-          {estadoText}
-        </span>
-      </div>
-
+      <div className='max-w-6xl mx-auto p-6'>
       {/* Parrilla de fases (tarjetas) */}
       {activeTab === null && (
         <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
           <PhaseCard
             title={`Condiciones ${condModeLabel}`}
-            emoji='📝'
+            icon={<PhaseIcon name='condiciones' color='#60a5fa' />}
             desc='Precios, Jornadas, márgenes y políticas'
             onClick={() => setActiveTab('condiciones')}
           />
           <PhaseCard
             title='Equipo'
-            emoji='👥'
+            icon={<PhaseIcon name='equipo' color='#60a5fa' />}
             desc='Base, refuerzos, prelight y recogida'
             onClick={() => setActiveTab('equipo')}
           />
 
           <PhaseCard
             title='Planificación'
-            emoji='🗓️'
+            icon={<PhaseIcon name='planificacion' color='#60a5fa' />}
             desc='Semanas, horarios y equipo por día'
             onClick={() => setActiveTab('planificacion')}
           />
           <PhaseCard
             title='Reportes'
-            emoji='📊'
+            icon={<PhaseIcon name='reportes' color='#60a5fa' />}
             desc='Horas extra, dietas, kilometraje, transportes'
             onClick={() => setActiveTab('reportes')}
           />
 
           <PhaseCard
             title='Nomina'
-            emoji='💶'
+            icon={<PhaseIcon name='nomina' color='#60a5fa' />}
             desc='Jornadas + Reportes, aquí sabes lo que va a cobrar el equipo'
             onClick={() => setActiveTab('nomina')}
           />
 
           <PhaseCard
             title='Necesidades de Rodaje'
-            emoji='🧩'
+            icon={<PhaseIcon name='necesidades' color='#60a5fa' />}
             desc='Listado de lo que se necesita de forma ordenada por el orden de rodaje'
             onClick={() => setActiveTab('necesidades')}
           />
@@ -402,6 +405,7 @@ export default function ProjectDetail({
           )}
         </div>
       )}
+      </div>
     </div>
   );
 }
@@ -409,22 +413,70 @@ export default function ProjectDetail({
 /* --- Tarjeta de fase --- */
 interface PhaseCardProps {
   title: string;
-  emoji: string;
+  icon: React.ReactNode;
   desc: string;
   onClick: () => void;
 }
 
-function PhaseCard({ title, emoji, desc, onClick }: PhaseCardProps) {
+function PhaseCard({ title, icon, desc, onClick }: PhaseCardProps) {
   return (
     <button
       onClick={onClick}
-      className='group text-left rounded-2xl border border-neutral-border bg-neutral-panel/90 p-5 hover:border-[#F59E0B] transition'
+      className='group text-left rounded-2xl border border-neutral-border p-6 hover:border-orange-500 hover:shadow-[0_0_24px_rgba(249,115,22,0.25)] transition'
+      style={{backgroundColor: '#2a4058'}}
     >
-      <div className='flex items-center gap-3 mb-2'>
-        <div className='text-2xl'>{emoji}</div>
-        <div className='text-brand font-semibold'>{title}</div>
+      <div className='flex items-center gap-4 mb-2'>
+        <div className='w-12 h-12 rounded-xl border border-neutral-border bg-black/20 flex items-center justify-center text-2xl'>
+          {icon}
+        </div>
+        <div className='text-[#f97316] text-xl font-semibold'>{title}</div>
       </div>
-      <div className='text-sm text-zinc-400'>{desc}</div>
+      <div className='text-sm text-zinc-300'>{desc}</div>
     </button>
   );
+}
+
+// Monochrome project icons (orange/blue friendly). Using currentColor so parent can control color
+function PhaseIcon({ name, color = '#60a5fa', stroke = '#ffffff' }: { name: 'condiciones' | 'equipo' | 'planificacion' | 'reportes' | 'nomina' | 'necesidades'; color?: string; stroke?: string }) {
+  const common = { width: 24, height: 24, viewBox: '0 0 24 24' } as const;
+  const fill = color;
+  const strokeColor = stroke;
+  switch (name) {
+    case 'condiciones':
+      return (
+        <svg {...common} fill={fill} xmlns='http://www.w3.org/2000/svg'>
+          <path d='M6 2h9a2 2 0 0 1 1.414.586l3 3A2 2 0 0 1 20 7v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm0 2v16h12V7.828L14.172 4H6zm3 6h6v2H9v-2zm0 4h6v2H9v-2z' stroke={strokeColor} strokeWidth='1'/>
+        </svg>
+      );
+    case 'equipo':
+      return (
+        <svg {...common} fill={fill} xmlns='http://www.w3.org/2000/svg'>
+          <path d='M8 10a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm8 0a3 3 0 1 1 0-6 3 3 0 0 1 0 6zM2 20a6 6 0 0 1 12 0v2H2v-2zm12 2v-2a6 6 0 0 1 10 0v2H14z' stroke={strokeColor} strokeWidth='1'/>
+        </svg>
+      );
+    case 'planificacion':
+      return (
+        <svg {...common} fill={fill} xmlns='http://www.w3.org/2000/svg'>
+          <path d='M7 2h2v2h6V2h2v2h2a2 2 0 0 1 2 2v3H3V6a2 2 0 0 1 2-2h2V2zm15 8v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-8h20zM7 14h4v4H7v-4z' stroke={strokeColor} strokeWidth='1'/>
+        </svg>
+      );
+    case 'reportes':
+      return (
+        <svg {...common} fill={fill} xmlns='http://www.w3.org/2000/svg'>
+          <path d='M4 3h16v2H4V3zm2 6h3v12H6V9zm5 4h3v8h-3v-8zm5-6h3v14h-3V7z' stroke={strokeColor} strokeWidth='1'/>
+        </svg>
+      );
+    case 'nomina':
+      return (
+        <svg {...common} fill={fill} xmlns='http://www.w3.org/2000/svg'>
+          <path d='M3 6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6zm2 2v6h14V8H5zm7 1a3 3 0 1 1 0 6 3 3 0 0 1 0-6z' stroke={strokeColor} strokeWidth='1'/>
+        </svg>
+      );
+    case 'necesidades':
+      return (
+        <svg {...common} fill={fill} xmlns='http://www.w3.org/2000/svg'>
+          <path d='M21 7l-4-4-3 3 4 4 3-3zM2 20l7-2-5-5-2 7zm11.586-9.414l-7.172 7.172 2.828 2.828 7.172-7.172-2.828-2.828z' stroke={strokeColor} strokeWidth='1'/>
+        </svg>
+      );
+  }
 }
