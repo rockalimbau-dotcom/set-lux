@@ -1,5 +1,5 @@
 import { useLocalStorage } from '@shared/hooks/useLocalStorage';
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 
 import ReportesSemana from './ReportesSemana.tsx';
 
@@ -78,6 +78,15 @@ function weekToPersonas(week: AnyRecord) {
 }
 
 export default function ReportesTab({ project }: ReportesTabProps) {
+  // Al entrar en Reportes, asegurar que la página está arriba del todo
+  useEffect(() => {
+    try {
+      if (typeof window !== 'undefined' && typeof window.scrollTo === 'function') {
+        window.scrollTo(0, 0);
+      }
+    } catch {}
+  }, []);
+
   const { pre, pro } = usePlanWeeks(project);
   const allWeeks = [...pre, ...pro];
   const baseId = project?.id || project?.nombre || 'tmp';
