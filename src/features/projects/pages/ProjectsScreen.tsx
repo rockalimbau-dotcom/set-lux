@@ -37,7 +37,6 @@ export interface ProjectsScreenProps {
   onPerfil?: () => void;
   onConfig?: () => void;
   onSalir?: () => void;
-  onOpenUsuario?: () => void;
 }
 
 const formatMode = (m: string | undefined): string => {
@@ -306,69 +305,7 @@ function EditProjectModal({ project, onClose, onSave }: EditProjectModalProps) {
   );
 }
 
-/** Menú de usuario (mínimo, sin cambiar estética) */
-interface UserMenuProps {
-  onPerfil?: () => void;
-  onConfig?: () => void;
-  onSalir?: () => void;
-  onClose?: () => void;
-}
-
-function UserMenu({ onPerfil, onConfig, onSalir, onClose }: UserMenuProps) {
-  const ref = useRef<HTMLDivElement>(null);
-
-  // cerrar con click fuera / ESC
-  useEffect(() => {
-    const onDocClick = (e: MouseEvent) => {
-      if (!ref.current) return;
-      if (!ref.current.contains(e.target as Node)) onClose?.();
-    };
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose?.();
-    };
-    document.addEventListener('mousedown', onDocClick);
-    document.addEventListener('keydown', onKey);
-    return () => {
-      document.removeEventListener('mousedown', onDocClick);
-      document.removeEventListener('keydown', onKey);
-    };
-  }, [onClose]);
-
-  return (
-    <div
-      ref={ref}
-      className='absolute right-0 mt-2 w-48 rounded-2xl border border-neutral-border bg-neutral-panel/90 shadow-lg z-40'
-    >
-      <button
-        className='w-full text-left px-4 py-3 rounded-t-2xl hover:bg-black/40 transition'
-        onClick={() => {
-          onPerfil?.();
-          onClose?.();
-        }}
-      >
-        Perfil
-      </button>
-      <button
-        className='w-full text-left px-4 py-3 hover:bg-black/40 transition'
-        onClick={() => {
-          onConfig?.();
-          onClose?.();
-        }}
-      >
-        Configuración
-      </button>
-      <button
-        className='w-full text-left px-4 py-3 rounded-b-2xl hover:bg-black/40 transition text-red-400 hover:text-red-300'
-        onClick={() => {
-          onSalir?.();
-          onClose?.();
-        }}
-      >
-        Salir
-      </button>
-    </div>
-  );
-}
+/** Menú inline integrado en el header (UserMenu eliminado por no usarse) */
 
 /** Pantalla de Proyectos */
 function ProjectsScreen({
@@ -381,7 +318,6 @@ function ProjectsScreen({
   onPerfil,
   onConfig,
   onSalir,
-  onOpenUsuario,
 }: ProjectsScreenProps) {
   const [showNew, setShowNew] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -412,9 +348,7 @@ function ProjectsScreen({
       const theme = document.documentElement.getAttribute('data-theme') || 'dark';
       const isLight = theme === 'light';
       const estadoVisible = p.estado;
-      const getInitials = (name: string) => {
-        return name.split(' ').map(word => word.charAt(0)).join(' ').toUpperCase();
-      };
+      // removed unused getInitials helper (avatar shows full project name)
       
       const getAvatarColor = (_name: string) => {
         // Usa el color primario del tema activo

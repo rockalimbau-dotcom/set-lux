@@ -4,7 +4,6 @@ import NecesidadesTab from '@features/necesidades/pages/NecesidadesTab.jsx';
 import NominaTab from '@features/nomina/pages/NominaTab.jsx';
 import PlanificacionTab from '@features/planificacion/pages/PlanificacionTab.jsx';
 import ReportesTab from '@features/reportes/pages/ReportesTab.jsx';
-import LogoSetLux from '@shared/components/LogoSetLux';
 import LogoIcon from '@shared/components/LogoIcon';
 import { useLocalStorage } from '@shared/hooks/useLocalStorage';
 import { useEffect, useMemo, useState } from 'react';
@@ -247,8 +246,6 @@ export default function ProjectDetail({
     return activeTab;
   }, [activeTab, condModeLabel]);
 
-  const themeNow = (typeof document !== 'undefined' && document.documentElement.getAttribute('data-theme')) || 'dark';
-  const isLightTheme = themeNow === 'light';
   return (
     <div>
       {/* Header con los mismos tamaños que ProjectsScreen y flecha debajo del título */}
@@ -282,7 +279,7 @@ export default function ProjectDetail({
                 )}
               </div>
               <h1 className='text-3xl font-bold' style={{color: 'var(--text)'}}>
-                {(() => { const isLight = (document.documentElement.getAttribute('data-theme')||'dark')==='light'; return `SetLux`; })()} <span className='text-gray-300' style={{color: (document.documentElement.getAttribute('data-theme')||'dark')==='light' ? '#374151' : '#d1d5db'}}>/ {proj?.nombre}{activePhaseLabel ? ` / ${activePhaseLabel}` : ''}</span>
+                {(() => { return `SetLux`; })()} <span className='text-gray-300' style={{color: (document.documentElement.getAttribute('data-theme')||'dark')==='light' ? '#374151' : '#d1d5db'}}>/ {proj?.nombre}{activePhaseLabel ? ` / ${activePhaseLabel}` : ''}</span>
               </h1>
             </div>
 
@@ -310,7 +307,7 @@ export default function ProjectDetail({
       <div className='max-w-6xl mx-auto p-6'>
       {/* Parrilla de fases (tarjetas) */}
       {activeTab === null && (
-        <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+        <div className='grid grid-cols-1 sm:grid-cols-2 gap-4' style={(typeof document!=='undefined' && document.documentElement.getAttribute('data-theme')==='light') ? ({ ['--hover-border']: '#f59e0b' } as React.CSSProperties) : undefined}>
           <PhaseCard
             title={`Condiciones ${condModeLabel}`}
             icon={<PhaseIcon name='condiciones' color='#60a5fa' />}
@@ -437,7 +434,7 @@ function PhaseCard({ title, icon, desc, onClick }: PhaseCardProps) {
   return (
     <button
       onClick={onClick}
-      className='group text-left rounded-2xl border border-neutral-border p-6 transition hover:border-[#1D4ED8]'
+      className='group text-left rounded-2xl border border-neutral-border p-6 transition hover:border-[var(--hover-border)]'
       style={{backgroundColor: 'var(--panel)'}}
     >
       <div className='flex items-center gap-4 mb-2'>
