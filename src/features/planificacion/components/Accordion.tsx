@@ -38,7 +38,7 @@ export default function Accordion({
         <div className='no-pdf flex items-center gap-2'>
           <button
             className={btnExportCls}
-            style={{...btnExportStyle, background: '#f97316'}}
+            style={{...btnExportStyle, background: '#f59e0b'}}
             onClick={onExportPDF}
             title='Exportar sección (PDF)'
           >

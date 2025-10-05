@@ -51,21 +51,21 @@ interface NeedsData {
   };
 }
 
-const esc = (s: any): string =>
-  String(s ?? '').replace(
-    /[&<>]/g,
-    (c: string) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c] || c
-  );
+  const esc = (s: any): string =>
+    String(s ?? '').replace(
+      /[&<>]/g,
+      (c: string) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c] || c
+    );
 
-const DAYS: DayInfo[] = [
-  { idx: 0, key: 'mon', name: 'Lunes' },
-  { idx: 1, key: 'tue', name: 'Martes' },
-  { idx: 2, key: 'wed', name: 'Miércoles' },
-  { idx: 3, key: 'thu', name: 'Jueves' },
-  { idx: 4, key: 'fri', name: 'Viernes' },
-  { idx: 5, key: 'sat', name: 'Sábado' },
-  { idx: 6, key: 'sun', name: 'Domingo' },
-];
+  const DAYS: DayInfo[] = [
+    { idx: 0, key: 'mon', name: 'Lunes' },
+    { idx: 1, key: 'tue', name: 'Martes' },
+    { idx: 2, key: 'wed', name: 'Miércoles' },
+    { idx: 3, key: 'thu', name: 'Jueves' },
+    { idx: 4, key: 'fri', name: 'Viernes' },
+    { idx: 5, key: 'sat', name: 'Sábado' },
+    { idx: 6, key: 'sun', name: 'Domingo' },
+  ];
 
 export function buildNecesidadesHTML(
   project: any,
@@ -86,10 +86,10 @@ export function buildNecesidadesHTML(
     `<div style="white-space:pre-wrap;line-height:1.35">${esc(text || '')}</div>`;
 
   const fieldRow = (key: string, label: string): string => {
-    const tds = DAYS.map(
-      (_, i) =>
+      const tds = DAYS.map(
+        (_, i) =>
         `<td style="border:1px solid #999;padding:6px;vertical-align:top;">${renderCell(valuesByDay[i]?.[key])}</td>`
-    ).join('');
+      ).join('');
     return `<tr><td style="border:1px solid #999;padding:6px;font-weight:600;background:#f8fafc;">${esc(label)}</td>${tds}</tr>`;
   };
 
@@ -104,8 +104,8 @@ export function buildNecesidadesHTML(
           const role = (m?.role || '').toUpperCase();
           const name = m?.name || '';
           return `<div>• ${esc(role ? `${role}: ` : '')}${esc(name)}</div>`;
-        })
-        .join('');
+    })
+    .join('');
       const block = `${chips}${notes ? `<hr style="margin:6px 0;border:none;border-top:1px solid #ddd;"/>` : ''}${renderCell(notes)}`;
       return `<td style="border:1px solid #999;padding:6px;vertical-align:top;">${block}</td>`;
     }).join('');

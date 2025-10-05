@@ -170,7 +170,7 @@ function WeekCard({
             variant='export'
             size='sm'
             className={`no-pdf ${btnExportCls || ''}`}
-            style={{...btnExportStyle, background: '#f97316'}}
+            style={{...btnExportStyle, background: '#f59e0b'}}
             onClick={onExportWeekPDF}
             title='Exportar semana (PDF)'
           >

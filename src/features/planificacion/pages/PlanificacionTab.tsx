@@ -445,7 +445,7 @@ export default function PlanificacionTab({
 
   const btnExportCls = 'px-3 py-2 rounded-lg text-sm font-semibold';
   const btnExportStyle: React.CSSProperties = {
-    background: '#1D4ED8',
+    background: '#f59e0b',
     color: '#FFFFFF',
     border: '1px solid rgba(255,255,255,0.08)',
   };
@@ -529,7 +529,7 @@ export default function PlanificacionTab({
       <div className='no-pdf flex items-center justify-end gap-2'>
         <button
           className={btnExportCls}
-          style={{...btnExportStyle, background: '#f97316'}}
+          style={btnExportStyle}
           onClick={() => exportScopePDF('all')}
           title='Exportar toda la planificación (PDF)'
         >

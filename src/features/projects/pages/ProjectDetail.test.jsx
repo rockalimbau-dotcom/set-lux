@@ -35,7 +35,7 @@ describe('ProjectDetail (smoke)', () => {
       <ProjectDetail project={baseProject} user={user} onBack={() => {}} />
     );
 
-    expect(screen.getByRole('heading', { name: 'Proyecto Demo' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Proyecto Demo/ })).toBeInTheDocument();
 
     // Phase cards (select label text and assert the wrapping button exists)
     expect(screen.getByText('Equipo').closest('button')).toBeInTheDocument();

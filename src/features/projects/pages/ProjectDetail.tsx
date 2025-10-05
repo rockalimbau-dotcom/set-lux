@@ -234,6 +234,18 @@ export default function ProjectDetail({
     proj?.conditions?.tipo || proj?.conditionsMode || proj?.conditions?.mode;
   const condModeLabel = formatMode(condModeRaw);
 
+  // Texto de fase activo para el título
+  const activePhaseLabel = useMemo(() => {
+    if (!activeTab) return '';
+    if (activeTab === 'condiciones') return `Condiciones ${condModeLabel}`;
+    if (activeTab === 'nomina') return 'Nómina';
+    if (activeTab === 'planificacion') return 'Planificación';
+    if (activeTab === 'necesidades') return 'Necesidades';
+    if (activeTab === 'equipo') return 'Equipo';
+    if (activeTab === 'reportes') return 'Reportes';
+    return activeTab;
+  }, [activeTab, condModeLabel]);
+
   return (
     <div>
       {/* Header con los mismos tamaños que ProjectsScreen y flecha debajo del título */}
@@ -243,16 +255,29 @@ export default function ProjectDetail({
             <div className='flex items-center gap-6'>
               <div className='relative h-20 flex items-center'>
                 <LogoIcon size={80} />
-                <button
-                  onClick={onBack}
-                  className='absolute left-1/2 -translate-x-1/2 top-full mt-2 w-10 h-10 rounded-xl border border-neutral-border hover:border-orange-500 text-white flex items-center justify-center'
-                  title='Volver'
-                >
-                  ←
-                </button>
+                {activeTab === null ? (
+                  <button
+                    onClick={onBack}
+                    className='absolute left-1/2 -translate-x-1/2 top-full mt-2 w-10 h-10 rounded-xl border border-neutral-border hover:border-orange-500 text-white flex items-center justify-center'
+                    title='Volver'
+                  >
+                    ←
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => {
+                      setActiveTab(null);
+                      navigate(`/project/${pid}`, { replace: true });
+                    }}
+                    className='absolute left-[100%] -translate-x-1/2 top-full mt-2 px-5 py-2 rounded-xl border border-neutral-border hover:border-orange-500 text-white flex items-center justify-center text-sm whitespace-nowrap'
+                    title='Volver a fases'
+                  >
+                    ← Volver a fases
+                  </button>
+                )}
               </div>
               <h1 className='text-3xl font-bold text-white'>
-                SetLux <span className='text-gray-300'>/ {proj?.nombre}</span>
+                SetLux <span className='text-gray-300'>/ {proj?.nombre}{activePhaseLabel ? ` / ${activePhaseLabel}` : ''}</span>
               </h1>
             </div>
 
@@ -324,23 +349,8 @@ export default function ProjectDetail({
       )}
 
       {/* Contenido de la fase seleccionada */}
-      {activeTab !== null && (
-        <div className='mt-6 rounded-2xl border border-neutral-border bg-neutral-panel/90 p-5'>
-          <div className='flex items-center justify-between mb-4'>
-            <div className='text-brand font-semibold capitalize'>
-              {activeTab === 'condiciones'
-                ? `Condiciones ${condModeLabel}`
-                : activeTab}
-            </div>
-
-            <button
-              onClick={() => setActiveTab(null)}
-              className='px-3 py-2 rounded-lg border text-sm border-neutral-border hover:border-[#F59E0B]'
-              title='Volver a fases'
-            >
-              ← Volver a fases
-            </button>
-          </div>
+        {activeTab !== null && (
+         <div className='-mt-1 rounded-2xl border border-neutral-border bg-neutral-panel/90 p-5'>
 
           {activeTab === 'planificacion' && (
             <PlanificacionTab
