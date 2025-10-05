@@ -414,23 +414,24 @@ function ProjectsScreen({
         return name.split(' ').map(word => word.charAt(0)).join(' ').toUpperCase();
       };
       
-      const getAvatarColor = (name: string) => {
-        const colors = ['#f97316', '#3b82f6', '#10b981', '#8b5cf6', '#ef4444'];
-        const index = name.length % colors.length;
-        return colors[index];
+      const getAvatarColor = (_name: string) => {
+        // Use a single warm orange tone for all project title pills (consistent branding)
+        return '#f59e0b';
       };
 
       const getConditionColor = (tipo: string) => {
+        // Blue-only palette (dark, base, light) to differentiate conditions
         switch (tipo?.toLowerCase()) {
-          case 'semanal': return '#3b82f6';
-          case 'mensual': return '#10b981';
-          case 'publicidad': return '#8b5cf6';
-          default: return '#6b7280';
+          case 'semanal': return '#1e3a8a';      // Dark blue
+          case 'mensual': return '#3b82f6';      // Blue
+          case 'publicidad': return '#60a5fa';   // Light blue
+          default: return '#64748b';             // Slate gray
         }
       };
 
       const getStatusColor = (estado: string) => {
-        return estado === 'Activo' ? '#10b981' : '#6b7280';
+        // Align status colors to theme: active in orange, closed in slate gray
+        return estado === 'Activo' ? '#f97316' : '#64748b';
       };
 
       return (
