@@ -359,7 +359,7 @@ export default function ProjectDetail({
       {/* Contenido de la fase seleccionada */}
         {activeTab !== null && (
          <div
-           className='-mt-1 rounded-2xl border border-neutral-border bg-neutral-panel/90 p-5'
+           className='phase-content -mt-1 rounded-2xl border border-neutral-border bg-neutral-panel/90 p-5'
            style={{
              borderColor: (document.documentElement.getAttribute('data-theme')||'dark')==='light' ? 'rgba(229,231,235,0.6)' : 'var(--border)'
            }}

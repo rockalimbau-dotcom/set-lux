@@ -271,14 +271,14 @@ export function ParamInput({ label, value, onChange, suffix, duo }: ParamInputPr
         <span className='block text-sm text-zinc-300'>{label}</span>
         <div className='flex items-center gap-2'>
           <input
-            className='w-full px-3 py-2 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm'
+            className='w-full px-3 py-2 rounded-lg border border-neutral-border focus:outline-none focus:ring-1 text-sm'
             value={duo[0].value}
             onChange={e => duo[0].onChange(e.target.value)}
             placeholder=''
           />
           <span className='text-zinc-400'>+</span>
           <input
-            className='w-full px-3 py-2 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm'
+            className='w-full px-3 py-2 rounded-lg border border-neutral-border focus:outline-none focus:ring-1 text-sm'
             value={duo[1].value}
             onChange={e => duo[1].onChange(e.target.value)}
             placeholder=''
@@ -294,7 +294,7 @@ export function ParamInput({ label, value, onChange, suffix, duo }: ParamInputPr
       <span className='block text-sm text-zinc-300'>{label}</span>
       <div className='flex items-center gap-2'>
         <input
-          className='w-full px-3 py-2 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm'
+          className='w-full px-3 py-2 rounded-lg border border-neutral-border focus:outline-none focus:ring-1 text-sm'
           value={value || ''}
           onChange={e => onChange && onChange(e.target.value)}
           placeholder=''

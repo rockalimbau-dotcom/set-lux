@@ -1,8 +1,6 @@
-/* stylelint-disable-next-line at-rule-no-unknown */
+/* stylelint-disable */
 @tailwind base;
-/* stylelint-disable-next-line at-rule-no-unknown */
 @tailwind components;
-/* stylelint-disable-next-line at-rule-no-unknown */
 @tailwind utilities;
 
 /* Global theme variables */
@@ -27,6 +25,9 @@
   --brand: #1D4ED8;  /* azul corporativo */
   --accent: #1D4ED8;
   --hover-border: #1D4ED8; /* hover highlight (light) azul */
+  /* Phase content accent for light mode */
+  --phase-accent:  #1D4ED8; /* amber-500 */
+  --phase-panel: #f8fafc;  /* slate-50 */
   --hover-text: #1D4ED8;   /* hover text (light) azul */
 
   color-scheme: light;
@@ -98,4 +99,255 @@ body {
 [data-theme='light'] textarea:hover,
 [data-theme='light'] button:hover {
   border-color: var(--hover-border) !important;
+}
+
+/* Light mode: unified look for phase content (fases) */
+[data-theme='light'] .phase-content {
+  background: var(--phase-panel) !important;
+  border-color: #e5e7eb !important;
+  color: #111827 !important; /* near black */
+}
+
+[data-theme='light'] .phase-content h1,
+[data-theme='light'] .phase-content h2,
+[data-theme='light'] .phase-content h3,
+[data-theme='light'] .phase-content h4,
+[data-theme='light'] .phase-content h5,
+[data-theme='light'] .phase-content h6,
+[data-theme='light'] .phase-content p,
+[data-theme='light'] .phase-content span,
+[data-theme='light'] .phase-content label,
+[data-theme='light'] .phase-content th,
+[data-theme='light'] .phase-content td {
+  color: #111827 !important;
+}
+
+[data-theme='light'] .phase-content table {
+  background: #fff !important;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+}
+
+[data-theme='light'] .phase-content th {
+  background: var(--bg) !important; /* naranja claro del fondo */
+  border-bottom: 1px solid #e5e7eb !important;
+}
+
+[data-theme='light'] .phase-content td {
+  background: #fff !important;
+  border-bottom: 1px solid var(--bg) !important;
+}
+
+/* Inputs y celdas (hover/focus) dentro de fases en modo claro */
+[data-theme='light'] .phase-content input:hover,
+[data-theme='light'] .phase-content select:hover,
+[data-theme='light'] .phase-content textarea:hover {
+  border-color: var(--phase-accent) !important;
+}
+
+[data-theme='light'] .phase-content input:focus,
+[data-theme='light'] .phase-content select:focus,
+[data-theme='light'] .phase-content textarea:focus {
+  --tw-ring-color: var(--phase-accent) !important;
+  border-color: var(--phase-accent) !important;
+}
+
+/* Resaltar solo controles editables (no celdas no editables) */
+[data-theme='light'] .phase-content input:hover,
+[data-theme='light'] .phase-content select:hover,
+[data-theme='light'] .phase-content textarea:hover {
+  box-shadow: inset 0 0 0 0.5px var(--phase-accent);
+}
+
+/* Bloques/section internos con esquinas (clases utilitarias comunes) */
+[data-theme='light'] .phase-content .phase-panel {
+  background: var(--bg) !important; /* panel de parámetros en naranja claro */
+  border-color: #e5e7eb !important;
+}
+
+/* Si hay elementos con bg-neutral-panel dentro de fases, forzarlos a claro */
+[data-theme='light'] .phase-content .bg-neutral-panel {
+  background-color: var(--bg) !important;
+}
+
+/* Cubrir variantes con opacidad: bg-neutral-panel/90, etc. */
+[data-theme='light'] .phase-content .bg-neutral-panel\/90,
+[data-theme='light'] .phase-content [class*='bg-neutral-panel/'] {
+  background-color: var(--bg) !important;
+}
+
+/* Equipo rows and similar blocks use bg-neutral-surface: force light backgrounds */
+[data-theme='light'] .phase-content .bg-neutral-surface {
+  background-color: #fff !important;
+}
+
+/* Cover opacity variants, e.g. bg-neutral-surface/90 */
+[data-theme='light'] .phase-content .bg-neutral-surface\/90,
+[data-theme='light'] .phase-content [class*='bg-neutral-surface/'] {
+  background-color: #fff !important;
+}
+
+/* Equipo: botones de añadir — iluminar en azul (covers + Añadir, + Prelight, + Recogida) */
+[data-theme='light'] .phase-content button[title^='Añadir']:hover,
+[data-theme='light'] .phase-content button[title^='Añadir']:focus,
+[data-theme='light'] .phase-content button[title^='Añadir Equipo']:hover,
+[data-theme='light'] .phase-content button[title^='Añadir Equipo']:focus,
+[data-theme='light'] .phase-content button[aria-label^='Añadir miembro']:hover,
+[data-theme='light'] .phase-content button[aria-label^='Añadir miembro']:focus {
+  border-color: var(--phase-accent) !important;
+  box-shadow: 0 0 0 0.5px var(--phase-accent) inset;
+}
+
+/* Equipo: eliminar fila ("×") — iluminar en naranja */
+[data-theme='light'] .phase-content button[title='Eliminar fila']:hover,
+[data-theme='light'] .phase-content button[title='Eliminar fila']:focus {
+  border-color: #f97316 !important; /* orange-500 */
+  box-shadow: 0 0 0 0.5px #f97316 inset;
+}
+
+/* Equipo: quitar grupo — iluminar en naranja */
+[data-theme='light'] .phase-content button[aria-label='Quitar grupo']:hover,
+[data-theme='light'] .phase-content button[aria-label='Quitar grupo']:focus {
+  border-color: #f97316 !important;
+  box-shadow: 0 0 0 0.5px #f97316 inset;
+}
+
+/* Planificación: toggles (+ / −) de secciones y semanas */
+[data-theme='light'] .phase-content button[title='Abrir']:hover,
+[data-theme='light'] .phase-content button[title='Abrir']:focus,
+[data-theme='light'] .phase-content button[title='Cerrar']:hover,
+[data-theme='light'] .phase-content button[title='Cerrar']:focus {
+  border-color: var(--phase-accent) !important;
+  box-shadow: 0 0 0 0.5px var(--phase-accent) inset;
+}
+
+/* Planificación: + Semana (añadir) en azul */
+[data-theme='light'] .phase-content button[title='+ Semana']:hover,
+[data-theme='light'] .phase-content button[title='+ Semana']:focus {
+  border-color: var(--phase-accent) !important;
+  box-shadow: 0 0 0 0.5px var(--phase-accent) inset;
+}
+
+/* Planificación: Duplicar semana en azul */
+[data-theme='light'] .phase-content button[title='Duplicar semana']:hover,
+[data-theme='light'] .phase-content button[title='Duplicar semana']:focus {
+  border-color: var(--phase-accent) !important;
+  box-shadow: 0 0 0 0.5px var(--phase-accent) inset;
+}
+
+/* Planificación: Eliminar semana (papelera) en naranja */
+[data-theme='light'] .phase-content button[title='Eliminar semana']:hover,
+[data-theme='light'] .phase-content button[title='Eliminar semana']:focus {
+  border-color: #f97316 !important;
+  box-shadow: 0 0 0 0.5px #f97316 inset;
+}
+
+/* Planificación: Título de cada semana en negro (solo dentro de wk-card) */
+[data-theme='light'] .phase-content .wk-card .text-brand {
+  color: #111827 !important;
+}
+
+/* Necesidades: título de cada semana en negro */
+[data-theme='light'] .phase-content .text-brand {
+  color: #111827 !important;
+}
+
+/* Planificación: "píldoras" de equipo (Chip base) en naranja claro del fondo */
+[data-theme='light'] .phase-content .wk-card span.bg-black\/40 {
+  background-color: var(--bg) !important; /* usa el naranja claro global */
+  border-color: #e5e7eb !important;
+}
+/* Reportes: píldoras (nombre+rol, Dietas, Ticket…) en naranja claro del fondo */
+[data-theme='light'] .phase-content table span.bg-black\/40 {
+  background-color: var(--bg) !important;
+  border-color: #e5e7eb !important;
+}
+
+/* Reportes: texto de chips en negro para mejor contraste en claro */
+[data-theme='light'] .phase-content table span.bg-black\/40 > span.text-xs,
+[data-theme='light'] .phase-content table .text-zinc-200,
+[data-theme='light'] .phase-content table .text-zinc-400 {
+  color: #111827 !important;
+}
+
+/* Reportes: encabezados de tabla en negro */
+[data-theme='light'] .phase-content table th {
+  color: #111827 !important;
+}
+
+/* Reportes: columna lateral (labels de fila) en negro */
+[data-theme='light'] .phase-content table td.bg-white\/5 {
+  color: #111827 !important;
+}
+
+/* Reportes: textos laterales (Nocturnidad, Horas extra, etc.) en negro */
+[data-theme='light'] .phase-content table .text-zinc-300 {
+  color: #111827 !important;
+}
+
+/* Nómina: totales (números grandes) en negro */
+[data-theme='light'] .phase-content .text-zinc-100 {
+  color: #111827 !important;
+}
+[data-theme='light'] .phase-content .text-zinc-200 {
+  color: #374151 !important; /* detalles en gris oscuro para contraste */
+}
+
+/* Reportes: "×" de quitar en naranja */
+[data-theme='light'] .phase-content button[title='Quitar']:hover,
+[data-theme='light'] .phase-content button[title='Quitar']:focus,
+[data-theme='light'] .phase-content button[title='Quitar Ticket']:hover,
+[data-theme='light'] .phase-content button[title='Quitar Ticket']:focus {
+  color: #f97316 !important;
+}
+
+/* Reportes: botón de colapso con "−" (title="Contraer") en azul */
+[data-theme='light'] .phase-content button[title='Contraer']:hover,
+[data-theme='light'] .phase-content button[title='Contraer']:focus {
+  border-color: var(--phase-accent) !important;
+  box-shadow: 0 0 0 0.5px var(--phase-accent) inset;
+  color: var(--phase-accent) !important;
+}
+
+/* Texto de la descripción del chip en modo claro: más oscuro para contraste */
+[data-theme='light'] .phase-content .wk-card span.bg-black\/40 > span.text-xs {
+  color: #374151 !important;
+}
+
+[data-theme='light'] .phase-content .border-neutral-border {
+  border-color: #e5e7eb !important;
+}
+
+[data-theme='light'] .phase-content input,
+[data-theme='light'] .phase-content select,
+[data-theme='light'] .phase-content textarea {
+  background-color: #fff !important;
+  color: #111827 !important;
+  border-color: #e5e7eb !important;
+}
+
+[data-theme='light'] .phase-content .btn,
+[data-theme='light'] .phase-content button {
+  color: #111827;
+}
+
+/* PDF buttons color in light mode */
+[data-theme='light'] .btn-pdf,
+[data-theme='light'] [title*='PDF'] {
+  background-color: #A0D3F2 !important;
+  border-color: #A0D3F2 !important;
+  color: #111827 !important;
+}
+
+[data-theme='light'] .btn-pdf:hover,
+[data-theme='light'] [title*='PDF']:hover {
+  filter: brightness(0.98);
+  box-shadow: 0 0 0 0.5px #1D4ED8 inset, 0 0 0 1px rgba(29,78,216,0.12);
+}
+
+/* Plus toggle in parámetros: highlight on hover/focus */
+[data-theme='light'] .phase-content button[aria-label='Alternar parámetros']:hover,
+[data-theme='light'] .phase-content button[aria-label='Alternar parámetros']:focus {
+  border-color: var(--phase-accent) !important;
+  box-shadow: 0 0 0 0.5px var(--phase-accent) inset;
 }

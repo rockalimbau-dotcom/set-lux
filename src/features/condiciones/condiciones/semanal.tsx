@@ -228,7 +228,7 @@ function CondicionesSemanal({ project, onChange = () => {}, onRegisterExport }: 
   return (
     <div className='space-y-6'>
       {/* Parámetros (misma estética) */}
-      <section className='rounded-2xl border border-neutral-border bg-neutral-panel/90 p-4'>
+      <section className='rounded-2xl border border-neutral-border bg-neutral-panel/90 p-4 phase-panel'>
         <div className='flex items-center gap-2 mb-3'>
           <button
             onClick={() => setShowParams(v => !v)}
@@ -419,7 +419,7 @@ function CondicionesSemanal({ project, onChange = () => {}, onRegisterExport }: 
                       value={model.prices?.[role]?.[h] ?? ''}
                       onChange={e => handlePriceChange(role, h, (e.target as HTMLInputElement).value)}
                       placeholder='€'
-                      className='w-full px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand'
+                      className='w-full px-2 py-1 rounded-lg border border-neutral-border focus:outline-none focus:ring-1'
                     />
                   </Td>
                 ))}
