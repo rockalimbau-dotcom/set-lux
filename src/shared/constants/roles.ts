@@ -27,7 +27,7 @@ export const ROLES: Role[] = [
 
 export const ROLE_COLORS: Record<RoleCode, RoleColor> = {
   G: { bg: 'linear-gradient(135deg,#7DD3FC,#0284C7)', fg: '#0b0b0b' },
-  BB: { bg: 'linear-gradient(135deg,#93C5FD,#1D4ED8)', fg: '#0b0b0b' },
+  BB: { bg: 'linear-gradient(135deg,#93C5FD,#0476D9)', fg: '#0b0b0b' },
   E: { bg: 'linear-gradient(135deg,#FDE047,#F59E0B)', fg: '#0b0b0b' },
   TM: { bg: 'linear-gradient(135deg,#A7F3D0,#10B981)', fg: '#0b0b0b' },
   FB: { bg: 'linear-gradient(135deg,#FCA5A5,#EF4444)', fg: '#0b0b0b' },

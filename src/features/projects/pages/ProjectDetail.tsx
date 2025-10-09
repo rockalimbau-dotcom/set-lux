@@ -185,7 +185,7 @@ export default function ProjectDetail({
 
   const estadoText = isActive ? 'Activo' : 'Cerrado';
   const themeGlobal = (typeof document !== 'undefined' && document.documentElement.getAttribute('data-theme')) || 'dark';
-  const estadoBg = isActive ? (themeGlobal === 'light' ? '#1D4ED8' : '#f97316') : '#64748b';
+  const estadoBg = isActive ? (themeGlobal === 'light' ? '#0476D9' : '#f97316') : '#64748b';
 
   // Lista de equipo simplificada para Planificación
   const teamList = useMemo(() => {
@@ -460,7 +460,7 @@ function PhaseCard({ title, icon, desc, onClick }: PhaseCardProps) {
         >
           {icon}
         </div>
-        <div className='text-xl font-semibold' style={{color: (typeof document!=='undefined' && document.documentElement.getAttribute('data-theme')==='light') ? '#1D4ED8' : '#f97316'}}>{title}</div>
+        <div className='text-xl font-semibold' style={{color: (typeof document!=='undefined' && document.documentElement.getAttribute('data-theme')==='light') ? '#0476D9' : '#f97316'}}>{title}</div>
       </div>
       <div className='text-sm' style={{color: (typeof document!=='undefined' && document.documentElement.getAttribute('data-theme')==='light') ? '#111827' : '#d1d5db'}}>{desc}</div>
     </button>

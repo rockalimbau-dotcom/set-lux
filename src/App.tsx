@@ -6,7 +6,7 @@ import Select from '@shared/components/Select.tsx';
 import BrandHero from '@shared/components/BrandHero.jsx';
 import { ROLES } from '@shared/constants/roles';
 import { useLocalStorage } from '@shared/hooks/useLocalStorage';
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { BrowserRouter, useNavigate, Routes, Route } from 'react-router-dom';
 
 /** Logo y marca extraídos a shared/components */
@@ -48,6 +48,28 @@ function AppInner() {
   const [activeProject, setActiveProject] = useState<UIProject | null>(null);
 
   const navigate = useNavigate();
+  const [themeLabel, setThemeLabel] = useState<string>(() => {
+    if (typeof document !== 'undefined') {
+      const curr = document.documentElement.getAttribute('data-theme') || 'dark';
+      return curr === 'light' ? 'Daylight' : 'Darklight';
+    }
+    return 'Darklight';
+  });
+
+  // Inicializar tema desde localStorage o preferencia del sistema
+  useEffect(() => {
+    try {
+      const saved = (typeof localStorage !== 'undefined' && localStorage.getItem('theme')) || '';
+      const prefersLight = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+      const initial = saved === 'light' || saved === 'dark' ? saved : (prefersLight ? 'light' : 'dark');
+      const root = document.documentElement;
+      root.setAttribute('data-theme', initial);
+      setThemeLabel(initial === 'light' ? 'Daylight' : 'Darklight');
+      const body = document.body as any;
+      body.style.backgroundColor = 'var(--bg)';
+      body.style.color = 'var(--text)';
+    } catch {}
+  }, []);
 
   // ——— handlers memorados
   const handleLoginSubmit = useCallback(
@@ -120,15 +142,54 @@ function AppInner() {
       <Route
         path='/'
         element={
-          <div className='min-h-screen flex items-center justify-center' style={{backgroundColor: '#1a2b40', color: '#ffffff'}}>
-            <div className='w-full max-w-md'>
+          <div className='min-h-screen flex items-center justify-center' style={{backgroundColor: 'var(--bg)', color: 'var(--text)'}}>
+            <div className='w-full max-w-md landing'>
               <BrandHero tagline='All in One' />
 
-              <div className='rounded-2xl border border-neutral-border backdrop-blur p-8 shadow-2xl' style={{backgroundColor: '#2a4058'}}>
+              <div className='flex justify-end mb-4'>
+                <button
+                  type='button'
+                  onClick={() => {
+                    try {
+                      const root = document.documentElement;
+                      const curr = root.getAttribute('data-theme') || 'dark';
+                      const next = curr === 'light' ? 'dark' : 'light';
+                      root.setAttribute('data-theme', next);
+                      setThemeLabel(next === 'light' ? 'Daylight' : 'Darklight');
+                      const body = document.body as any;
+                      body.style.backgroundColor = 'var(--bg)';
+                      body.style.color = 'var(--text)';
+                    } catch {}
+                    // Persistir preferencia
+                    try { localStorage.setItem('theme', next); } catch {}
+                  }}
+                  className='px-4 py-2 rounded-xl border hover:border-[var(--hover-border)] text-sm'
+                  style={{
+                    backgroundColor:
+                      (typeof document!=='undefined' && (document.documentElement.getAttribute('data-theme')||'dark')==='light')
+                        ? '#A0D3F2'
+                        : '#f59e0b',
+                    color:
+                      (typeof document!=='undefined' && (document.documentElement.getAttribute('data-theme')||'dark')==='light')
+                        ? '#111827'
+                        : '#ffffff',
+                    borderColor:
+                      (typeof document!=='undefined' && (document.documentElement.getAttribute('data-theme')||'dark')==='light')
+                        ? '#A0D3F2'
+                        : '#f59e0b'
+                  }}
+                  title={themeLabel}
+                  aria-pressed={document.documentElement.getAttribute('data-theme') === 'light'}
+                >
+                  {themeLabel}
+                </button>
+              </div>
+
+              <div className='rounded-2xl border border-neutral-border backdrop-blur p-8 shadow-2xl' style={{backgroundColor: 'var(--panel)'}}>
                 {mode === 'login' ? (
                   <form className='space-y-6' onSubmit={handleLoginSubmit}>
                     <div className='space-y-2'>
-                      <label className='block text-sm font-medium text-white'>
+                      <label className='block text-sm font-medium' style={{color: 'var(--text)'}}>
                         Usuario
                       </label>
                       <Input
@@ -142,7 +203,7 @@ function AppInner() {
                     </div>
 
                     <div className='space-y-2'>
-                      <label className='block text-sm font-medium text-white'>
+                      <label className='block text-sm font-medium' style={{color: 'var(--text)'}}>
                         Contraseña
                       </label>
                       <Input
@@ -160,7 +221,7 @@ function AppInner() {
                       variant='primary'
                       size='lg'
                       className='w-full'
-                      style={{backgroundColor: '#f97316', borderColor: '#f97316'}}
+                      style={{backgroundColor: 'var(--brand)', borderColor: 'var(--brand)'}}
                     >
                       Iniciar sesión
                     </Button>
@@ -186,8 +247,8 @@ function AppInner() {
                       onClick={() => setMode('login')}
                       variant='ghost'
                       size='sm'
-                      className='mb-6'
-                      style={{color: '#f97316'}}
+                      className='mb-6 btn-back-register'
+                      style={{color: 'var(--accent)'}}
                     >
                       ← Volver
                     </Button>
@@ -195,7 +256,7 @@ function AppInner() {
                     <form className='space-y-5' onSubmit={handleRegisterSubmit}>
                       <div className='grid grid-cols-2 gap-4'>
                         <div className='space-y-2'>
-                          <label className='block text-sm font-medium text-white'>
+                          <label className='block text-sm font-medium' style={{color: 'var(--text)'}}>
                             Nombre
                           </label>
                           <Input
@@ -208,7 +269,7 @@ function AppInner() {
                           />
                         </div>
                         <div className='space-y-2'>
-                          <label className='block text-sm font-medium text-white'>
+                          <label className='block text-sm font-medium' style={{color: 'var(--text)'}}>
                             Apellido
                           </label>
                           <Input
@@ -223,7 +284,7 @@ function AppInner() {
                       </div>
 
                       <div className='space-y-2'>
-                        <label className='block text-sm font-medium text-white'>
+                        <label className='block text-sm font-medium' style={{color: 'var(--text)'}}>
                           Puesto
                         </label>
                         <Select
@@ -237,7 +298,7 @@ function AppInner() {
                       </div>
 
                       <div className='space-y-2'>
-                        <label className='block text-sm font-medium text-white'>
+                        <label className='block text-sm font-medium' style={{color: 'var(--text)'}}>
                           Email
                         </label>
                         <Input
@@ -252,7 +313,7 @@ function AppInner() {
 
                       <div className='grid grid-cols-2 gap-4'>
                       <div className='space-y-2'>
-                        <label className='block text-sm font-medium text-white'>
+                        <label className='block text-sm font-medium' style={{color: 'var(--text)'}}>
                           Contraseña
                         </label>
                           <Input
@@ -265,7 +326,7 @@ function AppInner() {
                           />
                         </div>
                         <div className='space-y-2'>
-                          <label className='block text-sm font-medium text-white'>
+                          <label className='block text-sm font-medium' style={{color: 'var(--text)'}}>
                             Repite contraseña
                           </label>
                           <Input
@@ -290,12 +351,12 @@ function AppInner() {
                         </div>
                       )}
 
-                      <Button
+                    <Button
                         type='submit'
                         variant='primary'
                         size='lg'
                         className='w-full'
-                        style={{backgroundColor: '#f97316', borderColor: '#f97316'}}
+                      style={{backgroundColor: 'var(--brand)', borderColor: 'var(--brand)'}}
                       >
                         Registrarse
                       </Button>

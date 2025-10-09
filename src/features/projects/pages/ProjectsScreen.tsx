@@ -358,7 +358,7 @@ function ProjectsScreen({
           if (v) return v;
         } catch {}
         const themeFallback = document.documentElement.getAttribute('data-theme') || 'dark';
-        return themeFallback === 'light' ? '#1D4ED8' : '#f59e0b';
+        return themeFallback === 'light' ? '#0476D9' : '#f59e0b';
       };
 
       const getConditionColor = (tipo: string) => {
@@ -379,7 +379,7 @@ function ProjectsScreen({
 
       const getStatusColor = (estado: string) => {
         const theme = document.documentElement.getAttribute('data-theme') || 'dark';
-        const activeColor = theme === 'light' ? '#1D4ED8' : '#f97316';
+        const activeColor = theme === 'light' ? '#0476D9' : '#f97316';
         return estado === 'Activo' ? activeColor : '#64748b';
       };
 
@@ -457,7 +457,7 @@ function ProjectsScreen({
               title='Editar proyecto'
               aria-label={`Editar ${p.nombre}`}
             >
-              <span style={{color: isLight ? '#1D4ED8' : undefined}}>Editar</span>
+              <span style={{color: isLight ? '#0476D9' : undefined}}>Editar</span>
             </button>
             <button
               type='button'
@@ -516,7 +516,7 @@ function ProjectsScreen({
                   className='text-sm text-zinc-300 hover:text-white transition-colors cursor-pointer'
                 >
                   <span style={{color: (document.documentElement.getAttribute('data-theme')||'dark')==='light' ? '#111827' : undefined}}>Bienvenido, </span>
-                  <span className='font-semibold' style={{color: (document.documentElement.getAttribute('data-theme')||'dark')==='light' ? '#1D4ED8' : '#f97316'}}>{userName}</span> ✨
+                  <span className='font-semibold' style={{color: (document.documentElement.getAttribute('data-theme')||'dark')==='light' ? '#0476D9' : '#f97316'}}>{userName}</span> ✨
                 </button>
                 
                 {/* Menú desplegable */}

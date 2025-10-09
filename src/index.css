@@ -9,7 +9,7 @@
   --text: #fff;
   --panel: #2a4058;
   --border: #3b5568;
-  --brand: #f97316;
+  --brand: #F27405;
   --accent: #60a5fa;
   --hover-border: #fff; /* hover highlight (dark) */
   --hover-text: #fff;   /* hover text (dark) */
@@ -22,13 +22,13 @@
   --text: #111827;
   --panel: #fff;
   --border: #e5e7eb;
-  --brand: #1D4ED8;  /* azul corporativo */
-  --accent: #1D4ED8;
-  --hover-border: #1D4ED8; /* hover highlight (light) azul */
+  --brand: #0476D9;  /* azul corporativo */
+  --accent: #0476D9;
+  --hover-border: #0476D9; /* hover highlight (light) azul */
   /* Phase content accent for light mode */
-  --phase-accent:  #1D4ED8; /* amber-500 */
+  --phase-accent:  #0476D9; /* accent para fases en claro */
   --phase-panel: #f8fafc;  /* slate-50 */
-  --hover-text: #1D4ED8;   /* hover text (light) azul */
+  --hover-text: #0476D9;   /* hover text (light) azul */
 
   color-scheme: light;
 }
@@ -81,7 +81,7 @@ body {
 [data-theme='light'] select:focus,
 [data-theme='light'] textarea:focus {
   /* Use theme blue in light mode */
-  --tw-ring-color: var(--accent) !important; /* #1D4ED8 */
+  --tw-ring-color: var(--accent) !important; /* #0476D9 */
 
   border-color: var(--accent) !important;
 }
@@ -331,6 +331,37 @@ body {
   color: #111827;
 }
 
+/* Landing form overrides in light mode: white inputs with black text */
+[data-theme='light'] .landing input {
+  background-color: #ffffff !important;
+  color: #111827 !important;
+  border-color: #e5e7eb !important;
+}
+[data-theme='light'] .landing .text-center > button {
+  color: var(--accent) !important;
+}
+
+[data-theme='dark'] .landing .text-center > button {
+  color: #f97316 !important; /* mantiene naranja en oscuro */
+}
+
+[data-theme='light'] .landing input::placeholder {
+  color: #6b7280 !important; /* gray-500 */
+}
+
+/* Landing: select blanco en modo claro */
+[data-theme='light'] .landing select {
+  background-color: #ffffff !important;
+  color: #111827 !important;
+  border-color: #e5e7eb !important;
+}
+
+/* Botón Volver en registro: azul en modo claro */
+[data-theme='light'] .landing button[aria-label='volver-registro'],
+[data-theme='light'] .landing .btn-back-register {
+  color: var(--accent) !important;
+}
+
 /* PDF buttons color in light mode */
 [data-theme='light'] .btn-pdf,
 [data-theme='light'] [title*='PDF'] {
@@ -342,7 +373,7 @@ body {
 [data-theme='light'] .btn-pdf:hover,
 [data-theme='light'] [title*='PDF']:hover {
   filter: brightness(0.98);
-  box-shadow: 0 0 0 0.5px #1D4ED8 inset, 0 0 0 1px rgba(29,78,216,0.12);
+  box-shadow: 0 0 0 0.5px #0476D9 inset, 0 0 0 1px rgba(4,118,217,0.12);
 }
 
 /* Plus toggle in parámetros: highlight on hover/focus */

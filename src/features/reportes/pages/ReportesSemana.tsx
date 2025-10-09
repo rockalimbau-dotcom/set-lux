@@ -289,7 +289,7 @@ export default function ReportesSemana({
 
   const btnExportCls = 'px-3 py-2 rounded-lg text-sm font-semibold';
   const btnExportStyle = {
-    background: '#1D4ED8',
+    background: '#0476D9',
     color: '#FFFFFF',
     border: '1px solid rgba(255,255,255,0.08)',
   } as React.CSSProperties;
