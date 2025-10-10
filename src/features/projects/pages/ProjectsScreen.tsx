@@ -608,20 +608,18 @@ function ProjectsScreen({
             hasProjects ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : ''
           }`}
         >
-          {/* Tarjeta + grande si no hay proyectos */}
+          {/* Mensaje de bienvenida si no hay proyectos */}
           {!hasProjects && (
-            <div
-              className='grid place-items-center rounded-2xl border-2 border-dashed border-neutral-border cursor-pointer transition-all aspect-[4/3] hover:border-orange-500 hover:shadow-[0_0_24px_rgba(249,115,22,0.25)] group'
-              style={{backgroundColor: '#2a4058'}}
-              onClick={() => setShowNew(true)}
-              title='Añadir proyecto'
-            >
-              <div className='text-center'>
-                <div className='w-16 h-16 rounded-full flex items-center justify-center text-4xl text-white mb-4 group-hover:scale-110 transition-transform' style={{backgroundColor: '#3b82f6'}}>
-                  +
-                </div>
-                <p className='text-lg font-semibold text-white'>Crear proyecto</p>
+            <div className='col-span-full flex flex-col items-center justify-center py-16 px-8 text-center'>
+              <div className='mb-8'>
+                <LogoIcon size={120} />
               </div>
+              <h2 className='text-3xl font-bold mb-4' style={{color: 'var(--text)'}}>
+                ¡Hola, {userName}! 👋
+              </h2>
+              <p className='text-xl max-w-2xl' style={{color: 'var(--text)', opacity: 0.8}}>
+                Para empezar a usar SetLux, crea tu primer proyecto.
+              </p>
             </div>
           )}
 
