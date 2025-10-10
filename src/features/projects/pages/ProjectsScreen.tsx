@@ -611,14 +611,11 @@ function ProjectsScreen({
           {/* Mensaje de bienvenida si no hay proyectos */}
           {!hasProjects && (
             <div className='col-span-full flex flex-col items-center justify-center py-16 px-8 text-center'>
-              <div className='mb-8'>
-                <LogoIcon size={120} />
-              </div>
               <h2 className='text-3xl font-bold mb-4' style={{color: 'var(--text)'}}>
                 ¡Hola, {userName}! 👋
               </h2>
               <p className='text-xl max-w-2xl' style={{color: 'var(--text)', opacity: 0.8}}>
-                Para empezar a usar SetLux, crea tu primer proyecto.
+                Para empezar a usar SetLux, <strong>crea tu primer proyecto</strong>.
               </p>
             </div>
           )}
