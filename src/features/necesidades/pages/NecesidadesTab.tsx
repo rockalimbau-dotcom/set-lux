@@ -36,32 +36,51 @@ type NecesidadesTabProps = {
 };
 
 export default function NecesidadesTab({ project }: NecesidadesTabProps) {
+  // Add error boundary state
+  const [hasError, setHasError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string>('');
+
   const planKey = useMemo(() => {
-    const base = (project as AnyRecord)?.id || (project as AnyRecord)?.nombre || 'demo';
-    return `plan_${base}`;
+    try {
+      const base = (project as AnyRecord)?.id || (project as AnyRecord)?.nombre || 'demo';
+      return `plan_${base}`;
+    } catch (error) {
+      console.error('Error creating planKey:', error);
+      return 'plan_demo';
+    }
   }, [(project as AnyRecord)?.id, (project as AnyRecord)?.nombre]);
 
   const storageKey = useMemo(() => {
-    const base = (project as AnyRecord)?.id || (project as AnyRecord)?.nombre || 'demo';
-    return `needs_${base}`;
+    try {
+      const base = (project as AnyRecord)?.id || (project as AnyRecord)?.nombre || 'demo';
+      return `needs_${base}`;
+    } catch (error) {
+      console.error('Error creating storageKey:', error);
+      return 'needs_demo';
+    }
   }, [(project as AnyRecord)?.id, (project as AnyRecord)?.nombre]);
 
   const [needs, setNeeds] = useLocalStorage(storageKey, {} as AnyRecord);
   const [isLoaded, setIsLoaded] = useState(false);
 
   const syncFromPlanRaw = React.useCallback((rawPlan: string | null) => {
-    let plan: AnyRecord | null = null;
     try {
-      plan = rawPlan ? JSON.parse(rawPlan) : null;
-    } catch {}
+      let plan: AnyRecord | null = null;
+      try {
+        plan = rawPlan ? JSON.parse(rawPlan) : null;
+      } catch (parseError) {
+        console.error('Error parsing plan data:', parseError);
+        return;
+      }
 
-    const pre = Array.isArray(plan?.pre) ? plan!.pre : [];
-    const pro = Array.isArray(plan?.pro) ? plan!.pro : [];
-    const all = [...pre, ...pro];
-    if (!all.length) return;
+      const pre = Array.isArray(plan?.pre) ? plan!.pre : [];
+      const pro = Array.isArray(plan?.pro) ? plan!.pro : [];
+      const all = [...pre, ...pro];
+      if (!all.length) return;
 
-    setNeeds((prev: AnyRecord) => {
-      const next: AnyRecord = { ...prev };
+      setNeeds((prev: AnyRecord) => {
+        try {
+          const next: AnyRecord = { ...prev };
 
       const byMondayPrev = new Map<string, { wid: string; wk: AnyRecord }>();
       for (const [wid, wk] of Object.entries(prev)) {
@@ -155,12 +174,21 @@ export default function NecesidadesTab({ project }: NecesidadesTabProps) {
         }
       }
 
-      const validIds = new Set((all as AnyRecord[]).map(w => w.id as string));
-      for (const wid of Object.keys(next)) {
-        if (!validIds.has(wid)) delete next[wid];
-      }
-      return next;
-    });
+          const validIds = new Set((all as AnyRecord[]).map(w => w.id as string));
+          for (const wid of Object.keys(next)) {
+            if (!validIds.has(wid)) delete next[wid];
+          }
+          return next;
+        } catch (error) {
+          console.error('Error updating needs state:', error);
+          return prev;
+        }
+      });
+    } catch (error) {
+      console.error('Error in syncFromPlanRaw:', error);
+      setHasError(true);
+      setErrorMessage('Error al sincronizar datos de planificación');
+    }
   }, [setNeeds]);
 
   useEffect(() => {
@@ -175,14 +203,19 @@ export default function NecesidadesTab({ project }: NecesidadesTabProps) {
             const d = (week.days as AnyRecord[])[i];
             if (!d) continue;
             const migrateList = (arr: unknown, keyFromV1: string) => {
-              const v: unknown = (d as AnyRecord)[keyFromV1];
-              if (Array.isArray(v) && v.length && typeof v[0] === 'string') {
-                return (v as string[]).map(name => ({ role: '', name }));
+              try {
+                const v: unknown = (d as AnyRecord)[keyFromV1];
+                if (Array.isArray(v) && v.length && typeof v[0] === 'string') {
+                  return (v as string[]).map(name => ({ role: '', name }));
+                }
+                if (Array.isArray(v) && v.length && typeof v[0] === 'object') {
+                  return v as AnyRecord[];
+                }
+                return Array.isArray(v) ? (v as AnyRecord[]) : [];
+              } catch (error) {
+                console.error('Error migrating list:', error);
+                return [];
               }
-              if (Array.isArray(v) && v.length && typeof v[0] === 'object') {
-                return v as AnyRecord[];
-              }
-              return Array.isArray(v) ? (v as AnyRecord[]) : [];
             };
             (d as AnyRecord).crewList = migrateList((d as AnyRecord).crewNames, 'crewNames') || (d as AnyRecord).crewList || [];
             (d as AnyRecord).preList = migrateList((d as AnyRecord).preNames, 'preNames') || (d as AnyRecord).preList || [];
@@ -194,15 +227,23 @@ export default function NecesidadesTab({ project }: NecesidadesTabProps) {
         }
         setNeeds(parsed);
       }
-    } catch {}
+    } catch (error) {
+      console.error('Error migrating needs data:', error);
+      setHasError(true);
+      setErrorMessage('Error al migrar datos existentes');
+    }
     setIsLoaded(true);
-  }, [storageKey]);
+  }, [storageKey, setNeeds]);
 
   useEffect(() => {
     try {
       const obj = storage.getJSON<any>(planKey);
       syncFromPlanRaw(obj ? JSON.stringify(obj) : null);
-    } catch {}
+    } catch (error) {
+      console.error('Error loading plan data:', error);
+      setHasError(true);
+      setErrorMessage('Error al cargar datos de planificación');
+    }
   }, [planKey, syncFromPlanRaw]);
 
   useEffect(() => {
@@ -211,7 +252,9 @@ export default function NecesidadesTab({ project }: NecesidadesTabProps) {
         try {
           const obj = storage.getJSON<any>(planKey);
           syncFromPlanRaw(obj ? JSON.stringify(obj) : null);
-        } catch {}
+        } catch (error) {
+          console.error('Error handling storage event:', error);
+        }
       }
     };
     window.addEventListener('storage', onStorage);
@@ -271,13 +314,17 @@ export default function NecesidadesTab({ project }: NecesidadesTabProps) {
 
 
   const exportWeekPDF = async (weekId: string) => {
-    const w: AnyRecord = needs[weekId];
-    if (!w) return;
-    const valuesByDay = Array.from({ length: 7 }).map((_, i) => (w.days as AnyRecord)?.[i] || {});
-    console.log('🔍 Project object (PDF):', project);
-    console.log('🔍 Project nombre (PDF):', project?.nombre);
-    console.log('🔍 Project produccion (PDF):', project?.produccion);
     try {
+      const w: AnyRecord = needs[weekId];
+      if (!w) {
+        console.error('Week not found:', weekId);
+        alert('Semana no encontrada');
+        return;
+      }
+      const valuesByDay = Array.from({ length: 7 }).map((_, i) => (w.days as AnyRecord)?.[i] || {});
+      console.log('🔍 Project object (PDF):', project);
+      console.log('🔍 Project nombre (PDF):', project?.nombre);
+      console.log('🔍 Project produccion (PDF):', project?.produccion);
       await exportToPDF(
         project,
         w.label || 'Semana',
@@ -291,20 +338,31 @@ export default function NecesidadesTab({ project }: NecesidadesTabProps) {
   };
 
   const setWeekOpen = (weekId: string, isOpen: boolean) => {
-    setNeeds((prev: AnyRecord) => {
-      const w: AnyRecord = prev[weekId] || {};
-      const next: AnyRecord = {
-        ...prev,
-        [weekId]: { ...w, open: isOpen },
-      };
-      return next;
-    });
+    try {
+      setNeeds((prev: AnyRecord) => {
+        const w: AnyRecord = prev[weekId] || {};
+        const next: AnyRecord = {
+          ...prev,
+          [weekId]: { ...w, open: isOpen },
+        };
+        return next;
+      });
+    } catch (error) {
+      console.error('Error setting week open state:', error);
+    }
   };
 
   const weekEntries = useMemo(() => {
-    return Object.entries(needs as AnyRecord).sort(([, a], [, b]) => {
-      return parseYYYYMMDD((a as AnyRecord).startDate) as any - (parseYYYYMMDD((b as AnyRecord).startDate) as any);
-    });
+    try {
+      return Object.entries(needs as AnyRecord).sort(([, a], [, b]) => {
+        const dateA = parseYYYYMMDD((a as AnyRecord).startDate);
+        const dateB = parseYYYYMMDD((b as AnyRecord).startDate);
+        return dateA.getTime() - dateB.getTime();
+      });
+    } catch (error) {
+      console.error('Error sorting week entries:', error);
+      return [];
+    }
   }, [needs]);
 
   const btnExportCls = 'px-3 py-2 rounded-lg text-sm font-semibold';
@@ -328,6 +386,29 @@ export default function NecesidadesTab({ project }: NecesidadesTabProps) {
     }
   };
 
+  // Error boundary UI
+  if (hasError) {
+    return (
+      <div className='space-y-4'>
+        <div className='text-sm text-red-400 border border-red-800 rounded-xl p-4 bg-red-950/30'>
+          <h3 className='font-semibold mb-2'>Error al cargar Necesidades</h3>
+          <p className='mb-3'>{errorMessage}</p>
+          <button
+            onClick={() => {
+              setHasError(false);
+              setErrorMessage('');
+              // Try to reload the component
+              window.location.reload();
+            }}
+            className='px-3 py-2 bg-red-800 hover:bg-red-700 text-white rounded-lg text-sm'
+          >
+            Recargar página
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className='space-y-4'>
       {weekEntries.length > 0 && (
@@ -350,9 +431,10 @@ export default function NecesidadesTab({ project }: NecesidadesTabProps) {
         </div>
       ) : (
         weekEntries.map(([wid, wk]) => {
-          const monday = parseYYYYMMDD((wk as AnyRecord).startDate);
-          const datesRow = useMemo(() => DAYS.map((_, i) => formatDDMM(addDays(monday, i))), [monday]);
-          return (
+          try {
+            const monday = parseYYYYMMDD((wk as AnyRecord).startDate);
+            const datesRow = useMemo(() => DAYS.map((_, i) => formatDDMM(addDays(monday, i))), [monday]);
+            return (
             <section
               key={wid}
               className='rounded-2xl border border-neutral-border bg-neutral-panel/90'
@@ -489,7 +571,17 @@ export default function NecesidadesTab({ project }: NecesidadesTabProps) {
                 </div>
               )}
             </section>
-          );
+            );
+          } catch (error) {
+            console.error(`Error rendering week ${wid}:`, error);
+            return (
+              <section key={wid} className='rounded-2xl border border-red-800 bg-red-950/30 p-4'>
+                <div className='text-red-400 text-sm'>
+                  Error al cargar la semana {wid}. Por favor, recarga la página.
+                </div>
+              </section>
+            );
+          }
         })
       )}
     </div>

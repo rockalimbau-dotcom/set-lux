@@ -14,6 +14,7 @@ import { storage } from '../../shared/services/localStorage.service';
 import type { Project as UIProject } from '../../features/projects/pages/ProjectsScreen.tsx';
 const ProfilePage = React.lazy(() => import('../../features/projects/pages/ProfilePage'));
 const SettingsPage = React.lazy(() => import('../../features/projects/pages/SettingsPage'));
+import { ErrorBoundary } from '../../shared/components';
 
 // Local Project interface removed in favor of UIProject from ProjectsScreen
 
@@ -27,48 +28,6 @@ interface AppRouterProps {
   setActiveProject: (project: UIProject | null) => void;
 }
 
-class ErrorBoundary extends React.Component<
-  { children: React.ReactNode },
-  { error: Error | null }
-> {
-  constructor(props: { children: React.ReactNode }) {
-    super(props);
-    this.state = { error: null };
-  }
-  static getDerivedStateFromError(error: Error) {
-    return { error };
-  }
-  componentDidCatch(error: Error, info: React.ErrorInfo) {
-    console.error('Render error boundary:', error, info);
-  }
-  render() {
-    if (this.state.error) {
-      return (
-        <div style={{ padding: 16, color: '#f87171' }}>
-          <h3>💥 Se ha producido un error</h3>
-          <pre style={{ whiteSpace: 'pre-wrap', fontSize: 12 }}>
-            {String(this.state.error?.stack || this.state.error)}
-          </pre>
-          <button
-            onClick={() => this.setState({ error: null })}
-            style={{
-              marginTop: 12,
-              padding: '6px 10px',
-              border: '1px solid #444',
-              borderRadius: 8,
-              background: '#111',
-              color: '#fff',
-              cursor: 'pointer',
-            }}
-          >
-            Reintentar
-          </button>
-        </div>
-      );
-    }
-    return this.props.children;
-  }
-}
 
 export default function AppRouter({
   mode,
@@ -254,24 +213,26 @@ export default function AppRouter({
           <Route
             path='necesidades'
             element={
-              <ProjectDetail
-                initialTab='necesidades'
-                project={activeProject as UIProject}
-                user={{ name: userName || 'Usuario' } as any}
-                onBack={() => {
-                  setMode('projects');
-                  navigate('/projects');
-                }}
-                onUpdateProject={(updatedProject: UIProject) => {
-                  setProjects((prev: UIProject[]) => {
-                    if (!Array.isArray(prev)) return [updatedProject];
-                    return prev.map((p: UIProject) => 
-                      p.id === updatedProject.id ? updatedProject : p
-                    );
-                  });
-                  setActiveProject(updatedProject);
-                }}
-              />
+              <ErrorBoundary>
+                <ProjectDetail
+                  initialTab='necesidades'
+                  project={activeProject as UIProject}
+                  user={{ name: userName || 'Usuario' } as any}
+                  onBack={() => {
+                    setMode('projects');
+                    navigate('/projects');
+                  }}
+                  onUpdateProject={(updatedProject: UIProject) => {
+                    setProjects((prev: UIProject[]) => {
+                      if (!Array.isArray(prev)) return [updatedProject];
+                      return prev.map((p: UIProject) => 
+                        p.id === updatedProject.id ? updatedProject : p
+                      );
+                    });
+                    setActiveProject(updatedProject);
+                  }}
+                />
+              </ErrorBoundary>
             }
           />
           <Route
