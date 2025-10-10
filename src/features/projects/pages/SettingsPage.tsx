@@ -129,7 +129,13 @@ export default function SettingsPage() {
             <div className='flex items-center gap-6'>
               <LogoIcon size={80} />
               <h1 className='text-3xl font-bold' style={{color: colors.titleMain}}>
-                SetLux <span className='text-gray-300' style={{color: isLight ? '#374151' : '#d1d5db'}}>/ Configuración</span>
+                <button 
+                  onClick={() => navigate('/projects')}
+                  className='hover:underline transition-all'
+                  style={{color: colors.titleMain}}
+                >
+                  SetLux
+                </button> <span className='text-gray-300 mx-2' style={{color: isLight ? '#374151' : '#d1d5db'}}>›</span> <span className='text-gray-300' style={{color: isLight ? '#374151' : '#d1d5db'}}>Configuración</span>
               </h1>
             </div>
           </div>
@@ -218,13 +224,6 @@ export default function SettingsPage() {
           </div>
 
           <div className='flex justify-end gap-4 mt-8'>
-            <a 
-              href='/projects' 
-              className='px-6 py-3 rounded-xl border transition-colors font-medium'
-              style={{borderColor: colors.panelBorder, color: isLight ? '#374151' : '#d1d5db'}}
-            >
-              Volver
-            </a>
             <button 
               onClick={save} 
               className='px-6 py-3 rounded-xl font-semibold text-white transition-all hover:shadow-lg'

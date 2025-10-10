@@ -33,7 +33,13 @@ export default function ProfilePage() {
             <div className='flex items-center gap-6'>
               <LogoIcon size={80} />
               <h1 className='text-3xl font-bold' style={{color: 'var(--text)'}}>
-                SetLux <span className='text-gray-300' style={{color: isLight ? '#374151' : '#d1d5db'}}>/ Perfil</span>
+                <button 
+                  onClick={() => navigate('/projects')}
+                  className='hover:underline transition-all'
+                  style={{color: 'var(--text)'}}
+                >
+                  SetLux
+                </button> <span className='text-gray-300 mx-2' style={{color: isLight ? '#374151' : '#d1d5db'}}>›</span> <span className='text-gray-300' style={{color: isLight ? '#374151' : '#d1d5db'}}>Perfil</span>
               </h1>
             </div>
           </div>

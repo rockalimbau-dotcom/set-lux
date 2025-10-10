@@ -253,39 +253,27 @@ export default function ProjectDetail({
         <div className='max-w-6xl mx-auto'>
           <div className='flex items-center justify-between mb-8'>
             <div className='flex items-center gap-6'>
-              <div className='relative h-20 flex items-center'>
-                <LogoIcon size={80} />
-                {activeTab === null ? (
-                  <button
-                    onClick={onBack}
-                    className='absolute left-1/2 -translate-x-1/2 top-full mt-2 w-10 h-10 rounded-xl border border-neutral-border hover:border-[var(--hover-border)] flex items-center justify-center'
-                    style={{
-                      color: (document.documentElement.getAttribute('data-theme')||'dark')==='light' ? '#111827' : '#ffffff',
-                      borderColor: (document.documentElement.getAttribute('data-theme')||'dark')==='light' ? 'rgba(229,231,235,0.6)' : 'var(--border)'
-                    }}
-                    title='Volver'
+              <LogoIcon size={80} />
+              <h1 className='text-3xl font-bold' style={{color: 'var(--text)'}}>
+                <button 
+                  onClick={() => navigate('/projects')}
+                  className='hover:underline transition-all'
+                  style={{color: 'var(--text)'}}
+                >
+                  Proyectos
+                </button> <span className='text-gray-300 mx-2' style={{color: (document.documentElement.getAttribute('data-theme')||'dark')==='light' ? '#374151' : '#d1d5db'}}>›</span> {activePhaseLabel ? (
+                  <button 
+                    onClick={() => navigate(`/project/${proj?.id}`)}
+                    className='hover:underline transition-all text-gray-300'
+                    style={{color: (document.documentElement.getAttribute('data-theme')||'dark')==='light' ? '#374151' : '#d1d5db'}}
                   >
-                    ←
+                    {proj?.nombre}
                   </button>
                 ) : (
-                  <button
-                    onClick={() => {
-                      setActiveTab(null);
-                      navigate(`/project/${pid}`, { replace: true });
-                    }}
-                    className='absolute left-[100%] -translate-x-1/2 top-full mt-2 px-5 py-2 rounded-xl border border-neutral-border hover:border-[var(--hover-border)] flex items-center justify-center text-sm whitespace-nowrap'
-                    style={{
-                      color: (document.documentElement.getAttribute('data-theme')||'dark')==='light' ? '#111827' : '#ffffff',
-                      borderColor: (document.documentElement.getAttribute('data-theme')||'dark')==='light' ? 'rgba(229,231,235,0.6)' : 'var(--border)'
-                    }}
-                    title='Volver a fases'
-                  >
-                    ← Volver a fases
-                  </button>
-                )}
-              </div>
-              <h1 className='text-3xl font-bold' style={{color: 'var(--text)'}}>
-                {(() => { return `SetLux`; })()} <span className='text-gray-300' style={{color: (document.documentElement.getAttribute('data-theme')||'dark')==='light' ? '#374151' : '#d1d5db'}}>/ {proj?.nombre}{activePhaseLabel ? ` / ${activePhaseLabel}` : ''}</span>
+                  <span className='text-gray-300' style={{color: (document.documentElement.getAttribute('data-theme')||'dark')==='light' ? '#374151' : '#d1d5db'}}>
+                    {proj?.nombre}
+                  </span>
+                )}{activePhaseLabel ? ` › ${activePhaseLabel}` : ''}
               </h1>
             </div>
 
