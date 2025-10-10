@@ -263,6 +263,12 @@ body {
   border-color: #e5e7eb !important;
 }
 
+/* Condiciones: inputs de tabla en modo oscuro sin fondo naranja - REGLA MÁS ESPECÍFICA */
+[data-theme='dark'] .phase-content table input[type="text"] {
+  background-color: transparent !important;
+  background: transparent !important;
+}
+
 /* Reportes: texto de chips en negro para mejor contraste en claro */
 [data-theme='light'] .phase-content table span.bg-black\/40 > span.text-xs,
 [data-theme='light'] .phase-content table .text-zinc-200,

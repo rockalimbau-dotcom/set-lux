@@ -21,7 +21,8 @@ describe('SettingsPage', () => {
   it('renders header and loads settings', async () => {
     render(<SettingsPage />);
     expect(await screen.findByText('SetLux')).toBeInTheDocument();
-    expect(screen.getByText('/ Configuración')).toBeInTheDocument();
+    expect(screen.getByText('Configuración')).toBeInTheDocument();
+    expect(screen.getByText('›')).toBeInTheDocument();
     expect(screen.getByText('Preferencias')).toBeInTheDocument();
 
     const select = screen.getByDisplayValue('Oscuro') as HTMLSelectElement;
@@ -48,11 +49,11 @@ describe('SettingsPage', () => {
     expect(screen.getByText('Configuración guardada ✓')).toBeInTheDocument();
   });
 
-  it('has a back link to projects', () => {
+  it('has clickable SetLux breadcrumb that navigates to projects', () => {
     render(<SettingsPage />);
-    const back = screen.getByText('Volver') as HTMLAnchorElement;
-    expect(back).toBeInTheDocument();
-    expect(back.getAttribute('href')).toBe('/projects');
+    const setLuxButton = screen.getByText('SetLux').closest('button');
+    expect(setLuxButton).toBeInTheDocument();
+    expect(setLuxButton).toHaveClass('hover:underline');
   });
 });
 

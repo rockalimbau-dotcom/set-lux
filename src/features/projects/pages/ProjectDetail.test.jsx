@@ -52,7 +52,8 @@ describe('ProjectDetail (smoke)', () => {
     ).toBeInTheDocument();
     expect(screen.getByText(/Condiciones/)).toBeInTheDocument();
 
-    // Back button exists (by title)
-    expect(screen.getByTitle('Volver')).toBeInTheDocument();
+    // Breadcrumb navigation exists
+    expect(screen.getByText('Proyectos')).toBeInTheDocument();
+    expect(screen.getByText('›')).toBeInTheDocument();
   });
 });

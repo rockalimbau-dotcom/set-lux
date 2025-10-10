@@ -102,9 +102,16 @@ function CondicionesMensual({ project, onChange = () => {}, onRegisterExport }: 
     onChangeRef.current = onChange;
   }, [onChange]);
 
+  const lastEmittedRef = useRef('');
+
   useEffect(() => {
-    onChangeRef.current?.({ mensual: model });
-  }, [model, storageKey]);
+    const payload = { mensual: model };
+    const signature = JSON.stringify(payload);
+    if (signature !== lastEmittedRef.current) {
+      lastEmittedRef.current = signature;
+      onChangeRef.current?.(payload);
+    }
+  }, [model]);
 
 
   const setText = (key: string, value: string) => setModel((m: AnyRecord) => ({ ...m, [key]: value }));
@@ -184,7 +191,8 @@ function CondicionesMensual({ project, onChange = () => {}, onRegisterExport }: 
         }
       });
     }
-  }, [model, project, onRegisterExport]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [model, project]);
 
   return (
     <div className='space-y-6'>

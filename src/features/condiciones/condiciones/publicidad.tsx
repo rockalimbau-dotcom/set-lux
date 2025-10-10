@@ -94,7 +94,7 @@ function CondicionesPublicidad({
       lastEmittedRef.current = signature;
       onChange(payload);
     }
-  }, [model, storageKey]);
+  }, [model]);
 
   const setPrice = (role: string, header: string, value: string) =>
     setModel((m: AnyRecord) => {

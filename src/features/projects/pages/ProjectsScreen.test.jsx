@@ -44,7 +44,8 @@ describe('ProjectsScreen', () => {
   it('renders without crashing', () => {
     render(<ProjectsScreen {...mockProps} />);
     expect(screen.getByText('SetLux')).toBeInTheDocument();
-    expect(screen.getByText('/ Proyectos')).toBeInTheDocument();
+    expect(screen.getByText('Proyectos')).toBeInTheDocument();
+    expect(screen.getByText('›')).toBeInTheDocument();
   });
 
   it('displays user name and welcome message', () => {

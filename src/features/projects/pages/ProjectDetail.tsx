@@ -396,7 +396,10 @@ export default function ProjectDetail({
             <CondicionesTab
               project={proj}
               mode={condTipo}
-              onChange={(patch: any) =>
+              onChange={(patch: any) => {
+                // Solo actualizar si hay cambios reales
+                if (!patch) return;
+                
                 setProj(p => {
                   // Si desde Condiciones cambian el tipo, respétalo; si no, conserva el actual
                   const prevTipo = p?.conditions?.tipo || 'semanal';
@@ -410,8 +413,8 @@ export default function ProjectDetail({
                     },
                   };
                   return next;
-                })
-              }
+                });
+              }}
             />
           )}
         </div>

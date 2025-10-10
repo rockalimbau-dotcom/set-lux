@@ -81,6 +81,8 @@ function CondicionesSemanal({ project, onChange = () => {}, onRegisterExport }: 
     onChangeRef.current = onChange;
   }, [onChange]);
 
+  const lastEmittedRef = useRef('');
+
   useEffect(() => {
     const festivosRendered = renderWithParams(
       model.festivosTemplate,
@@ -88,8 +90,13 @@ function CondicionesSemanal({ project, onChange = () => {}, onRegisterExport }: 
     );
     const festivosDates = extractFestivosDatesForPlan(festivosRendered);
 
-    onChangeRef.current?.({ semanal: { ...model, festivosDates } });
-  }, [model, storageKey]);
+    const payload = { semanal: { ...model, festivosDates } };
+    const signature = JSON.stringify(payload);
+    if (signature !== lastEmittedRef.current) {
+      lastEmittedRef.current = signature;
+      onChangeRef.current?.(payload);
+    }
+  }, [model]);
 
   /* ---------- Helpers edición ---------- */
   const setPrice = (role: string, header: string, value: string) =>
@@ -223,7 +230,8 @@ function CondicionesSemanal({ project, onChange = () => {}, onRegisterExport }: 
         }
       });
     }
-  }, [model, project, onRegisterExport]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [model, project]);
 
   return (
     <div className='space-y-6'>
@@ -412,17 +420,28 @@ function CondicionesSemanal({ project, onChange = () => {}, onRegisterExport }: 
             {PRICE_ROLES.map(role => (
               <tr key={role}>
                 <Td className='font-semibold whitespace-nowrap'>{role}</Td>
-                {PRICE_HEADERS.map(h => (
-                  <Td key={h}>
-                    <input
-                      type='text'
-                      value={model.prices?.[role]?.[h] ?? ''}
-                      onChange={e => handlePriceChange(role, h, (e.target as HTMLInputElement).value)}
-                      placeholder='€'
-                      className='w-full px-2 py-1 rounded-lg border border-neutral-border focus:outline-none focus:ring-1'
-                    />
-                  </Td>
-                ))}
+                {PRICE_HEADERS.map(h => {
+                  const isSemanal = h === 'Precio semanal';
+                  const isRefuerzo = h === 'Precio refuerzo';
+                  const hasSemanalValue = model.prices?.[role]?.['Precio semanal'];
+                  
+                  return (
+                    <Td key={h}>
+                      <input
+                        type='text'
+                        value={model.prices?.[role]?.[h] ?? ''}
+                        onChange={e => handlePriceChange(role, h, (e.target as HTMLInputElement).value)}
+                        placeholder={isSemanal ? '€' : ''}
+                        disabled={!isSemanal && !isRefuerzo && !hasSemanalValue}
+                        className={`w-full px-2 py-1 rounded-lg border border-neutral-border focus:outline-none focus:ring-1 ${
+                          !isSemanal && !isRefuerzo && !hasSemanalValue
+                            ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 cursor-not-allowed' 
+                            : 'dark:bg-transparent'
+                        }`}
+                      />
+                    </Td>
+                  );
+                })}
               </tr>
             ))}
           </tbody>

@@ -22,7 +22,8 @@ describe('ProfilePage', () => {
     render(<ProfilePage />);
 
     expect(await screen.findByText('SetLux')).toBeInTheDocument();
-    expect(screen.getByText('/ Perfil')).toBeInTheDocument();
+    expect(screen.getByText('Perfil')).toBeInTheDocument();
+    expect(screen.getByText('›')).toBeInTheDocument();
     expect(screen.getByText('Datos de usuario')).toBeInTheDocument();
 
     const name = screen.getByPlaceholderText('Tu nombre') as HTMLInputElement;
