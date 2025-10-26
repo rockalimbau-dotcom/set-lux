@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import ProfilePage from './ProfilePage';
 
 vi.mock('@shared/services/localStorage.service', () => ({
@@ -19,7 +20,7 @@ describe('ProfilePage', () => {
   });
 
   it('renders header and form with loaded values', async () => {
-    render(<ProfilePage />);
+    render(<MemoryRouter><ProfilePage /></MemoryRouter>);
 
     expect(await screen.findByText('SetLux')).toBeInTheDocument();
     expect(screen.getByText('Perfil')).toBeInTheDocument();
@@ -36,7 +37,7 @@ describe('ProfilePage', () => {
   });
 
   it('saves profile and shows feedback', async () => {
-    render(<ProfilePage />);
+    render(<MemoryRouter><ProfilePage /></MemoryRouter>);
 
     const name = (await screen.findByPlaceholderText('Tu nombre')) as HTMLInputElement;
     fireEvent.change(name, { target: { value: 'Nuevo Nombre' } });
@@ -52,11 +53,11 @@ describe('ProfilePage', () => {
     expect(screen.getByText('Perfil guardado ✓')).toBeInTheDocument();
   });
 
-  it('has a back link to projects', () => {
-    render(<ProfilePage />);
-    const back = screen.getByText('Volver') as HTMLAnchorElement;
-    expect(back).toBeInTheDocument();
-    expect(back.getAttribute('href')).toBe('/projects');
+  it('has clickable SetLux breadcrumb that navigates to projects', () => {
+    render(<MemoryRouter><ProfilePage /></MemoryRouter>);
+    const setLuxButton = screen.getByText('SetLux').closest('button');
+    expect(setLuxButton).toBeInTheDocument();
+    expect(setLuxButton).toHaveClass('hover:underline');
   });
 });
 

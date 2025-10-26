@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import LogoIcon from '@shared/components/LogoIcon';
 import { storage } from '@shared/services/localStorage.service';
 import { fetchHolidays } from '@shared/services/holidays.service';
@@ -52,6 +53,8 @@ const REGIONS = {
 };
 
 export default function SettingsPage() {
+  const navigate = useNavigate();
+  
   const formatYMDToDMY = (ymd: string): string => {
     const [y, m, d] = (ymd || '').split('-').map(Number);
     if (!y || !m || !d) return ymd;

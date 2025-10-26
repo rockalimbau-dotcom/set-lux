@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import SettingsPage from './SettingsPage';
 
 vi.mock('@shared/services/localStorage.service', () => ({
@@ -19,7 +20,7 @@ describe('SettingsPage', () => {
   });
 
   it('renders header and loads settings', async () => {
-    render(<SettingsPage />);
+    render(<MemoryRouter><SettingsPage /></MemoryRouter>);
     expect(await screen.findByText('SetLux')).toBeInTheDocument();
     expect(screen.getByText('Configuración')).toBeInTheDocument();
     expect(screen.getByText('›')).toBeInTheDocument();
@@ -33,7 +34,7 @@ describe('SettingsPage', () => {
   });
 
   it('saves settings and shows feedback', () => {
-    render(<SettingsPage />);
+    render(<MemoryRouter><SettingsPage /></MemoryRouter>);
 
     const select = screen.getByDisplayValue('Oscuro') as HTMLSelectElement;
     fireEvent.change(select, { target: { value: 'light' } });
@@ -50,7 +51,7 @@ describe('SettingsPage', () => {
   });
 
   it('has clickable SetLux breadcrumb that navigates to projects', () => {
-    render(<SettingsPage />);
+    render(<MemoryRouter><SettingsPage /></MemoryRouter>);
     const setLuxButton = screen.getByText('SetLux').closest('button');
     expect(setLuxButton).toBeInTheDocument();
     expect(setLuxButton).toHaveClass('hover:underline');

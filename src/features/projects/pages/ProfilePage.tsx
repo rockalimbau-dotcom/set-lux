@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import LogoIcon from '@shared/components/LogoIcon';
 import { storage } from '@shared/services/localStorage.service';
 
 export default function ProfilePage() {
+  const navigate = useNavigate();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [role, setRole] = useState('');
@@ -87,13 +89,6 @@ export default function ProfilePage() {
         </div>
 
         <div className='flex justify-end gap-4 mt-8'>
-          <a 
-            href='/projects' 
-            className='px-6 py-3 rounded-xl border transition-colors font-medium'
-            style={{borderColor: 'var(--border)', color: isLight ? '#374151' : '#d1d5db'}}
-          >
-            Volver
-          </a>
           <button 
             onClick={save} 
             className='px-6 py-3 rounded-xl font-semibold text-white transition-colors'
