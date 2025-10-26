@@ -96,6 +96,7 @@ function CondicionesMensual({ project, onChange = () => {}, onRegisterExport }: 
   const [model, setModel] = useLocalStorage<AnyRecord>(storageKey, () =>
     loadOrSeed(storageKey)
   );
+  const [showRoleSelect, setShowRoleSelect] = useState(false);
 
   const onChangeRef = useRef(onChange);
   useEffect(() => {
@@ -117,6 +118,47 @@ function CondicionesMensual({ project, onChange = () => {}, onRegisterExport }: 
   const setText = (key: string, value: string) => setModel((m: AnyRecord) => ({ ...m, [key]: value }));
   const setParam = (key: string, value: string) =>
     setModel((m: AnyRecord) => ({ ...m, params: { ...(m.params || {}), [key]: value } }));
+
+  // Funciones para gestionar roles
+  const addRole = (newRole: string) => {
+    if (!newRole) return;
+    
+    setModel((m: AnyRecord) => {
+      const currentRoles = m.roles || PRICE_ROLES;
+      if (currentRoles.includes(newRole)) return m;
+      
+      // Mantener el orden de PRICE_ROLES
+      const nextRoles: string[] = [];
+      const currentSet = new Set(currentRoles);
+      
+      for (const role of PRICE_ROLES) {
+        if (role === newRole) {
+          nextRoles.push(newRole);
+        } else if (currentSet.has(role)) {
+          nextRoles.push(role);
+        }
+      }
+      
+      if (!PRICE_ROLES.includes(newRole)) {
+        nextRoles.push(newRole);
+      }
+      
+      return { ...m, roles: nextRoles };
+    });
+    setShowRoleSelect(false);
+  };
+  
+  const removeRole = (role: string) => {
+    setModel((m: AnyRecord) => {
+      const roles = m.roles || PRICE_ROLES;
+      const nextRoles = roles.filter((r: string) => r !== role);
+      const nextPrices = { ...m.prices };
+      delete nextPrices[role];
+      return { ...m, roles: nextRoles, prices: nextPrices };
+    });
+  };
+  
+  const roles = model.roles || PRICE_ROLES;
 
   //
 
@@ -183,7 +225,7 @@ function CondicionesMensual({ project, onChange = () => {}, onRegisterExport }: 
             'mensual',
             model,
             PRICE_HEADERS,
-            PRICE_ROLES
+            roles
           );
         } catch (error) {
           console.error('Error exporting condiciones mensual PDF:', error);
@@ -357,10 +399,52 @@ function CondicionesMensual({ project, onChange = () => {}, onRegisterExport }: 
         )}
       </section>
 
-      <div className='text-xs text-zinc-400'>
-        Introduce el <strong>precio mensual</strong> y el resto de importes se
-        calcularán automáticamente. Solo tendrás que indicar manualmente el{' '}
-        <strong>precio de refuerzo</strong>.
+      <div className='text-xs text-zinc-400 mb-4 flex items-center justify-between'>
+        <span>
+          Introduce el <strong>precio mensual</strong> y el resto de importes se
+          calcularán automáticamente. Solo tendrás que indicar manualmente el{' '}
+          <strong>precio de refuerzo</strong>.
+        </span>
+        <div className='relative'>
+          {PRICE_ROLES.filter(r => !roles.includes(r)).length === 0 ? (
+            <button
+              disabled
+              className='px-3 py-1 text-sm bg-gray-500 text-white rounded-lg cursor-not-allowed'
+            >
+              ✓ Todos los roles
+            </button>
+          ) : (
+            <>
+              <button
+                onClick={() => setShowRoleSelect(!showRoleSelect)}
+                className='px-3 py-1 text-sm bg-brand text-white rounded-lg hover:bg-brand/80'
+              >
+                + Añadir rol
+              </button>
+              {showRoleSelect && (
+                <div 
+                  className='absolute right-0 top-full mt-1 bg-blue-200 border border-blue-300 dark:bg-amber-800 dark:border-amber-600 rounded-lg shadow-lg z-10 min-w-[150px] max-h-60 overflow-y-auto'
+                  tabIndex={-1}
+                  onBlur={(e) => {
+                    if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+                      setTimeout(() => setShowRoleSelect(false), 200);
+                    }
+                  }}
+                >
+                  {PRICE_ROLES.filter(r => !roles.includes(r)).map((role: string) => (
+                    <button
+                      key={role}
+                      onClick={() => addRole(role)}
+                      className='w-full text-left px-3 py-2 text-sm text-white hover:bg-blue-300 dark:hover:bg-amber-600/40 transition-colors'
+                    >
+                      {role}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+        </div>
       </div>
       <section className='rounded-2xl border border-neutral-border bg-neutral-panel/90 overflow-x-auto'>
         <table className='min-w-[920px] w-full border-collapse text-sm'>
@@ -373,9 +457,24 @@ function CondicionesMensual({ project, onChange = () => {}, onRegisterExport }: 
             </tr>
           </thead>
           <tbody>
-            {PRICE_ROLES.map(role => (
-              <tr key={role}>
-                <Td className='font-semibold whitespace-nowrap'>{role}</Td>
+            {roles.map((role: string) => (
+              <tr key={role} className='relative'>
+                <Td className='font-semibold whitespace-nowrap'>
+                  <div className='flex items-center gap-1'>
+                    <button
+                      onClick={() => {
+                        if (confirm(`¿Eliminar el rol "${role}"?`)) {
+                          removeRole(role);
+                        }
+                      }}
+                      className='text-gray-400 hover:text-blue-500 hover:bg-blue-100 dark:hover:text-amber-500 dark:hover:bg-amber-900/20 font-bold text-sm w-6 h-6 flex items-center justify-center rounded transition-all hover:scale-110'
+                      title='Eliminar rol'
+                    >
+                      ✕
+                    </button>
+                    <span>{role}</span>
+                  </div>
+                </Td>
                 {PRICE_HEADERS.map(h => (
                   <Td key={h}>
                     <input

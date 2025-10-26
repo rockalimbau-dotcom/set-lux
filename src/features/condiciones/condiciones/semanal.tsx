@@ -69,6 +69,7 @@ function CondicionesSemanal({ project, onChange = () => {}, onRegisterExport }: 
 
   const [showParams, setShowParams] = useState(false);
   const paramsRef = useRef<HTMLDivElement | null>(null);
+  const [showRoleSelect, setShowRoleSelect] = useState(false);
 
   // Estado por modo (semanal) con persistencia localStorage
   const [model, setModel] = useLocalStorage<any>(storageKey, () =>
@@ -113,6 +114,52 @@ function CondicionesSemanal({ project, onChange = () => {}, onRegisterExport }: 
       ...m,
       params: { ...(m.params || {}), [key]: value },
     }));
+
+  // Funciones para gestionar roles
+  const addRole = (newRole: string) => {
+    if (!newRole) return;
+    
+    setModel((m: any) => {
+      const currentRoles = m.roles || PRICE_ROLES;
+      if (currentRoles.includes(newRole)) return m;
+      
+      // Mantener el orden de PRICE_ROLES
+      const nextRoles: string[] = [];
+      const currentSet = new Set(currentRoles);
+      
+      // Recorrer PRICE_ROLES en orden
+      for (const role of PRICE_ROLES) {
+        if (role === newRole) {
+          // Si es el rol que vamos a añadir, añadirlo aquí
+          nextRoles.push(newRole);
+        } else if (currentSet.has(role)) {
+          // Si ya estaba en la lista, añadirlo
+          nextRoles.push(role);
+        }
+      }
+      
+      // Si el rol no está en PRICE_ROLES, añadirlo al final
+      if (!PRICE_ROLES.includes(newRole)) {
+        nextRoles.push(newRole);
+      }
+      
+      return { ...m, roles: nextRoles };
+    });
+    setShowRoleSelect(false);
+  };
+  
+  const removeRole = (role: string) => {
+    setModel((m: any) => {
+      const roles = m.roles || PRICE_ROLES;
+      const nextRoles = roles.filter((r: string) => r !== role);
+      const nextPrices = { ...m.prices };
+      delete nextPrices[role];
+      return { ...m, roles: nextRoles, prices: nextPrices };
+    });
+  };
+  
+  // Roles dinámicos del modelo o por defecto
+  const roles = model.roles || PRICE_ROLES;
 
   // ====== CÁLCULOS AUTOMÁTICOS DESDE "PRECIO SEMANAL" ======
   const parseNum = (x: any) => {
@@ -222,7 +269,7 @@ function CondicionesSemanal({ project, onChange = () => {}, onRegisterExport }: 
             'semanal',
             model,
             PRICE_HEADERS,
-            PRICE_ROLES
+            roles
           );
         } catch (error) {
           console.error('Error exporting condiciones semanal PDF:', error);
@@ -231,7 +278,7 @@ function CondicionesSemanal({ project, onChange = () => {}, onRegisterExport }: 
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [model, project]);
+  }, [model, project, roles]);
 
   return (
     <div className='space-y-6'>
@@ -400,13 +447,56 @@ function CondicionesSemanal({ project, onChange = () => {}, onRegisterExport }: 
       </section>
 
       {/* Tabla de precios */}
-      <div className='text-xs text-zinc-400'>
-        Introduce el <strong>precio semanal</strong> y el resto de importes se
-        calcularán automáticamente. Solo tendrás que indicar manualmente el{' '}
-        <strong>precio de refuerzo</strong>.
+      <div className='text-xs text-zinc-400 mb-4 flex items-center justify-between'>
+        <span>
+          Introduce el <strong>precio semanal</strong> y el resto de importes se
+          calcularán automáticamente. Solo tendrás que indicar manualmente el{' '}
+          <strong>precio de refuerzo</strong>.
+        </span>
+        <div className='relative'>
+          {PRICE_ROLES.filter(r => !roles.includes(r)).length === 0 ? (
+            <button
+              disabled
+              className='px-3 py-1 text-sm bg-gray-500 text-white rounded-lg cursor-not-allowed'
+            >
+              ✓ Todos los roles
+            </button>
+          ) : (
+            <>
+              <button
+                onClick={() => setShowRoleSelect(!showRoleSelect)}
+                className='px-3 py-1 text-sm bg-brand text-white rounded-lg hover:bg-brand/80'
+              >
+                + Añadir rol
+              </button>
+              {showRoleSelect && (
+                <div 
+                  className='absolute right-0 top-full mt-1 bg-blue-200 border border-blue-300 dark:bg-amber-800 dark:border-amber-600 rounded-lg shadow-lg z-10 min-w-[150px] max-h-60 overflow-y-auto'
+                  tabIndex={-1}
+                  onBlur={(e) => {
+                    // Solo cerrar si no estamos haciendo clic dentro del dropdown
+                    if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+                      setTimeout(() => setShowRoleSelect(false), 200);
+                    }
+                  }}
+                >
+                  {PRICE_ROLES.filter(r => !roles.includes(r)).map((role: string) => (
+                    <button
+                      key={role}
+                      onClick={() => addRole(role)}
+                      className='w-full text-left px-3 py-2 text-sm text-white hover:bg-blue-300 dark:hover:bg-amber-600/40 transition-colors'
+                    >
+                      {role}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+        </div>
       </div>
 
-      <section className='rounded-2xl border border-neutral-border bg-neutral-panel/90 overflow-x-auto'>
+      <section className='rounded-2xl border border-neutral-border bg-neutral-panel/90 overflow-x-auto relative'>
         <table className='min-w-[920px] w-full border-collapse text-sm'>
           <thead>
             <tr>
@@ -417,9 +507,24 @@ function CondicionesSemanal({ project, onChange = () => {}, onRegisterExport }: 
             </tr>
           </thead>
           <tbody>
-            {PRICE_ROLES.map(role => (
-              <tr key={role}>
-                <Td className='font-semibold whitespace-nowrap'>{role}</Td>
+            {roles.map((role: string) => (
+              <tr key={role} className='relative'>
+                <Td className='font-semibold whitespace-nowrap'>
+                  <div className='flex items-center gap-1'>
+                    <button
+                      onClick={() => {
+                        if (confirm(`¿Eliminar el rol "${role}"?`)) {
+                          removeRole(role);
+                        }
+                      }}
+                      className='text-gray-400 hover:text-blue-500 hover:bg-blue-100 dark:hover:text-amber-500 dark:hover:bg-amber-900/20 font-bold text-sm w-6 h-6 flex items-center justify-center rounded transition-all hover:scale-110'
+                      title='Eliminar rol'
+                    >
+                      ✕
+                    </button>
+                    <span>{role}</span>
+                  </div>
+                </Td>
                 {PRICE_HEADERS.map(h => {
                   const isSemanal = h === 'Precio semanal';
                   const isRefuerzo = h === 'Precio refuerzo';

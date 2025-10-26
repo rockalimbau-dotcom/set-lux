@@ -84,6 +84,7 @@ function CondicionesPublicidad({
   const [model, setModel] = useLocalStorage<AnyRecord>(storageKey, () =>
     loadOrSeedPublicidad(storageKey)
   );
+  const [showRoleSelect, setShowRoleSelect] = useState(false);
 
   const onChangeRef = useRef(onChange);
   useEffect(() => {
@@ -115,6 +116,47 @@ function CondicionesPublicidad({
       ...m,
       params: { ...(m.params || {}), [key]: value },
     }));
+  
+  // Funciones para gestionar roles
+  const addRole = (newRole: string) => {
+    if (!newRole) return;
+    
+    setModel((m: AnyRecord) => {
+      const currentRoles = m.roles || PRICE_ROLES_PUBLI;
+      if (currentRoles.includes(newRole)) return m;
+      
+      // Mantener el orden de PRICE_ROLES_PUBLI
+      const nextRoles: string[] = [];
+      const currentSet = new Set(currentRoles);
+      
+      for (const role of PRICE_ROLES_PUBLI) {
+        if (role === newRole) {
+          nextRoles.push(newRole);
+        } else if (currentSet.has(role)) {
+          nextRoles.push(role);
+        }
+      }
+      
+      if (!PRICE_ROLES_PUBLI.includes(newRole)) {
+        nextRoles.push(newRole);
+      }
+      
+      return { ...m, roles: nextRoles };
+    });
+    setShowRoleSelect(false);
+  };
+  
+  const removeRole = (role: string) => {
+    setModel((m: AnyRecord) => {
+      const roles = m.roles || PRICE_ROLES_PUBLI;
+      const nextRoles = roles.filter((r: string) => r !== role);
+      const nextPrices = { ...m.prices };
+      delete nextPrices[role];
+      return { ...m, roles: nextRoles, prices: nextPrices };
+    });
+  };
+  
+  const roles = model.roles || PRICE_ROLES_PUBLI;
 
   const parseNum = (x: unknown): number => {
     if (x == null) return NaN;
@@ -206,13 +248,13 @@ function CondicionesPublicidad({
         'publicidad',
         model,
         PRICE_HEADERS_PUBLI,
-        PRICE_ROLES_PUBLI
+        roles
       );
     } catch (error) {
       console.error('Error exporting condiciones publicidad PDF:', error);
       alert('Error al generar el PDF. Por favor, inténtalo de nuevo.');
     }
-  }, [project, model]);
+  }, [project, model, roles]);
 
   useEffect(() => {
     if (onRegisterExport) {
@@ -354,8 +396,50 @@ function CondicionesPublicidad({
         )}
       </section>
 
-      <div className='text-xs text-zinc-400'>
-        Los precios base están preestablecidos. <strong>Precio Día extra/Festivo</strong> y <strong>Travel day</strong> se calculan automáticamente desde el precio jornada. El resto son manuales.
+      <div className='text-xs text-zinc-400 mb-4 flex items-center justify-between'>
+        <span>
+          Los precios base están preestablecidos. <strong>Precio Día extra/Festivo</strong> y <strong>Travel day</strong> se calculan automáticamente desde el precio jornada. El resto son manuales.
+        </span>
+        <div className='relative'>
+          {PRICE_ROLES_PUBLI.filter(r => !roles.includes(r)).length === 0 ? (
+            <button
+              disabled
+              className='px-3 py-1 text-sm bg-gray-500 text-white rounded-lg cursor-not-allowed'
+            >
+              ✓ Todos los roles
+            </button>
+          ) : (
+            <>
+              <button
+                onClick={() => setShowRoleSelect(!showRoleSelect)}
+                className='px-3 py-1 text-sm bg-brand text-white rounded-lg hover:bg-brand/80'
+              >
+                + Añadir rol
+              </button>
+              {showRoleSelect && (
+                <div 
+                  className='absolute right-0 top-full mt-1 bg-blue-200 border border-blue-300 dark:bg-amber-800 dark:border-amber-600 rounded-lg shadow-lg z-10 min-w-[150px] max-h-60 overflow-y-auto'
+                  tabIndex={-1}
+                  onBlur={(e) => {
+                    if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+                      setTimeout(() => setShowRoleSelect(false), 200);
+                    }
+                  }}
+                >
+                  {PRICE_ROLES_PUBLI.filter(r => !roles.includes(r)).map((role: string) => (
+                    <button
+                      key={role}
+                      onClick={() => addRole(role)}
+                      className='w-full text-left px-3 py-2 text-sm text-white hover:bg-blue-300 dark:hover:bg-amber-600/40 transition-colors'
+                    >
+                      {role}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+        </div>
       </div>
 
       <section className='rounded-2xl border border-neutral-border bg-neutral-panel/90 overflow-x-auto'>
@@ -369,9 +453,24 @@ function CondicionesPublicidad({
             </tr>
           </thead>
           <tbody>
-            {PRICE_ROLES_PUBLI.map(role => (
-              <tr key={role}>
-                <Td className='font-semibold whitespace-nowrap'>{role}</Td>
+            {roles.map((role: string) => (
+              <tr key={role} className='relative'>
+                <Td className='font-semibold whitespace-nowrap'>
+                  <div className='flex items-center gap-1'>
+                    <button
+                      onClick={() => {
+                        if (confirm(`¿Eliminar el rol "${role}"?`)) {
+                          removeRole(role);
+                        }
+                      }}
+                      className='text-gray-400 hover:text-blue-500 hover:bg-blue-100 dark:hover:text-amber-500 dark:hover:bg-amber-900/20 font-bold text-sm w-6 h-6 flex items-center justify-center rounded transition-all hover:scale-110'
+                      title='Eliminar rol'
+                    >
+                      ✕
+                    </button>
+                    <span>{role}</span>
+                  </div>
+                </Td>
                 {PRICE_HEADERS_PUBLI.map(h => (
                   <Td key={h}>
                     <input
