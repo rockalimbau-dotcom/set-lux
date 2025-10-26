@@ -21,9 +21,11 @@ export const storage = {
 
   setString: (key: string, value: string): void => {
     try {
+      console.log('[STORAGE.DEBUG] setString called:', key, value);
       window.localStorage.setItem(key, value);
-    } catch {
-      // ignore
+      console.log('[STORAGE.DEBUG] setString success');
+    } catch (e) {
+      console.error('[STORAGE.DEBUG] setString error:', e);
     }
   },
 

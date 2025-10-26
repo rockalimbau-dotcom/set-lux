@@ -3,7 +3,7 @@
 // Importar las funciones específicas de cada tipo
 import { makeRolePrices as makeRolePricesSemanal, aggregateReports as aggregateReportsSemanal, getCondParams as getCondParamsSemanal, getOvertimeWindowForPayrollMonth as getOvertimeWindowForPayrollMonthSemanal, isoInRange as isoInRangeSemanal, aggregateWindowedReport as aggregateWindowedReportSemanal } from './calcSemanal';
 import { makeRolePrices as makeRolePricesMensual, aggregateReports as aggregateReportsMensual, getCondParams as getCondParamsMensual, aggregateWindowedReport as aggregateWindowedReportMensual } from './calcMensual';
-// import { makeRolePrices as makeRolePricesPublicidad, aggregateReports as aggregateReportsPublicidad, getCondParams as getCondParamsPublicidad, aggregateWindowedReport as aggregateWindowedReportPublicidad } from './calcPublicidad';
+import { makeRolePrices as makeRolePricesPublicidad, aggregateReports as aggregateReportsPublicidad, getCondParams as getCondParamsPublicidad, aggregateWindowedReport as aggregateWindowedReportPublicidad } from './calcPublicidad';
 
 // Función para detectar el tipo de proyecto
 function getProjectType(project: any): 'semanal' | 'mensual' | 'publicidad' {
@@ -27,7 +27,7 @@ export function makeRolePrices(project: any) {
     case 'mensual':
       return makeRolePricesMensual(project);
     case 'publicidad':
-      return makeRolePricesSemanal(project); // Temporalmente usar semanal
+      return makeRolePricesPublicidad(project);
     case 'semanal':
     default:
       return makeRolePricesSemanal(project);
@@ -46,7 +46,7 @@ export function aggregateReports(project: any, weeks: any[], filterISO: ((iso: s
     case 'mensual':
       return aggregateReportsMensual(project, weeks, filterISO);
     case 'publicidad':
-      return aggregateReportsSemanal(project, weeks, filterISO); // Temporalmente usar semanal
+      return aggregateReportsPublicidad(project, weeks, filterISO);
     case 'semanal':
     default:
       return aggregateReportsSemanal(project, weeks, filterISO);
@@ -64,7 +64,7 @@ export function getCondParams(project: any) {
     case 'mensual':
       return getCondParamsMensual(project);
     case 'publicidad':
-      return getCondParamsSemanal(project); // Temporalmente usar semanal
+      return getCondParamsPublicidad(project);
     case 'semanal':
     default:
       return getCondParamsSemanal(project);
@@ -82,7 +82,7 @@ export function getOvertimeWindowForPayrollMonth(project: any, monthKey: string)
     case 'mensual':
       return getOvertimeWindowForPayrollMonthSemanal(project, monthKey);
     case 'publicidad':
-      return getOvertimeWindowForPayrollMonthSemanal(project, monthKey); // Usar semanal como base
+      return getOvertimeWindowForPayrollMonthSemanal(project, monthKey); // Usar semanal como base (misma lógica)
     case 'semanal':
     default:
       return getOvertimeWindowForPayrollMonthSemanal(project, monthKey);
@@ -105,7 +105,7 @@ export function aggregateWindowedReport(project: any, weeks: any[], filterISO: (
     case 'mensual':
       return aggregateWindowedReportMensual(project, weeks, filterISO);
     case 'publicidad':
-      return aggregateWindowedReportSemanal(project, weeks, filterISO); // Temporalmente usar semanal
+      return aggregateWindowedReportPublicidad(project, weeks, filterISO);
     case 'semanal':
     default:
       return aggregateWindowedReportSemanal(project, weeks, filterISO);

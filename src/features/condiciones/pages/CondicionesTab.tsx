@@ -1,6 +1,6 @@
-import CondicionesMensual from '@features/condiciones/condiciones/mensual.jsx';
-import CondicionesPublicidad from '@features/condiciones/condiciones/publicidad.jsx';
-import CondicionesSemanal from '@features/condiciones/condiciones/semanal.jsx';
+import CondicionesMensual from '@features/condiciones/condiciones/mensual';
+import CondicionesPublicidad from '@features/condiciones/condiciones/publicidad';
+import CondicionesSemanal from '@features/condiciones/condiciones/semanal';
 import React, { useMemo, useState, useEffect } from 'react';
 
 type AnyRecord = Record<string, any>;

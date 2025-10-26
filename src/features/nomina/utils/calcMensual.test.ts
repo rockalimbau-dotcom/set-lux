@@ -22,7 +22,7 @@ describe('calcMensual - makeRolePrices with holidayDay', () => {
     };
 
     // Mock the storage to return the conditions data
-    storage.getJSON.mockReturnValue({
+    storage.getJSON = vi.fn().mockReturnValue({
       prices: {
         GAFFER: {
           'Precio jornada': '200',
@@ -60,7 +60,7 @@ describe('calcMensual - makeRolePrices with holidayDay', () => {
     };
 
     // Mock the storage to return the conditions data
-    storage.getJSON.mockReturnValue({
+    storage.getJSON = vi.fn().mockReturnValue({
       prices: {
         GAFFER: {
           'Precio refuerzo': '150',
@@ -97,7 +97,7 @@ describe('calcMensual - makeRolePrices with holidayDay', () => {
     };
 
     // Mock the storage to return the conditions data
-    storage.getJSON.mockReturnValue({
+    storage.getJSON = vi.fn().mockReturnValue({
       prices: {
         GAFFER: {
           'Precio jornada': '200',
@@ -116,3 +116,4 @@ describe('calcMensual - makeRolePrices with holidayDay', () => {
     expect(gafferPrices.holidayDay).toBe(0);
   });
 });
+

@@ -20,6 +20,7 @@ export function loadCondModel(project: { id?: string; nombre?: string; condition
     `cond_${base}_semanal`,
     `cond_${base}_publicidad`,
   ];
+  
   for (const k of keys) {
     try {
       const obj = storage.getJSON<any>(k);
@@ -27,6 +28,7 @@ export function loadCondModel(project: { id?: string; nombre?: string; condition
       return obj; // { prices:{...}, params:{...} }
     } catch {}
   }
+  
   return {} as any;
 }
 

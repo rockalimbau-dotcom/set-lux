@@ -37,6 +37,7 @@ export default function useReportData(
   isPersonScheduledOn: (fecha: string, role: string, name: string, findWeekAndDay: (iso: string) => WeekAndDay, block?: 'base' | 'pre' | 'pick') => boolean,
   findWeekAndDay: (iso: string) => WeekAndDay
 ): UseReportDataReturn {
+  console.log('[REPORTES.DEBUG] useReportData initialized with storageKey:', storageKey, 'personas:', safePersonas.length, 'semana:', safeSemana);
   // Crear estado inicial basado en personas y conceptos
   const getInitialData = (): ReportData => {
     const base: ReportData = {};
@@ -75,6 +76,7 @@ export default function useReportData(
   // La persistencia se maneja automáticamente con useLocalStorage
 
   const setCell = (pKey: string, concepto: string, fecha: string, valor: string) => {
+    console.log('[REPORTES.DEBUG] setCell called:', { pKey, concepto, fecha, valor, storageKey });
     setData((d: ReportData) => {
       const next = { ...d };
       next[pKey] = { ...(next[pKey] || {}) };
@@ -84,6 +86,7 @@ export default function useReportData(
       next[pKey].__manual__ = { ...(next[pKey].__manual__ || {}) };
       next[pKey].__manual__[concepto] = { ...(next[pKey].__manual__?.[concepto] || {}) } as any;
       (next[pKey].__manual__ as any)[concepto][fecha] = true;
+      console.log('[REPORTES.DEBUG] setCell returning:', next);
       return next;
     });
 

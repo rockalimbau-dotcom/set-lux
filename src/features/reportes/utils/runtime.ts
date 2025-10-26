@@ -17,9 +17,31 @@ interface CondParams {
   nocturnoFin: string;
 }
 
-export function readCondParams(project: Project): CondParams {
+export function readCondParams(project: Project, mode?: 'semanal' | 'mensual' | 'publicidad'): CondParams {
   const base = project?.id || project?.nombre || 'tmp';
-  const keys = [`cond_${base}_semanal`, `cond_${base}_mensual`];
+  
+  // Si se especifica un modo, buscar solo ese modo primero
+  if (mode) {
+    const key = `cond_${base}_${mode}`;
+    try {
+      const obj = storage.getJSON<any>(key);
+      if (obj) {
+        const p = obj.params || {};
+        return {
+          jornadaTrabajo: parseNum(p.jornadaTrabajo ?? '9'),
+          jornadaComida: parseNum(p.jornadaComida ?? '1'),
+          cortesiaMin: parseNum(p.cortesiaMin ?? '15'),
+          taDiario: parseNum(p.taDiario ?? '12'),
+          taFinde: parseNum(p.taFinde ?? '48'),
+          nocturnoIni: p.nocturnoIni ?? '22:00',
+          nocturnoFin: p.nocturnoFin ?? '06:00',
+        };
+      }
+    } catch {}
+  }
+  
+  // Fallback: buscar en todos los modos
+  const keys = [`cond_${base}_semanal`, `cond_${base}_mensual`, `cond_${base}_publicidad`];
   for (const k of keys) {
     try {
       const obj = storage.getJSON<any>(k);

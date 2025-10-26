@@ -59,10 +59,12 @@ export function weekAllPeopleActive(week: any): { role: string; name: string }[]
   const out: { role: string; name: string }[] = [];
   const push = (role?: string, name?: string) => {
     if (!role && !name) return;
-    const id = `${role || ''}__${name || ''}`;
+    // Generar nombre por defecto si no hay nombre
+    const finalName = name || `Persona_${role || 'UNKNOWN'}`;
+    const id = `${role || ''}__${finalName}`;
     if (seen.has(id)) return;
     seen.add(id);
-    out.push({ role: role || '', name: name || '' });
+    out.push({ role: role || '', name: finalName });
   };
 
   for (const d of week?.days || []) {

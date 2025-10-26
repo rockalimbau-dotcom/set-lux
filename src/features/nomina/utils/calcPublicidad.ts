@@ -5,16 +5,18 @@ import { parseNum, parseDietasValue } from './parse';
 import { stripPR, buildRefuerzoIndex, weekISOdays, weekAllPeopleActive } from './plan';
 
 export function makeRolePrices(project: any) {
-  const model = loadCondModel(project);
+  // Forzar el modo a publicidad para que loadCondModel cargue las condiciones correctas
+  const projectWithMode = {
+    ...project,
+    conditions: {
+      ...project?.conditions,
+      tipo: 'publicidad'
+    }
+  };
+  
+  const model = loadCondModel(projectWithMode);
   const priceRows = model?.prices || {};
   const p = model?.params || {};
-
-  // Debug: log the loaded data
-  if ((import.meta as any).env.DEV) {
-    console.debug('[NOMINA.PUBLICIDAD] makeRolePrices - model:', model);
-    console.debug('[NOMINA.PUBLICIDAD] makeRolePrices - priceRows:', priceRows);
-    console.debug('[NOMINA.PUBLICIDAD] makeRolePrices - params:', p);
-  }
 
   const num = (v: unknown) => {
     if (v == null || v === '') return 0;
@@ -143,12 +145,17 @@ const getNumField = (row: any, candidates: readonly string[]) => {
       transporte: num(p.transporteDia) || 0,
       km: num(p.kilometrajeKm) || 0,
       dietas: {
+        Desayuno: num(p.dietaDesayuno) || 0,
         Comida: num(p.dietaComida) || 0,
         Cena: num(p.dietaCena) || 0,
         'Dieta sin pernoctar': num(p.dietaSinPernocta) || 0,
         'Dieta completa + desayuno': num(p.dietaAlojDes) || 0,
         'Gastos de bolsillo': num(p.gastosBolsillo) || 0,
       },
+      // Campos específicos de publicidad
+      cargaDescarga: getNumField(row, ['Carga/descarga', 'Carga descarga', 'Carga/Descarga', 'Carga y descarga']) || 0,
+      localizacionTecnica: getNumField(row, ['Localización técnica', 'Localizacion tecnica', 'Localización', 'Localizacion']) || 0,
+      factorHoraExtraFestiva: num(p.factorHoraExtraFestiva) || 1.5,
     };
 
     // Debug: log final result
@@ -167,13 +174,15 @@ export function aggregateReports(project: any, weeks: any[], filterISO: ((iso: s
   const totals = new Map<string, any>();
   const refuerzoSet = buildRefuerzoIndex(weeks);
 
-  const storageKeyFor = (roleCode: string, name: string) => {
+  const storageKeyFor = (roleCode: string, name: string, block?: string) => {
     const base = stripPR(roleCode || '');
-    const keyNoPR = `${base}__${name || ''}`;
-    if (refuerzoSet.has(keyNoPR)) return `REF__${name || ''}`;
-    const suffix = /[PR]$/.test(roleCode || '') ? roleCode.slice(-1) : '';
-    const roleForKey = suffix ? `${base}${suffix}` : base;
-    return `${roleForKey}__${name || ''}`;
+    
+    // En publicidad NO hay refuerzos, pero SÍ hay prelight y pickup
+    if (block === 'pre') return `${base}.pre__${name || ''}`;
+    if (block === 'pick') return `${base}.pick__${name || ''}`;
+    
+    // Usar la clave base sin sufijo P/R para coincidir con reportes
+    return `${base}__${name || ''}`;
   };
 
   const visibleRoleFor = (roleCode: string, name: string) => {
@@ -209,12 +218,22 @@ export function aggregateReports(project: any, weeks: any[], filterISO: ((iso: s
     const filteredDays = filterISO ? isoDays.filter(filterISO) : isoDays;
     if (filteredDays.length === 0) continue;
 
+    // Usar la misma lógica que los reportes para generar la clave
     const weekKey = `reportes_${base}_${isoDays.join('_')}`;
     let data: any = {};
     try {
       const obj = storage.getJSON<any>(weekKey);
       if (obj) data = obj;
     } catch {}
+    
+    // Debug: mostrar qué clave estamos buscando
+    if ((import.meta as any).env.DEV) {
+      console.debug('[NOMINA.PUBLICIDAD] Buscando clave:', weekKey);
+      console.debug('[NOMINA.PUBLICIDAD] Datos encontrados:', data);
+      console.debug('[NOMINA.PUBLICIDAD] Claves disponibles en datos:', Object.keys(data));
+      console.debug('[NOMINA.PUBLICIDAD] isoDays:', isoDays);
+      console.debug('[NOMINA.PUBLICIDAD] filteredDays:', filteredDays);
+    }
 
     const rawPeople = weekAllPeopleActive(w);
     const uniqStorage = new Map<string, string>();
@@ -228,7 +247,9 @@ export function aggregateReports(project: any, weeks: any[], filterISO: ((iso: s
           if (!uniqStorage.has(sk)) uniqStorage.set(sk, vk);
         }
       } else {
-        const sk = storageKeyFor(r, n);
+        // Detectar bloque basándose en el sufijo del rol
+        const block = r.endsWith('P') ? 'pre' : r.endsWith('R') ? 'pick' : undefined;
+        const sk = storageKeyFor(r, n, block);
         if (!uniqStorage.has(sk)) uniqStorage.set(sk, vk);
       }
     }
@@ -243,6 +264,11 @@ export function aggregateReports(project: any, weeks: any[], filterISO: ((iso: s
     for (const [storageKey, visibleKey] of uniqStorage) {
       const pk = storageKey;
       const roleVis = visibleKey;
+      
+      // Debug: mostrar qué claves estamos buscando
+      if ((import.meta as any).env.DEV) {
+        console.debug('[NOMINA.PUBLICIDAD] Buscando persona:', pk, 'en datos:', data[pk]);
+      }
       const personName = pk.split('__')[1] || '';
 
       // Debug: log storage key variants
@@ -274,15 +300,29 @@ export function aggregateReports(project: any, weeks: any[], filterISO: ((iso: s
         const he = parseNum(getCellValueCandidates(data, keysToUse, colCandidates.extras, iso));
         const ta = parseNum(getCellValueCandidates(data, keysToUse, colCandidates.ta, iso));
         const noct = getCellValueCandidates(data, keysToUse, colCandidates.noct, iso);
-        const noctYes = noct === 'SI' || noct === 'SÍ' || noct === 'S' || noct === '1' || noct === 1;
+        const noctYes = noct === 'SI' || noct === 'SÍ' || noct === 'S' || noct === '1' || noct === '1';
         const pen = getCellValueCandidates(data, keysToUse, colCandidates.penalty, iso);
-        const penYes = pen === 'SI' || pen === 'SÍ' || pen === 'S' || pen === '1' || pen === 1;
+        const penYes = pen === 'SI' || pen === 'SÍ' || pen === 'S' || pen === '1' || pen === '1';
         const transp = getCellValueCandidates(data, keysToUse, colCandidates.transp, iso);
-        const transpYes = transp === 'SI' || transp === 'SÍ' || transp === 'S' || transp === '1' || transp === 1;
+        const transpYes = transp === 'SI' || transp === 'SÍ' || transp === 'S' || transp === '1' || transp === '1';
 
         // Debug: log values found
         if ((import.meta as any).env.DEV) {
           console.debug('[NOMINA.PUBLICIDAD] iso', iso, 'he', he, 'ta', ta, 'noct', noct, 'noctYes', noctYes, 'pen', pen, 'penYes', penYes, 'transp', transp, 'transpYes', transpYes);
+          
+        // Debug específico para conceptos faltantes
+        const km = parseNum(getCellValueCandidates(data, keysToUse, colCandidates.km, iso));
+        const dVal = getCellValueCandidates(data, keysToUse, colCandidates.dietas, iso) || '';
+        console.debug('[NOMINA.PUBLICIDAD] CONCEPTOS FALTANTES - km:', km, 'dietas:', dVal);
+        
+        // Debug adicional para ver qué datos tenemos disponibles
+        console.debug('[NOMINA.PUBLICIDAD] DATA DEBUG - pk:', pk, 'keysToUse:', keysToUse, 'data keys:', Object.keys(data));
+        if (data[pk]) {
+          console.debug('[NOMINA.PUBLICIDAD] PERSON DATA - pk:', pk, 'person data keys:', Object.keys(data[pk]));
+          if (data[pk]['Dietas']) {
+            console.debug('[NOMINA.PUBLICIDAD] DIETAS DATA - pk:', pk, 'dietas data:', data[pk]['Dietas']);
+          }
+        }
         }
 
         slot.horasExtra += he;
@@ -294,13 +334,44 @@ export function aggregateReports(project: any, weeks: any[], filterISO: ((iso: s
 
         slot.km += parseNum(getCellValueCandidates(data, keysToUse, colCandidates.km, iso));
         
-        // Para dietas, usar solo la clave original para evitar "comida" fantasma
-        const dVal = getCellValueCandidates(data, [pk], colCandidates.dietas, iso) || '';
+        // Para dietas, usar las mismas claves que las otras columnas
+        const dVal = getCellValueCandidates(data, keysToUse, colCandidates.dietas, iso) || '';
         const { labels, ticket } = parseDietasValue(dVal);
+        
+        // Debug específico para dietas
+        if ((import.meta as any).env.DEV) {
+          console.debug('[NOMINA.PUBLICIDAD] DIETAS DEBUG - pk:', pk, 'iso:', iso, 'dVal:', dVal, 'labels:', labels, 'ticket:', ticket);
+          
+          // Debug adicional para ver qué está pasando con getCellValueCandidates
+          console.debug('[NOMINA.PUBLICIDAD] DIETAS SEARCH DEBUG - pk:', pk, 'colCandidates.dietas:', colCandidates.dietas, 'data[pk]:', data[pk]);
+          if (data[pk]) {
+            console.debug('[NOMINA.PUBLICIDAD] DIETAS COLUMNS DEBUG - pk:', pk, 'available columns:', Object.keys(data[pk]));
+            for (const col of colCandidates.dietas) {
+              if (data[pk][col]) {
+                console.debug('[NOMINA.PUBLICIDAD] DIETAS COLUMN DATA - pk:', pk, 'col:', col, 'data:', data[pk][col]);
+                // Debug específico para ver qué fechas tienen datos
+                const colData = data[pk][col];
+                if (colData && typeof colData === 'object') {
+                  const datesWithData = Object.keys(colData).filter(date => colData[date] && colData[date] !== '');
+                  console.debug('[NOMINA.PUBLICIDAD] DIETAS DATES WITH DATA - pk:', pk, 'col:', col, 'dates:', datesWithData);
+                  if (datesWithData.length > 0) {
+                    console.debug('[NOMINA.PUBLICIDAD] DIETAS SAMPLE DATA - pk:', pk, 'col:', col, 'sample:', datesWithData.slice(0, 3).map(date => ({ date, value: colData[date] })));
+                  }
+                }
+              }
+            }
+          }
+        }
+        
         slot.ticketTotal += ticket;
         for (const lab of labels) {
           const prev = slot.dietasCount.get(lab) || 0;
           slot.dietasCount.set(lab, prev + 1);
+          
+          // Debug específico para cada dieta
+          if ((import.meta as any).env.DEV) {
+            console.debug('[NOMINA.PUBLICIDAD] DIETAS COUNT - lab:', lab, 'prev:', prev, 'new:', prev + 1);
+          }
         }
       }
     }
@@ -324,7 +395,16 @@ export function aggregateReports(project: any, weeks: any[], filterISO: ((iso: s
 }
 
 export function getCondParams(project: any) {
-  const m = loadCondModel(project);
+  // Forzar el modo a publicidad para que loadCondModel cargue las condiciones correctas
+  const projectWithMode = {
+    ...project,
+    conditions: {
+      ...project?.conditions,
+      tipo: 'publicidad'
+    }
+  };
+  
+  const m = loadCondModel(projectWithMode);
   return m?.params || {};
 }
 
@@ -351,13 +431,15 @@ export function aggregateWindowedReport(project: any, weeks: any[], filterISO: (
   const totals = new Map<string, any>();
   const refuerzoSet = buildRefuerzoIndex(weeks);
 
-  const storageKeyFor = (roleCode: string, name: string) => {
+  const storageKeyFor = (roleCode: string, name: string, block?: string) => {
     const base = stripPR(roleCode || '');
-    const keyNoPR = `${base}__${name || ''}`;
-    if (refuerzoSet.has(keyNoPR)) return `REF__${name || ''}`;
-    const suffix = /[PR]$/.test(roleCode || '') ? roleCode.slice(-1) : '';
-    const roleForKey = suffix ? `${base}${suffix}` : base;
-    return `${roleForKey}__${name || ''}`;
+    
+    // En publicidad NO hay refuerzos, pero SÍ hay prelight y pickup
+    if (block === 'pre') return `${base}.pre__${name || ''}`;
+    if (block === 'pick') return `${base}.pick__${name || ''}`;
+    
+    // Usar la clave base sin sufijo P/R para coincidir con reportes
+    return `${base}__${name || ''}`;
   };
 
   const visibleRoleFor = (roleCode: string, name: string) => {
@@ -390,12 +472,22 @@ export function aggregateWindowedReport(project: any, weeks: any[], filterISO: (
     const isoDays = filterISO ? isoDaysFull.filter(filterISO) : isoDaysFull;
     if (isoDays.length === 0) continue;
 
+    // Usar la misma lógica que los reportes para generar la clave
     const weekKey = `reportes_${base}_${isoDaysFull.join('_')}`;
     let data: any = {};
     try {
       const obj = storage.getJSON<any>(weekKey);
       if (obj) data = obj;
     } catch {}
+    
+    // Debug: mostrar qué clave estamos buscando
+    if ((import.meta as any).env.DEV) {
+      console.debug('[NOMINA.PUBLICIDAD.WINDOWED] Buscando clave:', weekKey);
+      console.debug('[NOMINA.PUBLICIDAD.WINDOWED] Datos encontrados:', data);
+      console.debug('[NOMINA.PUBLICIDAD.WINDOWED] Claves disponibles en datos:', Object.keys(data));
+      console.debug('[NOMINA.PUBLICIDAD.WINDOWED] isoDaysFull:', isoDaysFull);
+      console.debug('[NOMINA.PUBLICIDAD.WINDOWED] isoDays:', isoDays);
+    }
 
     const rawPeople = weekAllPeopleActive(w);
     const uniqStorage = new Map<string, string>();
@@ -409,7 +501,9 @@ export function aggregateWindowedReport(project: any, weeks: any[], filterISO: (
           if (!uniqStorage.has(sk)) uniqStorage.set(sk, vk);
         }
       } else {
-        const sk = storageKeyFor(r, n);
+        // Detectar bloque basándose en el sufijo del rol
+        const block = r.endsWith('P') ? 'pre' : r.endsWith('R') ? 'pick' : undefined;
+        const sk = storageKeyFor(r, n, block);
         if (!uniqStorage.has(sk)) uniqStorage.set(sk, vk);
       }
     }
@@ -426,22 +520,35 @@ export function aggregateWindowedReport(project: any, weeks: any[], filterISO: (
     } as const;
     for (const [storageKey, visibleKey] of uniqStorage) {
       const pk = storageKey;
-      const roleVis = visibleKey;
       const keysToUse = storageKeyVariants(pk);
       for (const iso of isoDays) {
         const slot = ensure(visibleKey);
         const he = parseNum(getCellValueCandidates(data, keysToUse, colCandidates.extras, iso));
         const ta = parseNum(getCellValueCandidates(data, keysToUse, colCandidates.ta, iso));
         const noct = getCellValueCandidates(data, keysToUse, colCandidates.noct, iso);
-        const noctYes = noct === 'SI' || noct === 'SÍ' || noct === 'S' || noct === '1' || noct === 1;
+        const noctYes = noct === 'SI' || noct === 'SÍ' || noct === 'S' || noct === '1' || noct === '1';
         const pen = getCellValueCandidates(data, keysToUse, colCandidates.penalty, iso);
-        const penYes = pen === 'SI' || pen === 'SÍ' || pen === 'S' || pen === '1' || pen === 1;
+        const penYes = pen === 'SI' || pen === 'SÍ' || pen === 'S' || pen === '1' || pen === '1';
         const transp = getCellValueCandidates(data, keysToUse, colCandidates.transp, iso);
-        const transpYes = transp === 'SI' || transp === 'SÍ' || transp === 'S' || transp === '1' || transp === 1;
+        const transpYes = transp === 'SI' || transp === 'SÍ' || transp === 'S' || transp === '1' || transp === '1';
 
         // Debug: log values found
         if ((import.meta as any).env.DEV) {
           console.debug('[NOMINA.PUBLICIDAD] iso', iso, 'he+ ta added noct', noct, 'noctYes', noctYes, 'pen', pen, 'penYes', penYes, 'transp', transp, 'transpYes', transpYes);
+          
+        // Debug específico para conceptos faltantes
+        const km = parseNum(getCellValueCandidates(data, keysToUse, colCandidates.km, iso));
+        const dVal = getCellValueCandidates(data, keysToUse, colCandidates.dietas, iso) || '';
+        console.debug('[NOMINA.PUBLICIDAD] CONCEPTOS FALTANTES - km:', km, 'dietas:', dVal);
+        
+        // Debug adicional para ver qué datos tenemos disponibles
+        console.debug('[NOMINA.PUBLICIDAD] DATA DEBUG - pk:', pk, 'keysToUse:', keysToUse, 'data keys:', Object.keys(data));
+        if (data[pk]) {
+          console.debug('[NOMINA.PUBLICIDAD] PERSON DATA - pk:', pk, 'person data keys:', Object.keys(data[pk]));
+          if (data[pk]['Dietas']) {
+            console.debug('[NOMINA.PUBLICIDAD] DIETAS DATA - pk:', pk, 'dietas data:', data[pk]['Dietas']);
+          }
+        }
         }
 
         slot.horasExtra += he;
@@ -453,13 +560,44 @@ export function aggregateWindowedReport(project: any, weeks: any[], filterISO: (
 
         slot.km += parseNum(getCellValueCandidates(data, keysToUse, colCandidates.km, iso));
         
-        // Para dietas, usar solo la clave original para evitar "comida" fantasma
-        const dVal = getCellValueCandidates(data, [pk], colCandidates.dietas, iso) || '';
+        // Para dietas, usar las mismas claves que las otras columnas
+        const dVal = getCellValueCandidates(data, keysToUse, colCandidates.dietas, iso) || '';
         const { labels, ticket } = parseDietasValue(dVal);
+        
+        // Debug específico para dietas
+        if ((import.meta as any).env.DEV) {
+          console.debug('[NOMINA.PUBLICIDAD] DIETAS DEBUG - pk:', pk, 'iso:', iso, 'dVal:', dVal, 'labels:', labels, 'ticket:', ticket);
+          
+          // Debug adicional para ver qué está pasando con getCellValueCandidates
+          console.debug('[NOMINA.PUBLICIDAD] DIETAS SEARCH DEBUG - pk:', pk, 'colCandidates.dietas:', colCandidates.dietas, 'data[pk]:', data[pk]);
+          if (data[pk]) {
+            console.debug('[NOMINA.PUBLICIDAD] DIETAS COLUMNS DEBUG - pk:', pk, 'available columns:', Object.keys(data[pk]));
+            for (const col of colCandidates.dietas) {
+              if (data[pk][col]) {
+                console.debug('[NOMINA.PUBLICIDAD] DIETAS COLUMN DATA - pk:', pk, 'col:', col, 'data:', data[pk][col]);
+                // Debug específico para ver qué fechas tienen datos
+                const colData = data[pk][col];
+                if (colData && typeof colData === 'object') {
+                  const datesWithData = Object.keys(colData).filter(date => colData[date] && colData[date] !== '');
+                  console.debug('[NOMINA.PUBLICIDAD] DIETAS DATES WITH DATA - pk:', pk, 'col:', col, 'dates:', datesWithData);
+                  if (datesWithData.length > 0) {
+                    console.debug('[NOMINA.PUBLICIDAD] DIETAS SAMPLE DATA - pk:', pk, 'col:', col, 'sample:', datesWithData.slice(0, 3).map(date => ({ date, value: colData[date] })));
+                  }
+                }
+              }
+            }
+          }
+        }
+        
         slot.ticketTotal += ticket;
         for (const lab of labels) {
           const prev = slot.dietasCount.get(lab) || 0;
           slot.dietasCount.set(lab, prev + 1);
+          
+          // Debug específico para cada dieta
+          if ((import.meta as any).env.DEV) {
+            console.debug('[NOMINA.PUBLICIDAD] DIETAS COUNT - lab:', lab, 'prev:', prev, 'new:', prev + 1);
+          }
         }
       }
     }
@@ -532,13 +670,45 @@ function getCellValueCandidates(data: any, storageKeys: string[], columnCandidat
       console.debug('[NOMINA.PUBLICIDAD] Found data for key:', key, 'columns:', Object.keys(personData));
     }
 
+    // 1) Búsqueda directa
     for (const col of columnCandidates) {
       const colData = personData[col];
+      if ((import.meta as any).env.DEV) {
+        console.debug('[NOMINA.PUBLICIDAD] Checking column:', col, 'data:', colData, 'iso:', iso, 'value:', colData?.[iso]);
+      }
       if (colData && colData[iso] != null && colData[iso] !== '') {
         if ((import.meta as any).env.DEV) {
           console.debug('[NOMINA.PUBLICIDAD] Found direct match:', key, col, iso, '=', colData[iso]);
         }
         return String(colData[iso]);
+      }
+    }
+
+    // 2) Búsqueda normalizada (case-insensitive, sin acentos) - COMO EN SEMANAL
+    const toKey = new Map<string, string>();
+    for (const k of Object.keys(personData)) {
+      const low = String(k)
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/\p{Diacritic}/gu, '')
+        .trim();
+      toKey.set(low, k);
+    }
+    for (const col of columnCandidates) {
+      const low = String(col)
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/\p{Diacritic}/gu, '')
+        .trim();
+      const real = toKey.get(low);
+      if (real) {
+        const colData = personData[real];
+        if (colData && colData[iso] != null && colData[iso] !== '') {
+          if ((import.meta as any).env.DEV) {
+            console.debug('[NOMINA.PUBLICIDAD] Found normalized match:', key, real, iso, '=', colData[iso]);
+          }
+          return String(colData[iso]);
+        }
       }
     }
   }

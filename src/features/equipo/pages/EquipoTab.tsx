@@ -19,6 +19,7 @@ function EquipoTab({
   readOnly: readOnlyProp,
   allowEditOverride = false,
   storageKey = 'setlux_equipo_global_v2',
+  projectMode = 'semanal',
 }: {
   currentUser?: AnyRecord;
   initialTeam?: AnyRecord;
@@ -26,12 +27,27 @@ function EquipoTab({
   readOnly?: boolean;
   allowEditOverride?: boolean;
   storageKey?: string;
+  projectMode?: 'semanal' | 'mensual' | 'publicidad';
 }) {
   const canEdit = useMemo(() => {
     if (allowEditOverride) return true;
     if (readOnlyProp === true) return false;
     return currentUser?.role === 'G' || currentUser?.role === 'BB';
   }, [currentUser, readOnlyProp, allowEditOverride]);
+
+  // Filtrar roles según el modo del proyecto
+  const allowedRoles = useMemo(() => {
+    if (projectMode === 'publicidad') {
+      // En publicidad, excluir Meritorio (M) y Refuerzo (REF)
+      return ROLES.filter(r => r.code !== 'M' && r.code !== 'REF');
+    }
+    return ROLES;
+  }, [projectMode]);
+
+  // Determinar si mostrar la sección de refuerzos
+  const showReinforcements = useMemo(() => {
+    return projectMode !== 'publicidad';
+  }, [projectMode]);
 
   const [, setSeqCounter] = useState(0);
   const nextSeq = () => {
@@ -202,18 +218,20 @@ function EquipoTab({
         setRows={(rows: AnyRecord[]) => setTeam(t => ({ ...t, base: sortTeam(rows) }))}
         canEdit={canEdit}
         nextSeq={nextSeq}
-        allowedRoles={ROLES.filter(r => r.code !== 'REF')}
+        allowedRoles={allowedRoles}
         groupKey='base'
       />
-      <TeamGroup
-        title='Refuerzos'
-        rows={team.reinforcements}
-        setRows={(rows: AnyRecord[]) => setTeam(t => ({ ...t, reinforcements: sortTeam(rows) }))}
-        canEdit={canEdit}
-        nextSeq={nextSeq}
-        allowedRoles={ROLES.filter(r => r.code === 'REF')}
-        groupKey='reinforcements'
-      />
+      {showReinforcements && (
+        <TeamGroup
+          title='Refuerzos'
+          rows={team.reinforcements}
+          setRows={(rows: AnyRecord[]) => setTeam(t => ({ ...t, reinforcements: sortTeam(rows) }))}
+          canEdit={canEdit}
+          nextSeq={nextSeq}
+          allowedRoles={ROLES.filter(r => r.code === 'REF')}
+          groupKey='reinforcements'
+        />
+      )}
       {groupsEnabled.prelight && (
         <TeamGroup
           title='Equipo Prelight'
@@ -223,7 +241,7 @@ function EquipoTab({
           nextSeq={nextSeq}
           removable
           onRemoveGroup={() => disableGroup('prelight')}
-          allowedRoles={ROLES as any}
+          allowedRoles={allowedRoles as any}
           groupKey='prelight'
         />
       )}
@@ -236,7 +254,7 @@ function EquipoTab({
           nextSeq={nextSeq}
           removable
           onRemoveGroup={() => disableGroup('pickup')}
-          allowedRoles={ROLES as any}
+          allowedRoles={allowedRoles as any}
           groupKey='pickup'
         />
       )}

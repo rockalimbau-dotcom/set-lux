@@ -20,4 +20,15 @@ export const DIETAS_OPCIONES: readonly string[] = [
   'Ticket',
 ] as const;
 
+export const DIETAS_OPCIONES_PUBLICIDAD: readonly string[] = [
+  '',
+  'Desayuno',
+  'Comida',
+  'Cena',
+  'Dieta sin pernoctar',
+  'Dieta completa + desayuno',
+  'Gastos de bolsillo',
+  'Ticket',
+] as const;
+
 export const SI_NO: readonly string[] = ['', 'SI'] as const;

@@ -433,8 +433,8 @@ describe('nomina/utils/plan', () => {
 
       const result = weekAllPeopleActive(week);
       expect(result).toHaveLength(3); // all members are included, even with missing properties
-      expect(result).toContainEqual({ role: 'G', name: '' });
-      expect(result).toContainEqual({ role: '', name: 'John' });
+      expect(result).toContainEqual({ role: 'G', name: 'Persona_G' }); // Missing name generates default
+      expect(result).toContainEqual({ role: '', name: 'John' }); // Missing role uses empty string
       expect(result).toContainEqual({ role: 'E', name: 'Jane' });
     });
 

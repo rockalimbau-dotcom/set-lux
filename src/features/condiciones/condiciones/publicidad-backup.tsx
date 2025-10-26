@@ -3,7 +3,8 @@ import { Th, Td } from '@shared/components';
 import { useLocalStorage } from '@shared/hooks/useLocalStorage';
 import { useCallback, useEffect, useMemo, useState, useRef, memo } from 'react';
 
-import { renderWithParams, visibleToTemplate, loadJSON, TextAreaAuto, InfoCard, ParamInput } from './shared';
+import { PRICE_ROLES } from './shared.constants';
+import { extractFestivosDatesForPlan, renderWithParams, visibleToTemplate, loadJSON, TextAreaAuto, InfoCard, ParamInput } from './shared';
 import { DEFAULT_FESTIVOS_TEXT, generateDynamicFestivosText } from '@shared/constants/festivos';
 import { exportCondicionesToPDF } from '../utils/exportPDF';
 
@@ -154,6 +155,7 @@ function CondicionesPublicidad({
       } as AnyRecord;
     }
     const factorFestivo = parseNum(params?.factorFestivo) || 0;
+    const divTravel = parseNum(params?.divTravel) || 0;
     const jTrab = parseNum(params?.jornadaTrabajo) || 0;
     const jCom = parseNum(params?.jornadaComida) || 0;
     const facHora = parseNum(params?.factorHoraExtra) || 0;
@@ -536,10 +538,9 @@ function loadOrSeedPublicidad(storageKey: string): AnyRecord {
     },
   };
 
-  try {
-    const parsed: AnyRecord = loadJSON(storageKey, fallback);
+  const parsed: AnyRecord = loadJSON(storageKey, fallback);
 
-    if (parsed) {
+  if (parsed) {
     if (parsed.legend && !parsed.legendTemplate) {
       parsed.legendTemplate = parsed.legend;
       delete parsed.legend;
@@ -600,13 +601,9 @@ function loadOrSeedPublicidad(storageKey: string): AnyRecord {
     parsed.convenioTemplate = parsed.convenioTemplate ?? defaultConvenio;
 
     return parsed;
-    }
-
-    return fallback;
-  } catch (error) {
-    console.error('Error loading publicidad conditions:', error);
-    return fallback;
   }
+
+  return fallback;
 }
 
 

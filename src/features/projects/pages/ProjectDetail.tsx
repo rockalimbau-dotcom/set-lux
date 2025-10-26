@@ -381,10 +381,11 @@ export default function ProjectDetail({
               }}
               allowEditOverride={true}
               storageKey={`team_${proj?.id || proj?.nombre}`} // persistencia por proyecto dentro de EquipoTab
+              projectMode={condTipo}
             />
           )}
 
-          {activeTab === 'reportes' && <ReportesTab project={proj} />}
+          {activeTab === 'reportes' && <ReportesTab project={proj} mode={condTipo} />}
 
           {activeTab === 'nomina' && (
             <NominaTab project={proj} mode={condTipo} />

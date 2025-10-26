@@ -50,6 +50,7 @@ export function parseDietasValue(raw: unknown): { labels: string[]; ticket: numb
     if (t === 'gastos de bolsillo' || t.startsWith('gastos')) return 'Gastos de bolsillo';
     if (t === 'comida') return 'Comida';
     if (t === 'cena') return 'Cena';
+    if (t === 'desayuno') return 'Desayuno';
     if (t.startsWith('ticket')) return 'Ticket';
     return s;
   };

@@ -3,13 +3,13 @@ import { storage } from '@shared/services/localStorage.service';
 import MonthSection from '../components/MonthSection.jsx';
 import { ROLE_COLORS, roleLabelFromCode } from '@shared/constants/roles';
 import {
-  makeRolePrices as makeRolePricesMensual,
-  aggregateReports as aggregateReportsMensual,
-  aggregateWindowedReport as aggregateWindowedReportMensual,
-  getCondParams as getCondParamsMensual,
-  getOvertimeWindowForPayrollMonth as getOvertimeWindowForPayrollMonthMensual,
-  isoInRange as isoInRangeMensual,
-} from '../utils/calcMensual';
+  makeRolePrices as makeRolePricesPublicidad,
+  aggregateReports as aggregateReportsPublicidad,
+  aggregateWindowedReport as aggregateWindowedReportPublicidad,
+  getCondParams as getCondParamsPublicidad,
+  getOvertimeWindowForPayrollMonth as getOvertimeWindowForPayrollMonthPublicidad,
+  isoInRange as isoInRangePublicidad,
+} from '../utils/calcPublicidad';
 import { monthKeyFromISO, monthLabelEs } from '../utils/date';
 import { buildNominaMonthHTML, openPrintWindow, exportToPDF } from '../utils/export';
 import {
@@ -28,17 +28,17 @@ interface ProjectLike {
   };
 }
 
-interface NominaMensualProps {
+interface NominaPublicidadProps {
   project: ProjectLike;
 }
 
-export default function NominaMensual({ project }: NominaMensualProps) {
-  // Asegurar que el proyecto tenga el modo correcto para mensual
+export default function NominaPublicidad({ project }: NominaPublicidadProps) {
+  // Asegurar que el proyecto tenga el modo correcto para publicidad
   const projectWithMode = {
     ...project,
     conditions: {
       ...project?.conditions,
-      tipo: 'mensual'
+      tipo: 'publicidad'
     }
   };
   
@@ -81,10 +81,10 @@ export default function NominaMensual({ project }: NominaMensualProps) {
   }
   const monthKeys = Array.from(monthMap.keys()).sort();
 
-  // === Re-render cuando cambian Condiciones mensual ===
+  // === Re-render cuando cambian Condiciones publicidad ===
   const baseId = project?.id || project?.nombre || 'tmp';
   const condKeys = [
-    `cond_${baseId}_mensual`,
+    `cond_${baseId}_publicidad`,
   ];
 
   const [condStamp, setCondStamp] = React.useState<string>(() =>
@@ -112,9 +112,9 @@ export default function NominaMensual({ project }: NominaMensualProps) {
     };
   }, [baseId]);
 
-  // Precios por rol usando funciones específicas de mensual
+  // Precios por rol listos - usando funciones específicas de publicidad
   const rolePrices = React.useMemo(
-    () => makeRolePricesMensual(projectWithMode),
+    () => makeRolePricesPublicidad(projectWithMode),
     [project, condStamp]
   );
 
@@ -241,21 +241,20 @@ export default function NominaMensual({ project }: NominaMensualProps) {
         const filterISO = (iso: string) => isoSet.has(iso);
 
         // Ventana contable (si está configurada en Condiciones)
-        const params = getCondParamsMensual(projectWithMode);
-        const win = getOvertimeWindowForPayrollMonthMensual(mk, params);
+        const win = getOvertimeWindowForPayrollMonthPublicidad(projectWithMode, mk);
 
         // Si hay ventana contable, agregamos variables en esa ventana:
         let windowOverrideMap: Map<string, any> | null = null;
         if (win) {
-          const filterWindowISO = (iso: string) => isoInRangeMensual(iso, win.start, win.end);
-          windowOverrideMap = aggregateWindowedReportMensual(
+          const filterWindowISO = (iso: string) => isoInRangePublicidad(iso, win.start, win.end);
+          windowOverrideMap = aggregateWindowedReportPublicidad(
             projectWithMode,
             weeks,
             filterWindowISO
           ) as Map<string, any>;
         }
 
-        const baseRows = aggregateReportsMensual(projectWithMode, weeks, filterISO);
+        const baseRows = aggregateReportsPublicidad(projectWithMode, weeks, filterISO);
 
         return (
           <MonthSection
@@ -265,6 +264,7 @@ export default function NominaMensual({ project }: NominaMensualProps) {
             weeksForMonth={weeks}
             filterISO={filterISO}
             rolePrices={rolePrices}
+            projectMode="publicidad"
             defaultOpen={i === 0}
             persistKeyBase={basePersist}
             onExport={exportMonth}
@@ -282,5 +282,4 @@ export default function NominaMensual({ project }: NominaMensualProps) {
     </div>
   );
 }
-
 

@@ -1,7 +1,7 @@
 import { storage } from '@shared/services/localStorage.service';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-import { makeRolePrices } from './calcPublicidad';
+import { makeRolePrices } from './calcSemanal';
 
 // Mock the storage service
 vi.mock('@shared/services/localStorage.service', () => ({
@@ -10,29 +10,28 @@ vi.mock('@shared/services/localStorage.service', () => ({
   },
 }));
 
-describe('calcPublicidad - makeRolePrices with holidayDay', () => {
+describe('calcSemanal - makeRolePrices with holidayDay', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('should include holidayDay price for regular roles in publicidad', () => {
+  it('should include holidayDay price for regular roles', () => {
     const mockProject = {
       id: 'test-project',
-      conditions: { tipo: 'publicidad' },
+      conditions: { tipo: 'semanal' },
     };
 
     // Mock the storage to return the conditions data
-    storage.getJSON.mockReturnValue({
+    storage.getJSON = vi.fn().mockReturnValue({
       prices: {
         GAFFER: {
-          'Precio jornada': '180',
-          'Travel day': '72', // 180 / 2.5 (divisor publicidad)
-          'Horas extras': '28',
-          'Precio Día extra/Festivo': '315', // 180 * 1.75
+          'Precio jornada': '150',
+          'Travel day': '75',
+          'Horas extras': '25',
+          'Precio Día extra/Festivo': '262.5', // 150 * 1.75
         },
       },
       params: {
-        divTravel: '2.5', // Publicidad usa divisor 2.5
         transporteDia: '15',
         kilometrajeKm: '0.25',
         dietaComida: '12',
@@ -47,32 +46,31 @@ describe('calcPublicidad - makeRolePrices with holidayDay', () => {
     const gafferPrices = rolePrices.getForRole('GAFFER');
 
     expect(gafferPrices).toHaveProperty('holidayDay');
-    expect(gafferPrices.holidayDay).toBe(315);
-    expect(gafferPrices.jornada).toBe(180);
-    expect(gafferPrices.travelDay).toBe(72);
-    expect(gafferPrices.horaExtra).toBe(28);
+    expect(gafferPrices.holidayDay).toBe(262.5);
+    expect(gafferPrices.jornada).toBe(150);
+    expect(gafferPrices.travelDay).toBe(75);
+    expect(gafferPrices.horaExtra).toBe(25);
   });
 
-  it('should include holidayDay price for REF roles in publicidad', () => {
+  it('should include holidayDay price for REF roles', () => {
     const mockProject = {
       id: 'test-project',
-      conditions: { tipo: 'publicidad' },
+      conditions: { tipo: 'semanal' },
     };
 
     // Mock the storage to return the conditions data
-    storage.getJSON.mockReturnValue({
+    storage.getJSON = vi.fn().mockReturnValue({
       prices: {
         GAFFER: {
-          'Precio refuerzo': '140',
-          'Precio Día extra/Festivo': '245', // 140 * 1.75
+          'Precio refuerzo': '120',
+          'Precio Día extra/Festivo': '210', // 120 * 1.75
         },
         ELÉCTRICO: {
-          'Precio refuerzo': '110',
-          'Precio Día extra/Festivo': '192.5', // 110 * 1.75
+          'Precio refuerzo': '100',
+          'Precio Día extra/Festivo': '175', // 100 * 1.75
         },
       },
       params: {
-        divTravel: '2.5',
         transporteDia: '15',
         kilometrajeKm: '0.25',
         dietaComida: '12',
@@ -87,26 +85,24 @@ describe('calcPublicidad - makeRolePrices with holidayDay', () => {
     const refPrices = rolePrices.getForRole('REF', 'GAFFER');
 
     expect(refPrices).toHaveProperty('holidayDay');
-    expect(refPrices.holidayDay).toBe(245); // Takes from GAFFER row as it's checked first in publicidad
+    expect(refPrices.holidayDay).toBe(175); // Takes from ELÉCTRICO row as it's checked first
   });
 
-  it('should return 0 for holidayDay when not defined in publicidad', () => {
+  it('should return 0 for holidayDay when not defined', () => {
     const mockProject = {
       id: 'test-project',
-      conditions: { tipo: 'publicidad' },
+      conditions: { tipo: 'semanal' },
     };
 
     // Mock the storage to return the conditions data
-    storage.getJSON.mockReturnValue({
+    storage.getJSON = vi.fn().mockReturnValue({
       prices: {
         GAFFER: {
-          'Precio jornada': '180',
+          'Precio jornada': '150',
           // No 'Precio Día extra/Festivo' defined
         },
       },
-      params: {
-        divTravel: '2.5',
-      },
+      params: {},
     });
 
     const rolePrices = makeRolePrices(mockProject);
@@ -116,3 +112,4 @@ describe('calcPublicidad - makeRolePrices with holidayDay', () => {
     expect(gafferPrices.holidayDay).toBe(0);
   });
 });
+

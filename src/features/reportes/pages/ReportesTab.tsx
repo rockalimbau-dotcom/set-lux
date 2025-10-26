@@ -7,7 +7,10 @@ type AnyRecord = Record<string, any>;
 
 type Project = { id?: string; nombre?: string };
 
-type ReportesTabProps = { project?: Project };
+type ReportesTabProps = { 
+  project?: Project; 
+  mode?: 'semanal' | 'mensual' | 'publicidad';
+};
 
 function pad2(n: number) {
   return String(n).padStart(2, '0');
@@ -65,7 +68,8 @@ function weekToPersonas(week: AnyRecord) {
       for (const m of (day[key] as AnyRecord[]) || []) {
         const baseRole = m.role || '';
         const role = baseRole ? `${baseRole}${suffix}` : '';
-        const name = m.name || '';
+        // Generar nombre por defecto si no hay nombre
+        const name = m.name || `Persona_${baseRole || 'UNKNOWN'}`;
         const id = `${role}__${name}`;
         if (!seen.has(id) && (role || name)) {
           seen.add(id);
@@ -77,7 +81,7 @@ function weekToPersonas(week: AnyRecord) {
   return out;
 }
 
-export default function ReportesTab({ project }: ReportesTabProps) {
+export default function ReportesTab({ project, mode = 'semanal' }: ReportesTabProps) {
   // Al entrar en Reportes, asegurar que la página está arriba del todo
   useEffect(() => {
     try {
@@ -136,6 +140,7 @@ export default function ReportesTab({ project }: ReportesTabProps) {
           title={week.label as string}
           semana={weekToSemanasISO(week)}
           personas={weekToPersonas(week)}
+          mode={mode}
           planTimesByDate={(iso: string) => {
             const idx = weekToSemanasISO(week).indexOf(iso);
             if (idx >= 0) {

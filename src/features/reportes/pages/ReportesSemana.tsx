@@ -4,7 +4,7 @@ import ReportBlockScheduleRow from '../components/ReportBlockScheduleRow';
 import ReportPersonRows from '../components/ReportPersonRows';
 import ReportTableHead from '../components/ReportTableHead';
 import ReportWeekHeader from '../components/ReportWeekHeader';
-import { DAY_NAMES, CONCEPTS, DIETAS_OPCIONES, SI_NO } from '../constants';
+import { DAY_NAMES, CONCEPTS, DIETAS_OPCIONES, DIETAS_OPCIONES_PUBLICIDAD, SI_NO } from '../constants';
 import useAutoCalculations from '../hooks/useAutoCalculations';
 import useCollapsedState from '../hooks/useCollapsedState';
 import useReportData from '../hooks/useReportData';
@@ -52,6 +52,7 @@ type Props = {
   title?: string;
   semana?: string[];
   personas?: AnyRecord[];
+  mode?: 'semanal' | 'mensual' | 'publicidad';
   onExportWeekHTML?: () => void;
   onExportWeekPDF?: () => void;
 };
@@ -61,17 +62,26 @@ export default function ReportesSemana({
   title = '',
   semana = [],
   personas = [],
+  mode = 'semanal',
   onExportWeekHTML,
   onExportWeekPDF,
 }: Props) {
+  console.log('[REPORTES.DEBUG] ReportesSemana initialized with mode:', mode, 'project:', project?.id, 'title:', title);
+  
   const safeSemana =
     Array.isArray(semana) && semana.length === 7 ? semana : defaultWeek();
   const providedPersonas = Array.isArray(personas) ? personas : [];
 
+  // Seleccionar opciones de dietas según el modo
+  const dietasOpciones = mode === 'publicidad' ? DIETAS_OPCIONES_PUBLICIDAD : DIETAS_OPCIONES;
+  console.log('[REPORTES.DEBUG] dietasOpciones selected:', dietasOpciones);
+
   const storageKey = useMemo(() => {
     const base = project?.id || project?.nombre || 'tmp';
     const wk = safeSemana.join('_');
-    return `reportes_${base}_${wk}`;
+    const key = `reportes_${base}_${wk}`;
+    console.log('[REPORTES.DEBUG] storageKey generated:', key);
+    return key;
   }, [project?.id, project?.nombre, safeSemana]);
 
   const persistBase = useMemo(() => {
@@ -246,8 +256,8 @@ export default function ReportesSemana({
   );
 
   const params = useMemo(
-    () => readCondParams(project as AnyRecord),
-    [project?.id, project?.nombre]
+    () => readCondParams(project as AnyRecord, mode),
+    [project?.id, project?.nombre, mode]
   );
 
   const findPrevWorkingContext = findPrevWorkingContextFactory(
@@ -392,7 +402,7 @@ export default function ReportesSemana({
                     findWeekAndDay={findWeekAndDay as any}
                     isPersonScheduledOnBlock={isPersonScheduledOnBlock as any}
                     CONCEPTS={[...CONCEPTS] as any}
-                    DIETAS_OPCIONES={DIETAS_OPCIONES as any}
+                    DIETAS_OPCIONES={dietasOpciones as any}
                     SI_NO={SI_NO as any}
                     parseDietas={parseDietas}
                     formatDietas={formatDietas}

@@ -50,6 +50,7 @@ export function useLocalStorage<T>(
   const set = useCallback((updater: SetValue<T>) => {
     setValue(prev => {
       const next = typeof updater === 'function' ? (updater as (prevValue: T) => T)(prev) : updater;
+      console.log('[LOCALSTORAGE.DEBUG] Setting key:', keyRef.current, 'value:', next);
       storage.setString(keyRef.current, safeStringify(next));
       return next;
     });

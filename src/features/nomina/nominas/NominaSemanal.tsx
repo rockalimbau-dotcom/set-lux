@@ -3,13 +3,13 @@ import { storage } from '@shared/services/localStorage.service';
 import MonthSection from '../components/MonthSection.jsx';
 import { ROLE_COLORS, roleLabelFromCode } from '@shared/constants/roles';
 import {
-  makeRolePrices as makeRolePricesMensual,
-  aggregateReports as aggregateReportsMensual,
-  aggregateWindowedReport as aggregateWindowedReportMensual,
-  getCondParams as getCondParamsMensual,
-  getOvertimeWindowForPayrollMonth as getOvertimeWindowForPayrollMonthMensual,
-  isoInRange as isoInRangeMensual,
-} from '../utils/calcMensual';
+  makeRolePrices as makeRolePricesSemanal,
+  aggregateReports as aggregateReportsSemanal,
+  aggregateWindowedReport as aggregateWindowedReportSemanal,
+  getCondParams as getCondParamsSemanal,
+  getOvertimeWindowForPayrollMonth as getOvertimeWindowForPayrollMonthSemanal,
+  isoInRange as isoInRangeSemanal,
+} from '../utils/calcSemanal';
 import { monthKeyFromISO, monthLabelEs } from '../utils/date';
 import { buildNominaMonthHTML, openPrintWindow, exportToPDF } from '../utils/export';
 import {
@@ -28,17 +28,17 @@ interface ProjectLike {
   };
 }
 
-interface NominaMensualProps {
+interface NominaSemanalProps {
   project: ProjectLike;
 }
 
-export default function NominaMensual({ project }: NominaMensualProps) {
-  // Asegurar que el proyecto tenga el modo correcto para mensual
+export default function NominaSemanal({ project }: NominaSemanalProps) {
+  // Asegurar que el proyecto tenga el modo correcto para semanal
   const projectWithMode = {
     ...project,
     conditions: {
       ...project?.conditions,
-      tipo: 'mensual'
+      tipo: 'semanal'
     }
   };
   
@@ -81,10 +81,10 @@ export default function NominaMensual({ project }: NominaMensualProps) {
   }
   const monthKeys = Array.from(monthMap.keys()).sort();
 
-  // === Re-render cuando cambian Condiciones mensual ===
+  // === Re-render cuando cambian Condiciones semanal ===
   const baseId = project?.id || project?.nombre || 'tmp';
   const condKeys = [
-    `cond_${baseId}_mensual`,
+    `cond_${baseId}_semanal`,
   ];
 
   const [condStamp, setCondStamp] = React.useState<string>(() =>
@@ -112,9 +112,9 @@ export default function NominaMensual({ project }: NominaMensualProps) {
     };
   }, [baseId]);
 
-  // Precios por rol usando funciones específicas de mensual
+  // Precios por rol listos - usando funciones específicas de semanal
   const rolePrices = React.useMemo(
-    () => makeRolePricesMensual(projectWithMode),
+    () => makeRolePricesSemanal(projectWithMode),
     [project, condStamp]
   );
 
@@ -241,21 +241,21 @@ export default function NominaMensual({ project }: NominaMensualProps) {
         const filterISO = (iso: string) => isoSet.has(iso);
 
         // Ventana contable (si está configurada en Condiciones)
-        const params = getCondParamsMensual(projectWithMode);
-        const win = getOvertimeWindowForPayrollMonthMensual(mk, params);
+        const params = getCondParamsSemanal(projectWithMode);
+        const win = getOvertimeWindowForPayrollMonthSemanal(mk, params);
 
         // Si hay ventana contable, agregamos variables en esa ventana:
         let windowOverrideMap: Map<string, any> | null = null;
         if (win) {
-          const filterWindowISO = (iso: string) => isoInRangeMensual(iso, win.start, win.end);
-          windowOverrideMap = aggregateWindowedReportMensual(
+          const filterWindowISO = (iso: string) => isoInRangeSemanal(iso, win.start, win.end);
+          windowOverrideMap = aggregateWindowedReportSemanal(
             projectWithMode,
             weeks,
             filterWindowISO
           ) as Map<string, any>;
         }
 
-        const baseRows = aggregateReportsMensual(projectWithMode, weeks, filterISO);
+        const baseRows = aggregateReportsSemanal(projectWithMode, weeks, filterISO);
 
         return (
           <MonthSection
@@ -265,6 +265,7 @@ export default function NominaMensual({ project }: NominaMensualProps) {
             weeksForMonth={weeks}
             filterISO={filterISO}
             rolePrices={rolePrices}
+            projectMode="semanal"
             defaultOpen={i === 0}
             persistKeyBase={basePersist}
             onExport={exportMonth}
@@ -282,5 +283,3 @@ export default function NominaMensual({ project }: NominaMensualProps) {
     </div>
   );
 }
-
-

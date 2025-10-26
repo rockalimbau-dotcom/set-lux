@@ -13,6 +13,10 @@ type RolePrices = {
     transporte: number;
     km: number;
     dietas: Record<string, number>;
+    // Campos específicos de publicidad
+    cargaDescarga?: number;
+    localizacionTecnica?: number;
+    factorHoraExtraFestiva?: number;
   };
 };
 
@@ -48,6 +52,7 @@ interface MonthSectionProps {
   weeksForMonth: any[];
   filterISO: (iso: string) => boolean;
   rolePrices: RolePrices;
+  projectMode?: 'semanal' | 'mensual' | 'publicidad';
   defaultOpen?: boolean;
   persistKeyBase: string;
   onExport?: (monthKey: string, enrichedRows: any[]) => void;
@@ -72,6 +77,7 @@ function MonthSection({
   weeksForMonth,
   filterISO,
   rolePrices,
+  projectMode = 'semanal',
   defaultOpen = false,
   persistKeyBase,
   onExport,
@@ -134,6 +140,11 @@ function MonthSection({
         ? rolePrices.getForRole('REF', baseRoleLabel)
         : rolePrices.getForRole(baseRoleLabel);
 
+      // Debug: log the role prices
+      if ((import.meta as any).env.DEV) {
+        console.debug('[NOMINA.MONTH] Role prices for', baseRoleLabel, ':', pr);
+      }
+
       let roleDisplay = r.role;
       if (r.role !== 'REF') {
         if (workedPre > 0 && workedBase === 0 && workedPick === 0)
@@ -160,6 +171,7 @@ function MonthSection({
 
       const cnt = (label: string) => dietasMap.get(label) || 0;
       const totalDietas =
+        cnt('Desayuno') * (pr.dietas['Desayuno'] || 0) +
         cnt('Comida') * (pr.dietas['Comida'] || 0) +
         cnt('Cena') * (pr.dietas['Cena'] || 0) +
         cnt('Dieta sin pernoctar') * (pr.dietas['Dieta sin pernoctar'] || 0) +
@@ -168,22 +180,70 @@ function MonthSection({
         cnt('Gastos de bolsillo') * (pr.dietas['Gastos de bolsillo'] || 0) +
         (ticketValue || 0);
 
-      const totalDias = workedDays * (pr.jornada || 0);
-      const totalTravel = travelDays * (pr.travelDay || 0);
-      const totalHolidays = holidayDays * (pr.holidayDay || 0);
-      const _totalExtras = (horasExtraValue + turnAroundValue + nocturnidadValue + penaltyLunchValue) * (pr.horaExtra || 0);
-      const _totalTrans = transporteValue * (pr.transporte || 0);
-      const _totalKm = (kmValue || 0) * (pr.km || 0);
-      const _totalBruto =
-        totalDias +
-        totalTravel +
-        totalHolidays +
-        _totalExtras +
-        totalDietas +
-        _totalTrans +
-        _totalKm;
+      // Cálculo de días según el modo del proyecto
+      let totalDias: number;
+      let totalTravel: number;
+      let totalHolidays: number;
+      let _totalExtras: number;
+      let _totalTrans: number;
+      let _totalKm: number;
+      let _totalBruto: number;
+
+      if (projectMode === 'publicidad') {
+        // Cálculo específico para publicidad
+        // Total días = (carga/descarga × precio) + (localización × precio) + (rodaje × precio jornada)
+        const cargaDescargaDays = workedPre + workedPick;
+        const localizacionDays = 0; // TODO: Necesitamos datos de localización técnica
+        const rodajeDays = workedBase;
+        
+        totalDias = 
+          (cargaDescargaDays * (pr.cargaDescarga || 0)) +
+          (localizacionDays * (pr.localizacionTecnica || 0)) +
+          (rodajeDays * (pr.jornada || 0));
+        
+        totalTravel = travelDays * (pr.travelDay || 0);
+        totalHolidays = holidayDays * (pr.holidayDay || 0);
+        
+        // Total horas extras = horas extras + turn around + nocturnidad + penalty lunch + horas extras festivas
+        const horasExtrasFestivas = 0; // TODO: Necesitamos datos de horas extras festivas
+        _totalExtras = 
+          (horasExtraValue * (pr.horaExtra || 0)) +
+          (turnAroundValue * (pr.horaExtra || 0)) +
+          (nocturnidadValue * (pr.horaExtra || 0) * (pr.factorHoraExtraFestiva || 1)) +
+          (penaltyLunchValue * (pr.horaExtra || 0)) +
+          (horasExtrasFestivas * (pr.horaExtra || 0) * (pr.factorHoraExtraFestiva || 1));
+        
+        _totalTrans = transporteValue * (pr.transporte || 0);
+        _totalKm = (kmValue || 0) * (pr.km || 0);
+        
+        _totalBruto =
+          totalDias +
+          totalTravel +
+          totalHolidays +
+          _totalExtras +
+          totalDietas +
+          _totalTrans +
+          _totalKm;
+      } else {
+        // Cálculo estándar para semanal/mensual
+        totalDias = workedDays * (pr.jornada || 0);
+        totalTravel = travelDays * (pr.travelDay || 0);
+        totalHolidays = holidayDays * (pr.holidayDay || 0);
+        _totalExtras = (horasExtraValue + turnAroundValue + nocturnidadValue + penaltyLunchValue) * (pr.horaExtra || 0);
+        _totalTrans = transporteValue * (pr.transporte || 0);
+        _totalKm = (kmValue || 0) * (pr.km || 0);
+        _totalBruto =
+          totalDias +
+          totalTravel +
+          totalHolidays +
+          _totalExtras +
+          totalDietas +
+          _totalTrans +
+          _totalKm;
+      }
 
       const dietasLabelParts: string[] = [];
+      if (cnt('Desayuno')) dietasLabelParts.push(`Desayuno x${cnt('Desayuno')}`);
       if (cnt('Comida')) dietasLabelParts.push(`Comida x${cnt('Comida')}`);
       if (cnt('Cena')) dietasLabelParts.push(`Cena x${cnt('Cena')}`);
       if (cnt('Dieta sin pernoctar'))
