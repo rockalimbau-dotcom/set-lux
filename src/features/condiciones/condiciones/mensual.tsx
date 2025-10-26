@@ -571,6 +571,7 @@ export default memo(CondicionesMensual);
 
 function loadOrSeed(storageKey: string): AnyRecord {
   const fallback: AnyRecord = {
+    roles: ['Gaffer', 'Eléctrico'],
     prices: {},
     legendTemplate: defaultLegend,
     festivosTemplate: globalDynamicFestivosText,

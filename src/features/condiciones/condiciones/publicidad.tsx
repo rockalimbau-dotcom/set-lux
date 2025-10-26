@@ -560,6 +560,7 @@ export default memo(CondicionesPublicidad);
 
 function loadOrSeedPublicidad(storageKey: string): AnyRecord {
   const fallback: AnyRecord = {
+    roles: ['Gaffer', 'Eléctrico'],
     prices: {
       'Gaffer': {
         'Precio jornada': '510',

@@ -618,6 +618,7 @@ export default memo(CondicionesSemanal);
 
 function loadOrSeed(storageKey: string) {
   const fallback = {
+    roles: ['Gaffer', 'Eléctrico'],
     prices: {},
     legendTemplate: defaultLegend,
     festivosTemplate: globalDynamicFestivosText,
