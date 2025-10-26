@@ -69,7 +69,10 @@ export default function SettingsPage() {
 
   useEffect(() => {
     const s = storage.getJSON<any>('settings_v1') || {};
-    setTheme(s.theme || 'dark');
+    // Check localStorage first for theme (for compatibility with App.tsx)
+    const localTheme = typeof localStorage !== 'undefined' && localStorage.getItem('theme');
+    const themeFromSettings = s.theme || localTheme || 'dark';
+    setTheme(themeFromSettings as 'dark' | 'light');
     setCountry(s.country || 'ES');
     setRegion(s.region || '');
   }, []);
@@ -78,6 +81,10 @@ export default function SettingsPage() {
   useEffect(() => {
     // Set attribute for global theming
     document.documentElement.setAttribute('data-theme', theme);
+    // Sync with localStorage for App.tsx compatibility
+    try {
+      localStorage.setItem('theme', theme);
+    } catch {}
   }, [theme]);
 
   // Load festivos when country/region changes (used internally, not displayed)

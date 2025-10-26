@@ -49,7 +49,9 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
 // Apply theme on load based on saved settings
 try {
   const s = storage.getJSON<any>('settings_v1') || {};
-  const theme = (s.theme === 'light' || s.theme === 'dark') ? s.theme : 'dark';
+  // Check both settings_v1 and localStorage
+  const localTheme = typeof localStorage !== 'undefined' && localStorage.getItem('theme');
+  const theme = s.theme || localTheme || 'dark';
   document.documentElement.setAttribute('data-theme', theme);
 } catch {
   document.documentElement.setAttribute('data-theme', 'dark');

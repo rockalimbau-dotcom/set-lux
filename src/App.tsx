@@ -6,6 +6,7 @@ import Select from '@shared/components/Select.tsx';
 import BrandHero from '@shared/components/BrandHero.jsx';
 import { ROLES } from '@shared/constants/roles';
 import { useLocalStorage } from '@shared/hooks/useLocalStorage';
+import { storage } from '@shared/services/localStorage.service';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { BrowserRouter, useNavigate, Routes, Route } from 'react-router-dom';
 
@@ -150,18 +151,23 @@ function AppInner() {
                 <button
                   type='button'
                   onClick={() => {
+                    let next = 'dark';
                     try {
                       const root = document.documentElement;
                       const curr = root.getAttribute('data-theme') || 'dark';
-                      const next = curr === 'light' ? 'dark' : 'light';
+                      next = curr === 'light' ? 'dark' : 'light';
                       root.setAttribute('data-theme', next);
                       setThemeLabel(next === 'light' ? 'Daylight' : 'Darklight');
                       const body = document.body as any;
                       body.style.backgroundColor = 'var(--bg)';
                       body.style.color = 'var(--text)';
                     } catch {}
-                    // Persistir preferencia
-                    try { localStorage.setItem('theme', next); } catch {}
+                    // Persistir preferencia en ambas ubicaciones para mantener sync
+                    try { 
+                      localStorage.setItem('theme', next);
+                      const s = storage.getJSON<any>('settings_v1') || {};
+                      storage.setJSON('settings_v1', { ...s, theme: next });
+                    } catch {}
                   }}
                   className='px-4 py-2 rounded-xl border hover:border-[var(--hover-border)] text-sm'
                   style={{
