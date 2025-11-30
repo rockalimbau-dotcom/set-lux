@@ -149,7 +149,12 @@ export default function NecesidadesTab({ project }: NecesidadesTabProps) {
               : [];
           }
 
-          day.loc = day.loc || '';
+          // Sincronizar localización desde planificación
+          if (planDay.loc !== undefined && planDay.loc !== null && planDay.loc !== '') {
+            day.loc = planDay.loc;
+          } else {
+            day.loc = day.loc || '';
+          }
           day.seq = day.seq || '';
           day.needLoc = day.needLoc || '';
           day.needProd = day.needProd || '';
@@ -279,6 +284,25 @@ export default function NecesidadesTab({ project }: NecesidadesTabProps) {
   }, [planKey, syncFromPlanRaw]);
 
   const setCell = (weekId: string, dayIdx: number, fieldKey: string, value: unknown) => {
+    // Si se está cambiando localización, sincronizar con planificación
+    if (fieldKey === 'loc') {
+      try {
+        const planData = storage.getJSON<any>(planKey);
+        if (planData) {
+          const allWeeks = [...(Array.isArray(planData.pre) ? planData.pre : []), ...(Array.isArray(planData.pro) ? planData.pro : [])];
+          const week = allWeeks.find((w: AnyRecord) => w.id === weekId);
+          if (week && week.days && week.days[dayIdx]) {
+            // Actualizar en planificación
+            week.days[dayIdx].loc = value;
+            // Guardar de vuelta en localStorage
+            storage.setJSON(planKey, planData);
+          }
+        }
+      } catch (error) {
+        console.error('Error syncing loc to planificación:', error);
+      }
+    }
+
     setNeeds((prev: AnyRecord) => {
       const w: AnyRecord = prev[weekId] || { days: {} };
       const day: AnyRecord = (w.days && w.days[dayIdx]) || {};
