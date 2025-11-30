@@ -149,11 +149,15 @@ export function makeRolePrices(project: any) {
       }
     }
 
+    // Obtener precio mensual para cálculo de precio diario
+    const precioMensual = getNumField(row, ['Precio mensual', 'Precio Mensual', 'Mensual']) || 0;
+
     const result = {
       jornada,
       travelDay,
       horaExtra,
       holidayDay,
+      precioMensual, // Añadir precio mensual al resultado
       transporte: num(p.transporteDia),
       km: num(p.kilometrajeKm),
       dietas: {

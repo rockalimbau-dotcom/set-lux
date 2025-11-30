@@ -76,8 +76,9 @@ describe('MonthSection with holiday days and conditional columns', () => {
     const { container } = render(<MonthSection {...mockProps} />);
 
     // The component should render the holiday days (2) and total (2 * 175 = 350)
-    const holidayDaysCell = container.querySelector('td:nth-child(4)'); // 4th column should be holiday days
-    const totalHolidaysCell = container.querySelector('td:nth-child(5)'); // 5th column should be total holidays
+    // Note: First column is now checkbox, so holiday days is 5th column and total is 6th
+    const holidayDaysCell = container.querySelector('td:nth-child(5)'); // 5th column should be holiday days
+    const totalHolidaysCell = container.querySelector('td:nth-child(6)'); // 6th column should be total holidays
 
     expect(holidayDaysCell?.textContent).toBe('2');
     expect(totalHolidaysCell?.textContent).toBe('350.00');
@@ -196,8 +197,9 @@ describe('MonthSection with holiday days and conditional columns', () => {
     const headers = container.querySelectorAll('th');
     const headerTexts = Array.from(headers).map(h => h.textContent);
 
-    // Should have exactly 5 base columns
+    // Should have exactly 6 base columns (including checkbox column)
     expect(headerTexts).toEqual([
+      '', // Checkbox column
       'Persona',
       'Días trabajados',
       'Total días',

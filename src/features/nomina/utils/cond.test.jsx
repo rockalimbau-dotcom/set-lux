@@ -76,7 +76,12 @@ describe('nomina/utils/cond', () => {
       };
 
       const mockModel = {
-        prices: { TM: { 'Precio jornada': '60' } },
+        roles: ['Gaffer', 'Eléctrico'],
+        prices: { 
+          'Gaffer': { 'Precio jornada': '510' },
+          'Eléctrico': { 'Precio jornada': '310' },
+          'TM': { 'Precio jornada': '60' } 
+        },
         params: { kilometrajeKm: '0.5' },
       };
 
@@ -140,7 +145,12 @@ describe('nomina/utils/cond', () => {
       };
 
       const mockModel = {
-        prices: { M: { 'Precio jornada': '40' } },
+        roles: ['Gaffer', 'Eléctrico'],
+        prices: { 
+          'Gaffer': { 'Precio jornada': '510' },
+          'Eléctrico': { 'Precio jornada': '310' },
+          'M': { 'Precio jornada': '40' } 
+        },
         params: { gastosBolsillo: '10' },
       };
 
@@ -188,7 +198,12 @@ describe('nomina/utils/cond', () => {
       };
 
       const mockModel = {
-        prices: { FB: { 'Precio jornada': '45' } },
+        roles: ['Gaffer', 'Eléctrico'],
+        prices: { 
+          'Gaffer': { 'Precio jornada': '510' },
+          'Eléctrico': { 'Precio jornada': '310' },
+          'FB': { 'Precio jornada': '45' } 
+        },
         params: { dietaSinPernocta: '30' },
       };
 
