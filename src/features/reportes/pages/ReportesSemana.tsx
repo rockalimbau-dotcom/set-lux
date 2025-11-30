@@ -124,6 +124,36 @@ export default function ReportesSemana({
   const horarioPrelight = horarioPrelightFactory(findWeekAndDay);
   const horarioPickup = horarioPickupFactory(findWeekAndDay);
 
+  // Helper function to check if a date is Saturday (6) or Sunday (0)
+  const isWeekend = (iso: string): boolean => {
+    try {
+      const [y, m, d] = iso.split('-').map(Number);
+      const dt = new Date(y, m - 1, d);
+      const dayOfWeek = dt.getDay();
+      return dayOfWeek === 0 || dayOfWeek === 6; // 0 = Sunday, 6 = Saturday
+    } catch {
+      return false;
+    }
+  };
+
+  // Filtrar sábados y domingos de descanso sin prelight ni recogidas
+  const filteredSemana = useMemo(() => {
+    return safeSemana.filter(iso => {
+      const dayLabel = horarioTexto(iso);
+      // Si es DESCANSO y es sábado o domingo
+      if (dayLabel === 'DESCANSO' && isWeekend(iso)) {
+        // Verificar si tiene prelight o recogidas
+        const hasPrelight = horarioPrelight(iso) !== '—';
+        const hasPickup = horarioPickup(iso) !== '—';
+        // Si no tiene prelight ni recogidas, excluirlo
+        if (!hasPrelight && !hasPickup) {
+          return false;
+        }
+      }
+      return true; // Incluir todos los demás días
+    });
+  }, [safeSemana, planKey, horarioTexto, horarioPrelight, horarioPickup]);
+
   const weekPrelightActive = useMemo(() => {
     return safeSemana.some(iso => {
       const { day } = findWeekAndDay(iso);
@@ -381,7 +411,7 @@ export default function ReportesSemana({
         >
           <table className='min-w-[920px] w-full border-collapse text-sm'>
             <ReportTableHead
-              semana={[...safeSemana]}
+              semana={[...filteredSemana]}
               dayNameFromISO={(iso: string, i: number) => dayNameFromISO(iso, i, [...DAY_NAMES] as any) as any}
               DAY_NAMES={[...DAY_NAMES] as any}
               toDisplayDate={toDisplayDate}
@@ -394,7 +424,7 @@ export default function ReportesSemana({
                   <ReportPersonRows
                     list={list}
                     block={block}
-                    semana={[...safeSemana]}
+                    semana={[...filteredSemana]}
                     collapsed={collapsed}
                     setCollapsed={setCollapsed}
                     data={data}
@@ -416,7 +446,7 @@ export default function ReportesSemana({
                     {peoplePre.length > 0 && (
                       <ReportBlockScheduleRow
                         label='Horario Prelight'
-                        semana={[...safeSemana]}
+                        semana={[...filteredSemana]}
                         valueForISO={horarioPrelight}
                       />
                     )}
@@ -425,7 +455,7 @@ export default function ReportesSemana({
                     {peoplePick.length > 0 && (
                       <ReportBlockScheduleRow
                         label='Horario Recogida'
-                        semana={[...safeSemana]}
+                        semana={[...filteredSemana]}
                         valueForISO={horarioPickup}
                       />
                     )}
