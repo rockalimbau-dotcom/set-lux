@@ -564,6 +564,7 @@ export default function PlanificacionTab({
         emptyText='No hay semanas de preproducción. Pulsa "+ Semana" para añadir la Semana -1.'
         containerId='pre-block'
         weeksOnlyId='pre-weeks-only'
+        project={project}
       />
 
       <PlanScopeSection
@@ -593,6 +594,7 @@ export default function PlanificacionTab({
         emptyText='No hay semanas de producción. Pulsa "+ Semana" para añadir la Semana 1.'
         containerId='pro-block'
         weeksOnlyId='pro-weeks-only'
+        project={project}
       />
     </div>
   );

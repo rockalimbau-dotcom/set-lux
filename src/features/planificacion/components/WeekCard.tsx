@@ -42,6 +42,7 @@ type WeekCardProps = {
   btnExportCls?: string;
   btnExportStyle?: React.CSSProperties;
   teamList: AnyRecord[];
+  project?: AnyRecord;
 };
 
 const pad2 = (n: number) => String(n).padStart(2, '0');
@@ -87,6 +88,7 @@ function WeekCard({
   btnExportCls,
   btnExportStyle,
   teamList,
+  project,
 }: WeekCardProps) {
   const weekStart = useMemo(() => parseYYYYMMDD(week.startDate as string), [week.startDate]);
   const datesRow = useMemo(() => DAYS.map((_, i) => formatDDMMYYYY(addDays(weekStart, i))), [weekStart]);
@@ -245,6 +247,8 @@ function WeekCard({
                       <option>Localizar</option>
                       <option>Travel Day</option>
                       <option>Rodaje Festivo</option>
+                      <option>Fin</option>
+                      <option>Baja</option>
                       <option>Descanso</option>
                     </select>
                   </Td>

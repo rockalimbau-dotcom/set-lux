@@ -49,6 +49,7 @@ type PlanScopeSectionProps = {
   emptyText: string;
   containerId: string;
   weeksOnlyId: string;
+  project?: AnyRecord;
 };
 
 function PlanScopeSection(props: PlanScopeSectionProps) {
@@ -79,6 +80,7 @@ function PlanScopeSection(props: PlanScopeSectionProps) {
     emptyText,
     containerId,
     weeksOnlyId,
+    project,
   } = props;
 
   const weekCards = useMemo(() => weeks.map(w => (
@@ -101,8 +103,9 @@ function PlanScopeSection(props: PlanScopeSectionProps) {
       onExportWeekPDF={() => onExportWeekPDF(w)}
       btnExportCls={btnExportCls}
       btnExportStyle={btnExportStyle}
+      project={project}
     />
-  )), [weeks, scope, duplicateWeek, deleteWeek, setWeekStart, setDayField, addMemberTo, removeMemberFrom, teamList, baseTeam, prelightTeam, pickupTeam, reinforcements, onExportWeek, onExportWeekPDF, btnExportCls, btnExportStyle]);
+  )), [weeks, scope, duplicateWeek, deleteWeek, setWeekStart, setDayField, addMemberTo, removeMemberFrom, teamList, baseTeam, prelightTeam, pickupTeam, reinforcements, onExportWeek, onExportWeekPDF, btnExportCls, btnExportStyle, project]);
 
   return (
     <Accordion
