@@ -62,6 +62,56 @@ function ReportPersonRows({
 
   const dietasOptions = useMemo(() => (DIETAS_OPCIONES.filter(Boolean) as string[]), [DIETAS_OPCIONES]);
 
+  // Función para calcular el total de un concepto para una persona
+  const calculateTotal = (pKey: string, concepto: string): number | string | { breakdown: Map<string, number> } => {
+    if (concepto === 'Dietas') {
+      // Para dietas, contar cada tipo de dieta por separado
+      const breakdown = new Map<string, number>();
+      semana.forEach(fecha => {
+        const val = data?.[pKey]?.[concepto]?.[fecha] ?? '';
+        if (val && val.toString().trim() !== '') {
+          const parsed = parseDietas(val);
+          // Contar cada item (excepto Ticket que se maneja por separado)
+          parsed.items.forEach(item => {
+            if (item !== 'Ticket') {
+              breakdown.set(item, (breakdown.get(item) || 0) + 1);
+            }
+          });
+          // Si hay ticket, contarlo también
+          if (parsed.ticket !== null) {
+            breakdown.set('Ticket', (breakdown.get('Ticket') || 0) + 1);
+          }
+        }
+      });
+      return breakdown.size > 0 ? { breakdown } : '';
+    }
+
+    if (concepto === 'Transporte' || concepto === 'Nocturnidad' || concepto === 'Penalty lunch') {
+      // Para conceptos SI/NO, contar cuántos "Sí" hay
+      let count = 0;
+      semana.forEach(fecha => {
+        const val = data?.[pKey]?.[concepto]?.[fecha] ?? '';
+        if (val && (val.toString().trim().toLowerCase() === 'sí' || val.toString().trim().toLowerCase() === 'si')) {
+          count++;
+        }
+      });
+      return count > 0 ? count : '';
+    }
+
+    // Para conceptos numéricos, sumar todos los valores
+    let total = 0;
+    semana.forEach(fecha => {
+      const val = data?.[pKey]?.[concepto]?.[fecha] ?? '';
+      if (val && val.toString().trim() !== '') {
+        const num = Number(val);
+        if (!isNaN(num)) {
+          total += num;
+        }
+      }
+    });
+    return total > 0 ? total : '';
+  };
+
   return (
     <>
       {list.map(p => {
@@ -124,6 +174,7 @@ function ReportPersonRows({
                   <Td key={`head_${pKey}_${block || 'base'}_${iso}`} className={headerCellClasses}> </Td>
                 );
               })}
+              <Td className='text-center'>&nbsp;</Td>
             </tr>
 
             {!collapsed[pKey] &&
@@ -315,6 +366,38 @@ function ReportPersonRows({
                       </Td>
                     );
                   })}
+                  <Td className='text-center align-middle'>
+                    {(() => {
+                      const total = calculateTotal(pKey, concepto);
+                      if (total === '') return '';
+                      
+                      // Si es dietas, mostrar desglose en píldoras
+                      if (concepto === 'Dietas' && typeof total === 'object' && total !== null && 'breakdown' in total) {
+                        const breakdown = (total as { breakdown: Map<string, number> }).breakdown;
+                        if (breakdown.size === 0) return '';
+                        
+                        return (
+                          <div className='flex flex-wrap gap-1 justify-center'>
+                            {Array.from(breakdown.entries()).map(([item, count]) => (
+                              <span
+                                key={item}
+                                className='inline-flex items-center gap-1 px-2 py-1 rounded-lg border border-neutral-border bg-black/40 text-xs'
+                              >
+                                <span className='text-zinc-400'>x{count}</span>
+                                <span className='text-zinc-200'>{item}</span>
+                              </span>
+                            ))}
+                          </div>
+                        );
+                      }
+                      
+                      if (typeof total === 'number') {
+                        // Para números, mostrar con formato (sin decimales si es entero)
+                        return total % 1 === 0 ? total.toString() : total.toFixed(2);
+                      }
+                      return total.toString();
+                    })()}
+                  </Td>
                 </tr>
               ))}
           </React.Fragment>

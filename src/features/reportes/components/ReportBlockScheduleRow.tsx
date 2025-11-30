@@ -20,6 +20,7 @@ function ReportBlockScheduleRow({ label, semana, valueForISO }: Props) {
           {values[i]}
         </Td>
       ))}
+      <Td className='text-center'>&nbsp;</Td>
     </tr>
   );
 }

@@ -1,5 +1,6 @@
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import { parseDietas } from './text';
 
 interface Project {
   nombre?: string;
@@ -41,6 +42,51 @@ export function buildReportWeekHTML({
       /[&<>]/g,
       (c: string) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c] || c
     );
+
+  // Helper function to calculate total for a concept
+  const calculateTotalForExport = (
+    data: any,
+    pKey: string,
+    concepto: string,
+    semana: string[]
+  ): number | string => {
+    if (concepto === 'Dietas') {
+      // Para dietas, contar el número de días con dietas
+      let count = 0;
+      semana.forEach(fecha => {
+        const val = data?.[pKey]?.[concepto]?.[fecha] ?? '';
+        if (val && val.toString().trim() !== '') {
+          count++;
+        }
+      });
+      return count > 0 ? count : '';
+    }
+
+    if (concepto === 'Transporte' || concepto === 'Nocturnidad' || concepto === 'Penalty lunch') {
+      // Para conceptos SI/NO, contar cuántos "Sí" hay
+      let count = 0;
+      semana.forEach(fecha => {
+        const val = data?.[pKey]?.[concepto]?.[fecha] ?? '';
+        if (val && (val.toString().trim().toLowerCase() === 'sí' || val.toString().trim().toLowerCase() === 'si')) {
+          count++;
+        }
+      });
+      return count > 0 ? count : '';
+    }
+
+    // Para conceptos numéricos, sumar todos los valores
+    let total = 0;
+    semana.forEach(fecha => {
+      const val = data?.[pKey]?.[concepto]?.[fecha] ?? '';
+      if (val && val.toString().trim() !== '') {
+        const num = Number(val);
+        if (!isNaN(num)) {
+          total += num;
+        }
+      }
+    });
+    return total > 0 ? total : '';
+  };
 
   // Genera por personas según data
   const personKeys = Object.keys(data || {});
@@ -224,6 +270,7 @@ export function buildReportWeekHTML({
           </th>`
           )
           .join('')}
+        <th style="border:1px solid #999;padding:6px;text-align:left;background:#1e40af;color:#fff;font-weight:bold;">Total</th>
       </tr>`;
 
   const headHorario = `
@@ -237,6 +284,7 @@ export function buildReportWeekHTML({
               )}</th>`
           )
           .join('')}
+        <th style="border:1px solid #999;padding:6px;text-align:left;background:#1e40af;color:#fff;">Semana</th>
       </tr>`;
 
 
@@ -320,6 +368,7 @@ export function buildReportWeekHTML({
               () => `<td style="border:1px solid #999;padding:6px;">&nbsp;</td>`
             )
             .join('')}
+          <td style="border:1px solid #999;padding:6px;">&nbsp;</td>
         </tr>`;
 
           const rows = conceptosConDatos
@@ -339,7 +388,24 @@ export function buildReportWeekHTML({
               });
             })
             .map(
-              c => `
+              c => {
+                const total = calculateTotalForExport(finalData, pk, c, safeSemanaWithData);
+                let totalDisplay = '';
+                if (total === '') {
+                  totalDisplay = '';
+                } else if (c === 'Dietas' && typeof total === 'object' && total !== null && 'breakdown' in total) {
+                  const breakdown = (total as { breakdown: Map<string, number> }).breakdown;
+                  if (breakdown.size > 0) {
+                    totalDisplay = Array.from(breakdown.entries())
+                      .map(([item, count]) => `x${count} ${item}`)
+                      .join(', ');
+                  }
+                } else if (typeof total === 'number') {
+                  totalDisplay = total % 1 === 0 ? total.toString() : total.toFixed(2);
+                } else {
+                  totalDisplay = total.toString();
+                }
+                return `
         <tr>
           <td style="border:1px solid #999;padding:6px;">${esc(c)}</td>
           ${safeSemanaWithData
@@ -350,7 +416,9 @@ export function buildReportWeekHTML({
                 )}</td>`
             )
             .join('')}
-        </tr>`
+          <td style="border:1px solid #999;padding:6px;text-align:left;font-weight:bold;">${esc(totalDisplay)}</td>
+        </tr>`;
+              }
             ).join('');
 
           return head + rows;
@@ -482,6 +550,59 @@ export function buildReportWeekHTMLForPDF({
       /[&<>]/g,
       (c: string) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c] || c
     );
+
+  // Helper function to calculate total for a concept
+  const calculateTotalForExport = (
+    data: any,
+    pKey: string,
+    concepto: string,
+    semana: string[]
+  ): number | string | { breakdown: Map<string, number> } => {
+    if (concepto === 'Dietas') {
+      // Para dietas, contar cada tipo de dieta por separado
+      const breakdown = new Map<string, number>();
+      semana.forEach(fecha => {
+        const val = data?.[pKey]?.[concepto]?.[fecha] ?? '';
+        if (val && val.toString().trim() !== '') {
+          const parsed = parseDietas(val);
+          parsed.items.forEach(item => {
+            if (item !== 'Ticket') {
+              breakdown.set(item, (breakdown.get(item) || 0) + 1);
+            }
+          });
+          if (parsed.ticket !== null) {
+            breakdown.set('Ticket', (breakdown.get('Ticket') || 0) + 1);
+          }
+        }
+      });
+      return breakdown.size > 0 ? { breakdown } : '';
+    }
+
+    if (concepto === 'Transporte' || concepto === 'Nocturnidad' || concepto === 'Penalty lunch') {
+      // Para conceptos SI/NO, contar cuántos "Sí" hay
+      let count = 0;
+      semana.forEach(fecha => {
+        const val = data?.[pKey]?.[concepto]?.[fecha] ?? '';
+        if (val && (val.toString().trim().toLowerCase() === 'sí' || val.toString().trim().toLowerCase() === 'si')) {
+          count++;
+        }
+      });
+      return count > 0 ? count : '';
+    }
+
+    // Para conceptos numéricos, sumar todos los valores
+    let total = 0;
+    semana.forEach(fecha => {
+      const val = data?.[pKey]?.[concepto]?.[fecha] ?? '';
+      if (val && val.toString().trim() !== '') {
+        const num = Number(val);
+        if (!isNaN(num)) {
+          total += num;
+        }
+      }
+    });
+    return total > 0 ? total : '';
+  };
 
   // Generate body for current page only - data already contains only the persons for this page
   const personKeys = Object.keys(data || {});
@@ -634,6 +755,7 @@ export function buildReportWeekHTMLForPDF({
           </th>`
           )
           .join('')}
+        <th style="border:1px solid #999;padding:6px;text-align:left;background:#1e40af;color:#fff;font-weight:bold;">Total</th>
       </tr>`;
 
   const headHorario = `
@@ -647,6 +769,7 @@ export function buildReportWeekHTMLForPDF({
               )}</th>`
           )
           .join('')}
+        <th style="border:1px solid #999;padding:6px;text-align:left;background:#1e40af;color:#fff;">Semana</th>
       </tr>`;
 
   // Filtrar conceptos que tengan datos significativos (no 0, vacíos, o solo espacios)
@@ -722,6 +845,7 @@ export function buildReportWeekHTMLForPDF({
               () => `<td style="border:1px solid #999;padding:6px;">&nbsp;</td>`
             )
             .join('')}
+          <td style="border:1px solid #999;padding:6px;">&nbsp;</td>
         </tr>`;
 
       const rows = conceptosConDatos
@@ -741,7 +865,24 @@ export function buildReportWeekHTMLForPDF({
           });
         })
         .map(
-          c => `
+          c => {
+            const total = calculateTotalForExport(finalData, pk, c, safeSemanaWithData);
+            let totalDisplay = '';
+            if (total === '') {
+              totalDisplay = '';
+            } else if (c === 'Dietas' && typeof total === 'object' && total !== null && 'breakdown' in total) {
+              const breakdown = (total as { breakdown: Map<string, number> }).breakdown;
+              if (breakdown.size > 0) {
+                totalDisplay = Array.from(breakdown.entries())
+                  .map(([item, count]) => `x${count} ${item}`)
+                  .join(', ');
+              }
+            } else if (typeof total === 'number') {
+              totalDisplay = total % 1 === 0 ? total.toString() : total.toFixed(2);
+            } else {
+              totalDisplay = total.toString();
+            }
+            return `
         <tr>
           <td style="border:1px solid #999;padding:6px;">${esc(c)}</td>
           ${safeSemanaWithData
@@ -752,7 +893,9 @@ export function buildReportWeekHTMLForPDF({
                 )}</td>`
             )
             .join('')}
-        </tr>`
+          <td style="border:1px solid #999;padding:6px;text-align:left;font-weight:bold;">${esc(totalDisplay)}</td>
+        </tr>`;
+          }
         ).join('');
 
       return head + rows;

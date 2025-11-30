@@ -29,6 +29,7 @@ function ReportTableHead({
             {dayNames[i]}
           </Th>
         ))}
+        <Th scope='col' className='font-bold'>Total</Th>
       </tr>
 
       <tr>
@@ -38,6 +39,7 @@ function ReportTableHead({
             {dates[i]}
           </Th>
         ))}
+        <Th scope='col'>Semana</Th>
       </tr>
 
       <tr>
@@ -47,6 +49,7 @@ function ReportTableHead({
             {horarios[i]}
           </Th>
         ))}
+        <Th scope='col'>&nbsp;</Th>
       </tr>
     </thead>
   );
