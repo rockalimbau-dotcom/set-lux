@@ -248,7 +248,6 @@ function WeekCard({
                       <option>Travel Day</option>
                       <option>Rodaje Festivo</option>
                       <option>Fin</option>
-                      <option>Baja</option>
                       <option>Descanso</option>
                     </select>
                   </Td>
