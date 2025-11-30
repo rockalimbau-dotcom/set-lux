@@ -165,6 +165,7 @@ export default function ReportesTab({ project, mode = 'semanal' }: ReportesTabPr
               monthName={monthNameCapitalized}
               monthNameFull={monthNameFull}
               weeks={weeks}
+              allWeeksAvailable={weeksWithPeople}
               project={project}
               mode={mode}
               weekToSemanasISO={weekToSemanasISO}
@@ -203,6 +204,7 @@ function MonthReportGroup({
   monthName,
   monthNameFull,
   weeks,
+  allWeeksAvailable,
   project,
   mode,
   weekToSemanasISO,
@@ -212,6 +214,7 @@ function MonthReportGroup({
   monthName: string;
   monthNameFull: string;
   weeks: AnyRecord[];
+  allWeeksAvailable: AnyRecord[];
   project?: Project;
   mode: 'semanal' | 'mensual' | 'publicidad';
   weekToSemanasISO: (week: AnyRecord) => string[];
@@ -247,9 +250,25 @@ function MonthReportGroup({
       return;
     }
 
-    // Recopilar todos los días del rango de todas las semanas
+    // Buscar TODAS las semanas que tengan días en el rango, no solo las del mes agrupado
+    // Usar todas las semanas disponibles para encontrar cualquier semana que tenga días en el rango
+    const weeksInRange: AnyRecord[] = [];
+    allWeeksAvailable.forEach(week => {
+      const weekDays = weekToSemanasISO(week);
+      const hasDaysInRange = weekDays.some(day => day >= dateFrom && day <= dateTo);
+      if (hasDaysInRange) {
+        weeksInRange.push(week);
+      }
+    });
+
+    if (weeksInRange.length === 0) {
+      alert('No hay semanas con días en el rango seleccionado');
+      return;
+    }
+
+    // Recopilar todos los días del rango de todas las semanas encontradas
     const allDaysInRange: string[] = [];
-    weeks.forEach(week => {
+    weeksInRange.forEach(week => {
       const weekDays = weekToSemanasISO(week);
       weekDays.forEach(day => {
         if (day >= dateFrom && day <= dateTo) {
@@ -266,9 +285,9 @@ function MonthReportGroup({
       return;
     }
 
-    // Recopilar todas las personas de todas las semanas
+    // Recopilar todas las personas de todas las semanas encontradas
     const allPersonas = new Map<string, AnyRecord>();
-    weeks.forEach(week => {
+    weeksInRange.forEach(week => {
       weekToPersonas(week).forEach(persona => {
         const key = `${persona.cargo}__${persona.nombre}`;
         if (!allPersonas.has(key)) {
@@ -283,16 +302,16 @@ function MonthReportGroup({
       return `${String(d).padStart(2, '0')}/${String(m).padStart(2, '0')}/${y}`;
     };
 
-    // Exportar PDF con el rango de fechas
+    // Exportar PDF con el rango de fechas usando todas las semanas encontradas
     await exportReportRangeToPDF({
       project,
-      title: `${monthNameFull} - Del ${formatDateForTitle(dateFrom)} al ${formatDateForTitle(dateTo)}`,
+      title: `Del ${formatDateForTitle(dateFrom)} al ${formatDateForTitle(dateTo)}`,
       safeSemana: allDaysInRange,
       personas: Array.from(allPersonas.values()),
       mode,
       weekToSemanasISO,
       weekToPersonas,
-      weeks,
+      weeks: weeksInRange,
     });
   };
 
