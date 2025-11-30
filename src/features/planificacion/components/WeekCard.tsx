@@ -267,7 +267,7 @@ function WeekCard({
                           })
                         }
                         className='flex-1 px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand'
-                        disabled={day.tipo === 'Descanso'}
+                        disabled={day.tipo === 'Descanso' || day.tipo === 'Fin'}
                         title='Inicio'
                       />
                       <input
@@ -277,7 +277,7 @@ function WeekCard({
                           setDayField(scope, week.id as string, i, { end: e.target.value })
                         }
                         className='flex-1 px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand'
-                        disabled={day.tipo === 'Descanso'}
+                        disabled={day.tipo === 'Descanso' || day.tipo === 'Fin'}
                         title='Fin'
                       />
                     </div>
@@ -295,7 +295,7 @@ function WeekCard({
                         setDayField(scope, week.id as string, i, { cut: e.target.value })
                       }
                       className='w-full px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand'
-                      disabled={day.tipo === 'Descanso'}
+                      disabled={day.tipo === 'Descanso' || day.tipo === 'Fin'}
                     />
                   </Td>
                 ))}
@@ -309,6 +309,8 @@ function WeekCard({
                       placeholder={
                         day.tipo === 'Descanso'
                           ? 'DESCANSO'
+                          : day.tipo === 'Fin'
+                          ? 'FIN DEL RODAJE'
                           : 'Rodaje / Dirección / Calle...'
                       }
                       value={day.loc || ''}
@@ -316,7 +318,7 @@ function WeekCard({
                         setDayField(scope, week.id as string, i, { loc: e.target.value })
                       }
                       className='w-full px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand'
-                      disabled={day.tipo === 'Descanso'}
+                      disabled={day.tipo === 'Descanso' || day.tipo === 'Fin'}
                     />
                   </Td>
                 ))}
@@ -359,7 +361,7 @@ function WeekCard({
                             </Button>
                           </span>
                         ))}
-                        {day.tipo !== 'Descanso' && (
+                        {day.tipo !== 'Descanso' && day.tipo !== 'Fin' && (
                           <select
                             className='no-pdf px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm'
                             onChange={e => {
@@ -423,7 +425,7 @@ function WeekCard({
                                 })
                               }
                               className='px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm'
-                              disabled={day.tipo === 'Descanso'}
+                              disabled={day.tipo === 'Descanso' || day.tipo === 'Fin'}
                               title='Inicio prelight'
                             />
                             <input
@@ -435,7 +437,7 @@ function WeekCard({
                                 })
                               }
                               className='px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm'
-                              disabled={day.tipo === 'Descanso'}
+                              disabled={day.tipo === 'Descanso' || day.tipo === 'Fin'}
                               title='Fin prelight'
                             />
                           </div>
@@ -468,7 +470,7 @@ function WeekCard({
                                 </Button>
                               </span>
                             ))}
-                            {day.tipo !== 'Descanso' && (
+                            {day.tipo !== 'Descanso' && day.tipo !== 'Fin' && (
                               <select
                                 onChange={e => {
                                   const v = e.target.value;
@@ -541,7 +543,7 @@ function WeekCard({
                                 })
                               }
                               className='px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm'
-                              disabled={day.tipo === 'Descanso'}
+                              disabled={day.tipo === 'Descanso' || day.tipo === 'Fin'}
                               title='Inicio recogida'
                             />
                             <input
@@ -553,7 +555,7 @@ function WeekCard({
                                 })
                               }
                               className='px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text sm'
-                              disabled={day.tipo === 'Descanso'}
+                              disabled={day.tipo === 'Descanso' || day.tipo === 'Fin'}
                               title='Fin recogida'
                             />
                           </div>
@@ -586,7 +588,7 @@ function WeekCard({
                                 </Button>
                               </span>
                             ))}
-                            {day.tipo !== 'Descanso' && (
+                            {day.tipo !== 'Descanso' && day.tipo !== 'Fin' && (
                               <select
                                 onChange={e => {
                                   const v = e.target.value;

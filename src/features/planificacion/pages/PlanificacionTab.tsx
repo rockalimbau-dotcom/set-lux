@@ -350,6 +350,20 @@ export default function PlanificacionTab({
             next.pickupStart = '';
             next.pickupEnd = '';
           }
+
+          if (patch.tipo === 'Fin') {
+            next.team = [];
+            next.prelight = [];
+            next.pickup = [];
+            next.start = '';
+            next.end = '';
+            next.cut = '';
+            next.loc = 'FIN DEL RODAJE';
+            next.prelightStart = '';
+            next.prelightEnd = '';
+            next.pickupStart = '';
+            next.pickupEnd = '';
+          }
           return next;
         });
         return { ...w, days };
