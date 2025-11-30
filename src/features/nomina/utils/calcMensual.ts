@@ -473,6 +473,184 @@ export function aggregateReports(project: any, weeks: any[], filterISO: ((iso: s
   );
 }
 
+// Función para agregar solo conceptos específicos (horas extras, dietas, km, transportes) filtrados por fecha
+export function aggregateFilteredConcepts(
+  project: any,
+  weeks: any[],
+  filterISO: ((iso: string) => boolean) | null,
+  dateFrom: string | null,
+  dateTo: string | null
+) {
+  if (!dateFrom || !dateTo) return null;
+
+  const base = project?.id || project?.nombre || 'tmp';
+  const totals = new Map<string, any>();
+  const refuerzoSet = buildRefuerzoIndex(weeks);
+
+  const storageKeyFor = (roleCode: string, name: string) => {
+    const base = stripPR(roleCode || '');
+    const keyNoPR = `${base}__${name || ''}`;
+    if (refuerzoSet.has(keyNoPR)) return `REF__${name || ''}`;
+    const suffix = /[PR]$/.test(roleCode || '') ? roleCode.slice(-1) : '';
+    const roleForKey = suffix ? `${base}${suffix}` : base;
+    return `${roleForKey}__${name || ''}`;
+  };
+
+  const visibleRoleFor = (roleCode: string, name: string) => {
+    const base = stripPR(roleCode || '');
+    const keyNoPR = `${base}__${name || ''}`;
+    if (refuerzoSet.has(keyNoPR)) return 'REF';
+    const suffix = /[PR]$/.test(roleCode || '') ? roleCode.slice(-1) : '';
+    return suffix ? `${base}${suffix}` : base;
+  };
+
+  const ensure = (role: string, name: string) => {
+    const k = `${role}__${name}`;
+    if (!totals.has(k)) {
+      totals.set(k, {
+        role,
+        name,
+        horasExtra: 0,
+        turnAround: 0,
+        nocturnidad: 0,
+        penaltyLunch: 0,
+        transporte: 0,
+        km: 0,
+        dietasCount: new Map<string, number>(),
+        ticketTotal: 0,
+      });
+    }
+    return totals.get(k);
+  };
+
+  // Convertir fechas a objetos Date para comparación
+  const fromDate = dateFrom ? parseYYYYMMDD(dateFrom) : null;
+  const toDate = dateTo ? parseYYYYMMDD(dateTo) : null;
+  if (!fromDate || !toDate) return null;
+
+  // Función para verificar si una fecha ISO está en el rango
+  const isInDateRange = (iso: string): boolean => {
+    const date = parseYYYYMMDD(iso);
+    if (!date) return false;
+    return date >= fromDate && date <= toDate;
+  };
+
+  const storageKeyVariants = (storageKey: string) => {
+    const parts = storageKey.split('__');
+    if (parts.length !== 2) return [storageKey];
+    const [rolePart, namePart] = parts;
+    return [
+      storageKey,
+      `${rolePart}__${namePart}`,
+      `${rolePart.replace(/[PR]$/, '')}__${namePart}`,
+    ];
+  };
+
+  const getCellValueCandidates = (data: any, keys: string[], colNames: readonly string[], iso: string) => {
+    for (const key of keys) {
+      const personData = data[key];
+      if (!personData) continue;
+      for (const colName of colNames) {
+        const col = personData[colName];
+        if (col && typeof col === 'object' && iso in col) {
+          const val = col[iso];
+          if (val !== null && val !== undefined && val !== '') return val;
+        }
+      }
+    }
+    return null;
+  };
+
+  const valIsYes = (v: any): boolean => {
+    if (v === null || v === undefined) return false;
+    const s = String(v).toLowerCase().trim();
+    return s === 'sí' || s === 'si' || s === 'yes' || s === '1' || s === 'true';
+  };
+
+  for (const w of weeks) {
+    const isoDays = weekISOdays(w);
+    const days = filterISO ? isoDays.filter(filterISO) : isoDays;
+    if (days.length === 0) continue;
+
+    const weekKey = `reportes_${base}_${isoDays.join('_')}`;
+    let data: any = {};
+    try {
+      const obj = storage.getJSON<any>(weekKey);
+      if (obj) data = obj;
+    } catch {}
+
+    const rawPeople = weekAllPeopleActive(w);
+    const uniqStorageKeys = new Map<string, { roleVisible: string; name: string }>();
+    for (const p of rawPeople) {
+      const r = p.role || '';
+      const n = p.name || '';
+      const roleVisible = visibleRoleFor(r, n);
+      if (roleVisible === 'REF') {
+        const keys = [`REF__${n}`, `REF.pre__${n}`, `REF.pick__${n}`];
+        for (const sk of keys) if (!uniqStorageKeys.has(sk)) uniqStorageKeys.set(sk, { roleVisible, name: n });
+      } else {
+        const storageKey = storageKeyFor(r, n);
+        if (!uniqStorageKeys.has(storageKey)) {
+          uniqStorageKeys.set(storageKey, { roleVisible, name: n });
+        }
+      }
+    }
+
+    const colCandidates = {
+      extras: ['Horas extra', 'Horas extras', 'HE'] as const,
+      ta: ['Turn Around', 'TA'] as const,
+      noct: ['Nocturnidad', 'Noct', 'Nocturnidades'] as const,
+      dietas: ['Dietas', 'Dietas / Ticket', 'Ticket', 'Tickets'] as const,
+      km: ['Kilometraje', 'KM', 'Km'] as const,
+      transp: ['Transporte', 'Transportes'] as const,
+      penalty: ['Penalty lunch', 'Penalty Lunch', 'Penalty', 'PL'] as const,
+    } as const;
+
+    for (const [pk, info] of uniqStorageKeys) {
+      const slot = ensure(info.roleVisible, info.name);
+      for (const iso of days) {
+        // Solo procesar días dentro del rango de fechas
+        if (!isInDateRange(iso)) continue;
+
+        const keysToUse = info.roleVisible === 'REF' ? [pk] : storageKeyVariants(pk);
+        
+        const he = parseNum(getCellValueCandidates(data, keysToUse, colCandidates.extras, iso));
+        const ta = parseNum(getCellValueCandidates(data, keysToUse, colCandidates.ta, iso));
+        slot.horasExtra += he;
+        slot.turnAround += ta;
+        
+        const nVal = getCellValueCandidates(data, keysToUse, colCandidates.noct, iso);
+        const nYes = valIsYes(nVal);
+        if (nYes) {
+          slot.nocturnidad += 1;
+        }
+        
+        const pVal = getCellValueCandidates(data, keysToUse, colCandidates.penalty, iso);
+        const pYes = valIsYes(pVal);
+        if (pYes) {
+          slot.penaltyLunch += 1;
+        }
+        
+        const tVal = getCellValueCandidates(data, keysToUse, colCandidates.transp, iso);
+        const tYes = valIsYes(tVal);
+        if (tYes) slot.transporte += 1;
+        
+        slot.km += parseNum(getCellValueCandidates(data, keysToUse, colCandidates.km, iso));
+        
+        const dVal = getCellValueCandidates(data, [pk], colCandidates.dietas, iso) || '';
+        const { labels, ticket } = parseDietasValue(dVal);
+        slot.ticketTotal += ticket;
+        for (const lab of labels) {
+          const prev = slot.dietasCount.get(lab) || 0;
+          slot.dietasCount.set(lab, prev + 1);
+        }
+      }
+    }
+  }
+
+  return totals;
+}
+
 export function getCondParams(project: any) {
   const m = loadCondModel(project);
   return m?.params || {};

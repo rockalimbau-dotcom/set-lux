@@ -9,6 +9,7 @@ import {
   getCondParams as getCondParamsSemanal,
   getOvertimeWindowForPayrollMonth as getOvertimeWindowForPayrollMonthSemanal,
   isoInRange as isoInRangeSemanal,
+  aggregateFilteredConcepts as aggregateFilteredConceptsSemanal,
 } from '../utils/calcSemanal';
 import { monthKeyFromISO, monthLabelEs } from '../utils/date';
 import { buildNominaMonthHTML, openPrintWindow, exportToPDF } from '../utils/export';
@@ -271,6 +272,9 @@ export default function NominaSemanal({ project }: NominaSemanalProps) {
             onExport={exportMonth}
             onExportPDF={exportMonthPDF}
             windowOverrideMap={windowOverrideMap}
+            project={projectWithMode}
+            aggregateFilteredConcepts={aggregateFilteredConceptsSemanal}
+            allWeeks={weeksWithPeople}
             buildRefuerzoIndex={buildRefuerzoIndex}
             stripPR={stripPR}
             calcWorkedBreakdown={calcWorkedBreakdown}

@@ -1,6 +1,8 @@
 import React, { useMemo } from 'react';
 import { Th, Td } from '@shared/components';
 import { useLocalStorage } from '@shared/hooks/useLocalStorage';
+import { parseYYYYMMDD } from '../utils/date';
+import { weekISOdays } from '../utils/plan';
 import DietasSummary from './DietasSummary.jsx';
 import ExtrasSummary from './ExtrasSummary.jsx';
 
@@ -58,6 +60,9 @@ interface MonthSectionProps {
   onExport?: (monthKey: string, enrichedRows: any[]) => void;
   onExportPDF?: (monthKey: string, enrichedRows: any[]) => void;
   windowOverrideMap?: WindowOverride | null;
+  project?: any; // Para poder llamar a aggregateFilteredConcepts
+  aggregateFilteredConcepts?: (project: any, weeks: any[], filterISO: ((iso: string) => boolean) | null, dateFrom: string | null, dateTo: string | null) => Map<string, any> | null;
+  allWeeks?: any[]; // Todas las semanas del proyecto para poder filtrar por fechas que cruzan meses
   // utils
   buildRefuerzoIndex: (weeks: any[]) => Set<string>;
   stripPR: (r: string) => string;
@@ -83,6 +88,9 @@ function MonthSection({
   onExport,
   onExportPDF,
   windowOverrideMap = null,
+  project,
+  aggregateFilteredConcepts,
+  allWeeks = [],
   // utils
   buildRefuerzoIndex,
   stripPR,
@@ -99,6 +107,11 @@ function MonthSection({
 
   const openKey = `${persistKeyBase}_${monthKey}_open`;
   const [open, setOpen] = useLocalStorage<boolean>(openKey, defaultOpen);
+
+  // Fechas para filtrar conceptos específicos (solo semanal y mensual)
+  const dateFilterKey = `${persistKeyBase}_${monthKey}_dateFilter`;
+  const [dateFrom, setDateFrom] = useLocalStorage<string>(`${dateFilterKey}_from`, '');
+  const [dateTo, setDateTo] = useLocalStorage<string>(`${dateFilterKey}_to`, '');
 
   const persistKey = `${persistKeyBase}_${monthKey}_rcvd`;
   const [received, setReceived] = useLocalStorage<Record<string, { ok?: boolean; note?: string }>>(
@@ -126,6 +139,37 @@ function MonthSection({
     () => buildRefuerzoIndex(weeksForMonth),
     [weeksForMonth, buildRefuerzoIndex]
   );
+
+  // Obtener datos filtrados por fecha si hay fechas seleccionadas (solo para semanal y mensual)
+  // Cuando hay fechas seleccionadas, necesitamos incluir semanas de otros meses si las fechas lo requieren
+  const filteredData = React.useMemo(() => {
+    if ((projectMode !== 'semanal' && projectMode !== 'mensual') || !dateFrom || !dateTo || !project || !aggregateFilteredConcepts) {
+      return null;
+    }
+    
+    // Si hay fechas seleccionadas, buscar todas las semanas que contengan días dentro del rango
+    // Esto incluye semanas de otros meses si las fechas lo requieren
+    let weeksToUse = weeksForMonth;
+    if (allWeeks && allWeeks.length > 0) {
+      const fromDate = parseYYYYMMDD(dateFrom);
+      const toDate = parseYYYYMMDD(dateTo);
+      
+      if (fromDate && toDate) {
+        // Filtrar semanas que tengan al menos un día dentro del rango de fechas
+        weeksToUse = allWeeks.filter((w: any) => {
+          const weekDays = weekISOdays(w);
+          return weekDays.some((iso: string) => {
+            const dayDate = parseYYYYMMDD(iso);
+            return dayDate && dayDate >= fromDate && dayDate <= toDate;
+          });
+        });
+      }
+    }
+    
+    // Cuando hay fechas seleccionadas, pasar null como filterISO para incluir todos los días del rango
+    // independientemente del mes
+    return aggregateFilteredConcepts(project, weeksToUse, null, dateFrom, dateTo);
+  }, [projectMode, dateFrom, dateTo, project, weeksForMonth, allWeeks, aggregateFilteredConcepts]);
 
   const enriched = useMemo(() => {
     return rows.map(r => {
@@ -159,15 +203,44 @@ function MonthSection({
         ? (windowOverrideMap as WindowOverride).get(pKey)
         : null;
 
-      const extrasValue = ov?.extras ?? r.extras;
-      const horasExtraValue = ov?.horasExtra ?? r.horasExtra;
-      const turnAroundValue = ov?.turnAround ?? r.turnAround;
-      const nocturnidadValue = ov?.nocturnidad ?? r.nocturnidad;
-      const penaltyLunchValue = ov?.penaltyLunch ?? r.penaltyLunch;
-      const transporteValue = ov?.transporte ?? r.transporte;
-      const kmValue = ov?.km ?? r.km;
-      const dietasMap = ov?.dietasCount ?? r.dietasCount;
-      const ticketValue = ov?.ticketTotal ?? r.ticketTotal;
+      // Obtener datos filtrados para esta persona si existen
+      // La clave en filteredData usa visibleRoleFor (que es el role visible, no el role display)
+      // Necesitamos usar la misma lógica que en aggregateFilteredConcepts
+      // En aggregateFilteredConcepts, usa info.roleVisible que viene de visibleRoleFor
+      const keyNoPRForFilter = `${stripPR(r.role)}__${r.name}`;
+      let visibleRoleForFilter: string;
+      if (refuerzoSet.has(keyNoPRForFilter)) {
+        visibleRoleForFilter = 'REF';
+      } else {
+        // visibleRoleFor devuelve el role base con sufijo P/R si existe
+        const baseRole = stripPR(r.role);
+        const suffix = /[PR]$/.test(r.role || '') ? r.role.slice(-1) : '';
+        visibleRoleForFilter = suffix ? `${baseRole}${suffix}` : baseRole;
+      }
+      const filteredKey = `${visibleRoleForFilter}__${r.name}`;
+      const filteredRow = filteredData?.get(filteredKey);
+      
+      // Debug para verificar las claves
+      if ((import.meta as any).env.DEV && filteredData && dateFrom && dateTo) {
+        console.debug('[NOMINA.FILTER] r.role:', r.role, 'r.name:', r.name, 'pKey:', pKey, 'filteredKey:', filteredKey, 'filteredRow:', filteredRow, 'filteredData keys:', Array.from(filteredData.keys()));
+      }
+      
+      // Usar datos filtrados para conceptos específicos si hay fechas seleccionadas y filteredRow existe
+      // Si filteredRow no existe o está vacío, usar datos completos de r
+      // Solo usar filteredRow si hay fechas seleccionadas Y filteredRow tiene datos
+      // Verificar que las fechas no estén vacías (string vacío no cuenta como fecha válida)
+      const hasDateFilter = dateFrom && dateTo && dateFrom.trim() !== '' && dateTo.trim() !== '' && filteredData;
+      const useFilteredData = hasDateFilter && filteredRow;
+      
+      const extrasValue = ov?.extras ?? (useFilteredData ? filteredRow.horasExtra + filteredRow.turnAround : r.extras);
+      const horasExtraValue = ov?.horasExtra ?? (useFilteredData ? filteredRow.horasExtra : r.horasExtra);
+      const turnAroundValue = ov?.turnAround ?? (useFilteredData ? filteredRow.turnAround : r.turnAround);
+      const nocturnidadValue = ov?.nocturnidad ?? (useFilteredData ? filteredRow.nocturnidad : r.nocturnidad);
+      const penaltyLunchValue = ov?.penaltyLunch ?? (useFilteredData ? filteredRow.penaltyLunch : r.penaltyLunch);
+      const transporteValue = ov?.transporte ?? (useFilteredData ? filteredRow.transporte : r.transporte);
+      const kmValue = ov?.km ?? (useFilteredData ? filteredRow.km : r.km);
+      const dietasMap = ov?.dietasCount ?? (useFilteredData ? filteredRow.dietasCount : r.dietasCount);
+      const ticketValue = ov?.ticketTotal ?? (useFilteredData ? filteredRow.ticketTotal : r.ticketTotal);
 
       const cnt = (label: string) => dietasMap.get(label) || 0;
       const totalDietas =
@@ -387,6 +460,28 @@ function MonthSection({
         <h4 className='text-brand font-semibold m-0'>
           Nómina {monthLabelEs(monthKey)}
         </h4>
+        {(projectMode === 'semanal' || projectMode === 'mensual') && (
+          <div className='ml-auto flex items-center gap-3'>
+            <div className='flex items-center gap-2'>
+              <label className='text-xs text-zinc-400 whitespace-nowrap'>Reportes desde:</label>
+              <input
+                type='date'
+                value={dateFrom}
+                onChange={e => setDateFrom(e.target.value)}
+                className='px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-xs'
+              />
+            </div>
+            <div className='flex items-center gap-2'>
+              <label className='text-xs text-zinc-400 whitespace-nowrap'>hasta:</label>
+              <input
+                type='date'
+                value={dateTo}
+                onChange={e => setDateTo(e.target.value)}
+                className='px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-xs'
+              />
+            </div>
+          </div>
+        )}
         <div className='ml-auto flex gap-2'>
           <button
             className={btnExportCls}

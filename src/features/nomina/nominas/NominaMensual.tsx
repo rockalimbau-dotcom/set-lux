@@ -9,6 +9,7 @@ import {
   getCondParams as getCondParamsMensual,
   getOvertimeWindowForPayrollMonth as getOvertimeWindowForPayrollMonthMensual,
   isoInRange as isoInRangeMensual,
+  aggregateFilteredConcepts as aggregateFilteredConceptsMensual,
 } from '../utils/calcMensual';
 import { monthKeyFromISO, monthLabelEs } from '../utils/date';
 import { buildNominaMonthHTML, openPrintWindow, exportToPDF } from '../utils/export';
@@ -270,6 +271,9 @@ export default function NominaMensual({ project }: NominaMensualProps) {
             onExport={exportMonth}
             onExportPDF={exportMonthPDF}
             windowOverrideMap={windowOverrideMap}
+            project={projectWithMode}
+            aggregateFilteredConcepts={aggregateFilteredConceptsMensual}
+            allWeeks={weeksWithPeople}
             buildRefuerzoIndex={buildRefuerzoIndex}
             stripPR={stripPR}
             calcWorkedBreakdown={calcWorkedBreakdown}
