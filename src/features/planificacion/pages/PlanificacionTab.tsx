@@ -17,7 +17,7 @@ import {
   rebaseWeeksAround,
 } from '../utils/weekActions';
 import { storage } from '@shared/services/localStorage.service';
-import { fetchHolidays, readLocationFromSettings } from '@shared/services/holidays.service';
+import { fetchHolidays } from '@shared/services/holidays.service';
 
 // Minimal types
 type AnyRecord = Record<string, any>;
@@ -60,15 +60,21 @@ export default function PlanificacionTab({
   const [holidayFull, setHolidayFull] = useState<Set<string>>(new Set());
   const [holidayMD, setHolidayMD] = useState<Set<string>>(new Set());
 
-  // Carga inicial y cuando cambien país/región en settings
+  // Carga inicial de festivos basados en país/región del proyecto
   useEffect(() => {
     let alive = true;
 
     const load = async () => {
       try {
-        const { country, region } = readLocationFromSettings();
+        // Obtener país/región del proyecto, con valores por defecto ES/CT
+        const projectCountry = (project as AnyRecord)?.country || 'ES';
+        const projectRegion = (project as AnyRecord)?.region || 'CT';
         const year = new Date().getFullYear();
-        const { holidays } = await fetchHolidays({ country, year, region });
+        const { holidays } = await fetchHolidays({ 
+          country: projectCountry, 
+          year, 
+          region: projectRegion || undefined 
+        });
         const dates = (holidays || []).map(h => String(h.date));
         const full = new Set<string>(dates);
         const md = new Set<string>();
@@ -89,16 +95,10 @@ export default function PlanificacionTab({
 
     load();
 
-    // Escuchar cambios en settings_v1 desde la pestaña de Configuración
-    const onStorage = (e: StorageEvent) => {
-      if (e.key === 'settings_v1') load();
-    };
-    window.addEventListener('storage', onStorage);
     return () => {
       alive = false;
-      window.removeEventListener('storage', onStorage);
     };
-  }, []);
+  }, [project]);
 
   const [isLoaded, setIsLoaded] = useState(false);
 

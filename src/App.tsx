@@ -128,6 +128,20 @@ function AppInner() {
 
   // callbacks no usados visibles: se eliminaron para evitar ruido de linter
 
+  // Normalizar proyectos existentes para asegurar que tengan country y region
+  useEffect(() => {
+    if (projects.length === 0) return;
+    const needsUpdate = projects.some(p => !p.country || !p.region);
+    if (needsUpdate) {
+      const normalized = projects.map(p => ({
+        ...p,
+        country: p.country || 'ES',
+        region: p.region || 'CT',
+      }));
+      setProjects(normalized);
+    }
+  }, []); // Solo ejecutar una vez al montar
+
   // ⚠️ ESTE HOOK DEBE IR ANTES DE LOS returns condicionales
   const roleOptions: string[] = useMemo(
     () =>

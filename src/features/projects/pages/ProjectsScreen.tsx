@@ -4,6 +4,52 @@ import { useEffect, useRef, useState, useMemo, memo, useCallback } from 'react';
 export type ProjectMode = 'semanal' | 'mensual' | 'publicidad';
 export type ProjectStatus = 'Activo' | 'Cerrado';
 
+const COUNTRIES = [
+  { code: 'ES', name: 'España' },
+  { code: 'FR', name: 'Francia' },
+  { code: 'IT', name: 'Italia' },
+  { code: 'DE', name: 'Alemania' },
+  { code: 'GB', name: 'Reino Unido' },
+  { code: 'US', name: 'Estados Unidos' },
+  { code: 'MX', name: 'México' },
+  { code: 'AR', name: 'Argentina' },
+  { code: 'BR', name: 'Brasil' },
+  { code: 'CL', name: 'Chile' },
+];
+
+const REGIONS = {
+  ES: [
+    { code: 'AN', name: 'Andalucía' },
+    { code: 'AR', name: 'Aragón' },
+    { code: 'AS', name: 'Asturias' },
+    { code: 'CN', name: 'Canarias' },
+    { code: 'CB', name: 'Cantabria' },
+    { code: 'CM', name: 'Castilla-La Mancha' },
+    { code: 'CL', name: 'Castilla y León' },
+    { code: 'CT', name: 'Cataluña' },
+    { code: 'EX', name: 'Extremadura' },
+    { code: 'GA', name: 'Galicia' },
+    { code: 'IB', name: 'Islas Baleares' },
+    { code: 'RI', name: 'La Rioja' },
+    { code: 'MD', name: 'Madrid' },
+    { code: 'MC', name: 'Región de Murcia' },
+    { code: 'NC', name: 'Navarra' },
+    { code: 'PV', name: 'País Vasco' },
+    { code: 'VC', name: 'Comunidad Valenciana' },
+    { code: 'CE', name: 'Ceuta' },
+    { code: 'ML', name: 'Melilla' },
+  ],
+  FR: [
+    { code: 'IDF', name: 'Île-de-France' },
+    { code: 'PACA', name: 'Provence-Alpes-Côte d\'Azur' },
+  ],
+  US: [
+    { code: 'CA', name: 'California' },
+    { code: 'NY', name: 'Nueva York' },
+    { code: 'TX', name: 'Texas' },
+  ],
+};
+
 export interface ProjectConditions {
   tipo: ProjectMode;
 }
@@ -16,6 +62,8 @@ export interface Project {
   productora?: string;
   estado: ProjectStatus;
   conditions?: ProjectConditions;
+  country?: string;
+  region?: string;
 }
 
 export interface ProjectForm {
@@ -25,6 +73,8 @@ export interface ProjectForm {
   productora: string;
   estado: ProjectStatus;
   condicionesTipo: ProjectMode;
+  country: string;
+  region: string;
 }
 
 export interface ProjectsScreenProps {
@@ -77,6 +127,8 @@ function NewProjectModal({ onClose, onCreate }: NewProjectModalProps) {
     productora: '',
     estado: 'Activo',
     condicionesTipo: 'semanal',
+    country: 'ES',
+    region: 'CT',
   }));
 
   return (
@@ -137,6 +189,37 @@ function NewProjectModal({ onClose, onCreate }: NewProjectModalProps) {
               <option value='publicidad'>Publicidad</option>
             </select>
           </Field>
+          <Field label='País'>
+            <select
+              className='w-full px-4 py-3 rounded-xl bg-black/40 border border-neutral-border focus:outline-none focus:ring-2 focus:ring-blue-500'
+              value={form.country}
+              onChange={e => {
+                setForm({ ...form, country: e.target.value, region: '' });
+              }}
+            >
+              {COUNTRIES.map(c => (
+                <option key={c.code} value={c.code}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+          </Field>
+          {REGIONS[form.country as keyof typeof REGIONS] && (
+            <Field label='Región (opcional)'>
+              <select
+                className='w-full px-4 py-3 rounded-xl bg-black/40 border border-neutral-border focus:outline-none focus:ring-2 focus:ring-blue-500'
+                value={form.region}
+                onChange={e => setForm({ ...form, region: e.target.value })}
+              >
+                <option value=''>Sin región específica</option>
+                {REGIONS[form.country as keyof typeof REGIONS].map(r => (
+                  <option key={r.code} value={r.code}>
+                    {r.name}
+                  </option>
+                ))}
+              </select>
+            </Field>
+          )}
         </div>
 
         <div className='flex justify-end gap-3 mt-6'>
@@ -160,6 +243,8 @@ function NewProjectModal({ onClose, onCreate }: NewProjectModalProps) {
                 conditions: {
                   tipo: form.condicionesTipo || 'mensual',
                 },
+                country: form.country || 'ES',
+                region: form.region || 'CT',
               };
               onCreate(proj);
               onClose();
@@ -188,6 +273,8 @@ function EditProjectModal({ project, onClose, onSave }: EditProjectModalProps) {
     productora: project?.productora || '',
     estado: project?.estado || 'Activo',
     condicionesTipo: project?.conditions?.tipo || 'semanal',
+    country: project?.country || 'ES',
+    region: project?.region || 'CT',
   }));
 
   const formatMode = (m: string | undefined): ProjectMode => {
@@ -212,6 +299,8 @@ function EditProjectModal({ project, onClose, onSave }: EditProjectModalProps) {
         ...(project?.conditions || {}),
         tipo: formatMode(form.condicionesTipo),
       },
+      country: form.country || 'ES',
+      region: form.region || 'CT',
     };
 
     onSave?.(updated);
@@ -282,6 +371,37 @@ function EditProjectModal({ project, onClose, onSave }: EditProjectModalProps) {
               <option value='publicidad'>Publicidad</option>
             </select>
           </Field>
+          <Field label='País'>
+            <select
+              className='w-full px-4 py-3 rounded-xl bg-black/40 border border-neutral-border focus:outline-none focus:ring-2 focus:ring-blue-500'
+              value={form.country}
+              onChange={e => {
+                setForm({ ...form, country: e.target.value, region: '' });
+              }}
+            >
+              {COUNTRIES.map(c => (
+                <option key={c.code} value={c.code}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+          </Field>
+          {REGIONS[form.country as keyof typeof REGIONS] && (
+            <Field label='Región (opcional)'>
+              <select
+                className='w-full px-4 py-3 rounded-xl bg-black/40 border border-neutral-border focus:outline-none focus:ring-2 focus:ring-blue-500'
+                value={form.region}
+                onChange={e => setForm({ ...form, region: e.target.value })}
+              >
+                <option value=''>Sin región específica</option>
+                {REGIONS[form.country as keyof typeof REGIONS].map(r => (
+                  <option key={r.code} value={r.code}>
+                    {r.name}
+                  </option>
+                ))}
+              </select>
+            </Field>
+          )}
         </div>
 
         <div className='flex justify-end gap-3 mt-6'>

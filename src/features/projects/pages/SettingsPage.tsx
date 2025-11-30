@@ -2,70 +2,13 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import LogoIcon from '@shared/components/LogoIcon';
 import { storage } from '@shared/services/localStorage.service';
-import { fetchHolidays } from '@shared/services/holidays.service';
-import { REGION_NAMES } from '@shared/constants/regional-holidays';
-// import { REGION_NAMES } from '@shared/constants/regional-holidays';
-
-const COUNTRIES = [
-  { code: 'ES', name: 'España' },
-  { code: 'FR', name: 'Francia' },
-  { code: 'IT', name: 'Italia' },
-  { code: 'DE', name: 'Alemania' },
-  { code: 'GB', name: 'Reino Unido' },
-  { code: 'US', name: 'Estados Unidos' },
-  { code: 'MX', name: 'México' },
-  { code: 'AR', name: 'Argentina' },
-  { code: 'BR', name: 'Brasil' },
-  { code: 'CL', name: 'Chile' },
-];
-
-const REGIONS = {
-  ES: [
-    { code: 'AN', name: 'Andalucía' },         // ES-AN
-    { code: 'AR', name: 'Aragón' },            // ES-AR
-    { code: 'AS', name: 'Asturias' },          // ES-AS
-    { code: 'CN', name: 'Canarias' },          // ES-CN
-    { code: 'CB', name: 'Cantabria' },         // ES-CB
-    { code: 'CM', name: 'Castilla-La Mancha' },// ES-CM
-    { code: 'CL', name: 'Castilla y León' },   // ES-CL
-    { code: 'CT', name: 'Cataluña' },          // ES-CT
-    { code: 'EX', name: 'Extremadura' },       // ES-EX
-    { code: 'GA', name: 'Galicia' },           // ES-GA
-    { code: 'IB', name: 'Islas Baleares' },    // ES-IB
-    { code: 'RI', name: 'La Rioja' },          // ES-RI
-    { code: 'MD', name: 'Madrid' },            // ES-MD
-    { code: 'MC', name: 'Región de Murcia' },  // ES-MC
-    { code: 'NC', name: 'Navarra' },           // ES-NC (Navarra)
-    { code: 'PV', name: 'País Vasco' },        // ES-PV
-    { code: 'VC', name: 'Comunidad Valenciana' }, // ES-VC
-    { code: 'CE', name: 'Ceuta' },             // ES-CE
-    { code: 'ML', name: 'Melilla' },           // ES-ML
-  ],
-  FR: [
-    { code: 'IDF', name: 'Île-de-France' },
-    { code: 'PACA', name: 'Provence-Alpes-Côte d\'Azur' },
-  ],
-  US: [
-    { code: 'CA', name: 'California' },
-    { code: 'NY', name: 'Nueva York' },
-    { code: 'TX', name: 'Texas' },
-  ],
-};
 
 export default function SettingsPage() {
   const navigate = useNavigate();
   
-  const formatYMDToDMY = (ymd: string): string => {
-    const [y, m, d] = (ymd || '').split('-').map(Number);
-    if (!y || !m || !d) return ymd;
-    return `${String(d).padStart(2, '0')}/${String(m).padStart(2, '0')}/${y}`;
-  };
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
-  const [country, setCountry] = useState('ES');
-  const [region, setRegion] = useState('');
+  const [language, setLanguage] = useState<'es' | 'en'>('es');
   const [saved, setSaved] = useState(false);
-  const [festivos, setFestivos] = useState<string[]>([]);
-  const [loadingFestivos, setLoadingFestivos] = useState(false);
 
   useEffect(() => {
     const s = storage.getJSON<any>('settings_v1') || {};
@@ -73,8 +16,7 @@ export default function SettingsPage() {
     const localTheme = typeof localStorage !== 'undefined' && localStorage.getItem('theme');
     const themeFromSettings = s.theme || localTheme || 'dark';
     setTheme(themeFromSettings as 'dark' | 'light');
-    setCountry(s.country || 'ES');
-    setRegion(s.region || '');
+    setLanguage(s.language || 'es');
   }, []);
 
   // Apply live preview to body when theme changes (local preview only)
@@ -87,31 +29,12 @@ export default function SettingsPage() {
     } catch {}
   }, [theme]);
 
-  // Load festivos when country/region changes (used internally, not displayed)
-  useEffect(() => {
-    const loadFestivos = async () => {
-      setLoadingFestivos(true);
-      try {
-        const year = new Date().getFullYear();
-        const { holidays } = await fetchHolidays({ country, year, region: region || undefined });
-        const festivosData = (holidays || []).map((h: { date: string }) => h.date).sort();
-        setFestivos(festivosData);
-      } catch {
-        setFestivos([]);
-      } finally {
-        setLoadingFestivos(false);
-      }
-    };
-    loadFestivos();
-  }, [country, region]);
 
   const save = () => {
-    storage.setJSON('settings_v1', { theme, country, region });
+    storage.setJSON('settings_v1', { theme, language });
     setSaved(true);
     setTimeout(() => setSaved(false), 1200);
   };
-
-  const availableRegions = REGIONS[country as keyof typeof REGIONS] || [];
 
   const isLight = theme === 'light';
   const colors = {
@@ -171,67 +94,20 @@ export default function SettingsPage() {
             </label>
 
             <label className='block space-y-2'>
-              <span className='text-sm font-medium' style={{color: colors.mutedText}}>País</span>
+              <span className='text-sm font-medium' style={{color: colors.mutedText}}>Idioma</span>
               <select
                 className='w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-1 transition-colors'
                 style={{backgroundColor: colors.inputBg, color: colors.inputText, borderColor: colors.inputBorder}}
-                value={country}
-                onChange={e => {
-                  setCountry(e.target.value);
-                  setRegion(''); // Reset region when country changes
-                }}
+                value={language}
+                onChange={e => setLanguage(e.target.value as 'es' | 'en')}
               >
-                {COUNTRIES.map(c => (
-                  <option key={c.code} value={c.code}>
-                    {c.name}
-                  </option>
-                ))}
+                <option value='es'>Español</option>
+                <option value='en'>Inglés</option>
               </select>
             </label>
 
-            {availableRegions.length > 0 && (
-              <label className='block space-y-2'>
-                <span className='text-sm font-medium' style={{color: colors.mutedText}}>Región (opcional)</span>
-                <select
-                  className='w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-1 transition-colors'
-                  style={{backgroundColor: colors.inputBg, color: colors.inputText, borderColor: colors.inputBorder}}
-                  value={region}
-                  onChange={e => setRegion(e.target.value)}
-                >
-                  <option value=''>Sin región específica</option>
-                  {availableRegions.map(r => (
-                    <option key={r.code} value={r.code}>
-                      {r.name}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            )}
           </div>
 
-          {/* Festivos Debug Section (Calendarific) - oculto para producción */}
-          <div className='hidden mt-6 p-4 rounded-xl border' style={{backgroundColor: isLight ? '#f3f4f6' : 'rgba(0,0,0,0.2)', borderColor: colors.panelBorder}}>
-            <h4 className='text-sm font-semibold mb-2' style={{color: colors.primary}}>Festivos Cargados</h4>
-            {loadingFestivos ? (
-              <div className='text-sm' style={{color: colors.mutedText}}>Cargando festivos...</div>
-            ) : festivos.length > 0 ? (
-              <div>
-                <div className='text-sm mb-2' style={{color: colors.mutedText}}>
-                  {festivos.length} festivos encontrados para {country === 'ES' ? 'España' : country}
-                  {region && country === 'ES' && ` - ${REGION_NAMES[region] || region}`}
-                </div>
-                <div className='text-xs max-h-20 overflow-y-auto' style={{color: colors.mutedText}}>
-                  {festivos
-                    .slice(0, 10)
-                    .map(formatYMDToDMY)
-                    .join(', ')}
-                  {festivos.length > 10 && ` ... y ${festivos.length - 10} más`}
-                </div>
-              </div>
-            ) : (
-              <div className='text-sm' style={{color: colors.mutedText}}>No se pudieron cargar los festivos</div>
-            )}
-          </div>
 
           <div className='flex justify-end gap-4 mt-8'>
             <button 
