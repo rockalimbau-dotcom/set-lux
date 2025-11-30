@@ -14,9 +14,111 @@ export function makeRolePrices(project: any) {
     }
   };
   
-  const model = loadCondModel(projectWithMode);
-  const priceRows = model?.prices || {};
-  const p = model?.params || {};
+  const model = loadCondModel(projectWithMode, 'publicidad');
+  let priceRows = model?.prices || {};
+  let p = model?.params || {};
+
+  // Fallback absoluto: si por cualquier motivo aún no hay precios en el modelo,
+  // usar una tabla por defecto para que Nómina funcione desde el primer render.
+  if (!priceRows || Object.keys(priceRows).length === 0) {
+    priceRows = {
+      'Gaffer': {
+        'Precio jornada': '510',
+        'Precio Día extra/Festivo': '892.5',
+        'Travel day': '510',
+        'Horas extras': '75',
+        'Carga/descarga': '225',
+        'Localización técnica': '420',
+      },
+      'Best boy': {
+        'Precio jornada': '410',
+        'Precio Día extra/Festivo': '717.5',
+        'Travel day': '410',
+        'Horas extras': '60',
+        'Carga/descarga': '180',
+        'Localización técnica': '320',
+      },
+      'Eléctrico': {
+        'Precio jornada': '310',
+        'Precio Día extra/Festivo': '542.5',
+        'Travel day': '310',
+        'Horas extras': '45',
+        'Carga/descarga': '135',
+      },
+      'Auxiliar': {
+        'Precio jornada': '250',
+        'Precio Día extra/Festivo': '437.5',
+        'Travel day': '250',
+        'Horas extras': '35',
+        'Carga/descarga': '105',
+      },
+      'Técnico de mesa': {
+        'Precio jornada': '350',
+        'Precio Día extra/Festivo': '612.5',
+        'Travel day': '350',
+        'Horas extras': '50',
+        'Carga/descarga': '150',
+      },
+      'Finger boy': {
+        'Precio jornada': '350',
+        'Precio Día extra/Festivo': '612.5',
+        'Travel day': '350',
+        'Horas extras': '50',
+        'Carga/descarga': '150',
+      },
+    } as any;
+
+    // Persistir inmediatamente para que el resto de la app vea estos valores
+    try {
+      const baseKey = projectWithMode?.id || projectWithMode?.nombre || 'tmp';
+      const condKey = `cond_${baseKey}_publicidad`;
+      const current = storage.getJSON<any>(condKey) || {};
+      storage.setJSON(condKey, {
+        ...current,
+        prices: {
+          ...(current?.prices || {}),
+          ...priceRows,
+        },
+      });
+    } catch {}
+  }
+
+  if (!p || Object.keys(p).length === 0) {
+    p = {
+      jornadaTrabajo: '10',
+      jornadaComida: '1',
+      factorFestivo: '1.75',
+      factorHoraExtraFestiva: '1.5',
+      cortesiaMin: '15',
+      taDiario: '10',
+      taFinde: '12',
+      nocturnidadComplemento: '50',
+      nocturnoIni: '02:00',
+      nocturnoFin: '06:00',
+      dietaDesayuno: '10',
+      dietaComida: '20',
+      dietaCena: '30',
+      dietaSinPernocta: '50',
+      dietaAlojDes: '60',
+      gastosBolsillo: '10',
+      kilometrajeKm: '0.40',
+      transporteDia: '15',
+    } as any;
+
+    // Persistir params por defecto también
+    try {
+      const baseKey = projectWithMode?.id || projectWithMode?.nombre || 'tmp';
+      const condKey = `cond_${baseKey}_publicidad`;
+      const current = storage.getJSON<any>(condKey) || {};
+      storage.setJSON(condKey, {
+        ...current,
+        params: {
+          ...(current?.params || {}),
+          ...p,
+        },
+      });
+    } catch {}
+  }
 
   const num = (v: unknown) => {
     if (v == null || v === '') return 0;
@@ -98,7 +200,7 @@ const getNumField = (row: any, candidates: readonly string[]) => {
     }
 
     const pickedRow = findPriceRow([normalized]);
-    const row = pickedRow.row;
+    let row = pickedRow.row;
     const pickedBase = findPriceRow([baseNorm]);
     const baseRow = pickedBase.row;
     const pickedElec = findPriceRow(['Eléctrico', 'Electrico', 'E']);
@@ -125,6 +227,10 @@ const getNumField = (row: any, candidates: readonly string[]) => {
       holidayDay = getNumField(baseRow, ['Precio Día extra/Festivo', 'Precio Día extra/festivo', 'Día extra/Festivo', 'Día festivo', 'Festivo']) ||
                    getNumField(elecRow, ['Precio Día extra/Festivo', 'Precio Día extra/festivo', 'Día extra/Festivo', 'Día festivo', 'Festivo']) || 0;
     } else {
+      // Fallback: si no encontramos fila directa para el rol, usar la de Eléctrico
+      if (!row || Object.keys(row).length === 0) {
+        row = (Object.keys(baseRow || {}).length > 0 ? baseRow : elecRow) as any;
+      }
       jornada = getNumField(row, ['Precio jornada', 'Precio Jornada', 'Jornada', 'Precio dia', 'Precio día']);
       travelDay = getNumField(row, ['Travel day', 'Travel Day', 'Travel', 'Día de viaje', 'Dia de viaje', 'Día travel', 'Dia travel', 'TD']) ||
                   (jornada > 0 ? jornada / divTravel : 0);

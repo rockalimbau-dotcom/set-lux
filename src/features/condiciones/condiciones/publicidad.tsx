@@ -4,6 +4,7 @@ import { useLocalStorage } from '@shared/hooks/useLocalStorage';
 import { useCallback, useEffect, useMemo, useState, useRef, memo } from 'react';
 
 import { renderWithParams, visibleToTemplate, loadJSON, TextAreaAuto, InfoCard, ParamInput } from './shared';
+import { storage } from '@shared/services/localStorage.service';
 import { DEFAULT_FESTIVOS_TEXT, generateDynamicFestivosText } from '@shared/constants/festivos';
 import { exportCondicionesToPDF } from '../utils/exportPDF';
 
@@ -86,6 +87,20 @@ function CondicionesPublicidad({
   );
   const [showRoleSelect, setShowRoleSelect] = useState(false);
 
+  // Persistir inmediatamente el modelo inicial si no existe en localStorage,
+  // para que Nómina lo reconozca sin necesidad de editar campos.
+  const wroteInitialRef = useRef(false);
+  useEffect(() => {
+    if (wroteInitialRef.current) return;
+    try {
+      const existing = storage.getJSON<any>(storageKey);
+      if (!existing) {
+        storage.setJSON(storageKey, model);
+      }
+    } catch {}
+    wroteInitialRef.current = true;
+  }, [storageKey, model]);
+
   const onChangeRef = useRef(onChange);
   useEffect(() => {
     onChangeRef.current = onChange;
@@ -140,8 +155,17 @@ function CondicionesPublicidad({
       if (!PRICE_ROLES_PUBLI.includes(newRole)) {
         nextRoles.push(newRole);
       }
-      
-      return { ...m, roles: nextRoles };
+      // Autocompletar precios preestablecidos para el rol añadido si no existen
+      const nextPrices = { ...(m.prices || {}) };
+      if (!nextPrices[newRole]) {
+        // Cargar la semilla por defecto para obtener los precios iniciales
+        const seed = loadOrSeedPublicidad('__seed__');
+        if (seed?.prices?.[newRole]) {
+          nextPrices[newRole] = { ...seed.prices[newRole] };
+        }
+      }
+
+      return { ...m, roles: nextRoles, prices: nextPrices };
     });
     setShowRoleSelect(false);
   };
@@ -637,6 +661,14 @@ function loadOrSeedPublicidad(storageKey: string): AnyRecord {
   };
 
   try {
+    // Si no existe clave aún, persistimos el fallback para que sea "real" desde el inicio
+    try {
+      const exists = storage.getString(storageKey);
+      if (exists == null) {
+        storage.setJSON(storageKey, fallback);
+      }
+    } catch {}
+
     const parsed: AnyRecord = loadJSON(storageKey, fallback);
 
     if (parsed) {

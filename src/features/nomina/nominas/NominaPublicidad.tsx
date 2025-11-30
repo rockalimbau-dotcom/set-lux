@@ -19,6 +19,7 @@ import {
   weekISOdays,
   weekAllPeopleActive,
 } from '../utils/plan';
+import { loadCondModel } from '../utils/cond';
 
 interface ProjectLike {
   id?: string;
@@ -92,6 +93,17 @@ export default function NominaPublicidad({ project }: NominaPublicidadProps) {
   );
 
   React.useEffect(() => {
+    // Garantizar que exista la clave de condiciones de publicidad en localStorage
+    try {
+      const cur = storage.getString(condKeys[0]);
+      if (!cur) {
+        // Esto fuerza la siembra y persistencia inmediata si no existe
+        loadCondModel(projectWithMode as any);
+        const after = storage.getString(condKeys[0]) || '';
+        if (after) setCondStamp(after);
+      }
+    } catch {}
+
     const tick = () => {
       const cur = condKeys.map(k => storage.getString(k) || '').join('|');
       setCondStamp(prev => (prev === cur ? prev : cur));
