@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { Th, Td } from '@shared/components';
 import { useLocalStorage } from '@shared/hooks/useLocalStorage';
-import { parseYYYYMMDD } from '../utils/date';
+import { parseYYYYMMDD, monthKeyFromISO, toISO } from '../utils/date';
 import { weekISOdays } from '../utils/plan';
 import DietasSummary from './DietasSummary.jsx';
 import ExtrasSummary from './ExtrasSummary.jsx';
@@ -113,6 +113,78 @@ function MonthSection({
   const [dateFrom, setDateFrom] = useLocalStorage<string>(`${dateFilterKey}_from`, '');
   const [dateTo, setDateTo] = useLocalStorage<string>(`${dateFilterKey}_to`, '');
 
+  // Calcular días del mes (30 o 31) para nómina mensual
+  const getDaysInMonth = (monthKey: string): number => {
+    const [year, month] = monthKey.split('-').map(Number);
+    const days = new Date(year, month, 0).getDate();
+    if ((import.meta as any).env.DEV) {
+      console.debug('[NOMINA.MONTH] getDaysInMonth:', monthKey, '->', days, 'days');
+    }
+    return days;
+  };
+
+  // Calcular días trabajados del mes: desde el primer día trabajado hasta el final del mes
+  // IMPORTANTE: Este cálculo debe funcionar correctamente incluso cuando las semanas cruzan meses
+  const calculateWorkingDaysInMonth = React.useMemo(() => {
+    if (projectMode !== 'mensual') {
+      return getDaysInMonth(monthKey);
+    }
+    
+    // Obtener todos los días ISO de las semanas del mes que pertenecen AL MES ACTUAL
+    // Esto es crítico: aunque una semana cruce meses, solo contamos los días del mes actual
+    const allDays: string[] = [];
+    for (const week of weeksForMonth) {
+      const weekDays = weekISOdays(week);
+      for (const iso of weekDays) {
+        const dayMonthKey = monthKeyFromISO(iso);
+        // Solo añadir días que pertenecen al mes actual
+        if (dayMonthKey === monthKey) {
+          allDays.push(iso);
+        }
+      }
+    }
+    
+    // Si no hay días trabajados en este mes, devolver 0
+    if (allDays.length === 0) {
+      return 0;
+    }
+    
+    // Ordenar días y obtener el primero y el último (el primer y último día trabajado del mes)
+    allDays.sort();
+    const firstDayWorked = parseYYYYMMDD(allDays[0]);
+    const lastDayWorked = parseYYYYMMDD(allDays[allDays.length - 1]);
+    
+    if (!firstDayWorked || !lastDayWorked) {
+      return 0;
+    }
+    
+    // Obtener el último día del mes calendario
+    const [year, month] = monthKey.split('-').map(Number);
+    const lastDayOfMonth = new Date(year, month, 0); // día 0 del mes siguiente = último día del mes actual
+    
+    // Calcular días desde el primer día trabajado hasta el último día trabajado O hasta el final del mes
+    // Usar el menor de los dos: último día trabajado o último día del mes
+    const endDate = lastDayWorked > lastDayOfMonth ? lastDayOfMonth : lastDayWorked;
+    
+    // Calcular días desde el primer día trabajado hasta el día final (incluyendo ambos)
+    // Esto incluye rodaje + descansos desde el primer día trabajado hasta el último día trabajado (o final del mes)
+    const diffTime = endDate.getTime() - firstDayWorked.getTime();
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
+    
+    
+    return diffDays;
+  }, [projectMode, weeksForMonth, monthKey]);
+
+  // Campo para días del mes (solo mensual) - inicializar con los días del mes (30 o 31)
+  const daysInMonth = getDaysInMonth(monthKey);
+  
+  // Debug para verificar daysInMonth
+  if ((import.meta as any).env.DEV && projectMode === 'mensual') {
+    console.debug('[NOMINA.MONTH] daysInMonth calculated:', daysInMonth, 'calculateWorkingDaysInMonth:', calculateWorkingDaysInMonth, 'for monthKey:', monthKey, 'projectMode:', projectMode);
+  }
+  const daysInMonthKey = `${persistKeyBase}_${monthKey}_priceDays`;
+  const [priceDays, setPriceDays] = useLocalStorage<number>(daysInMonthKey, daysInMonth);
+
   const persistKey = `${persistKeyBase}_${monthKey}_rcvd`;
   const [received, setReceived] = useLocalStorage<Record<string, { ok?: boolean; note?: string }>>(
     persistKey,
@@ -176,6 +248,10 @@ function MonthSection({
       const person = { role: r.role, name: r.name };
       const { workedDays, travelDays, workedBase, workedPre, workedPick, holidayDays } =
         calcWorkedBreakdown(weeksForMonth, filterISO, person);
+      
+      // Para mensual, "Total días trabajados" debe ser desde el primer día trabajado hasta el último día trabajado
+      // (incluyendo rodaje + descansos en ese rango)
+      const totalDiasTrabajados = projectMode === 'mensual' ? calculateWorkingDaysInMonth : workedDays;
 
       const keyNoPR = `${stripPR(r.role)}__${r.name}`;
       const baseRoleCode = stripPR(r.role);
@@ -299,7 +375,16 @@ function MonthSection({
           _totalKm;
       } else {
         // Cálculo estándar para semanal/mensual
-        totalDias = workedDays * (pr.jornada || 0);
+        if (projectMode === 'mensual') {
+          // Para mensual: usar precio diario calculado desde precio mensual
+          // Total días = totalDiasTrabajados (todos los días del mes) * precio diario
+          const precioMensual = (pr as any).precioMensual || 0;
+          const precioDiario = precioMensual > 0 && priceDays > 0 ? precioMensual / priceDays : (pr.jornada || 0);
+          totalDias = totalDiasTrabajados * precioDiario;
+        } else {
+          // Para semanal: usar precio jornada como antes
+          totalDias = workedDays * (pr.jornada || 0);
+        }
         totalTravel = travelDays * (pr.travelDay || 0);
         totalHolidays = holidayDays * (pr.holidayDay || 0);
         _totalExtras = (horasExtraValue + turnAroundValue + nocturnidadValue + penaltyLunchValue) * (pr.horaExtra || 0);
@@ -346,7 +431,7 @@ function MonthSection({
         km: kmValue,
         dietasCount: dietasMap,
         ticketTotal: ticketValue,
-        _worked: workedDays,
+        _worked: totalDiasTrabajados, // Para mensual es desde el primer día trabajado hasta el final del mes, para otros es workedDays
         _travel: travelDays,
         _holidays: holidayDays,
         _totalDias: totalDias,
@@ -370,6 +455,11 @@ function MonthSection({
     refuerzoSet,
     stripPR,
     calcWorkedBreakdown,
+    filteredData,
+    projectMode,
+    daysInMonth,
+    calculateWorkingDaysInMonth,
+    priceDays,
   ]);
 
   // Estado para filas seleccionadas para exportación (por defecto todas seleccionadas)
@@ -480,6 +570,25 @@ function MonthSection({
                 className='px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-xs'
               />
             </div>
+            {projectMode === 'mensual' && (
+              <div className='flex items-center gap-2'>
+                <label className='text-xs text-zinc-400 whitespace-nowrap'>Precio a</label>
+                <input
+                  type='number'
+                  min='28'
+                  max='31'
+                  value={priceDays}
+                  onChange={e => {
+                    const val = parseInt(e.target.value, 10);
+                    if (val >= 28 && val <= 31) {
+                      setPriceDays(val);
+                    }
+                  }}
+                  className='w-12 px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-xs text-center'
+                />
+                <label className='text-xs text-zinc-400 whitespace-nowrap'>días</label>
+              </div>
+            )}
           </div>
         )}
         <div className='ml-auto flex gap-2'>

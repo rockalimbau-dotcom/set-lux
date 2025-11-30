@@ -266,6 +266,7 @@ export default function NominaMensual({ project }: NominaMensualProps) {
             weeksForMonth={weeks}
             filterISO={filterISO}
             rolePrices={rolePrices}
+            projectMode="mensual"
             defaultOpen={i === 0}
             persistKeyBase={basePersist}
             onExport={exportMonth}
