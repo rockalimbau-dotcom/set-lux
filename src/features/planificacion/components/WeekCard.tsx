@@ -251,36 +251,33 @@ function WeekCard({
                 ))}
               </Row>
 
-              <Row label='Inicio'>
+              <Row label='Horario'>
                 {week.days.map((day: AnyRecord, i: number) => (
                   <Td key={i}>
-                    <input
-                      type='time'
-                      value={day.start || ''}
-                      onChange={e =>
-                        setDayField(scope, week.id as string, i, {
-                          start: e.target.value,
-                        })
-                      }
-                      className='w-full px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand'
-                      disabled={day.tipo === 'Descanso'}
-                    />
-                  </Td>
-                ))}
-              </Row>
-
-              <Row label='Fin'>
-                {week.days.map((day: AnyRecord, i: number) => (
-                  <Td key={i}>
-                    <input
-                      type='time'
-                      value={day.end || ''}
-                      onChange={e =>
-                        setDayField(scope, week.id as string, i, { end: e.target.value })
-                      }
-                      className='w-full px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand'
-                      disabled={day.tipo === 'Descanso'}
-                    />
+                    <div className='flex gap-2'>
+                      <input
+                        type='time'
+                        value={day.start || ''}
+                        onChange={e =>
+                          setDayField(scope, week.id as string, i, {
+                            start: e.target.value,
+                          })
+                        }
+                        className='flex-1 px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand'
+                        disabled={day.tipo === 'Descanso'}
+                        title='Inicio'
+                      />
+                      <input
+                        type='time'
+                        value={day.end || ''}
+                        onChange={e =>
+                          setDayField(scope, week.id as string, i, { end: e.target.value })
+                        }
+                        className='flex-1 px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand'
+                        disabled={day.tipo === 'Descanso'}
+                        title='Fin'
+                      />
+                    </div>
                   </Td>
                 ))}
               </Row>
