@@ -705,24 +705,110 @@ export function buildReportWeekHTMLForPDF({
     return 1000;
   };
   
-  // Sort person keys by role hierarchy
-  const finalPersonKeys = Object.keys(finalData || {}).sort((a, b) => {
-    const [roleA] = String(a).split('__');
-    const [roleB] = String(b).split('__');
-    const priorityA = rolePriorityForReportsPDF(roleA);
-    const priorityB = rolePriorityForReportsPDF(roleB);
-    
-    if (priorityA !== priorityB) {
-      return priorityA - priorityB;
-    }
-    
-    // If same priority, sort by name
-    const [, ...namePartsA] = String(a).split('__');
-    const [, ...namePartsB] = String(b).split('__');
-    const nameA = namePartsA.join('__');
-    const nameB = namePartsB.join('__');
-    return nameA.localeCompare(nameB);
+  // Agrupar personas por bloque (base, pre, pick) y ordenar dentro de cada bloque
+  const getBlockFromKey = (key: string): 'base' | 'pre' | 'pick' => {
+    if (/\.pre__/.test(key) || /REF\.pre__/.test(key)) return 'pre';
+    if (/\.pick__/.test(key) || /REF\.pick__/.test(key)) return 'pick';
+    return 'base';
+  };
+
+  const personsByBlock = {
+    base: [] as string[],
+    pre: [] as string[],
+    pick: [] as string[],
+  };
+
+  Object.keys(finalData || {}).forEach(key => {
+    const block = getBlockFromKey(key);
+    personsByBlock[block].push(key);
   });
+
+  // Función para obtener el rol base (sin sufijo P o R)
+  const getBaseRole = (role: string): string => {
+    const r = String(role).toUpperCase().trim();
+    if (r === 'REF') return 'REF';
+    // Remover sufijos P y R
+    return r.replace(/[PR]$/, '');
+  };
+
+  // Función para obtener prioridad del rol base
+  const getBaseRolePriority = (role: string): number => {
+    const baseRole = getBaseRole(role);
+    const r = baseRole.toUpperCase().trim();
+    
+    // EQUIPO BASE
+    if (r === 'G') return 0;
+    if (r === 'BB') return 1;
+    if (r === 'E') return 2;
+    if (r === 'TM') return 3;
+    if (r === 'FB') return 4;
+    if (r === 'AUX') return 5;
+    if (r === 'M') return 6;
+    if (r === 'REF') return 7; // REF al final
+    
+    return 1000;
+  };
+
+  // Ordenar cada bloque por jerarquía de roles
+  const sortByRoleHierarchy = (keys: string[], block: 'base' | 'pre' | 'pick') => {
+    return keys.sort((a, b) => {
+      const [roleA] = String(a).split('__');
+      const [roleB] = String(b).split('__');
+      
+      // Para bloques pre y pick, separar REF del resto
+      if (block === 'pre' || block === 'pick') {
+        const isRefA = roleA === 'REF' || roleA.startsWith('REF');
+        const isRefB = roleB === 'REF' || roleB.startsWith('REF');
+        
+        // REF siempre al final dentro de su bloque
+        if (isRefA && !isRefB) return 1;
+        if (!isRefA && isRefB) return -1;
+        
+        // Si ambos son REF o ambos no son REF, ordenar por nombre
+        if (isRefA && isRefB) {
+          const [, ...namePartsA] = String(a).split('__');
+          const [, ...namePartsB] = String(b).split('__');
+          const nameA = namePartsA.join('__');
+          const nameB = namePartsB.join('__');
+          return nameA.localeCompare(nameB);
+        }
+        
+        // Ambos no son REF: ordenar por jerarquía del rol base
+        const priorityA = getBaseRolePriority(roleA);
+        const priorityB = getBaseRolePriority(roleB);
+        
+        if (priorityA !== priorityB) {
+          return priorityA - priorityB;
+        }
+      } else {
+        // Para bloque base, usar la prioridad normal
+        const priorityA = rolePriorityForReportsPDF(roleA);
+        const priorityB = rolePriorityForReportsPDF(roleB);
+        
+        if (priorityA !== priorityB) {
+          return priorityA - priorityB;
+        }
+      }
+      
+      // If same priority, sort by name
+      const [, ...namePartsA] = String(a).split('__');
+      const [, ...namePartsB] = String(b).split('__');
+      const nameA = namePartsA.join('__');
+      const nameB = namePartsB.join('__');
+      return nameA.localeCompare(nameB);
+    });
+  };
+
+  personsByBlock.base = sortByRoleHierarchy(personsByBlock.base, 'base');
+  personsByBlock.pre = sortByRoleHierarchy(personsByBlock.pre, 'pre');
+  personsByBlock.pick = sortByRoleHierarchy(personsByBlock.pick, 'pick');
+
+  // Mantener orden: base, pre, pick
+  const finalPersonKeys = [
+    ...personsByBlock.base,
+    ...personsByBlock.pre,
+    ...personsByBlock.pick,
+  ];
   
   console.log('📋 Sorted person keys by role hierarchy (PDF):', finalPersonKeys.map(k => {
     const [role] = String(k).split('__');
@@ -794,32 +880,8 @@ export function buildReportWeekHTMLForPDF({
   console.log('📊 All concepts:', CONCEPTS);
   console.log('📊 Removed concepts (PDF):', CONCEPTS.filter(c => !conceptosConDatos.includes(c)));
   
-  const body = finalPersonKeys
-    .filter(pk => {
-      // Pre-filter: check if person has any meaningful data (not 0, empty, or just spaces)
-      const hasMeaningfulData = safeSemanaWithData.some(iso => {
-        return conceptosConDatos.some(concepto => {
-          const value = finalData?.[pk]?.[concepto]?.[iso];
-          if (!value) return false;
-          
-          const trimmedValue = value.toString().trim();
-          if (trimmedValue === '') return false;
-          if (trimmedValue === '0') return false;
-          if (trimmedValue === '0.0') return false;
-          if (trimmedValue === '0,0') return false;
-          
-          return true;
-        });
-      });
-      
-      if (!hasMeaningfulData) {
-        console.log(`🚫 Filtering out person with no meaningful data (PDF): ${pk}`);
-        return false;
-      }
-      
-      return true;
-    })
-    .map(pk => {
+  // Función para generar el HTML de una persona
+  const generatePersonHTML = (pk: string) => {
       const [rolePart, ...nameParts] = String(pk).split('__');
       const role = rolePart || '';
       const name = nameParts.join('__');
@@ -899,8 +961,87 @@ export function buildReportWeekHTMLForPDF({
         ).join('');
 
       return head + rows;
-    })
-    .join('');
+  };
+
+  // Generar body agrupado por bloques con títulos
+  const bodyParts: string[] = [];
+
+  // Equipo base
+  const basePersons = personsByBlock.base.filter(pk => {
+    const hasMeaningfulData = safeSemanaWithData.some(iso => {
+      return conceptosConDatos.some(concepto => {
+        const value = finalData?.[pk]?.[concepto]?.[iso];
+        if (!value) return false;
+        const trimmedValue = value.toString().trim();
+        return trimmedValue !== '' && trimmedValue !== '0' && trimmedValue !== '0.0' && trimmedValue !== '0,0';
+      });
+    });
+    return hasMeaningfulData;
+  });
+
+  if (basePersons.length > 0) {
+    // Título para Equipo base
+    const baseTitle = `
+      <tr>
+        <td colspan="${safeSemanaWithData.length + 2}" style="border:1px solid #999;padding:8px;font-weight:700;background:#fff3e0;color:#e65100;text-align:center;">
+          EQUIPO BASE
+        </td>
+      </tr>`;
+    bodyParts.push(baseTitle);
+    bodyParts.push(...basePersons.map(generatePersonHTML));
+  }
+
+  // Equipo Prelight
+  const prePersons = personsByBlock.pre.filter(pk => {
+    const hasMeaningfulData = safeSemanaWithData.some(iso => {
+      return conceptosConDatos.some(concepto => {
+        const value = finalData?.[pk]?.[concepto]?.[iso];
+        if (!value) return false;
+        const trimmedValue = value.toString().trim();
+        return trimmedValue !== '' && trimmedValue !== '0' && trimmedValue !== '0.0' && trimmedValue !== '0,0';
+      });
+    });
+    return hasMeaningfulData;
+  });
+
+  if (prePersons.length > 0) {
+    // Título para Equipo Prelight
+    const preTitle = `
+      <tr>
+        <td colspan="${safeSemanaWithData.length + 2}" style="border:1px solid #999;padding:8px;font-weight:700;background:#e3f2fd;color:#1565c0;text-align:center;">
+          EQUIPO PRELIGHT
+        </td>
+      </tr>`;
+    bodyParts.push(preTitle);
+    bodyParts.push(...prePersons.map(generatePersonHTML));
+  }
+
+  // Equipo Recogida
+  const pickPersons = personsByBlock.pick.filter(pk => {
+    const hasMeaningfulData = safeSemanaWithData.some(iso => {
+      return conceptosConDatos.some(concepto => {
+        const value = finalData?.[pk]?.[concepto]?.[iso];
+        if (!value) return false;
+        const trimmedValue = value.toString().trim();
+        return trimmedValue !== '' && trimmedValue !== '0' && trimmedValue !== '0.0' && trimmedValue !== '0,0';
+      });
+    });
+    return hasMeaningfulData;
+  });
+
+  if (pickPersons.length > 0) {
+    // Título para Equipo Recogida
+    const pickTitle = `
+      <tr>
+        <td colspan="${safeSemanaWithData.length + 2}" style="border:1px solid #999;padding:8px;font-weight:700;background:#e3f2fd;color:#1565c0;text-align:center;">
+          EQUIPO RECOGIDA
+        </td>
+      </tr>`;
+    bodyParts.push(pickTitle);
+    bodyParts.push(...pickPersons.map(generatePersonHTML));
+  }
+
+  const body = bodyParts.join('');
 
   const html = `<!DOCTYPE html>
 <html>
