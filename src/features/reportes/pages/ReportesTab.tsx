@@ -1,7 +1,8 @@
 import { useLocalStorage } from '@shared/hooks/useLocalStorage';
-import React, { useMemo, useEffect } from 'react';
+import React, { useMemo, useEffect, useState } from 'react';
 
 import ReportesSemana from './ReportesSemana.tsx';
+import { exportReportRangeToPDF } from '../utils/export';
 
 type AnyRecord = Record<string, any>;
 
@@ -131,9 +132,209 @@ export default function ReportesTab({ project, mode = 'semanal' }: ReportesTabPr
     );
   }
 
+  // Agrupar semanas por mes (solo para semanal y mensual)
+  const weeksByMonth = useMemo(() => {
+    if (mode === 'publicidad') return null;
+    
+    const grouped = new Map<string, AnyRecord[]>();
+    weeksWithPeople.forEach(week => {
+      const startDate = parseYYYYMMDD(week.startDate as string);
+      const monthKey = `${startDate.getFullYear()}-${String(startDate.getMonth() + 1).padStart(2, '0')}`;
+      if (!grouped.has(monthKey)) {
+        grouped.set(monthKey, []);
+      }
+      grouped.get(monthKey)!.push(week);
+    });
+    return grouped;
+  }, [weeksWithPeople, mode]);
+
   return (
     <div className='space-y-6'>
-      {weeksWithPeople.map(week => (
+      {mode !== 'publicidad' && weeksByMonth ? (
+        // Mostrar agrupado por mes con botón PDF y campos de fecha
+        Array.from(weeksByMonth.entries()).map(([monthKey, weeks]) => {
+          const [year, month] = monthKey.split('-').map(Number);
+          const monthNameFull = new Date(year, month - 1, 1).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
+          // Solo el mes con primera letra mayúscula
+          const monthName = new Date(year, month - 1, 1).toLocaleDateString('es-ES', { month: 'long' });
+          const monthNameCapitalized = monthName.charAt(0).toUpperCase() + monthName.slice(1);
+          return (
+            <MonthReportGroup
+              key={monthKey}
+              monthKey={monthKey}
+              monthName={monthNameCapitalized}
+              monthNameFull={monthNameFull}
+              weeks={weeks}
+              project={project}
+              mode={mode}
+              weekToSemanasISO={weekToSemanasISO}
+              weekToPersonas={weekToPersonas}
+            />
+          );
+        })
+      ) : (
+        // Modo publicidad: mostrar semanas sin agrupación
+        weeksWithPeople.map(week => (
+          <ReportesSemana
+            key={week.id as string}
+            project={project as AnyRecord}
+            title={week.label as string}
+            semana={weekToSemanasISO(week)}
+            personas={weekToPersonas(week)}
+            mode={mode}
+            planTimesByDate={(iso: string) => {
+              const idx = weekToSemanasISO(week).indexOf(iso);
+              if (idx >= 0) {
+                const d = (week.days as AnyRecord[])[idx];
+                return { inicio: d.start || '', fin: d.end || '' };
+              }
+              return null;
+            }}
+          />
+        ))
+      )}
+    </div>
+  );
+}
+
+// Componente para agrupar semanas por mes con botón PDF y campos de fecha
+function MonthReportGroup({
+  monthKey,
+  monthName,
+  monthNameFull,
+  weeks,
+  project,
+  mode,
+  weekToSemanasISO,
+  weekToPersonas,
+}: {
+  monthKey: string;
+  monthName: string;
+  monthNameFull: string;
+  weeks: AnyRecord[];
+  project?: Project;
+  mode: 'semanal' | 'mensual' | 'publicidad';
+  weekToSemanasISO: (week: AnyRecord) => string[];
+  weekToPersonas: (week: AnyRecord) => AnyRecord[];
+}) {
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
+
+  // Calcular rango de fechas por defecto (primera y última fecha del mes)
+  const defaultDateRange = useMemo(() => {
+    if (weeks.length === 0) return { from: '', to: '' };
+    const allDates: string[] = [];
+    weeks.forEach(week => {
+      allDates.push(...weekToSemanasISO(week));
+    });
+    allDates.sort();
+    return { from: allDates[0] || '', to: allDates[allDates.length - 1] || '' };
+  }, [weeks, weekToSemanasISO]);
+
+  // Inicializar fechas por defecto
+  useEffect(() => {
+    if (!dateFrom && defaultDateRange.from) {
+      setDateFrom(defaultDateRange.from);
+    }
+    if (!dateTo && defaultDateRange.to) {
+      setDateTo(defaultDateRange.to);
+    }
+  }, [defaultDateRange, dateFrom, dateTo]);
+
+  const handleExportPDF = async () => {
+    if (!dateFrom || !dateTo) {
+      alert('Por favor, selecciona las fechas de inicio y fin');
+      return;
+    }
+
+    // Recopilar todos los días del rango de todas las semanas
+    const allDaysInRange: string[] = [];
+    weeks.forEach(week => {
+      const weekDays = weekToSemanasISO(week);
+      weekDays.forEach(day => {
+        if (day >= dateFrom && day <= dateTo) {
+          if (!allDaysInRange.includes(day)) {
+            allDaysInRange.push(day);
+          }
+        }
+      });
+    });
+    allDaysInRange.sort();
+
+    if (allDaysInRange.length === 0) {
+      alert('No hay días en el rango seleccionado');
+      return;
+    }
+
+    // Recopilar todas las personas de todas las semanas
+    const allPersonas = new Map<string, AnyRecord>();
+    weeks.forEach(week => {
+      weekToPersonas(week).forEach(persona => {
+        const key = `${persona.cargo}__${persona.nombre}`;
+        if (!allPersonas.has(key)) {
+          allPersonas.set(key, persona);
+        }
+      });
+    });
+
+    // Formatear fechas para el título (DD/MM/YYYY)
+    const formatDateForTitle = (iso: string) => {
+      const [y, m, d] = iso.split('-').map(Number);
+      return `${String(d).padStart(2, '0')}/${String(m).padStart(2, '0')}/${y}`;
+    };
+
+    // Exportar PDF con el rango de fechas
+    await exportReportRangeToPDF({
+      project,
+      title: `${monthNameFull} - Del ${formatDateForTitle(dateFrom)} al ${formatDateForTitle(dateTo)}`,
+      safeSemana: allDaysInRange,
+      personas: Array.from(allPersonas.values()),
+      mode,
+      weekToSemanasISO,
+      weekToPersonas,
+      weeks,
+    });
+  };
+
+  return (
+    <div className='space-y-4'>
+      {/* Bloque de controles del mes */}
+      <div className='flex items-center gap-4 p-4 bg-neutral-panel/50 rounded-lg border border-neutral-border'>
+        <span className='text-lg font-semibold text-brand'>{monthName}</span>
+        <div className='ml-auto flex items-center gap-4'>
+          <div className='flex items-center gap-2'>
+            <label className='text-sm text-zinc-300 whitespace-nowrap'>Desde:</label>
+            <input
+              type='date'
+              value={dateFrom}
+              onChange={e => setDateFrom(e.target.value)}
+              className='px-3 py-2 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm'
+            />
+          </div>
+          <div className='flex items-center gap-2'>
+            <label className='text-sm text-zinc-300 whitespace-nowrap'>Hasta:</label>
+            <input
+              type='date'
+              value={dateTo}
+              onChange={e => setDateTo(e.target.value)}
+              className='px-3 py-2 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm'
+            />
+          </div>
+          <button
+            onClick={handleExportPDF}
+            className='px-4 py-2 rounded-lg text-sm font-semibold text-white'
+            style={{
+              background: '#f59e0b',
+              border: '1px solid rgba(255,255,255,0.08)',
+            }}
+          >
+            PDF
+          </button>
+        </div>
+      </div>
+
+      {/* Semanas del mes */}
+      {weeks.map(week => (
         <ReportesSemana
           key={week.id as string}
           project={project as AnyRecord}

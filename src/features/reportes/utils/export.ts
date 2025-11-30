@@ -1245,3 +1245,401 @@ export async function exportReportWeekToPDF(params: BuildPdfParams) {
     return false;
   }
 }
+
+type ExportReportRangeParams = {
+  project?: Project;
+  title: string;
+  safeSemana: string[];
+  personas: any[];
+  mode: 'semanal' | 'mensual' | 'publicidad';
+  weekToSemanasISO: (week: any) => string[];
+  weekToPersonas: (week: any) => any[];
+  weeks: any[];
+  horarioPrelight?: (iso: string) => string;
+  horarioPickup?: (iso: string) => string;
+};
+
+export async function exportReportRangeToPDF(params: ExportReportRangeParams) {
+  const {
+    project,
+    title,
+    safeSemana,
+    personas,
+    mode,
+    weekToSemanasISO,
+    weekToPersonas,
+    weeks,
+    horarioPrelight,
+    horarioPickup,
+  } = params;
+
+  try {
+    const { storage } = await import('@shared/services/localStorage.service');
+    const { toDisplayDate, dayNameFromISO, mondayOf, toISO } = await import('./date');
+    const { findWeekAndDayFactory } = await import('./plan');
+    const { personaKey, personaRole, personaName } = await import('./model');
+    const { DAY_NAMES, CONCEPTS } = await import('../constants');
+    const { 
+      horarioPrelightFactory, 
+      horarioPickupFactory,
+      buildSafePersonas,
+      collectWeekTeamWithSuffixFactory,
+      collectRefNamesForBlock,
+    } = await import('./derive');
+
+    const planKey = `plan_${project?.id || project?.nombre || 'demo'}`;
+    const getPlanAllWeeks = () => {
+      try {
+        const obj = storage.getJSON<any>(planKey);
+        if (!obj) return { pre: [], pro: [] };
+        return obj || { pre: [], pro: [] };
+      } catch {
+        return { pre: [], pro: [] };
+      }
+    };
+
+    const findWeekAndDay = findWeekAndDayFactory(getPlanAllWeeks, mondayOf, toISO);
+
+    // Helper function to check if a date is Saturday (6) or Sunday (0)
+    const isWeekend = (iso: string): boolean => {
+      try {
+        const [y, m, d] = iso.split('-').map(Number);
+        const dt = new Date(y, m - 1, d);
+        const dayOfWeek = dt.getDay();
+        return dayOfWeek === 0 || dayOfWeek === 6; // 0 = Sunday, 6 = Saturday
+      } catch {
+        return false;
+      }
+    };
+
+    const horarioTexto = (iso: string) => {
+      const { day } = findWeekAndDay(iso);
+      if (!day) return 'Añadelo en Planificación';
+      if ((day.tipo || '') === 'Descanso') return 'DESCANSO';
+      const etiqueta = day.tipo && day.tipo !== 'Rodaje' && day.tipo !== 'Rodaje Festivo' ? `${day.tipo}: ` : '';
+      if (!day.start || !day.end) return `${etiqueta}Añadelo en Planificación`;
+      return `${etiqueta}${day.start}–${day.end}`;
+    };
+
+    const horarioPrelightFn = horarioPrelight || horarioPrelightFactory(findWeekAndDay);
+    const horarioPickupFn = horarioPickup || horarioPickupFactory(findWeekAndDay);
+
+    // Ordenar semanas por fecha de inicio
+    const sortedWeeks = [...weeks].sort((a, b) => {
+      const weekA = weekToSemanasISO(a);
+      const weekB = weekToSemanasISO(b);
+      return weekA[0].localeCompare(weekB[0]);
+    });
+
+    // Crear PDF único para todas las semanas
+    const jsPDF = (await import('jspdf')).default;
+    const pdf = new jsPDF({
+      orientation: 'landscape',
+      unit: 'mm',
+      format: 'a4',
+    });
+
+    const baseId = project?.id || project?.nombre || 'tmp';
+
+    // Exportar cada semana por separado
+    for (let weekIndex = 0; weekIndex < sortedWeeks.length; weekIndex++) {
+      const week = sortedWeeks[weekIndex];
+      const weekDays = weekToSemanasISO(week);
+      
+      // Filtrar solo los días de esta semana que estén en el rango
+      const weekDaysInRange = weekDays.filter(day => safeSemana.includes(day));
+      
+      if (weekDaysInRange.length === 0) continue;
+
+      // Filtrar días que no sean DESCANSO o que tengan datos (igual que en la vista)
+      const filteredWeekDays = weekDaysInRange.filter(iso => {
+        const dayLabel = horarioTexto(iso);
+        // Si es DESCANSO y es sábado o domingo
+        if (dayLabel === 'DESCANSO' && isWeekend(iso)) {
+          // Verificar si tiene prelight o recogidas
+          const hasPrelight = horarioPrelightFn(iso) !== '—';
+          const hasPickup = horarioPickupFn(iso) !== '—';
+          // Si no tiene prelight ni recogidas, excluirlo
+          if (!hasPrelight && !hasPickup) {
+            return false;
+          }
+        }
+        return true; // Incluir todos los demás días
+      });
+
+      if (filteredWeekDays.length === 0) continue;
+
+      // Construir personas para esta semana
+      const weekPersonas = weekToPersonas(week);
+      const providedPersonas = weekPersonas || [];
+      
+      // Detectar prelight y pickup activos en esta semana
+      const weekPrelightActive = filteredWeekDays.some(iso => {
+        const { day } = findWeekAndDay(iso);
+        return !!(
+          day &&
+          day.tipo !== 'Descanso' &&
+          ((day.prelight || []).length > 0 ||
+            day.prelightStart ||
+            day.prelightEnd)
+        );
+      });
+
+      const weekPickupActive = filteredWeekDays.some(iso => {
+        const { day } = findWeekAndDay(iso);
+        return !!(
+          day &&
+          day.tipo !== 'Descanso' &&
+          ((day.pickup || []).length > 0 || day.pickupStart || day.pickupEnd)
+        );
+      });
+
+      const collectWeekTeamWithSuffix = collectWeekTeamWithSuffixFactory(
+        findWeekAndDay,
+        [...filteredWeekDays]
+      );
+
+      const prelightPeople = weekPrelightActive ? collectWeekTeamWithSuffix('prelight', 'P') : [];
+      const pickupPeople = weekPickupActive ? collectWeekTeamWithSuffix('pickup', 'R') : [];
+
+      const refNamesBase = collectRefNamesForBlock(filteredWeekDays, findWeekAndDay, 'team');
+      const refNamesPre = collectRefNamesForBlock(filteredWeekDays, findWeekAndDay, 'prelight');
+      const refNamesPick = collectRefNamesForBlock(filteredWeekDays, findWeekAndDay, 'pickup');
+
+      const safePersonas = buildSafePersonas(
+        providedPersonas,
+        weekPrelightActive,
+        prelightPeople,
+        weekPickupActive,
+        pickupPeople
+      );
+
+      // Obtener datos de esta semana
+      const weekKey = `reportes_${baseId}_${weekDays.join('_')}`;
+      let weekData: any = {};
+      try {
+        weekData = storage.getJSON<any>(weekKey) || {};
+      } catch (e) {
+        console.error('Error loading week data:', e);
+      }
+
+      // Asegurar que todas las personas tengan estructura de datos
+      safePersonas.forEach(p => {
+        const key = personaKey(p);
+        if (!weekData[key]) {
+          weekData[key] = {};
+        }
+        CONCEPTS.forEach(concepto => {
+          if (!weekData[key][concepto]) {
+            weekData[key][concepto] = {};
+          }
+          filteredWeekDays.forEach(day => {
+            if (weekData[key][concepto][day] === undefined) {
+              weekData[key][concepto][day] = '';
+            }
+          });
+        });
+      });
+
+      // Título para esta semana
+      const weekTitle = week.label as string || `Semana ${weekIndex + 1}`;
+
+      // Ordenar claves de personas por jerarquía de roles (igual que en buildReportWeekHTMLForPDF)
+      const rolePriorityForReportsPDF = (role: string = ''): number => {
+        const r = String(role).toUpperCase().trim();
+        
+        // EQUIPO BASE
+        if (r === 'G') return 0;
+        if (r === 'BB') return 1;
+        if (r === 'E') return 2;
+        if (r === 'TM') return 3;
+        if (r === 'FB') return 4;
+        if (r === 'AUX') return 5;
+        if (r === 'M') return 6;
+        
+        // REFUERZOS
+        if (r === 'REF') return 7;
+        
+        // EQUIPO PRELIGHT
+        if (r === 'GP') return 8;
+        if (r === 'BBP') return 9;
+        if (r === 'EP') return 10;
+        if (r === 'TMP') return 11;
+        if (r === 'FBP') return 12;
+        if (r === 'AUXP') return 13;
+        if (r === 'MP') return 14;
+        
+        // EQUIPO RECOGIDA
+        if (r === 'GR') return 15;
+        if (r === 'BBR') return 16;
+        if (r === 'ER') return 17;
+        if (r === 'TMR') return 18;
+        if (r === 'FBR') return 19;
+        if (r === 'AUXR') return 20;
+        if (r === 'MR') return 21;
+        
+        // Roles desconocidos al final
+        return 1000;
+      };
+
+      // Ordenar claves de personas por jerarquía
+      const personKeys = Object.keys(weekData || {}).sort((a, b) => {
+        const [roleA] = String(a).split('__');
+        const [roleB] = String(b).split('__');
+        const priorityA = rolePriorityForReportsPDF(roleA);
+        const priorityB = rolePriorityForReportsPDF(roleB);
+        
+        if (priorityA !== priorityB) {
+          return priorityA - priorityB;
+        }
+        
+        // Si misma prioridad, ordenar por nombre
+        const [, ...namePartsA] = String(a).split('__');
+        const [, ...namePartsB] = String(b).split('__');
+        const nameA = namePartsA.join('__');
+        const nameB = namePartsB.join('__');
+        return nameA.localeCompare(nameB);
+      });
+
+      // Calcular paginación por persona (igual que exportReportWeekToPDF)
+      const totalPersons = personKeys.length;
+      
+      const estimateContentHeight = (numPersons: number, conceptsPerPerson: number = CONCEPTS.length) => {
+        const headerHeight = 80;
+        const footerHeight = 25;
+        const tableHeaderHeight = 40;
+        const personHeaderHeight = 20;
+        const conceptRowHeight = 15;
+        const totalPersonHeight = numPersons * (personHeaderHeight + (conceptsPerPerson * conceptRowHeight));
+        return headerHeight + footerHeight + tableHeaderHeight + totalPersonHeight;
+      };
+      
+      let personsPerPage = Math.min(15, totalPersons);
+      const maxPageHeight = 720;
+      const minPersonsPerPage = 1;
+      const estimatedConceptsPerPerson = Math.min(CONCEPTS.length, 3);
+      
+      while (estimateContentHeight(personsPerPage, estimatedConceptsPerPerson) > maxPageHeight && personsPerPage > minPersonsPerPage) {
+        personsPerPage--;
+      }
+      
+      let optimalPersonsPerPage = personsPerPage;
+      const spaceBuffer = 20;
+      
+      for (let testPersons = personsPerPage + 1; testPersons <= totalPersons; testPersons++) {
+        const testHeight = estimateContentHeight(testPersons, estimatedConceptsPerPerson);
+        const availableSpace = maxPageHeight - testHeight;
+        
+        if (testHeight <= maxPageHeight && availableSpace >= spaceBuffer) {
+          optimalPersonsPerPage = testPersons;
+        } else if (testHeight <= maxPageHeight && availableSpace < spaceBuffer) {
+          break;
+        } else {
+          break;
+        }
+      }
+      
+      personsPerPage = optimalPersonsPerPage;
+      let totalPagesForWeek = Math.ceil(totalPersons / personsPerPage) || 1;
+
+      // Generar páginas para esta semana
+      for (let pageIndex = 0; pageIndex < totalPagesForWeek; pageIndex++) {
+        // Si no es la primera página de la primera semana, añadir nueva página
+        if (weekIndex > 0 || pageIndex > 0) {
+          pdf.addPage();
+        }
+
+        const startPerson = pageIndex * personsPerPage;
+        const endPerson = Math.min(startPerson + personsPerPage, totalPersons);
+        const pagePersonKeys = personKeys.slice(startPerson, endPerson);
+        
+        const pageData: any = {};
+        pagePersonKeys.forEach(pk => {
+          pageData[pk] = weekData[pk];
+        });
+
+        // Generar HTML para esta página
+        const html = buildReportWeekHTMLForPDF({
+          project,
+          title: weekTitle,
+          safeSemana: filteredWeekDays,
+          dayNameFromISO: (iso: string, index: number) => dayNameFromISO(iso, index, [...DAY_NAMES] as any),
+          toDisplayDate,
+          horarioTexto,
+          CONCEPTS: [...CONCEPTS],
+          data: pageData,
+        });
+
+        // Convertir HTML a imagen y añadir al PDF
+        const html2canvas = (await import('html2canvas')).default;
+        const tempContainer = document.createElement('div');
+        tempContainer.innerHTML = html;
+        tempContainer.style.position = 'absolute';
+        tempContainer.style.left = '-9999px';
+        tempContainer.style.top = '0';
+        tempContainer.style.width = '1123px';
+        tempContainer.style.height = 'auto';
+        tempContainer.style.minHeight = '794px';
+        tempContainer.style.backgroundColor = 'white';
+        tempContainer.style.overflow = 'visible';
+
+        document.body.appendChild(tempContainer);
+        await new Promise(resolve => setTimeout(resolve, 200));
+
+        // Debug: Check if footer exists and is visible
+        const footer = tempContainer.querySelector('.footer') as HTMLElement;
+        if (footer) {
+          console.log(`📄 Week ${weekIndex + 1}, Page ${pageIndex + 1}: Footer found, height: ${footer.offsetHeight}px, visible: ${footer.offsetHeight > 0}`);
+        } else {
+          console.log(`❌ Week ${weekIndex + 1}, Page ${pageIndex + 1}: Footer NOT found!`);
+        }
+
+        const canvas = await html2canvas(tempContainer, {
+          scale: 3,
+          useCORS: true,
+          allowTaint: true,
+          backgroundColor: '#ffffff',
+          width: 1123,
+          height: tempContainer.scrollHeight + 100,
+          scrollX: 0,
+          scrollY: 0,
+          windowWidth: 1123,
+          windowHeight: tempContainer.scrollHeight + 100,
+          ignoreElements: () => {
+            // Don't ignore footer elements
+            return false;
+          },
+          onclone: (clonedDoc) => {
+            // Ensure footer is visible in cloned document
+            const footer = clonedDoc.querySelector('.footer') as HTMLElement;
+            if (footer) {
+              footer.style.position = 'relative';
+              footer.style.display = 'flex';
+              footer.style.visibility = 'visible';
+              footer.style.opacity = '1';
+              console.log(`🔧 Week ${weekIndex + 1}, Page ${pageIndex + 1}: Footer styles applied in cloned document`);
+            } else {
+              console.log(`❌ Week ${weekIndex + 1}, Page ${pageIndex + 1}: Footer not found in cloned document`);
+            }
+          }
+        });
+
+        document.body.removeChild(tempContainer);
+
+        const imgData = canvas.toDataURL('image/png');
+        const imgHeight = (canvas.height / canvas.width) * 297;
+        pdf.addImage(imgData, 'PNG', 0, 0, 297, imgHeight);
+      }
+    }
+
+    // Guardar PDF final
+    const projectName = project?.nombre || 'Proyecto';
+    const fname = `Reporte_${projectName.replace(/[^a-zA-Z0-9]/g, '_')}_${title.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
+    pdf.save(fname);
+
+    return true;
+  } catch (error) {
+    console.error('Error generating Report Range PDF:', error);
+    return false;
+  }
+}
