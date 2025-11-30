@@ -552,24 +552,6 @@ function MonthSection({
         </h4>
         {(projectMode === 'semanal' || projectMode === 'mensual') && (
           <div className='ml-auto flex items-center gap-3'>
-            <div className='flex items-center gap-2'>
-              <label className='text-xs text-zinc-400 whitespace-nowrap'>Reportes desde:</label>
-              <input
-                type='date'
-                value={dateFrom}
-                onChange={e => setDateFrom(e.target.value)}
-                className='px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-xs'
-              />
-            </div>
-            <div className='flex items-center gap-2'>
-              <label className='text-xs text-zinc-400 whitespace-nowrap'>hasta:</label>
-              <input
-                type='date'
-                value={dateTo}
-                onChange={e => setDateTo(e.target.value)}
-                className='px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-xs'
-              />
-            </div>
             {projectMode === 'mensual' && (
               <div className='flex items-center gap-2'>
                 <label className='text-xs text-zinc-400 whitespace-nowrap'>Precio a</label>
@@ -589,6 +571,24 @@ function MonthSection({
                 <label className='text-xs text-zinc-400 whitespace-nowrap'>días</label>
               </div>
             )}
+            <div className='flex items-center gap-2'>
+              <label className='text-xs text-zinc-400 whitespace-nowrap'>Reportes desde:</label>
+              <input
+                type='date'
+                value={dateFrom}
+                onChange={e => setDateFrom(e.target.value)}
+                className='px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-xs'
+              />
+            </div>
+            <div className='flex items-center gap-2'>
+              <label className='text-xs text-zinc-400 whitespace-nowrap'>hasta:</label>
+              <input
+                type='date'
+                value={dateTo}
+                onChange={e => setDateTo(e.target.value)}
+                className='px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-xs'
+              />
+            </div>
           </div>
         )}
         <div className='ml-auto flex gap-2'>
