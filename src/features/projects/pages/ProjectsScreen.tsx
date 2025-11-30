@@ -322,29 +322,88 @@ function ProjectsScreen({
   const [showNew, setShowNew] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [editing, setEditing] = useState<Project | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterStatus, setFilterStatus] = useState<ProjectStatus | 'Todos'>('Todos');
+  const [filterType, setFilterType] = useState<ProjectMode | 'Todos'>('Todos');
+  const [sortBy, setSortBy] = useState<'nombre' | 'estado' | 'tipo'>('nombre');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [filterMenuOpen, setFilterMenuOpen] = useState(false);
+  const [sortMenuOpen, setSortMenuOpen] = useState(false);
   const hasProjects = projects.length > 0;
   const menuRef = useRef<HTMLDivElement>(null);
+  const filterMenuRef = useRef<HTMLDivElement>(null);
+  const sortMenuRef = useRef<HTMLDivElement>(null);
 
-  // Cerrar menú al hacer clic fuera
+  // Cerrar menús al hacer clic fuera
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setMenuOpen(false);
       }
+      if (filterMenuRef.current && !filterMenuRef.current.contains(event.target as Node)) {
+        setFilterMenuOpen(false);
+      }
+      if (sortMenuRef.current && !sortMenuRef.current.contains(event.target as Node)) {
+        setSortMenuOpen(false);
+      }
     };
 
-    if (menuOpen) {
+    if (menuOpen || filterMenuOpen || sortMenuOpen) {
       document.addEventListener('mousedown', handleClickOutside);
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [menuOpen]);
+  }, [menuOpen, filterMenuOpen, sortMenuOpen]);
 
   const handleOpen = useCallback((p: Project) => onOpen && onOpen(p), [onOpen]);
+  
+  // Filtrar y ordenar proyectos
+  const filteredAndSortedProjects = useMemo(() => {
+    let filtered = [...projects];
+
+    // Aplicar búsqueda
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      filtered = filtered.filter(p => 
+        p.nombre.toLowerCase().includes(query) ||
+        (p.dop && p.dop.toLowerCase().includes(query)) ||
+        (p.almacen && p.almacen.toLowerCase().includes(query)) ||
+        (p.productora && p.productora.toLowerCase().includes(query))
+      );
+    }
+
+    // Aplicar filtros
+    if (filterStatus !== 'Todos') {
+      filtered = filtered.filter(p => p.estado === filterStatus);
+    }
+    if (filterType !== 'Todos') {
+      filtered = filtered.filter(p => p.conditions?.tipo === filterType);
+    }
+
+    // Aplicar ordenamiento
+    filtered.sort((a, b) => {
+      let comparison = 0;
+      
+      if (sortBy === 'nombre') {
+        comparison = a.nombre.localeCompare(b.nombre);
+      } else if (sortBy === 'estado') {
+        comparison = a.estado.localeCompare(b.estado);
+      } else if (sortBy === 'tipo') {
+        const tipoA = a.conditions?.tipo || 'semanal';
+        const tipoB = b.conditions?.tipo || 'semanal';
+        comparison = tipoA.localeCompare(tipoB);
+      }
+      
+      return sortOrder === 'asc' ? comparison : -comparison;
+    });
+
+    return filtered;
+  }, [projects, searchQuery, filterStatus, filterType, sortBy, sortOrder]);
+
   const projectCards = useMemo(() => (
-    projects.map(p => {
+    filteredAndSortedProjects.map(p => {
       const theme = document.documentElement.getAttribute('data-theme') || 'dark';
       const isLight = theme === 'light';
       const estadoVisible = p.estado;
@@ -482,7 +541,7 @@ function ProjectsScreen({
         </div>
       );
     })
-  ), [projects, handleOpen]);
+  ), [filteredAndSortedProjects, handleOpen]);
 
   const theme = document.documentElement.getAttribute('data-theme') || 'dark';
   const isLight = theme === 'light';
@@ -563,7 +622,9 @@ function ProjectsScreen({
               </div>
               <input
                 type='text'
-                placeholder='Buscar...'
+                placeholder='Buscar por nombre, DoP, almacén, productora...'
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
                 className='w-full pl-12 pr-4 py-3 rounded-xl border border-neutral-border focus:outline-none focus:ring-1 focus:ring-orange-500 hover:border-[var(--hover-border)]'
                 style={{
                   backgroundColor: 'var(--panel)',
@@ -572,30 +633,202 @@ function ProjectsScreen({
                 }}
               />
             </div>
-            <button
-              className='px-4 py-3 rounded-xl border border-neutral-border hover:border-[var(--hover-border)] transition'
-              style={{
-                backgroundColor: 'var(--panel)',
-                color: 'var(--text)',
-                borderColor: isLight ? 'rgba(229,231,235,0.6)' : 'var(--border)'
-              }}
-            >
-              <span className='flex items-center gap-2'>
-                🔽 Filtro
-              </span>
-            </button>
-            <button
-              className='px-4 py-3 rounded-xl border border-neutral-border hover:border-[var(--hover-border)] transition'
-              style={{
-                backgroundColor: 'var(--panel)',
-                color: 'var(--text)',
-                borderColor: isLight ? 'rgba(229,231,235,0.6)' : 'var(--border)'
-              }}
-            >
-              <span className='flex items-center gap-2'>
-                ↕️ Ordenar
-              </span>
-            </button>
+            <div className='relative' ref={filterMenuRef}>
+              <button
+                onClick={() => {
+                  setFilterMenuOpen(!filterMenuOpen);
+                  setSortMenuOpen(false);
+                }}
+                className='px-4 py-3 rounded-xl border border-neutral-border hover:border-[var(--hover-border)] transition'
+                style={{
+                  backgroundColor: 'var(--panel)',
+                  color: 'var(--text)',
+                  borderColor: isLight ? 'rgba(229,231,235,0.6)' : 'var(--border)'
+                }}
+              >
+                <span className='flex items-center gap-2'>
+                  🔽 Filtro
+                  {(filterStatus !== 'Todos' || filterType !== 'Todos') && (
+                    <span className='w-2 h-2 rounded-full bg-orange-500'></span>
+                  )}
+                </span>
+              </button>
+              
+              {filterMenuOpen && (
+                <div 
+                  className='absolute right-0 top-full mt-2 w-56 rounded-xl shadow-lg border border-neutral-border py-2 z-50'
+                  style={{
+                    backgroundColor: 'var(--panel)',
+                    borderColor: isLight ? 'rgba(229,231,235,0.6)' : 'var(--border)'
+                  }}
+                >
+                  <div className='px-4 py-2 border-b border-neutral-border' style={{borderColor: isLight ? 'rgba(229,231,235,0.6)' : 'var(--border)'}}>
+                    <span className='text-sm font-semibold' style={{color: 'var(--text)'}}>Estado</span>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setFilterStatus('Todos');
+                      setFilterMenuOpen(false);
+                    }}
+                    className='w-full text-left px-4 py-2 text-sm hover:bg-black/20 transition-colors'
+                    style={{color: 'var(--text)'}}
+                  >
+                    {filterStatus === 'Todos' ? '✓ ' : '  '}Todos
+                  </button>
+                  <button
+                    onClick={() => {
+                      setFilterStatus('Activo');
+                      setFilterMenuOpen(false);
+                    }}
+                    className='w-full text-left px-4 py-2 text-sm hover:bg-black/20 transition-colors'
+                    style={{color: 'var(--text)'}}
+                  >
+                    {filterStatus === 'Activo' ? '✓ ' : '  '}Activo
+                  </button>
+                  <button
+                    onClick={() => {
+                      setFilterStatus('Cerrado');
+                      setFilterMenuOpen(false);
+                    }}
+                    className='w-full text-left px-4 py-2 text-sm hover:bg-black/20 transition-colors'
+                    style={{color: 'var(--text)'}}
+                  >
+                    {filterStatus === 'Cerrado' ? '✓ ' : '  '}Cerrado
+                  </button>
+                  
+                  <div className='px-4 py-2 border-t border-neutral-border mt-2' style={{borderColor: isLight ? 'rgba(229,231,235,0.6)' : 'var(--border)'}}>
+                    <span className='text-sm font-semibold' style={{color: 'var(--text)'}}>Tipo</span>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setFilterType('Todos');
+                      setFilterMenuOpen(false);
+                    }}
+                    className='w-full text-left px-4 py-2 text-sm hover:bg-black/20 transition-colors'
+                    style={{color: 'var(--text)'}}
+                  >
+                    {filterType === 'Todos' ? '✓ ' : '  '}Todos
+                  </button>
+                  <button
+                    onClick={() => {
+                      setFilterType('semanal');
+                      setFilterMenuOpen(false);
+                    }}
+                    className='w-full text-left px-4 py-2 text-sm hover:bg-black/20 transition-colors'
+                    style={{color: 'var(--text)'}}
+                  >
+                    {filterType === 'semanal' ? '✓ ' : '  '}Semanal
+                  </button>
+                  <button
+                    onClick={() => {
+                      setFilterType('mensual');
+                      setFilterMenuOpen(false);
+                    }}
+                    className='w-full text-left px-4 py-2 text-sm hover:bg-black/20 transition-colors'
+                    style={{color: 'var(--text)'}}
+                  >
+                    {filterType === 'mensual' ? '✓ ' : '  '}Mensual
+                  </button>
+                  <button
+                    onClick={() => {
+                      setFilterType('publicidad');
+                      setFilterMenuOpen(false);
+                    }}
+                    className='w-full text-left px-4 py-2 text-sm hover:bg-black/20 transition-colors'
+                    style={{color: 'var(--text)'}}
+                  >
+                    {filterType === 'publicidad' ? '✓ ' : '  '}Publicidad
+                  </button>
+                </div>
+              )}
+            </div>
+            
+            <div className='relative' ref={sortMenuRef}>
+              <button
+                onClick={() => {
+                  setSortMenuOpen(!sortMenuOpen);
+                  setFilterMenuOpen(false);
+                }}
+                className='px-4 py-3 rounded-xl border border-neutral-border hover:border-[var(--hover-border)] transition'
+                style={{
+                  backgroundColor: 'var(--panel)',
+                  color: 'var(--text)',
+                  borderColor: isLight ? 'rgba(229,231,235,0.6)' : 'var(--border)'
+                }}
+              >
+                <span className='flex items-center gap-2'>
+                  ↕️ Ordenar
+                </span>
+              </button>
+              
+              {sortMenuOpen && (
+                <div 
+                  className='absolute right-0 top-full mt-2 w-56 rounded-xl shadow-lg border border-neutral-border py-2 z-50'
+                  style={{
+                    backgroundColor: 'var(--panel)',
+                    borderColor: isLight ? 'rgba(229,231,235,0.6)' : 'var(--border)'
+                  }}
+                >
+                  <div className='px-4 py-2 border-b border-neutral-border' style={{borderColor: isLight ? 'rgba(229,231,235,0.6)' : 'var(--border)'}}>
+                    <span className='text-sm font-semibold' style={{color: 'var(--text)'}}>Ordenar por</span>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setSortBy('nombre');
+                      setSortMenuOpen(false);
+                    }}
+                    className='w-full text-left px-4 py-2 text-sm hover:bg-black/20 transition-colors'
+                    style={{color: 'var(--text)'}}
+                  >
+                    {sortBy === 'nombre' ? '✓ ' : '  '}Nombre
+                  </button>
+                  <button
+                    onClick={() => {
+                      setSortBy('estado');
+                      setSortMenuOpen(false);
+                    }}
+                    className='w-full text-left px-4 py-2 text-sm hover:bg-black/20 transition-colors'
+                    style={{color: 'var(--text)'}}
+                  >
+                    {sortBy === 'estado' ? '✓ ' : '  '}Estado
+                  </button>
+                  <button
+                    onClick={() => {
+                      setSortBy('tipo');
+                      setSortMenuOpen(false);
+                    }}
+                    className='w-full text-left px-4 py-2 text-sm hover:bg-black/20 transition-colors'
+                    style={{color: 'var(--text)'}}
+                  >
+                    {sortBy === 'tipo' ? '✓ ' : '  '}Tipo
+                  </button>
+                  
+                  <div className='px-4 py-2 border-t border-neutral-border mt-2' style={{borderColor: isLight ? 'rgba(229,231,235,0.6)' : 'var(--border)'}}>
+                    <span className='text-sm font-semibold' style={{color: 'var(--text)'}}>Orden</span>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setSortOrder('asc');
+                      setSortMenuOpen(false);
+                    }}
+                    className='w-full text-left px-4 py-2 text-sm hover:bg-black/20 transition-colors'
+                    style={{color: 'var(--text)'}}
+                  >
+                    {sortOrder === 'asc' ? '✓ ' : '  '}Ascendente
+                  </button>
+                  <button
+                    onClick={() => {
+                      setSortOrder('desc');
+                      setSortMenuOpen(false);
+                    }}
+                    className='w-full text-left px-4 py-2 text-sm hover:bg-black/20 transition-colors'
+                    style={{color: 'var(--text)'}}
+                  >
+                    {sortOrder === 'desc' ? '✓ ' : '  '}Descendente
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
 
         </div>
@@ -608,15 +841,28 @@ function ProjectsScreen({
             hasProjects ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : ''
           }`}
         >
-          {/* Mensaje de bienvenida si no hay proyectos */}
-          {!hasProjects && (
+          {/* Mensaje de bienvenida si no hay proyectos o no hay resultados de búsqueda */}
+          {filteredAndSortedProjects.length === 0 && (
             <div className='col-span-full flex flex-col items-center justify-center py-16 px-8 text-center'>
-              <h2 className='text-3xl font-bold mb-4' style={{color: 'var(--text)'}}>
-                ¡Hola, {userName}! 👋
-              </h2>
-              <p className='text-xl max-w-2xl' style={{color: 'var(--text)', opacity: 0.8}}>
-                Para empezar a usar SetLux, <strong>crea tu primer proyecto</strong>.
-              </p>
+              {!hasProjects ? (
+                <>
+                  <h2 className='text-3xl font-bold mb-4' style={{color: 'var(--text)'}}>
+                    ¡Hola, {userName}! 👋
+                  </h2>
+                  <p className='text-xl max-w-2xl' style={{color: 'var(--text)', opacity: 0.8}}>
+                    Para empezar a usar SetLux, <strong>crea tu primer proyecto</strong>.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <h2 className='text-2xl font-bold mb-4' style={{color: 'var(--text)'}}>
+                    No se encontraron proyectos
+                  </h2>
+                  <p className='text-lg max-w-2xl' style={{color: 'var(--text)', opacity: 0.8}}>
+                    Intenta ajustar los filtros o la búsqueda para ver más resultados.
+                  </p>
+                </>
+              )}
             </div>
           )}
 
