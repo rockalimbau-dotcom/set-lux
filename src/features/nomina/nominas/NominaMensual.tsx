@@ -180,18 +180,31 @@ export default function NominaMensual({ project }: NominaMensualProps) {
         .trim()
         .toLowerCase() === wantedNameNorm;
 
+    // Flag para detener el conteo cuando se encuentre "Fin"
+    let foundFin = false;
+
     for (const w of weeks) {
+      if (foundFin) break; // Detener si ya encontramos "Fin"
       const isos = weekISOdays(w);
-      (w.days || []).forEach((day: any, idx: number) => {
+      for (let idx = 0; idx < (w.days || []).length; idx++) {
+        if (foundFin) break; // Detener si ya encontramos "Fin"
+        const day = (w.days || [])[idx];
         const iso = isos[idx];
-        if (!isWantedISO(iso)) return;
-        if ((day?.tipo || '') === 'Descanso') return;
+        if (!isWantedISO(iso)) continue;
+        
+        // Si encontramos "Fin", detener el conteo (no contar este día ni los siguientes)
+        if ((day?.tipo || '') === 'Fin') {
+          foundFin = true;
+          break;
+        }
+        
+        if ((day?.tipo || '') === 'Descanso') continue;
 
         if (wantedRole === 'REF') {
           const anyRef = (arr: any[]) =>
             (arr || []).some((m: any) => nameEq(m?.name) && /ref/i.test(String(m?.role || '')));
           if (!(anyRef(day?.team) || anyRef(day?.prelight) || anyRef(day?.pickup)))
-            return;
+            continue;
           
           // Separar días festivos de días normales
           if ((day?.tipo || '') === 'Rodaje Festivo') {
@@ -213,7 +226,7 @@ export default function NominaMensual({ project }: NominaMensualProps) {
             const mBase = String(m?.role || '').replace(/[PR]$/, '');
             return !m?.role || !wantedBase || mBase === wantedBase;
           });
-          if (!inBlock) return;
+          if (!inBlock) continue;
           
           // Separar días festivos de días normales
           if ((day?.tipo || '') === 'Rodaje Festivo') {
@@ -227,7 +240,7 @@ export default function NominaMensual({ project }: NominaMensualProps) {
           else workedBase += 1;
           if ((day?.tipo || '') === 'Travel Day') travelDays += 1;
         }
-      });
+      }
     }
     return { workedDays, travelDays, workedBase, workedPre, workedPick, holidayDays };
   }
