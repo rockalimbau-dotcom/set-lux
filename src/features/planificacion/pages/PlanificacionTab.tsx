@@ -61,14 +61,14 @@ export default function PlanificacionTab({
   const [holidayMD, setHolidayMD] = useState<Set<string>>(new Set());
 
   // Carga inicial de festivos basados en país/región del proyecto
+  const projectCountry = (project as AnyRecord)?.country || 'ES';
+  const projectRegion = (project as AnyRecord)?.region || 'CT';
+  
   useEffect(() => {
     let alive = true;
 
     const load = async () => {
       try {
-        // Obtener país/región del proyecto, con valores por defecto ES/CT
-        const projectCountry = (project as AnyRecord)?.country || 'ES';
-        const projectRegion = (project as AnyRecord)?.region || 'CT';
         const year = new Date().getFullYear();
         const { holidays } = await fetchHolidays({ 
           country: projectCountry, 
@@ -98,7 +98,7 @@ export default function PlanificacionTab({
     return () => {
       alive = false;
     };
-  }, [project]);
+  }, [projectCountry, projectRegion]);
 
   const [isLoaded, setIsLoaded] = useState(false);
 
