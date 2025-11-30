@@ -299,6 +299,45 @@ function MonthSection({
     calcWorkedBreakdown,
   ]);
 
+  // Estado para filas seleccionadas para exportación (por defecto todas seleccionadas)
+  const selectedRowsKey = `${persistKey}_selectedRows`;
+  const [selectedRowsArray, setSelectedRowsArray] = useLocalStorage<string[]>(
+    selectedRowsKey,
+    []
+  );
+
+  // Convertir array a Set para uso interno
+  const selectedRows = React.useMemo(() => new Set(selectedRowsArray), [selectedRowsArray]);
+
+  // Inicializar todas las filas como seleccionadas solo si no hay selección guardada y hay filas
+  // Usamos una referencia para saber si ya se inicializó una vez
+  const hasInitializedRef = React.useRef(false);
+  React.useEffect(() => {
+    if (!hasInitializedRef.current && selectedRowsArray.length === 0 && enriched.length > 0) {
+      const allKeys = enriched.map(r => `${r.role}__${r.name}`);
+      setSelectedRowsArray(allKeys);
+      hasInitializedRef.current = true;
+    } else if (enriched.length > 0 && !hasInitializedRef.current) {
+      hasInitializedRef.current = true;
+    }
+  }, [enriched.length, selectedRowsArray.length, setSelectedRowsArray]);
+
+  const toggleRowSelection = (personKey: string) => {
+    setSelectedRowsArray(prev => {
+      const prevSet = new Set(prev);
+      if (prevSet.has(personKey)) {
+        prevSet.delete(personKey);
+      } else {
+        prevSet.add(personKey);
+      }
+      return Array.from(prevSet);
+    });
+  };
+
+  const isRowSelected = (personKey: string) => {
+    return selectedRows.has(personKey);
+  };
+
   // Detect which columns have data to show/hide empty columns
   const columnVisibility = useMemo(() => {
     const hasHolidays = enriched.some(r => r._holidays > 0);
@@ -318,8 +357,21 @@ function MonthSection({
     };
   }, [enriched]);
 
-  const doExport = () => onExport?.(monthKey, enriched);
-  const doExportPDF = () => onExportPDF?.(monthKey, enriched);
+  const doExport = () => {
+    const selectedEnriched = enriched.filter(r => {
+      const pKey = `${r.role}__${r.name}`;
+      return isRowSelected(pKey);
+    });
+    onExport?.(monthKey, selectedEnriched);
+  };
+  
+  const doExportPDF = () => {
+    const selectedEnriched = enriched.filter(r => {
+      const pKey = `${r.role}__${r.name}`;
+      return isRowSelected(pKey);
+    });
+    onExportPDF?.(monthKey, selectedEnriched);
+  };
 
   return (
     <section className='rounded-2xl border border-neutral-border bg-neutral-panel/90'>
@@ -353,6 +405,36 @@ function MonthSection({
           <table className='min-w-[1200px] w-full border-collapse text-sm'>
             <thead>
               <tr>
+                <Th align='center'>
+                  <div className='flex justify-center'>
+                    <input
+                      type='checkbox'
+                      checked={enriched.length > 0 && enriched.every(r => {
+                        const pKey = `${r.role}__${r.name}`;
+                        return isRowSelected(pKey);
+                      })}
+                      onChange={e => {
+                        if (e.target.checked) {
+                          // Seleccionar todas
+                          const allKeys = enriched.map(r => `${r.role}__${r.name}`);
+                          setSelectedRowsArray(allKeys);
+                        } else {
+                          // Deseleccionar todas
+                          setSelectedRowsArray([]);
+                        }
+                      }}
+                      onClick={e => {
+                        // Prevenir el comportamiento por defecto y manejar manualmente
+                        e.stopPropagation();
+                      }}
+                      title={enriched.length > 0 && enriched.every(r => {
+                        const pKey = `${r.role}__${r.name}`;
+                        return isRowSelected(pKey);
+                      }) ? 'Deseleccionar todas' : 'Seleccionar todas'}
+                      className='accent-blue-500 dark:accent-[#f59e0b] cursor-pointer'
+                    />
+                  </div>
+                </Th>
                 <Th>Persona</Th>
                 <Th>Días trabajados</Th>
                 <Th>Total días</Th>
@@ -374,6 +456,7 @@ function MonthSection({
             </thead>
             <tbody>
               {enriched.map((r, idx) => {
+                const pKey = `${r.role}__${r.name}`;
                 const roleForColor = String(r.role || '').replace(/[PR]$/, '');
                 const col =
                   ROLE_COLORS[roleForColor] ||
@@ -382,11 +465,22 @@ function MonthSection({
                     ? { bg: '#F59E0B', fg: '#111' }
                     : { bg: '#444', fg: '#fff' });
 
-                const pKey = `${r.role}__${r.name}`;
                 const rc = (received as any)[pKey] || { ok: false, note: '' };
+                const isSelected = isRowSelected(pKey);
 
                 return (
                   <tr key={idx}>
+                    <Td align='middle'>
+                      <div className='flex justify-center'>
+                        <input
+                          type='checkbox'
+                          checked={isSelected}
+                          onChange={() => toggleRowSelection(pKey)}
+                          title={isSelected ? 'Deseleccionar para exportación' : 'Seleccionar para exportación'}
+                          className='accent-blue-500 dark:accent-[#f59e0b] cursor-pointer'
+                        />
+                      </div>
+                    </Td>
                     <Td>
                       <span
                         className='inline-flex items-center gap-2 px-2 py-1 rounded-lg border border-neutral-border bg-black/40'
@@ -466,7 +560,7 @@ function MonthSection({
               {enriched.length === 0 && (
                 <tr>
                   <Td colSpan={
-                    5 + // Base columns: Persona, Días trabajados, Total días, TOTAL BRUTO, Nómina recibida
+                    6 + // Base columns: Checkbox, Persona, Días trabajados, Total días, TOTAL BRUTO, Nómina recibida
                     (columnVisibility.holidays ? 2 : 0) + // Días festivos + Total días festivos
                     (columnVisibility.travel ? 2 : 0) + // Travel Day + Total travel days
                     (columnVisibility.extras ? 2 : 0) + // Horas extra + Total horas extra

@@ -528,52 +528,172 @@ export function buildNominaMonthHTMLForPDF(
   headerCells.push('<th>TOTAL BRUTO</th>');
   const head = `<tr>${headerCells.join('')}</tr>`;
 
-  // Build body rows
-  const body = enrichedRows
-    .map(r => {
-      // Unify role color logic with HTML export: strip P/R suffix and fallback via role label
+  // Función para determinar el bloque basándose en el rol
+  const getBlockFromRole = (role: string): 'base' | 'pre' | 'pick' => {
+    const r = String(role).toUpperCase().trim();
+    if (r.endsWith('P')) return 'pre';
+    if (r.endsWith('R')) return 'pick';
+    return 'base';
+  };
+
+  // Función para obtener prioridad del rol base (sin sufijo P/R)
+  const getBaseRolePriority = (role: string): number => {
+    const baseRole = role.replace(/[PR]$/, '').toUpperCase().trim();
+    
+    if (baseRole === 'G') return 0;
+    if (baseRole === 'BB') return 1;
+    if (baseRole === 'E') return 2;
+    if (baseRole === 'TM') return 3;
+    if (baseRole === 'FB') return 4;
+    if (baseRole === 'AUX') return 5;
+    if (baseRole === 'M') return 6;
+    if (baseRole === 'REF') return 7;
+    
+    return 1000;
+  };
+
+  // Agrupar filas por bloque
+  const rowsByBlock = {
+    base: [] as any[],
+    pre: [] as any[],
+    pick: [] as any[],
+  };
+
+  enrichedRows.forEach(row => {
+    const block = getBlockFromRole(row.role);
+    rowsByBlock[block].push(row);
+  });
+
+  // Ordenar cada bloque por jerarquía de roles
+  const sortRowsByRole = (rows: any[], block: 'base' | 'pre' | 'pick') => {
+    return rows.sort((a, b) => {
+      const roleA = String(a.role || '').toUpperCase();
+      const roleB = String(b.role || '').toUpperCase();
       
-      const dataCells = [
-        `<td class="text-left" style="font-weight:600;">${esc(r.role)} — ${esc(r.name)}</td>`,
-        `<td>${esc(displayValue(r._worked))}</td>`,
-        `<td>${esc(displayValue(r._totalDias, 2))}</td>`,
-      ];
-
-      if (columnVisibility.holidays) {
-        dataCells.push(`<td>${esc(displayValue(r._holidays))}</td>`);
-        dataCells.push(`<td>${esc(displayValue(r._totalHolidays, 2))}</td>`);
+      // Para bloques pre y pick, separar REF del resto
+      if (block === 'pre' || block === 'pick') {
+        const isRefA = roleA === 'REF';
+        const isRefB = roleB === 'REF';
+        
+        // REF siempre al final dentro de su bloque
+        if (isRefA && !isRefB) return 1;
+        if (!isRefA && isRefB) return -1;
+        
+        // Si ambos son REF o ambos no son REF, ordenar por nombre
+        if (isRefA && isRefB) {
+          return String(a.name || '').localeCompare(String(b.name || ''));
+        }
+        
+        // Ambos no son REF: ordenar por jerarquía del rol base
+        const priorityA = getBaseRolePriority(roleA);
+        const priorityB = getBaseRolePriority(roleB);
+        
+        if (priorityA !== priorityB) {
+          return priorityA - priorityB;
+        }
+      } else {
+        // Para bloque base, ordenar por jerarquía normal
+        const priorityA = getBaseRolePriority(roleA);
+        const priorityB = getBaseRolePriority(roleB);
+        
+        if (priorityA !== priorityB) {
+          return priorityA - priorityB;
+        }
       }
+      
+      // Si misma prioridad, ordenar por nombre
+      return String(a.name || '').localeCompare(String(b.name || ''));
+    });
+  };
 
-      if (columnVisibility.travel) {
-        dataCells.push(`<td>${esc(displayValue(r._travel))}</td>`);
-        dataCells.push(`<td>${esc(displayValue(r._totalTravel, 2))}</td>`);
-      }
+  rowsByBlock.base = sortRowsByRole(rowsByBlock.base, 'base');
+  rowsByBlock.pre = sortRowsByRole(rowsByBlock.pre, 'pre');
+  rowsByBlock.pick = sortRowsByRole(rowsByBlock.pick, 'pick');
 
-      if (columnVisibility.extras) {
-        dataCells.push(`<td class="extras-cell">${generateExtrasText(r)}</td>`);
-        dataCells.push(`<td>${esc(displayValue(r._totalExtras, 2))}</td>`);
-      }
+  // Función para generar una fila
+  const generateRowHTML = (r: any) => {
+    const dataCells = [
+      `<td class="text-left" style="font-weight:600;">${esc(r.role)} — ${esc(r.name)}</td>`,
+      `<td>${esc(displayValue(r._worked))}</td>`,
+      `<td>${esc(displayValue(r._totalDias, 2))}</td>`,
+    ];
 
-      if (columnVisibility.dietas) {
-        dataCells.push(`<td class="dietas-cell">${generateDietasText(r)}</td>`);
-        dataCells.push(`<td>${esc(displayValue(r._totalDietas, 2))}</td>`);
-      }
+    if (columnVisibility.holidays) {
+      dataCells.push(`<td>${esc(displayValue(r._holidays))}</td>`);
+      dataCells.push(`<td>${esc(displayValue(r._totalHolidays, 2))}</td>`);
+    }
 
-      if (columnVisibility.transporte) {
-        dataCells.push(`<td>${esc(displayValue(r.transporte))}</td>`);
-        dataCells.push(`<td>${esc(displayValue(r._totalTrans, 2))}</td>`);
-      }
+    if (columnVisibility.travel) {
+      dataCells.push(`<td>${esc(displayValue(r._travel))}</td>`);
+      dataCells.push(`<td>${esc(displayValue(r._totalTravel, 2))}</td>`);
+    }
 
-      if (columnVisibility.km) {
-        dataCells.push(`<td>${esc(displayValue(r.km, 1))}</td>`);
-        dataCells.push(`<td>${esc(displayValue(r._totalKm, 2))}</td>`);
-      }
+    if (columnVisibility.extras) {
+      dataCells.push(`<td class="extras-cell">${generateExtrasText(r)}</td>`);
+      dataCells.push(`<td>${esc(displayValue(r._totalExtras, 2))}</td>`);
+    }
 
-      dataCells.push(`<td class="total-cell">${esc((r._totalBruto || 0).toFixed(2))}</td>`);
+    if (columnVisibility.dietas) {
+      dataCells.push(`<td class="dietas-cell">${generateDietasText(r)}</td>`);
+      dataCells.push(`<td>${esc(displayValue(r._totalDietas, 2))}</td>`);
+    }
 
-      return `<tr>${dataCells.join('')}</tr>`;
-    })
-    .join('');
+    if (columnVisibility.transporte) {
+      dataCells.push(`<td>${esc(displayValue(r.transporte))}</td>`);
+      dataCells.push(`<td>${esc(displayValue(r._totalTrans, 2))}</td>`);
+    }
+
+    if (columnVisibility.km) {
+      dataCells.push(`<td>${esc(displayValue(r.km, 1))}</td>`);
+      dataCells.push(`<td>${esc(displayValue(r._totalKm, 2))}</td>`);
+    }
+
+    dataCells.push(`<td class="total-cell">${esc((r._totalBruto || 0).toFixed(2))}</td>`);
+
+    return `<tr>${dataCells.join('')}</tr>`;
+  };
+
+  // Generar body agrupado por bloques con títulos
+  const bodyParts: string[] = [];
+  const numColumns = headerCells.length;
+
+  // Equipo base
+  if (rowsByBlock.base.length > 0) {
+    const baseTitle = `
+      <tr>
+        <td colspan="${numColumns}" style="border:1px solid #999;padding:8px;font-weight:700;background:#fff3e0;color:#e65100;text-align:center;">
+          EQUIPO BASE
+        </td>
+      </tr>`;
+    bodyParts.push(baseTitle);
+    bodyParts.push(...rowsByBlock.base.map(generateRowHTML));
+  }
+
+  // Equipo Prelight
+  if (rowsByBlock.pre.length > 0) {
+    const preTitle = `
+      <tr>
+        <td colspan="${numColumns}" style="border:1px solid #999;padding:8px;font-weight:700;background:#e3f2fd;color:#1565c0;text-align:center;">
+          EQUIPO PRELIGHT
+        </td>
+      </tr>`;
+    bodyParts.push(preTitle);
+    bodyParts.push(...rowsByBlock.pre.map(generateRowHTML));
+  }
+
+  // Equipo Recogida
+  if (rowsByBlock.pick.length > 0) {
+    const pickTitle = `
+      <tr>
+        <td colspan="${numColumns}" style="border:1px solid #999;padding:8px;font-weight:700;background:#e3f2fd;color:#1565c0;text-align:center;">
+          EQUIPO RECOGIDA
+        </td>
+      </tr>`;
+    bodyParts.push(pickTitle);
+    bodyParts.push(...rowsByBlock.pick.map(generateRowHTML));
+  }
+
+  const body = bodyParts.join('');
 
   const html = `<!DOCTYPE html>
 <html>
