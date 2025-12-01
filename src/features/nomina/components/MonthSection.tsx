@@ -1,6 +1,7 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import { Th, Td } from '@shared/components';
 import { useLocalStorage } from '@shared/hooks/useLocalStorage';
+import { storage } from '@shared/services/localStorage.service';
 import { parseYYYYMMDD, monthKeyFromISO, toISO } from '../utils/date';
 import { weekISOdays } from '../utils/plan';
 import DietasSummary from './DietasSummary.jsx';
@@ -109,9 +110,32 @@ function MonthSection({
   const [open, setOpen] = useLocalStorage<boolean>(openKey, defaultOpen);
 
   // Fechas para filtrar conceptos específicos (solo semanal y mensual)
-  const dateFilterKey = `${persistKeyBase}_${monthKey}_dateFilter`;
-  const [dateFrom, setDateFrom] = useLocalStorage<string>(`${dateFilterKey}_from`, '');
-  const [dateTo, setDateTo] = useLocalStorage<string>(`${dateFilterKey}_to`, '');
+  // Usar las mismas claves que reportes para sincronización
+  const dateRangeKey = useMemo(() => {
+    const base = project?.id || project?.nombre || 'tmp';
+    return `reportes_dateRange_${base}_${projectMode}_${monthKey}`;
+  }, [project?.id, project?.nombre, projectMode, monthKey]);
+  
+  // Leer fechas desde las mismas claves que reportes
+  const [dateFrom, setDateFrom] = useLocalStorage<string>(`${dateRangeKey}_from`, '');
+  const [dateTo, setDateTo] = useLocalStorage<string>(`${dateRangeKey}_to`, '');
+  
+  // Escuchar cambios en localStorage desde reportes
+  useEffect(() => {
+    const handleStorageChange = (e: CustomEvent) => {
+      const { key, value } = e.detail || {};
+      if (key === `${dateRangeKey}_from`) {
+        setDateFrom(value || '');
+      } else if (key === `${dateRangeKey}_to`) {
+        setDateTo(value || '');
+      }
+    };
+    
+    window.addEventListener('localStorageChange', handleStorageChange as EventListener);
+    return () => {
+      window.removeEventListener('localStorageChange', handleStorageChange as EventListener);
+    };
+  }, [dateRangeKey, setDateFrom, setDateTo]);
 
   // Calcular días del mes (30 o 31) para nómina mensual
   const getDaysInMonth = (monthKey: string): number => {
@@ -622,7 +646,17 @@ function MonthSection({
               <input
                 type='date'
                 value={dateFrom}
-                onChange={e => setDateFrom(e.target.value)}
+                onChange={e => {
+                  const newValue = e.target.value;
+                  setDateFrom(newValue);
+                  // Sincronizar con reportes: actualizar la clave de reportes y disparar evento
+                  storage.setString(`${dateRangeKey}_from`, newValue);
+                  window.dispatchEvent(
+                    new CustomEvent('localStorageChange', {
+                      detail: { key: `${dateRangeKey}_from`, value: newValue },
+                    })
+                  );
+                }}
                 className='px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-xs'
               />
             </div>
@@ -631,7 +665,17 @@ function MonthSection({
               <input
                 type='date'
                 value={dateTo}
-                onChange={e => setDateTo(e.target.value)}
+                onChange={e => {
+                  const newValue = e.target.value;
+                  setDateTo(newValue);
+                  // Sincronizar con reportes: actualizar la clave de reportes y disparar evento
+                  storage.setString(`${dateRangeKey}_to`, newValue);
+                  window.dispatchEvent(
+                    new CustomEvent('localStorageChange', {
+                      detail: { key: `${dateRangeKey}_to`, value: newValue },
+                    })
+                  );
+                }}
                 className='px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-xs'
               />
             </div>
@@ -784,7 +828,7 @@ function MonthSection({
                     {columnVisibility.km && <Td className='text-right'>{displayValue(r._totalKm, 2)}</Td>}
 
                     <Td className='text-right font-semibold'>
-                      {(r._totalBruto || 0).toFixed(2)}
+                      {displayValue(r._totalBruto, 2)}
                     </Td>
 
                     <Td>

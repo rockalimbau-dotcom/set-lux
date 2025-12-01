@@ -71,7 +71,7 @@ export function buildNominaMonthHTML(
       parts.push(`<div>Penalty lunch x${r.penaltyLunch}</div>`);
     }
     
-    if (parts.length === 0) {
+    if (parts.length === 0 || totalExtras === 0) {
       return '';
     }
     
@@ -173,7 +173,7 @@ export function buildNominaMonthHTML(
         dataCells.push(`<td>${esc(displayValue(r._totalKm, 2))}</td>`);
       }
 
-      dataCells.push(`<td class="total-cell">${esc((r._totalBruto || 0).toFixed(2))}</td>`);
+      dataCells.push(`<td class="total-cell">${esc(displayValue(r._totalBruto, 2))}</td>`);
 
       return `<tr>${dataCells.join('')}</tr>`;
     })
@@ -465,7 +465,7 @@ export function buildNominaMonthHTMLForPDF(
       parts.push(`<div>Penalty lunch x${r.penaltyLunch}</div>`);
     }
     
-    if (parts.length === 0) {
+    if (parts.length === 0 || totalExtras === 0) {
       return '';
     }
     
@@ -648,7 +648,7 @@ export function buildNominaMonthHTMLForPDF(
       dataCells.push(`<td>${esc(displayValue(r._totalKm, 2))}</td>`);
     }
 
-    dataCells.push(`<td class="total-cell">${esc((r._totalBruto || 0).toFixed(2))}</td>`);
+    dataCells.push(`<td class="total-cell">${esc(displayValue(r._totalBruto, 2))}</td>`);
 
     return `<tr>${dataCells.join('')}</tr>`;
   };

@@ -33,6 +33,7 @@ vi.mock('../utils/date.ts', () => ({
 vi.mock('../utils/parse.ts', () => ({
   parseNum: vi.fn(),
   parseDietasValue: vi.fn(),
+  parseHorasExtra: vi.fn(),
 }));
 
 vi.mock('../utils/plan.ts', () => ({
@@ -194,9 +195,10 @@ describe('nominas/index', () => {
       buildRefuerzoIndex.mockReturnValue(new Set());
       stripPR.mockImplementation(role => role.replace(/[PR]$/, ''));
 
-      const { parseNum, parseDietasValue } = await import('../utils/parse.ts');
+      const { parseNum, parseDietasValue, parseHorasExtra } = await import('../utils/parse.ts');
       parseNum.mockImplementation(val => Number(val) || 0);
       parseDietasValue.mockReturnValue({ labels: ['Comida'], ticket: 0 });
+      parseHorasExtra.mockImplementation(val => Number(val) || 0);
 
       const result = aggregateReports(mockProject, mockWeeks);
 
@@ -336,9 +338,10 @@ describe('nominas/index', () => {
       stripPR.mockImplementation(role => role.replace(/[PR]$/, ''));
       buildRefuerzoIndex.mockReturnValue(new Set());
 
-      const { parseNum, parseDietasValue } = await import('../utils/parse.ts');
+      const { parseNum, parseDietasValue, parseHorasExtra } = await import('../utils/parse.ts');
       parseNum.mockImplementation(val => Number(val) || 0);
       parseDietasValue.mockReturnValue({ labels: ['Comida'], ticket: 0 });
+      parseHorasExtra.mockImplementation(val => Number(val) || 0);
 
       const result = aggregateWindowedReport(mockProject, mockWeeks, filterISO);
 

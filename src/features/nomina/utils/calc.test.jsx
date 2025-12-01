@@ -21,6 +21,7 @@ vi.mock('./date.ts', () => ({
 vi.mock('./parse.ts', () => ({
   parseNum: vi.fn(),
   parseDietasValue: vi.fn(),
+  parseHorasExtra: vi.fn(),
 }));
 
 vi.mock('./plan.ts', () => ({
@@ -231,9 +232,10 @@ describe('nomina/utils/calc', () => {
       buildRefuerzoIndex.mockReturnValue(new Set());
       stripPR.mockImplementation(role => role.replace(/[PR]$/, ''));
 
-      const { parseNum, parseDietasValue } = await import('./parse.ts');
+      const { parseNum, parseDietasValue, parseHorasExtra } = await import('./parse.ts');
       parseNum.mockImplementation(val => Number(val) || 0);
       parseDietasValue.mockReturnValue({ labels: ['Comida'], ticket: 0 });
+      parseHorasExtra.mockImplementation(val => Number(val) || 0);
 
       const result = aggregateReports(mockProject, mockWeeks);
 
@@ -301,9 +303,10 @@ describe('nomina/utils/calc', () => {
       buildRefuerzoIndex.mockReturnValue(new Set());
       stripPR.mockImplementation(role => role.replace(/[PR]$/, ''));
 
-      const { parseNum, parseDietasValue } = await import('./parse.ts');
+      const { parseNum, parseDietasValue, parseHorasExtra } = await import('./parse.ts');
       parseNum.mockReturnValue(0);
       parseDietasValue.mockReturnValue({ labels: [], ticket: 0 });
+      parseHorasExtra.mockReturnValue(0);
 
       const result = aggregateReports(mockProject, mockWeeks);
 
@@ -450,9 +453,10 @@ describe('nomina/utils/calc', () => {
       stripPR.mockImplementation(role => role.replace(/[PR]$/, ''));
       buildRefuerzoIndex.mockReturnValue(new Set());
 
-      const { parseNum, parseDietasValue } = await import('./parse.ts');
+      const { parseNum, parseDietasValue, parseHorasExtra } = await import('./parse.ts');
       parseNum.mockImplementation(val => Number(val) || 0);
       parseDietasValue.mockReturnValue({ labels: ['Comida'], ticket: 0 });
+      parseHorasExtra.mockImplementation(val => Number(val) || 0);
 
       const result = aggregateWindowedReport(mockProject, mockWeeks, filterISO);
 

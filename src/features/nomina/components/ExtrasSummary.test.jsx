@@ -4,7 +4,7 @@ import { describe, it, expect } from 'vitest';
 import ExtrasSummary from './ExtrasSummary';
 
 describe('ExtrasSummary', () => {
-  it('should render empty string when no extras are present', () => {
+  it('should render nothing when no extras are present', () => {
     const { container } = render(
       <ExtrasSummary
         horasExtra={0}
@@ -13,7 +13,7 @@ describe('ExtrasSummary', () => {
         penaltyLunch={0}
       />
     );
-    expect(container.textContent).toBe('0');
+    expect(container.textContent).toBe('');
   });
 
   it('should render total and horas extra when present', () => {

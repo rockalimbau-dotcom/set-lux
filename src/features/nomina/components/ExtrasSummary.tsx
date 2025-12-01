@@ -27,9 +27,16 @@ export default function ExtrasSummary({ horasExtra, turnAround, nocturnidad, pen
     parts.push(`Penalty lunch x${penaltyLunch}`);
   }
   
+  // Si no hay ningún extra, no mostrar nada
+  if (totalExtras === 0 && parts.length === 0) {
+    return null;
+  }
+  
   return (
     <div>
-      <div className='text-right font-medium text-zinc-100 mb-1'>{totalExtras}</div>
+      {totalExtras > 0 && (
+        <div className='text-right font-medium text-zinc-100 mb-1'>{totalExtras}</div>
+      )}
       {parts.length > 0 && (
         <div className='text-[10px] text-zinc-200 space-y-0.5'>
           {parts.map((part, index) => (
