@@ -1,5 +1,5 @@
 import { useLocalStorage } from '@shared/hooks/useLocalStorage';
-import React, { useMemo, useEffect, useState } from 'react';
+import React, { useMemo, useEffect, useState, useRef } from 'react';
 import { storage } from '@shared/services/localStorage.service';
 
 import ReportesSemana from './ReportesSemana.tsx';
@@ -183,24 +183,44 @@ export default function ReportesTab({ project, mode = 'semanal' }: ReportesTabPr
         })
       ) : (
         // Modo publicidad: mostrar semanas sin agrupación
-        weeksWithPeople.map(week => (
-          <ReportesSemana
-            key={week.id as string}
-            project={project as AnyRecord}
-            title={week.label as string}
-            semana={weekToSemanasISO(week)}
-            personas={weekToPersonas(week)}
-            mode={mode}
-            planTimesByDate={(iso: string) => {
-              const idx = weekToSemanasISO(week).indexOf(iso);
-              if (idx >= 0) {
-                const d = (week.days as AnyRecord[])[idx];
-                return { inicio: d.start || '', fin: d.end || '' };
-              }
-              return null;
-            }}
-          />
-        ))
+        (() => {
+          // Para modo publicidad, usar una clave general
+          const publicidadHorasExtraKey = useMemo(() => {
+            const base = project?.id || project?.nombre || 'tmp';
+            return `reportes_horasExtra_${base}_${mode}_publicidad`;
+          }, [project?.id, project?.nombre, mode]);
+          
+          const horasExtraOpcionesPublicidad = [
+            'Hora Extra - Normal',
+            'Hora Extra - Minutaje desde corte',
+            'Hora Extra - Minutaje + Cortesía',
+          ] as const;
+          
+          const [horasExtraTipoPublicidad] = useLocalStorage<string>(
+            publicidadHorasExtraKey,
+            horasExtraOpcionesPublicidad[0]
+          );
+          
+          return weeksWithPeople.map(week => (
+            <ReportesSemana
+              key={week.id as string}
+              project={project as AnyRecord}
+              title={week.label as string}
+              semana={weekToSemanasISO(week)}
+              personas={weekToPersonas(week)}
+              mode={mode}
+              horasExtraTipo={horasExtraTipoPublicidad}
+              planTimesByDate={(iso: string) => {
+                const idx = weekToSemanasISO(week).indexOf(iso);
+                if (idx >= 0) {
+                  const d = (week.days as AnyRecord[])[idx];
+                  return { inicio: d.start || '', fin: d.end || '' };
+                }
+                return null;
+              }}
+            />
+          ));
+        })()
       )}
     </div>
   );
@@ -394,12 +414,125 @@ function MonthReportGroup({
     });
   };
 
+  // Estado para el selector de "Horas Extra"
+  const horasExtraKey = useMemo(() => {
+    const base = project?.id || project?.nombre || 'tmp';
+    return `reportes_horasExtra_${base}_${mode}_${monthKey}`;
+  }, [project?.id, project?.nombre, mode, monthKey]);
+
+  const horasExtraOpciones = [
+    'Hora Extra - Normal',
+    'Hora Extra - Minutaje desde corte',
+    'Hora Extra - Minutaje + Cortesía',
+  ] as const;
+
+  const [horasExtraTipo, setHorasExtraTipo] = useLocalStorage<string>(
+    horasExtraKey,
+    horasExtraOpciones[0]
+  );
+
+  // Detectar el tema actual para el color del selector
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+    if (typeof document !== 'undefined') {
+      return (document.documentElement.getAttribute('data-theme') || 'dark') as 'dark' | 'light';
+    }
+    return 'dark';
+  });
+
+  useEffect(() => {
+    const updateTheme = () => {
+      if (typeof document !== 'undefined') {
+        const currentTheme = (document.documentElement.getAttribute('data-theme') || 'dark') as 'dark' | 'light';
+        setTheme(currentTheme);
+      }
+    };
+
+    // Observar cambios en el atributo data-theme
+    const observer = new MutationObserver(updateTheme);
+    if (typeof document !== 'undefined') {
+      observer.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['data-theme'],
+      });
+    }
+
+    window.addEventListener('themechange', updateTheme);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('themechange', updateTheme);
+    };
+  }, []);
+
+  const focusColor = theme === 'light' ? '#0476D9' : '#F27405';
+  
+  // Estado para el dropdown personalizado
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [hoveredOption, setHoveredOption] = useState<string | null>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Cerrar dropdown al hacer clic fuera
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    if (isDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isDropdownOpen]);
+
   return (
     <div className='space-y-4'>
       {/* Bloque de controles del mes */}
       <div className='flex items-center gap-4 p-4 bg-neutral-panel/50 rounded-lg border border-neutral-border'>
         <span className='text-lg font-semibold text-brand'>{monthName}</span>
         <div className='ml-auto flex items-center gap-4'>
+          <div className='flex items-center gap-2 mr-6 relative' ref={dropdownRef}>
+            <button
+              type='button'
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              className='px-3 py-2 rounded-lg bg-black/40 border border-neutral-border focus:outline-none text-sm text-zinc-300 w-full min-w-[280px] text-left'
+              style={{
+                backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 12 12\'%3E%3Cpath fill=\'%23ffffff\' d=\'M6 9L1 4h10z\'/%3E%3C/svg%3E")',
+                backgroundRepeat: 'no-repeat',
+                backgroundPosition: 'right 0.75rem center',
+                paddingRight: '2.5rem',
+              }}
+            >
+              {horasExtraTipo}
+            </button>
+            {isDropdownOpen && (
+              <div className='absolute top-full left-0 mt-1 w-full min-w-[280px] bg-neutral-panel border border-neutral-border rounded-lg shadow-lg z-50 overflow-hidden'>
+                {horasExtraOpciones.map(opcion => (
+                  <button
+                    key={opcion}
+                    type='button'
+                    onClick={() => {
+                      setHorasExtraTipo(opcion);
+                      setIsDropdownOpen(false);
+                      setHoveredOption(null);
+                    }}
+                    onMouseEnter={() => setHoveredOption(opcion)}
+                    onMouseLeave={() => setHoveredOption(null)}
+                    className='w-full text-left px-3 py-2 text-sm text-zinc-300 transition-colors'
+                    style={{
+                      backgroundColor: hoveredOption === opcion ? focusColor : 'transparent',
+                      color: hoveredOption === opcion ? 'white' : 'inherit',
+                    }}
+                  >
+                    {opcion}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
           <div className='flex items-center gap-2'>
             <label className='text-sm text-zinc-300 whitespace-nowrap'>Desde:</label>
             <input
@@ -440,6 +573,7 @@ function MonthReportGroup({
           semana={weekToSemanasISO(week)}
           personas={weekToPersonas(week)}
           mode={mode}
+          horasExtraTipo={horasExtraTipo}
           planTimesByDate={(iso: string) => {
             const idx = weekToSemanasISO(week).indexOf(iso);
             if (idx >= 0) {

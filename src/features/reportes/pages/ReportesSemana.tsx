@@ -53,6 +53,7 @@ type Props = {
   semana?: string[];
   personas?: AnyRecord[];
   mode?: 'semanal' | 'mensual' | 'publicidad';
+  horasExtraTipo?: string;
   onExportWeekHTML?: () => void;
   onExportWeekPDF?: () => void;
 };
@@ -63,6 +64,7 @@ export default function ReportesSemana({
   semana = [],
   personas = [],
   mode = 'semanal',
+  horasExtraTipo = 'Hora Extra - Normal',
   onExportWeekHTML,
   onExportWeekPDF,
 }: Props) {
@@ -311,6 +313,8 @@ export default function ReportesSemana({
     blockKeyForPerson,
     isPersonScheduledOnBlock,
     setData,
+    horasExtraTipo,
+    currentData: data, // Pasar el estado actual para preservar valores
   });
 
   const [open, setOpen] = useState<boolean>(() => {
@@ -436,6 +440,7 @@ export default function ReportesSemana({
                     SI_NO={SI_NO as any}
                     parseDietas={parseDietas}
                     formatDietas={formatDietas}
+                    horasExtraTipo={horasExtraTipo}
                   />
                 );
 

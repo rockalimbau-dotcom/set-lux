@@ -1,7 +1,13 @@
 // import removed
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 import { diffMinutes, ceilHours } from '../utils/numbers';
+import {
+  calcHorasExtraMinutajeDesdeCorte,
+  calcHorasExtraMinutajeConCortesia,
+  formatHorasExtraDecimal,
+  convertHorasExtraToNewFormat,
+} from '../utils/runtime';
 
 interface AutoCalculationsParams {
   jornadaTrabajo: number;
@@ -47,6 +53,8 @@ interface AutoCalculationsProps {
   personaName: (persona: Persona) => string;
   isPersonScheduledOnBlock: (iso: string, role: string, name: string, findWeekAndDay: (iso: string) => WeekAndDay | any, block?: string) => boolean;
   setData: React.Dispatch<React.SetStateAction<any>>;
+  horasExtraTipo?: string;
+  currentData?: any; // Estado actual para preservar valores existentes
 }
 
 interface AutoResult {
@@ -77,8 +85,28 @@ export default function useAutoCalculations({
   personaName,
   isPersonScheduledOnBlock,
   setData,
+  horasExtraTipo = 'Hora Extra - Normal',
+  currentData,
 }: AutoCalculationsProps) {
-  // no-op
+  // Guardar el estado actual en un ref para preservarlo cuando cambia el tipo
+  const dataRef = useRef(currentData);
+  // Rastrear el tipo anterior para detectar cambios
+  const prevHorasExtraTipoRef = useRef<string>(horasExtraTipo);
+  const horasExtraTipoChangedRef = useRef<boolean>(false);
+  
+  // Actualizar el ref cuando cambia currentData
+  useEffect(() => {
+    dataRef.current = currentData;
+  }, [currentData]);
+  
+  // Detectar cuando cambia horasExtraTipo
+  useEffect(() => {
+    const changed = prevHorasExtraTipoRef.current !== horasExtraTipo;
+    if (changed) {
+      horasExtraTipoChangedRef.current = true;
+      prevHorasExtraTipoRef.current = horasExtraTipo;
+    }
+  }, [horasExtraTipo]);
 
   useEffect(() => {
     // Debug flag: habilita logs con ?debug=ta o localStorage.debug='ta'|'on'|'reportes'
@@ -259,7 +287,7 @@ export default function useAutoCalculations({
         if (!start) return { extra: '', ta: '', noct: '' };
         // Calcular duración solo si hay fin; TA se puede calcular sin fin del día actual
         let workedMin: number = 0;
-        let extras = 0;
+        let extras: number | string = 0;
         if (end) {
           const sDT = buildDateTime(iso, start);
           let eDT = buildDateTime(iso, end);
@@ -269,7 +297,17 @@ export default function useAutoCalculations({
           } else {
             workedMin = Number(diffMinutes(start, end) || 0);
           }
-          extras = calcHorasExtraMin(workedMin, baseHours, cortes);
+          // Calcular horas extra según el tipo seleccionado
+          if (horasExtraTipo === 'Hora Extra - Minutaje desde corte') {
+            const extraDecimal = calcHorasExtraMinutajeDesdeCorte(workedMin, baseHours);
+            extras = extraDecimal > 0 ? formatHorasExtraDecimal(extraDecimal) : '';
+          } else if (horasExtraTipo === 'Hora Extra - Minutaje + Cortesía') {
+            const extraDecimal = calcHorasExtraMinutajeConCortesia(workedMin, baseHours, cortes);
+            extras = extraDecimal > 0 ? formatHorasExtraDecimal(extraDecimal) : '';
+          } else {
+            // Hora Extra - Normal (comportamiento original)
+            extras = calcHorasExtraMin(workedMin, baseHours, cortes);
+          }
         }
         // Usar helpers específicos por bloque para TA
         let taHours = 0;
@@ -296,8 +334,9 @@ export default function useAutoCalculations({
           }
         } catch {}
         const noctStr = noct ? 'SI' : '';
+        const extraStr = typeof extras === 'string' ? extras : (extras > 0 ? String(extras) : '');
         return {
-          extra: extras > 0 ? String(extras) : '',
+          extra: extraStr,
           ta: taHours > 0 ? String(taHours) : '',
           noct: noctStr,
         };
@@ -310,12 +349,22 @@ export default function useAutoCalculations({
     }
 
     setData((prev: any) => {
-      const next = { ...(prev || {}) };
+      // Usar prev como fuente principal porque tiene el estado más actualizado que React proporciona
+      // prev es el estado actual antes de este update, que incluye todos los valores que el usuario ve
+      const sourceState = prev;
+      const next = { ...(sourceState || {}) };
       for (const p of safePersonas as Persona[]) {
         const pk = personaKey(p);
         const role = personaRole(p);
         const name = personaName(p);
-        next[pk] = next[pk] || {};
+        // Preservar la estructura completa incluyendo __manual__
+        next[pk] = next[pk] ? { ...next[pk] } : {};
+        // Asegurar que __manual__ existe y se preserva desde el estado fuente
+        if (sourceState?.[pk]?.__manual__) {
+          next[pk].__manual__ = { ...sourceState[pk].__manual__ };
+        } else {
+          next[pk].__manual__ = next[pk].__manual__ || {};
+        }
         for (const iso of safeSemana as string[]) {
           // Determinar el bloque de la fila: prioriza __block explícito del persona, si no, deriva de la clave
           const explicitBlock = ((p as any)?.__block as 'pre' | 'pick' | undefined) || undefined;
@@ -356,12 +405,135 @@ export default function useAutoCalculations({
           } catch {}
 
           next[pk]['Horas extra'] = next[pk]['Horas extra'] || {};
-          const currExtra = next[pk]['Horas extra'][iso];
+          // CRÍTICO: Leer el valor del estado fuente (sourceState = prev) que es el estado actual
+          // Esto asegura que tenemos el valor real que el usuario veía antes de cambiar el tipo
+          const currExtra = sourceState?.[pk]?.['Horas extra']?.[iso];
           const autoExtra = auto.extra ?? '';
-          const manualExtra = !!next[pk]?.__manual__?.['Horas extra']?.[iso];
-          next[pk]['Horas extra'][iso] = off
-            ? ''
-            : (manualExtra ? currExtra : (autoExtra !== currExtra ? autoExtra : currExtra));
+          // Verificar manualExtra usando el estado fuente
+          const manualExtra = !!(sourceState?.[pk]?.__manual__?.['Horas extra']?.[iso]);
+          
+          // Debug temporal - siempre mostrar para debugging
+          try {
+            const convertedValue = currExtra && currExtra !== '' 
+              ? convertHorasExtraToNewFormat(currExtra, horasExtraTipo)
+              : '';
+            // eslint-disable-next-line no-console
+            console.log('[horasExtra.DEBUG]', JSON.stringify({
+              iso,
+              pk,
+              currExtra: String(currExtra || ''),
+              horasExtraTipo,
+              autoExtra: String(autoExtra || ''),
+              manualExtra,
+              convertedValue: String(convertedValue || ''),
+              horasExtraTipoChanged: horasExtraTipoChangedRef.current,
+              shouldRecalculate: horasExtraTipoChangedRef.current && !manualExtra,
+            }, null, 2));
+          } catch (e) {
+            // eslint-disable-next-line no-console
+            console.error('[horasExtra.DEBUG] Error:', e);
+          }
+          
+          if (off) {
+            // Si no está trabajando en este bloque, vaciar
+            next[pk]['Horas extra'][iso] = '';
+            // También limpiar el flag manual
+            if (next[pk].__manual__?.['Horas extra']?.[iso]) {
+              next[pk].__manual__ = next[pk].__manual__ || {};
+              next[pk].__manual__['Horas extra'] = next[pk].__manual__['Horas extra'] || {};
+              delete next[pk].__manual__['Horas extra'][iso];
+            }
+          } else {
+            // Lógica para preservar valores manuales o recalcular automáticos
+            // CRÍTICO: Cuando cambia horasExtraTipo, SIEMPRE recalcular desde el horario
+            // Solo preservar valores que fueron realmente editados manualmente por el usuario
+            // (no valores que fueron calculados automáticamente y luego marcados como manuales)
+            
+            if (horasExtraTipoChangedRef.current) {
+              // Cuando cambia el tipo, SIEMPRE recalcular desde el horario usando autoExtra
+              // Esto asegura que los cálculos se hagan correctamente según el nuevo tipo
+              next[pk]['Horas extra'][iso] = autoExtra;
+              
+              // Limpiar el flag manual cuando cambia el tipo para permitir recálculo automático
+              // Solo mantener el flag si el usuario realmente editó el valor manualmente
+              // (pero en este caso, siempre recalcular cuando cambia el tipo)
+              next[pk].__manual__ = next[pk].__manual__ || {};
+              next[pk].__manual__['Horas extra'] = next[pk].__manual__['Horas extra'] || {};
+              // Eliminar el flag manual para permitir recálculo automático
+              if (next[pk].__manual__['Horas extra'][iso]) {
+                delete next[pk].__manual__['Horas extra'][iso];
+              }
+              
+              if (debugEnabled) {
+                try {
+                  // eslint-disable-next-line no-console
+                  console.debug('[horasExtra.recalculated.onTypeChange]', {
+                    iso,
+                    pk,
+                    prevValue: currExtra,
+                    newAutoValue: autoExtra,
+                    horasExtraTipo,
+                    prevHorasExtraTipo: prevHorasExtraTipoRef.current,
+                  });
+                } catch {}
+              }
+            } else if (manualExtra) {
+              // Si el valor es MANUAL (el usuario lo editó) Y NO cambió el tipo, preservarlo y convertirlo al nuevo formato
+              if (currExtra !== undefined && currExtra !== null && String(currExtra).trim() !== '') {
+                const convertedValue = convertHorasExtraToNewFormat(currExtra, horasExtraTipo);
+                const finalValue = convertedValue && convertedValue !== '' ? convertedValue : String(currExtra);
+                
+                if (debugEnabled) {
+                  try {
+                    // eslint-disable-next-line no-console
+                    console.debug('[horasExtra.manual.converted]', {
+                      iso,
+                      pk,
+                      original: currExtra,
+                      converted: convertedValue,
+                      final: finalValue,
+                    });
+                  } catch {}
+                }
+                
+                next[pk]['Horas extra'][iso] = finalValue;
+                // Preservar el flag manual
+                next[pk].__manual__ = next[pk].__manual__ || {};
+                next[pk].__manual__['Horas extra'] = next[pk].__manual__['Horas extra'] || {};
+                next[pk].__manual__['Horas extra'][iso] = true;
+              } else {
+                // Si estaba marcado como manual pero ahora está vacío, preservar el vacío
+                next[pk]['Horas extra'][iso] = '';
+                next[pk].__manual__ = next[pk].__manual__ || {};
+                next[pk].__manual__['Horas extra'] = next[pk].__manual__['Horas extra'] || {};
+                next[pk].__manual__['Horas extra'][iso] = true;
+              }
+            } else {
+              // Si el valor NO es manual Y NO cambió el tipo, usar el nuevo autoExtra
+              // que ya está calculado correctamente según el horasExtraTipo actual
+              next[pk]['Horas extra'][iso] = autoExtra;
+              
+              // Asegurar que NO está marcado como manual
+              next[pk].__manual__ = next[pk].__manual__ || {};
+              next[pk].__manual__['Horas extra'] = next[pk].__manual__['Horas extra'] || {};
+              if (next[pk].__manual__['Horas extra'][iso]) {
+                delete next[pk].__manual__['Horas extra'][iso];
+              }
+              
+              if (debugEnabled) {
+                try {
+                  // eslint-disable-next-line no-console
+                  console.debug('[horasExtra.auto.recalculated]', {
+                    iso,
+                    pk,
+                    prevValue: currExtra,
+                    newAutoValue: autoExtra,
+                    horasExtraTipo,
+                  });
+                } catch {}
+              }
+            }
+          }
 
           next[pk]['Turn Around'] = next[pk]['Turn Around'] || {};
           const currTA = next[pk]['Turn Around'][iso];
@@ -386,12 +558,17 @@ export default function useAutoCalculations({
           (window as any).__reportesData = next;
         }
       } catch {}
+      // Resetear el flag de cambio de tipo después de procesar todas las personas
+      if (horasExtraTipoChangedRef.current) {
+        horasExtraTipoChangedRef.current = false;
+      }
       return next;
     });
   }, [
     JSON.stringify(safeSemana),
     JSON.stringify(params),
     JSON.stringify(safePersonas),
+    horasExtraTipo,
     // Recalcular al cambiar cualquier start/end de la semana
     JSON.stringify((safeSemana as string[]).map((iso) => {
       const ctx = findWeekAndDay(iso) as WeekAndDay;

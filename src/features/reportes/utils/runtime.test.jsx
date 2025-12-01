@@ -7,6 +7,10 @@ import {
   calcHorasExtraMin,
   hasNocturnidad,
   findPrevWorkingContextFactory,
+  formatHorasExtraDecimal,
+  extractNumericValue,
+  calcHorasExtraMinutajeDesdeCorte,
+  calcHorasExtraMinutajeConCortesia,
 } from './runtime.ts';
 
 // Mock localStorage
@@ -420,6 +424,85 @@ describe('runtime utils', () => {
       const result = findPrevWorkingContext('2024-01-19'); // Friday
 
       expect(result.consecDesc).toBe(3); // Tue, Wed, Thu were rest
+    });
+  });
+
+  describe('formatHorasExtraDecimal', () => {
+    it('should return empty string for zero or negative values', () => {
+      expect(formatHorasExtraDecimal(0)).toBe('');
+      expect(formatHorasExtraDecimal(-1)).toBe('');
+    });
+
+    it('should format minutes less than 60 correctly', () => {
+      expect(formatHorasExtraDecimal(0.5)).toBe("0.5 (30')");
+      expect(formatHorasExtraDecimal(0.58)).toBe("0.58 (35')");
+    });
+
+    it('should format exact hours correctly', () => {
+      expect(formatHorasExtraDecimal(1)).toBe("1 (1h)");
+      expect(formatHorasExtraDecimal(2)).toBe("2 (2h)");
+    });
+
+    it('should format hours with minutes correctly', () => {
+      expect(formatHorasExtraDecimal(1.5)).toBe("1.5 (1h 30')");
+      expect(formatHorasExtraDecimal(2.25)).toBe("2.25 (2h 15')");
+    });
+  });
+
+  describe('extractNumericValue', () => {
+    it('should return number as-is when given a number', () => {
+      expect(extractNumericValue(1.5)).toBe(1.5);
+      expect(extractNumericValue(0)).toBe(0);
+    });
+
+    it('should extract decimal from formatted string', () => {
+      expect(extractNumericValue("0.58 (35 ')")).toBe(0.58);
+      expect(extractNumericValue("1.5 (1 h 30 ')")).toBe(1.5);
+      expect(extractNumericValue("2 (2h)")).toBe(2);
+    });
+
+    it('should extract number from plain string', () => {
+      expect(extractNumericValue("1.5")).toBe(1.5);
+      expect(extractNumericValue("10")).toBe(10);
+    });
+
+    it('should return 0 for empty or invalid values', () => {
+      expect(extractNumericValue("")).toBe(0);
+      expect(extractNumericValue("invalid")).toBe(0);
+    });
+  });
+
+  describe('calcHorasExtraMinutajeDesdeCorte', () => {
+    it('should return 0 for null worked minutes', () => {
+      expect(calcHorasExtraMinutajeDesdeCorte(null, 10)).toBe(0);
+    });
+
+    it('should return 0 when worked time is less than base', () => {
+      expect(calcHorasExtraMinutajeDesdeCorte(500, 10)).toBe(0); // 500 min = 8.33 hours < 10 hours
+    });
+
+    it('should calculate decimal hours correctly', () => {
+      expect(calcHorasExtraMinutajeDesdeCorte(630, 10)).toBe(0.5); // 630 min = 10.5 hours, 0.5 over
+      expect(calcHorasExtraMinutajeDesdeCorte(660, 10)).toBe(1); // 660 min = 11 hours, 1 hour over
+    });
+  });
+
+  describe('calcHorasExtraMinutajeConCortesia', () => {
+    it('should return 0 for null worked minutes', () => {
+      expect(calcHorasExtraMinutajeConCortesia(null, 10, 15)).toBe(0);
+    });
+
+    it('should return 0 when worked time is less than base', () => {
+      expect(calcHorasExtraMinutajeConCortesia(500, 10, 15)).toBe(0);
+    });
+
+    it('should return 0 when overage is within courtesy period', () => {
+      expect(calcHorasExtraMinutajeConCortesia(610, 10, 15)).toBe(0); // 610 min = 10.17 hours, 10 min over < 15 min courtesy
+    });
+
+    it('should calculate from base when courtesy is exceeded', () => {
+      expect(calcHorasExtraMinutajeConCortesia(630, 10, 15)).toBe(0.5); // 630 min = 10.5 hours, 30 min over > 15 min, count from base
+      expect(calcHorasExtraMinutajeConCortesia(660, 10, 15)).toBe(1); // 660 min = 11 hours, 1 hour over
     });
   });
 });

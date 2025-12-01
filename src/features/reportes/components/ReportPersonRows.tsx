@@ -1,7 +1,8 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef, useEffect } from 'react';
 import { Td } from '@shared/components';
 import { ROLE_COLORS } from '../../../shared/constants/roles';
 import { personaKey as buildPersonaKey } from '../utils/model';
+import { extractNumericValue, formatHorasExtraDecimal } from '../utils/runtime';
 
 // Lightweight type aliases
 type AnyRecord = Record<string, any>;
@@ -27,6 +28,7 @@ type Props = {
   SI_NO: readonly string[];
   parseDietas: (raw: string) => { items: Set<string>; ticket: number | null };
   formatDietas: (items: Set<string>, ticket: number | null) => string;
+  horasExtraTipo?: string;
 };
 
 function ReportPersonRows({
@@ -44,6 +46,7 @@ function ReportPersonRows({
   SI_NO,
   parseDietas,
   formatDietas,
+  horasExtraTipo = 'Hora Extra - Normal',
 }: Props) {
   if (!Array.isArray(list)) return null;
 
@@ -61,6 +64,53 @@ function ReportPersonRows({
   };
 
   const dietasOptions = useMemo(() => (DIETAS_OPCIONES.filter(Boolean) as string[]), [DIETAS_OPCIONES]);
+
+  // Calcular offMap de forma estable, solo cuando cambien realmente los datos del plan
+  // Usar useMemo con una comparación profunda de los elementos de list
+  const offMap = useMemo(() => {
+    const map = new Map<string, boolean>();
+    list.forEach(p => {
+      const visualRole = (p as AnyRecord)?.role || '';
+      const name = (p as AnyRecord)?.name || '';
+      semana.forEach(fecha => {
+        try {
+          const workedThisBlock = isPersonScheduledOnBlock(
+            fecha,
+            visualRole,
+            name,
+            findWeekAndDay,
+            visualRole === 'REF' ? (block as any) || 'base' : undefined
+          );
+          const key = `${visualRole}_${name}_${fecha}_${block}`;
+          map.set(key, !workedThisBlock);
+        } catch (e) {
+          // Si hay un error, asumir que no trabaja
+          const key = `${visualRole}_${name}_${fecha}_${block}`;
+          map.set(key, true);
+        }
+      });
+    });
+    return map;
+    // IMPORTANTE: Comparar los elementos de list de forma profunda, no la referencia
+    // Serializar solo los datos esenciales (role, name) y ordenarlos para comparación estable
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    // Serializar y ordenar list para comparación estable
+    JSON.stringify(
+      list
+        .map((p: AnyRecord) => ({ role: p?.role || '', name: p?.name || '' }))
+        .sort((a, b) => {
+          const aKey = `${a.role}_${a.name}`;
+          const bKey = `${b.role}_${b.name}`;
+          return aKey.localeCompare(bKey);
+        })
+    ),
+    // Serializar semana para comparación estable
+    JSON.stringify(semana),
+    // block es primitivo, comparación directa
+    block,
+    // NO incluir: data, horasExtraTipo, findWeekAndDay, isPersonScheduledOnBlock
+  ]);
 
   // Función para calcular el total de un concepto para una persona
   const calculateTotal = (pKey: string, concepto: string): number | string | { breakdown: Map<string, number> } => {
@@ -99,16 +149,34 @@ function ReportPersonRows({
     }
 
     // Para conceptos numéricos, sumar todos los valores
+    // Si es "Horas extra" y el tipo es de minutaje, extraer el valor decimal del formato
+    const isHorasExtraFormatted = concepto === 'Horas extra' && 
+      (horasExtraTipo === 'Hora Extra - Minutaje desde corte' || 
+       horasExtraTipo === 'Hora Extra - Minutaje + Cortesía');
+    
     let total = 0;
     semana.forEach(fecha => {
       const val = data?.[pKey]?.[concepto]?.[fecha] ?? '';
       if (val && val.toString().trim() !== '') {
-        const num = Number(val);
+        let num: number;
+        if (isHorasExtraFormatted) {
+          // Para formato decimal, extraer el valor numérico del formato "0.58 (35 ')"
+          num = extractNumericValue(val);
+        } else {
+          // Para otros valores, usar Number directamente
+          num = Number(val);
+        }
         if (!isNaN(num)) {
           total += num;
         }
       }
     });
+    
+    // Si es horas extra con formato decimal, formatear el total
+    if (isHorasExtraFormatted && total > 0) {
+      return formatHorasExtraDecimal(total);
+    }
+    
     return total > 0 ? total : '';
   };
 
@@ -158,14 +226,9 @@ function ReportPersonRows({
               </Td>
 
               {semana.map(iso => {
-                const workedThisBlockHeader = isPersonScheduledOnBlock(
-                  iso,
-                  visualRole,
-                  name,
-                  findWeekAndDay,
-                  visualRole === 'REF' ? (block as any) || 'base' : undefined
-                );
-                const offHeader = !workedThisBlockHeader;
+                // Usar el mapa memorizado para obtener off, evitando recálculos cuando cambia horasExtraTipo
+                const key = `${visualRole}_${name}_${iso}_${block}`;
+                const offHeader = offMap.get(key) ?? false;
                 const headerCellClasses = offHeader 
                   ? 'bg-orange-900/20 border-orange-800/30' 
                   : '';
@@ -186,14 +249,9 @@ function ReportPersonRows({
 
                   {semana.map(fecha => {
                     const val = data?.[pKey]?.[concepto]?.[fecha] ?? '';
-                    const workedThisBlock = isPersonScheduledOnBlock(
-                      fecha,
-                      visualRole,
-                      name,
-                      findWeekAndDay,
-                      visualRole === 'REF' ? (block as any) || 'base' : undefined
-                    );
-                    const off = !workedThisBlock;
+                    // Usar el mapa memorizado para obtener off, evitando recálculos cuando cambia horasExtraTipo
+                    const key = `${visualRole}_${name}_${fecha}_${block}`;
+                    const off = offMap.get(key) ?? false;
                     
                     // Clases condicionales para celdas cuando no trabaja
                     const cellClasses = off 
@@ -337,8 +395,18 @@ function ReportPersonRows({
                       );
                     }
 
+                    // Para "Horas extra" con formato decimal, usar type="text" para permitir valores formateados
+                    const isHorasExtraFormatted = concepto === 'Horas extra' && 
+                      (horasExtraTipo === 'Hora Extra - Minutaje desde corte' || 
+                       horasExtraTipo === 'Hora Extra - Minutaje + Cortesía');
+                    
                     const numericProps =
-                      concepto === 'Kilometraje'
+                      isHorasExtraFormatted
+                        ? {
+                            type: 'text' as const,
+                            placeholder: '',
+                          }
+                        : concepto === 'Kilometraje'
                         ? {
                             type: 'number' as const,
                             min: '0',
@@ -366,7 +434,7 @@ function ReportPersonRows({
                       </Td>
                     );
                   })}
-                  <Td className='text-center align-middle'>
+                  <Td className='text-center align-middle whitespace-nowrap'>
                     {(() => {
                       const total = calculateTotal(pKey, concepto);
                       if (total === '') return '';

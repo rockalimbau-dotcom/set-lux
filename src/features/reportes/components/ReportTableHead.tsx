@@ -29,7 +29,7 @@ function ReportTableHead({
             {dayNames[i]}
           </Th>
         ))}
-        <Th scope='col' className='font-bold'>Total</Th>
+        <Th scope='col' className='font-bold whitespace-nowrap'>Total</Th>
       </tr>
 
       <tr>
@@ -39,7 +39,7 @@ function ReportTableHead({
             {dates[i]}
           </Th>
         ))}
-        <Th scope='col'>Semana</Th>
+        <Th scope='col' className='whitespace-nowrap'>Semana</Th>
       </tr>
 
       <tr>
