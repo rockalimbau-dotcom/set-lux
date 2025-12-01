@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseNum, parseDietasValue } from './parse';
+import { parseNum, parseDietasValue, parseHorasExtra } from './parse';
 
 describe('parse.ts', () => {
   describe('parseNum', () => {
@@ -95,6 +95,42 @@ describe('parse.ts', () => {
       const result = parseDietasValue('Ticket(10) + Ticket(5)');
       expect(result.labels).toContain('Ticket');
       expect(result.ticket).toBe(15);
+    });
+  });
+
+  describe('parseHorasExtra', () => {
+    it('should extract decimal value from formatted string with minutes', () => {
+      expect(parseHorasExtra("0.58 (35')")).toBe(0.58);
+      expect(parseHorasExtra("0.5 (30')")).toBe(0.5);
+      expect(parseHorasExtra("1.25 (75')")).toBe(1.25);
+    });
+
+    it('should extract decimal value from formatted string with hours', () => {
+      expect(parseHorasExtra("1.5 (1h 30')")).toBe(1.5);
+      expect(parseHorasExtra("2 (2h)")).toBe(2);
+      expect(parseHorasExtra("2.25 (2h 15')")).toBe(2.25);
+    });
+
+    it('should parse plain numbers', () => {
+      expect(parseHorasExtra('1')).toBe(1);
+      expect(parseHorasExtra('2.5')).toBe(2.5);
+      expect(parseHorasExtra('10')).toBe(10);
+    });
+
+    it('should parse numbers with comma as decimal separator', () => {
+      expect(parseHorasExtra('1,5')).toBe(1.5);
+      expect(parseHorasExtra('2,25')).toBe(2.25);
+    });
+
+    it('should return 0 for null or empty values', () => {
+      expect(parseHorasExtra(null)).toBe(0);
+      expect(parseHorasExtra('')).toBe(0);
+      expect(parseHorasExtra(undefined)).toBe(0);
+    });
+
+    it('should handle edge cases', () => {
+      expect(parseHorasExtra('abc')).toBe(0);
+      expect(parseHorasExtra('invalid')).toBe(0);
     });
   });
 });

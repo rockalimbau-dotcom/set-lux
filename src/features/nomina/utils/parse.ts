@@ -5,6 +5,33 @@ export function parseNum(input: unknown): number {
   return isFinite(n) ? n : 0;
 }
 
+// Función para extraer el valor numérico de horas extra, manejando formato decimal con paréntesis
+// Ejemplo: "0.58 (35')" -> 0.58, "1.5 (1h 30')" -> 1.5, "2" -> 2, "1,5" -> 1.5
+export function parseHorasExtra(input: unknown): number {
+  if (input == null || input === '') return 0;
+  
+  const str = String(input).trim();
+  if (!str) return 0;
+  
+  // Si tiene formato "x.xx (xh x')" o "x.xx (x')", extraer el número decimal al inicio
+  // También manejar formato con coma: "x,xx (xh x')"
+  const match = str.match(/^([\d.,]+)/);
+  if (match) {
+    let numStr = match[1];
+    // Convertir coma a punto si hay coma
+    if (numStr.includes(',')) {
+      numStr = numStr.replace(',', '.');
+    }
+    const num = parseFloat(numStr);
+    if (!isNaN(num) && isFinite(num)) {
+      return num;
+    }
+  }
+  
+  // Si no tiene formato con paréntesis, usar parseNum normal (que maneja comas)
+  return parseNum(input);
+}
+
 export function parseDietasValue(raw: unknown): { labels: string[]; ticket: number } {
   if (!raw) return { labels: [], ticket: 0 };
 

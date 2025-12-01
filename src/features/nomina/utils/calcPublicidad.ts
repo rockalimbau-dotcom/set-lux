@@ -1,7 +1,7 @@
 import { loadCondModel } from './cond';
 import { storage } from '@shared/services/localStorage.service';
 import { parseYYYYMMDD } from './date';
-import { parseNum, parseDietasValue } from './parse';
+import { parseNum, parseDietasValue, parseHorasExtra } from './parse';
 import { stripPR, buildRefuerzoIndex, weekISOdays, weekAllPeopleActive } from './plan';
 
 export function makeRolePrices(project: any) {
@@ -403,7 +403,7 @@ export function aggregateReports(project: any, weeks: any[], filterISO: ((iso: s
           penalty: ['Penalty lunch', 'Penalty Lunch', 'Penalty', 'PL'] as const,
         } as const;
 
-        const he = parseNum(getCellValueCandidates(data, keysToUse, colCandidates.extras, iso));
+        const he = parseHorasExtra(getCellValueCandidates(data, keysToUse, colCandidates.extras, iso));
         const ta = parseNum(getCellValueCandidates(data, keysToUse, colCandidates.ta, iso));
         const noct = getCellValueCandidates(data, keysToUse, colCandidates.noct, iso);
         const noctYes = noct === 'SI' || noct === 'SÍ' || noct === 'S' || noct === '1' || noct === '1';
@@ -629,7 +629,7 @@ export function aggregateWindowedReport(project: any, weeks: any[], filterISO: (
       const keysToUse = storageKeyVariants(pk);
       for (const iso of isoDays) {
         const slot = ensure(visibleKey);
-        const he = parseNum(getCellValueCandidates(data, keysToUse, colCandidates.extras, iso));
+        const he = parseHorasExtra(getCellValueCandidates(data, keysToUse, colCandidates.extras, iso));
         const ta = parseNum(getCellValueCandidates(data, keysToUse, colCandidates.ta, iso));
         const noct = getCellValueCandidates(data, keysToUse, colCandidates.noct, iso);
         const noctYes = noct === 'SI' || noct === 'SÍ' || noct === 'S' || noct === '1' || noct === '1';

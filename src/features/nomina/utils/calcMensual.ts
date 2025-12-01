@@ -1,7 +1,7 @@
 import { loadCondModel } from './cond';
 import { storage } from '@shared/services/localStorage.service';
 import { parseYYYYMMDD } from './date';
-import { parseNum, parseDietasValue } from './parse';
+import { parseNum, parseDietasValue, parseHorasExtra } from './parse';
 import { stripPR, buildRefuerzoIndex, weekISOdays, weekAllPeopleActive } from './plan';
 
 export function makeRolePrices(project: any) {
@@ -423,7 +423,7 @@ export function aggregateReports(project: any, weeks: any[], filterISO: ((iso: s
         const keysToUse = info.roleVisible === 'REF' ? [pk] : storageKeyVariants(pk);
         dbgLog('week agg person=', info.name, 'roleVis=', info.roleVisible, 'pk=', pk, 'iso=', iso, 'keysToUse=', keysToUse);
         
-        const he = parseNum(getCellValueCandidates(data, keysToUse, colCandidates.extras, iso));
+        const he = parseHorasExtra(getCellValueCandidates(data, keysToUse, colCandidates.extras, iso));
         const ta = parseNum(getCellValueCandidates(data, keysToUse, colCandidates.ta, iso));
         slot.horasExtra += he;
         slot.turnAround += ta;
@@ -618,7 +618,7 @@ export function aggregateFilteredConcepts(
 
         const keysToUse = info.roleVisible === 'REF' ? [pk] : storageKeyVariants(pk);
         
-        const he = parseNum(getCellValueCandidates(data, keysToUse, colCandidates.extras, iso));
+        const he = parseHorasExtra(getCellValueCandidates(data, keysToUse, colCandidates.extras, iso));
         const ta = parseNum(getCellValueCandidates(data, keysToUse, colCandidates.ta, iso));
         slot.horasExtra += he;
         slot.turnAround += ta;
@@ -768,7 +768,7 @@ export function aggregateWindowedReport(project: any, weeks: any[], filterISO: (
         const keysToUse = visibleKey === 'REF' ? [storageKey] : storageKeyVariants(storageKey);
         dbgLog('window agg roleVis=', visibleKey, 'sk=', storageKey, 'iso=', iso, 'keysToUse=', keysToUse);
         
-        const he = parseNum(getCellValueCandidates(data, keysToUse, colCandidates.extras, iso));
+        const he = parseHorasExtra(getCellValueCandidates(data, keysToUse, colCandidates.extras, iso));
         const ta = parseNum(getCellValueCandidates(data, keysToUse, colCandidates.ta, iso));
         slot.horasExtra += he;
         slot.turnAround += ta;
