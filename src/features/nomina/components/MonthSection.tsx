@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect } from 'react';
+import React, { useMemo, useEffect, useCallback } from 'react';
 import { Th, Td } from '@shared/components';
 import { useLocalStorage } from '@shared/hooks/useLocalStorage';
 import { storage } from '@shared/services/localStorage.service';
@@ -117,10 +117,63 @@ function MonthSection({
   }, [project?.id, project?.nombre, projectMode, monthKey]);
   
   // Leer fechas desde las mismas claves que reportes
+  // useLocalStorage ya lee del localStorage automáticamente, pero necesitamos forzar la lectura cuando cambia la clave
   const [dateFrom, setDateFrom] = useLocalStorage<string>(`${dateRangeKey}_from`, '');
   const [dateTo, setDateTo] = useLocalStorage<string>(`${dateRangeKey}_to`, '');
   
-  // Escuchar cambios en localStorage desde reportes
+  // Función para leer y actualizar fechas desde localStorage
+  const syncDatesFromStorage = useCallback(() => {
+    // Leer directamente del localStorage (useLocalStorage guarda como JSON string)
+    const storedFromRaw = storage.getString(`${dateRangeKey}_from`);
+    const storedToRaw = storage.getString(`${dateRangeKey}_to`);
+    
+    // Parsear los valores JSON
+    let storedFrom = '';
+    let storedTo = '';
+    
+    if (storedFromRaw !== null) {
+      try {
+        storedFrom = JSON.parse(storedFromRaw);
+      } catch {
+        storedFrom = storedFromRaw; // Si no es JSON, usar el valor directo
+      }
+    }
+    
+    if (storedToRaw !== null) {
+      try {
+        storedTo = JSON.parse(storedToRaw);
+      } catch {
+        storedTo = storedToRaw; // Si no es JSON, usar el valor directo
+      }
+    }
+    
+    // Actualizar solo si hay valores y son diferentes
+    if (storedFrom && storedFrom !== dateFrom) {
+      setDateFrom(storedFrom);
+    }
+    if (storedTo && storedTo !== dateTo) {
+      setDateTo(storedTo);
+    }
+  }, [dateRangeKey, dateFrom, dateTo, setDateFrom, setDateTo]);
+  
+  // Sincronizar con valores existentes cuando cambia la clave o al montar
+  // Esto asegura que si Reportes ya tiene fechas guardadas (automáticamente o manualmente), se muestren en Nómina
+  useEffect(() => {
+    // Sincronizar inmediatamente al montar o cuando cambia la clave
+    syncDatesFromStorage();
+    
+    // También verificar periódicamente por si Reportes guarda las fechas después de que Nómina se monta
+    // Esto es necesario porque cuando Reportes calcula fechas automáticamente, puede que Nómina ya esté montado
+    const interval = setInterval(() => {
+      syncDatesFromStorage();
+    }, 1000); // Verificar cada segundo
+    
+    return () => {
+      clearInterval(interval);
+    };
+  }, [dateRangeKey, syncDatesFromStorage]);
+  
+  // Escuchar cambios en localStorage desde reportes (CustomEvent)
   useEffect(() => {
     const handleStorageChange = (e: CustomEvent) => {
       const { key, value } = e.detail || {};
@@ -136,6 +189,21 @@ function MonthSection({
       window.removeEventListener('localStorageChange', handleStorageChange as EventListener);
     };
   }, [dateRangeKey, setDateFrom, setDateTo]);
+  
+  // También escuchar eventos nativos de storage del navegador (para cambios desde otras pestañas o componentes)
+  useEffect(() => {
+    const handleNativeStorage = (e: StorageEvent) => {
+      if (e.key === `${dateRangeKey}_from` || e.key === `${dateRangeKey}_to`) {
+        // Cuando cambia el storage nativo, sincronizar
+        syncDatesFromStorage();
+      }
+    };
+    
+    window.addEventListener('storage', handleNativeStorage);
+    return () => {
+      window.removeEventListener('storage', handleNativeStorage);
+    };
+  }, [dateRangeKey, syncDatesFromStorage]);
 
   // Calcular días del mes (30 o 31) para nómina mensual
   const getDaysInMonth = (monthKey: string): number => {
@@ -617,9 +685,9 @@ function MonthSection({
         >
           {open ? '−' : '+'}
         </button>
-        <h4 className='text-brand font-semibold m-0'>
+        <span className='text-lg font-semibold text-brand'>
           Nómina {monthLabelEs(monthKey)}
-        </h4>
+        </span>
         {(projectMode === 'semanal' || projectMode === 'mensual') && (
           <div className='ml-auto flex items-center gap-3'>
             {projectMode === 'mensual' && (
@@ -642,7 +710,7 @@ function MonthSection({
               </div>
             )}
             <div className='flex items-center gap-2'>
-              <label className='text-xs text-zinc-400 whitespace-nowrap'>Reportes desde:</label>
+              <label className='text-sm text-zinc-300 whitespace-nowrap'>Desde:</label>
               <input
                 type='date'
                 value={dateFrom}
@@ -657,11 +725,11 @@ function MonthSection({
                     })
                   );
                 }}
-                className='px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-xs'
+                className='px-3 py-2 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm text-center'
               />
             </div>
             <div className='flex items-center gap-2'>
-              <label className='text-xs text-zinc-400 whitespace-nowrap'>hasta:</label>
+              <label className='text-sm text-zinc-300 whitespace-nowrap'>Hasta:</label>
               <input
                 type='date'
                 value={dateTo}
@@ -676,7 +744,7 @@ function MonthSection({
                     })
                   );
                 }}
-                className='px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-xs'
+                className='px-3 py-2 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm text-center'
               />
             </div>
           </div>
@@ -729,23 +797,23 @@ function MonthSection({
                     />
                   </div>
                 </Th>
-                <Th>Persona</Th>
-                <Th>Días trabajados</Th>
-                <Th>Total días</Th>
-                {columnVisibility.holidays && <Th>Días festivos</Th>}
-                {columnVisibility.holidays && <Th>Total días festivos</Th>}
-                {columnVisibility.travel && <Th>Días Travel Day</Th>}
-                {columnVisibility.travel && <Th>Total travel days</Th>}
-                {columnVisibility.extras && <Th>Horas extras</Th>}
-                {columnVisibility.extras && <Th>Total horas extra</Th>}
-                {columnVisibility.dietas && <Th>Dietas</Th>}
-                {columnVisibility.dietas && <Th>Total dietas</Th>}
-                {columnVisibility.transporte && <Th>Transportes</Th>}
-                {columnVisibility.transporte && <Th>Total transportes</Th>}
-                {columnVisibility.km && <Th>Kilometraje</Th>}
-                {columnVisibility.km && <Th>Total kilometraje</Th>}
-                <Th>TOTAL BRUTO</Th>
-                <Th>Nómina recibida</Th>
+                <Th align='center'>Persona</Th>
+                <Th align='center'>Días trabajados</Th>
+                <Th align='center'>Total días</Th>
+                {columnVisibility.holidays && <Th align='center'>Días festivos</Th>}
+                {columnVisibility.holidays && <Th align='center'>Total días festivos</Th>}
+                {columnVisibility.travel && <Th align='center'>Días Travel Day</Th>}
+                {columnVisibility.travel && <Th align='center'>Total travel days</Th>}
+                {columnVisibility.extras && <Th align='center'>Horas extras</Th>}
+                {columnVisibility.extras && <Th align='center'>Total horas extra</Th>}
+                {columnVisibility.dietas && <Th align='center'>Dietas</Th>}
+                {columnVisibility.dietas && <Th align='center'>Total dietas</Th>}
+                {columnVisibility.transporte && <Th align='center'>Transportes</Th>}
+                {columnVisibility.transporte && <Th align='center'>Total transportes</Th>}
+                {columnVisibility.km && <Th align='center'>Kilometraje</Th>}
+                {columnVisibility.km && <Th align='center'>Total kilometraje</Th>}
+                <Th align='center'>TOTAL BRUTO</Th>
+                <Th align='center'>Nómina recibida</Th>
               </tr>
             </thead>
             <tbody>
@@ -775,64 +843,70 @@ function MonthSection({
                         />
                       </div>
                     </Td>
-                    <Td>
-                      <span
-                        className='inline-flex items-center gap-2 px-2 py-1 rounded-lg border border-neutral-border bg-black/40'
-                        title={`${r.role} - ${r.name}`}
-                      >
+                    <Td align='center' className='text-center'>
+                      <div className='flex justify-center'>
                         <span
-                          className='inline-flex items-center justify-center w-6 h-5 rounded-md font-bold text-[10px]'
-                          style={{ background: col.bg, color: col.fg }}
+                          className='inline-flex items-center gap-2 px-2 py-1 rounded-lg border border-neutral-border bg-black/40'
+                          title={`${r.role} - ${r.name}`}
                         >
-                          {r.role || '—'}
+                          <span
+                            className='inline-flex items-center justify-center w-6 h-5 rounded-md font-bold text-[10px]'
+                            style={{ background: col.bg, color: col.fg }}
+                          >
+                            {r.role || '—'}
+                          </span>
+                          <span className='text-xs text-zinc-200'>{r.name}</span>
                         </span>
-                        <span className='text-xs text-zinc-200'>{r.name}</span>
-                      </span>
+                      </div>
                     </Td>
 
-                    <Td className='text-right'>{displayValue(r._worked)}</Td>
-                    <Td className='text-right'>{displayValue(r._totalDias, 2)}</Td>
+                    <Td align='center' className='text-center'>{displayValue(r._worked)}</Td>
+                    <Td align='center' className='text-center'>{displayValue(r._totalDias, 2)}</Td>
 
-                    {columnVisibility.holidays && <Td className='text-right'>{displayValue(r._holidays)}</Td>}
-                    {columnVisibility.holidays && <Td className='text-right'>{displayValue(r._totalHolidays, 2)}</Td>}
+                    {columnVisibility.holidays && <Td align='center' className='text-center'>{displayValue(r._holidays)}</Td>}
+                    {columnVisibility.holidays && <Td align='center' className='text-center'>{displayValue(r._totalHolidays, 2)}</Td>}
 
-                    {columnVisibility.travel && <Td className='text-right'>{displayValue(r._travel)}</Td>}
-                    {columnVisibility.travel && <Td className='text-right'>{displayValue(r._totalTravel, 2)}</Td>}
+                    {columnVisibility.travel && <Td align='center' className='text-center'>{displayValue(r._travel)}</Td>}
+                    {columnVisibility.travel && <Td align='center' className='text-center'>{displayValue(r._totalTravel, 2)}</Td>}
 
                     {columnVisibility.extras && (
-                      <Td>
-                        <ExtrasSummary
-                          horasExtra={r.horasExtra}
-                          turnAround={r.turnAround}
-                          nocturnidad={r.nocturnidad}
-                          penaltyLunch={r.penaltyLunch}
-                        />
+                      <Td align='center' className='text-center'>
+                        <div className='flex justify-center'>
+                          <ExtrasSummary
+                            horasExtra={r.horasExtra}
+                            turnAround={r.turnAround}
+                            nocturnidad={r.nocturnidad}
+                            penaltyLunch={r.penaltyLunch}
+                          />
+                        </div>
                       </Td>
                     )}
-                    {columnVisibility.extras && <Td className='text-right'>{displayValue(r._totalExtras, 2)}</Td>}
+                    {columnVisibility.extras && <Td align='center' className='text-center'>{displayValue(r._totalExtras, 2)}</Td>}
 
                     {columnVisibility.dietas && (
-                      <Td>
-                        <DietasSummary
-                          dietasCount={r.dietasCount}
-                          ticketTotal={r.ticketTotal}
-                        />
+                      <Td align='center' className='text-center'>
+                        <div className='flex justify-center'>
+                          <DietasSummary
+                            dietasCount={r.dietasCount}
+                            ticketTotal={r.ticketTotal}
+                          />
+                        </div>
                       </Td>
                     )}
-                    {columnVisibility.dietas && <Td className='text-right'>{displayValue(r._totalDietas, 2)}</Td>}
+                    {columnVisibility.dietas && <Td align='center' className='text-center'>{displayValue(r._totalDietas, 2)}</Td>}
 
-                    {columnVisibility.transporte && <Td className='text-right'>{displayValue(r.transporte)}</Td>}
-                    {columnVisibility.transporte && <Td className='text-right'>{displayValue(r._totalTrans, 2)}</Td>}
+                    {columnVisibility.transporte && <Td align='center' className='text-center'>{displayValue(r.transporte)}</Td>}
+                    {columnVisibility.transporte && <Td align='center' className='text-center'>{displayValue(r._totalTrans, 2)}</Td>}
 
-                    {columnVisibility.km && <Td className='text-right'>{displayValue(r.km, 1)}</Td>}
-                    {columnVisibility.km && <Td className='text-right'>{displayValue(r._totalKm, 2)}</Td>}
+                    {columnVisibility.km && <Td align='center' className='text-center'>{displayValue(r.km, 1)}</Td>}
+                    {columnVisibility.km && <Td align='center' className='text-center'>{displayValue(r._totalKm, 2)}</Td>}
 
-                    <Td className='text-right font-semibold'>
+                    <Td align='center' className='text-center font-semibold'>
                       {displayValue(r._totalBruto, 2)}
                     </Td>
 
-                    <Td>
-                      <div className='flex items-center gap-2'>
+                    <Td align='center' className='text-center'>
+                      <div className='flex items-center justify-center gap-2'>
                         <input
                           type='checkbox'
                           checked={!!rc.ok}
@@ -861,7 +935,7 @@ function MonthSection({
                     (columnVisibility.dietas ? 2 : 0) + // Dietas + Total dietas
                     (columnVisibility.transporte ? 2 : 0) + // Transportes + Total transportes
                     (columnVisibility.km ? 2 : 0) // Kilometraje + Total kilometraje
-                  }>
+                  } align='center' className='text-center'>
                     <div className='text-sm text-zinc-400'>
                       No hay datos en este mes.
                     </div>
