@@ -3,7 +3,7 @@ import ChipBase from '@shared/components/Chip';
 import ToggleIconButton from '@shared/components/ToggleIconButton';
 import { ROLE_COLORS } from '@shared/constants/roles';
 import { useLocalStorage } from '@shared/hooks/useLocalStorage';
-import React, { useMemo, useCallback } from 'react';
+import React, { useMemo, useCallback, useState, useEffect, useRef } from 'react';
 
 type AnyRecord = Record<string, any>;
 
@@ -90,6 +90,58 @@ function WeekCard({
   teamList,
   project,
 }: WeekCardProps) {
+  // Detectar el tema actual
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+    if (typeof document !== 'undefined') {
+      return (document.documentElement.getAttribute('data-theme') || 'light') as 'dark' | 'light';
+    }
+    return 'light';
+  });
+
+  useEffect(() => {
+    const updateTheme = () => {
+      if (typeof document !== 'undefined') {
+        const currentTheme = (document.documentElement.getAttribute('data-theme') || 'light') as 'dark' | 'light';
+        setTheme(currentTheme);
+      }
+    };
+
+    const observer = new MutationObserver(updateTheme);
+    if (typeof document !== 'undefined') {
+      observer.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['data-theme'],
+      });
+    }
+
+    window.addEventListener('themechange', updateTheme);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('themechange', updateTheme);
+    };
+  }, []);
+
+  // Estados para los dropdowns personalizados
+  const [dropdownStates, setDropdownStates] = useState<Record<string, {
+    isOpen: boolean;
+    hoveredOption: string | null;
+    isButtonHovered: boolean;
+  }>>({});
+
+  const focusColor = theme === 'light' ? '#0476D9' : '#F27405';
+
+  const getDropdownState = (key: string) => {
+    return dropdownStates[key] || { isOpen: false, hoveredOption: null, isButtonHovered: false };
+  };
+
+  const setDropdownState = (key: string, updates: Partial<{ isOpen: boolean; hoveredOption: string | null; isButtonHovered: boolean }>) => {
+    setDropdownStates(prev => ({
+      ...prev,
+      [key]: { ...getDropdownState(key), ...updates }
+    }));
+  };
+
   const weekStart = useMemo(() => parseYYYYMMDD(week.startDate as string), [week.startDate]);
   const datesRow = useMemo(() => DAYS.map((_, i) => formatDDMMYYYY(addDays(weekStart, i))), [weekStart]);
   const onChangeMonday = useCallback((e: React.ChangeEvent<HTMLInputElement>) => setWeekStart(scope, week.id as string, e.target.value), [scope, week.id, setWeekStart]);
@@ -234,26 +286,95 @@ function WeekCard({
               </Row>
 
               <Row label='Jornada'>
-                {week.days.map((day: AnyRecord, i: number) => (
-                  <Td key={i} align='top'>
-                    <select
-                      value={day.tipo}
-                      onChange={e =>
-                        setDayField(scope, week.id as string, i, { tipo: e.target.value })
+                {week.days.map((day: AnyRecord, i: number) => {
+                  const dropdownKey = `jornada_${week.id}_${i}`;
+                  const dropdownState = getDropdownState(dropdownKey);
+                  const dropdownRef = useRef<HTMLDivElement>(null);
+                  const jornadaOptions = ['Rodaje', 'Carga', 'Descarga', 'Localizar', 'Travel Day', 'Rodaje Festivo', 'Fin', 'Descanso'];
+
+                  useEffect(() => {
+                    const handleClickOutside = (event: MouseEvent) => {
+                      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                        setDropdownState(dropdownKey, { isOpen: false });
                       }
-                      className='w-full px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-center'
-                    >
-                      <option>Rodaje</option>
-                      <option>Carga</option>
-                      <option>Descarga</option>
-                      <option>Localizar</option>
-                      <option>Travel Day</option>
-                      <option>Rodaje Festivo</option>
-                      <option>Fin</option>
-                      <option>Descanso</option>
-                    </select>
-                  </Td>
-                ))}
+                    };
+
+                    if (dropdownState.isOpen) {
+                      document.addEventListener('mousedown', handleClickOutside);
+                    }
+
+                    return () => {
+                      document.removeEventListener('mousedown', handleClickOutside);
+                    };
+                  }, [dropdownState.isOpen, dropdownKey]);
+
+                  return (
+                    <Td key={i} align='top'>
+                      <div className='w-full relative' ref={dropdownRef}>
+                        <button
+                          type='button'
+                          onClick={() => setDropdownState(dropdownKey, { isOpen: !dropdownState.isOpen })}
+                          onMouseEnter={() => setDropdownState(dropdownKey, { isButtonHovered: true })}
+                          onMouseLeave={() => setDropdownState(dropdownKey, { isButtonHovered: false })}
+                          onBlur={() => setDropdownState(dropdownKey, { isButtonHovered: false })}
+                          className={`w-full px-2 py-1 rounded-lg border focus:outline-none text-sm text-center transition-colors ${
+                            theme === 'light' 
+                              ? 'bg-white text-gray-900' 
+                              : 'bg-black/40 text-zinc-300'
+                          }`}
+                          style={{
+                            borderWidth: dropdownState.isButtonHovered ? '1.5px' : '1px',
+                            borderStyle: 'solid',
+                            borderColor: dropdownState.isButtonHovered && theme === 'light' 
+                              ? '#0476D9' 
+                              : (dropdownState.isButtonHovered && theme === 'dark'
+                                ? '#fff'
+                                : 'var(--border)'),
+                            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='${theme === 'light' ? '%23111827' : '%23ffffff'}' d='M6 9L1 4h10z'/%3E%3C/svg%3E")`,
+                            backgroundRepeat: 'no-repeat',
+                            backgroundPosition: 'right 0.5rem center',
+                            paddingRight: '2rem',
+                          }}
+                        >
+                          {day.tipo || '\u00A0'}
+                        </button>
+                        {dropdownState.isOpen && (
+                          <div className={`absolute top-full left-0 mt-1 w-full border border-neutral-border rounded-lg shadow-lg z-50 overflow-hidden ${
+                            theme === 'light' ? 'bg-white' : 'bg-neutral-panel'
+                          }`}>
+                            {jornadaOptions.map(opt => (
+                              <button
+                                key={opt}
+                                type='button'
+                                onClick={() => {
+                                  setDayField(scope, week.id as string, i, { tipo: opt });
+                                  setDropdownState(dropdownKey, { isOpen: false, hoveredOption: null });
+                                }}
+                                onMouseEnter={() => setDropdownState(dropdownKey, { hoveredOption: opt })}
+                                onMouseLeave={() => setDropdownState(dropdownKey, { hoveredOption: null })}
+                                className={`w-full text-left px-3 py-2 text-sm transition-colors ${
+                                  theme === 'light' 
+                                    ? 'text-gray-900' 
+                                    : 'text-zinc-300'
+                                }`}
+                                style={{
+                                  backgroundColor: dropdownState.hoveredOption === opt 
+                                    ? (theme === 'light' ? '#A0D3F2' : focusColor)
+                                    : 'transparent',
+                                  color: dropdownState.hoveredOption === opt 
+                                    ? (theme === 'light' ? '#111827' : 'white')
+                                    : 'inherit',
+                                }}
+                              >
+                                {opt}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </Td>
+                  );
+                })}
               </Row>
 
               <Row label='Horario'>
@@ -363,32 +484,96 @@ function WeekCard({
                             </Button>
                           </span>
                         ))}
-                        {day.tipo !== 'Descanso' && day.tipo !== 'Fin' && (
-                          <select
-                            className='no-pdf w-full px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-center'
-                            onChange={e => {
-                              const v = e.target.value;
-                              if (!v) return;
-                              const [role, name] = v.split('::');
-                              addMemberTo(scope, week.id as string, i, 'team', {
-                                role,
-                                name,
-                              });
-                              e.target.value = '';
-                            }}
-                            defaultValue=''
-                          >
-                            <option value=''>+ Añadir</option>
-                            {options.map((p: AnyRecord, ii: number) => (
-                              <option
-                                key={`${p.role}-${p.name}-${ii}`}
-                                value={`${p.role}::${p.name}`}
+                        {day.tipo !== 'Descanso' && day.tipo !== 'Fin' && (() => {
+                          const dropdownKey = `equipo_${week.id}_${i}`;
+                          const dropdownState = getDropdownState(dropdownKey);
+                          const dropdownRef = useRef<HTMLDivElement>(null);
+
+                          useEffect(() => {
+                            const handleClickOutside = (event: MouseEvent) => {
+                              if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                                setDropdownState(dropdownKey, { isOpen: false });
+                              }
+                            };
+
+                            if (dropdownState.isOpen) {
+                              document.addEventListener('mousedown', handleClickOutside);
+                            }
+
+                            return () => {
+                              document.removeEventListener('mousedown', handleClickOutside);
+                            };
+                          }, [dropdownState.isOpen, dropdownKey]);
+
+                          return (
+                            <div className='no-pdf w-full relative' ref={dropdownRef}>
+                              <button
+                                type='button'
+                                onClick={() => setDropdownState(dropdownKey, { isOpen: !dropdownState.isOpen })}
+                                onMouseEnter={() => setDropdownState(dropdownKey, { isButtonHovered: true })}
+                                onMouseLeave={() => setDropdownState(dropdownKey, { isButtonHovered: false })}
+                                onBlur={() => setDropdownState(dropdownKey, { isButtonHovered: false })}
+                                className={`w-full px-2 py-1 rounded-lg border focus:outline-none text-sm text-center transition-colors ${
+                                  theme === 'light' 
+                                    ? 'bg-white text-gray-900' 
+                                    : 'bg-black/40 text-zinc-300'
+                                }`}
+                                style={{
+                                  borderWidth: dropdownState.isButtonHovered ? '1.5px' : '1px',
+                                  borderStyle: 'solid',
+                                  borderColor: dropdownState.isButtonHovered && theme === 'light' 
+                                    ? '#0476D9' 
+                                    : (dropdownState.isButtonHovered && theme === 'dark'
+                                      ? '#fff'
+                                      : 'var(--border)'),
+                                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='${theme === 'light' ? '%23111827' : '%23ffffff'}' d='M6 9L1 4h10z'/%3E%3C/svg%3E")`,
+                                  backgroundRepeat: 'no-repeat',
+                                  backgroundPosition: 'right 0.5rem center',
+                                  paddingRight: '2rem',
+                                }}
                               >
-                                {p.role} · {p.name}
-                              </option>
-                            ))}
-                          </select>
-                        )}
+                                + Añadir
+                              </button>
+                              {dropdownState.isOpen && (
+                                <div className={`absolute top-full left-0 mt-1 w-full border border-neutral-border rounded-lg shadow-lg z-50 overflow-hidden ${
+                                  theme === 'light' ? 'bg-white' : 'bg-neutral-panel'
+                                }`}>
+                                  {options.map((p: AnyRecord, ii: number) => (
+                                    <button
+                                      key={`${p.role}-${p.name}-${ii}`}
+                                      type='button'
+                                      onClick={() => {
+                                        const [role, name] = `${p.role}::${p.name}`.split('::');
+                                        addMemberTo(scope, week.id as string, i, 'team', {
+                                          role,
+                                          name,
+                                        });
+                                        setDropdownState(dropdownKey, { isOpen: false, hoveredOption: null });
+                                      }}
+                                      onMouseEnter={() => setDropdownState(dropdownKey, { hoveredOption: `${p.role}::${p.name}` })}
+                                      onMouseLeave={() => setDropdownState(dropdownKey, { hoveredOption: null })}
+                                      className={`w-full text-left px-3 py-2 text-sm transition-colors ${
+                                        theme === 'light' 
+                                          ? 'text-gray-900' 
+                                          : 'text-zinc-300'
+                                      }`}
+                                      style={{
+                                        backgroundColor: dropdownState.hoveredOption === `${p.role}::${p.name}` 
+                                          ? (theme === 'light' ? '#A0D3F2' : focusColor)
+                                          : 'transparent',
+                                        color: dropdownState.hoveredOption === `${p.role}::${p.name}` 
+                                          ? (theme === 'light' ? '#111827' : 'white')
+                                          : 'inherit',
+                                      }}
+                                    >
+                                      {p.role} · {p.name}
+                                    </button>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })()}
                       </div>
                     </Td>
                   );
@@ -472,39 +657,104 @@ function WeekCard({
                                 </Button>
                               </span>
                             ))}
-                            {day.tipo !== 'Descanso' && day.tipo !== 'Fin' && (
-                              <select
-                                onChange={e => {
-                                  const v = e.target.value;
-                                  if (!v) return;
-                                  const [role, name, source] = v.split('::');
-                                  addMemberTo(scope, week.id as string, i, 'prelight', {
-                                    role,
-                                    name,
-                                    source,
-                                  });
-                                  e.target.value = '';
-                                }}
-                                className='w-full px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-center'
-                                defaultValue=''
-                              >
-                                <option value=''>+ Añadir</option>
-                                {options.map((p: AnyRecord, ii: number) => {
-                                  const displayRole =
-                                    p.source === 'pre' && p.role !== 'REF'
-                                      ? `${p.role}P`
-                                      : p.role;
-                                  return (
-                                    <option
-                                      key={`${p.role}-${p.name}-${ii}`}
-                                      value={`${p.role}::${p.name}::pre`}
-                                    >
-                                      {displayRole} · {p.name}
-                                    </option>
-                                  );
-                                })}
-                              </select>
-                            )}
+                            {day.tipo !== 'Descanso' && day.tipo !== 'Fin' && (() => {
+                              const dropdownKey = `prelight_${week.id}_${i}`;
+                              const dropdownState = getDropdownState(dropdownKey);
+                              const dropdownRef = useRef<HTMLDivElement>(null);
+
+                              useEffect(() => {
+                                const handleClickOutside = (event: MouseEvent) => {
+                                  if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                                    setDropdownState(dropdownKey, { isOpen: false });
+                                  }
+                                };
+
+                                if (dropdownState.isOpen) {
+                                  document.addEventListener('mousedown', handleClickOutside);
+                                }
+
+                                return () => {
+                                  document.removeEventListener('mousedown', handleClickOutside);
+                                };
+                              }, [dropdownState.isOpen, dropdownKey]);
+
+                              return (
+                                <div className='w-full relative' ref={dropdownRef}>
+                                  <button
+                                    type='button'
+                                    onClick={() => setDropdownState(dropdownKey, { isOpen: !dropdownState.isOpen })}
+                                    onMouseEnter={() => setDropdownState(dropdownKey, { isButtonHovered: true })}
+                                    onMouseLeave={() => setDropdownState(dropdownKey, { isButtonHovered: false })}
+                                    onBlur={() => setDropdownState(dropdownKey, { isButtonHovered: false })}
+                                    className={`w-full px-2 py-1 rounded-lg border focus:outline-none text-sm text-center transition-colors ${
+                                      theme === 'light' 
+                                        ? 'bg-white text-gray-900' 
+                                        : 'bg-black/40 text-zinc-300'
+                                    }`}
+                                    style={{
+                                      borderWidth: dropdownState.isButtonHovered ? '1.5px' : '1px',
+                                      borderStyle: 'solid',
+                                      borderColor: dropdownState.isButtonHovered && theme === 'light' 
+                                        ? '#0476D9' 
+                                        : (dropdownState.isButtonHovered && theme === 'dark'
+                                          ? '#fff'
+                                          : 'var(--border)'),
+                                      backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='${theme === 'light' ? '%23111827' : '%23ffffff'}' d='M6 9L1 4h10z'/%3E%3C/svg%3E")`,
+                                      backgroundRepeat: 'no-repeat',
+                                      backgroundPosition: 'right 0.5rem center',
+                                      paddingRight: '2rem',
+                                    }}
+                                  >
+                                    + Añadir
+                                  </button>
+                                  {dropdownState.isOpen && (
+                                    <div className={`absolute top-full left-0 mt-1 w-full border border-neutral-border rounded-lg shadow-lg z-50 overflow-hidden ${
+                                      theme === 'light' ? 'bg-white' : 'bg-neutral-panel'
+                                    }`}>
+                                      {options.map((p: AnyRecord, ii: number) => {
+                                        const displayRole =
+                                          p.source === 'pre' && p.role !== 'REF'
+                                            ? `${p.role}P`
+                                            : p.role;
+                                        const optionValue = `${p.role}::${p.name}::pre`;
+                                        return (
+                                          <button
+                                            key={`${p.role}-${p.name}-${ii}`}
+                                            type='button'
+                                            onClick={() => {
+                                              const [role, name, source] = optionValue.split('::');
+                                              addMemberTo(scope, week.id as string, i, 'prelight', {
+                                                role,
+                                                name,
+                                                source,
+                                              });
+                                              setDropdownState(dropdownKey, { isOpen: false, hoveredOption: null });
+                                            }}
+                                            onMouseEnter={() => setDropdownState(dropdownKey, { hoveredOption: optionValue })}
+                                            onMouseLeave={() => setDropdownState(dropdownKey, { hoveredOption: null })}
+                                            className={`w-full text-left px-3 py-2 text-sm transition-colors ${
+                                              theme === 'light' 
+                                                ? 'text-gray-900' 
+                                                : 'text-zinc-300'
+                                            }`}
+                                            style={{
+                                              backgroundColor: dropdownState.hoveredOption === optionValue 
+                                                ? (theme === 'light' ? '#A0D3F2' : focusColor)
+                                                : 'transparent',
+                                              color: dropdownState.hoveredOption === optionValue 
+                                                ? (theme === 'light' ? '#111827' : 'white')
+                                                : 'inherit',
+                                            }}
+                                          >
+                                            {displayRole} · {p.name}
+                                          </button>
+                                        );
+                                      })}
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })()}
                           </div>
                         </div>
                       )}
@@ -590,39 +840,104 @@ function WeekCard({
                                 </Button>
                               </span>
                             ))}
-                            {day.tipo !== 'Descanso' && day.tipo !== 'Fin' && (
-                              <select
-                                onChange={e => {
-                                  const v = e.target.value;
-                                  if (!v) return;
-                                  const [role, name, source] = v.split('::');
-                                  addMemberTo(scope, week.id as string, i, 'pickup', {
-                                    role,
-                                    name,
-                                    source,
-                                  });
-                                  e.target.value = '';
-                                }}
-                                className='w-full px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-center'
-                                defaultValue=''
-                              >
-                                <option value=''>+ Añadir</option>
-                                {options.map((p: AnyRecord, ii: number) => {
-                                  const displayRole =
-                                    p.source === 'pick' && p.role !== 'REF'
-                                      ? `${p.role}R`
-                                      : p.role;
-                                  return (
-                                    <option
-                                      key={`${p.role}-${p.name}-${ii}`}
-                                      value={`${p.role}::${p.name}::pick`}
-                                    >
-                                      {displayRole} · {p.name}
-                                    </option>
-                                  );
-                                })}
-                              </select>
-                            )}
+                            {day.tipo !== 'Descanso' && day.tipo !== 'Fin' && (() => {
+                              const dropdownKey = `pickup_${week.id}_${i}`;
+                              const dropdownState = getDropdownState(dropdownKey);
+                              const dropdownRef = useRef<HTMLDivElement>(null);
+
+                              useEffect(() => {
+                                const handleClickOutside = (event: MouseEvent) => {
+                                  if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                                    setDropdownState(dropdownKey, { isOpen: false });
+                                  }
+                                };
+
+                                if (dropdownState.isOpen) {
+                                  document.addEventListener('mousedown', handleClickOutside);
+                                }
+
+                                return () => {
+                                  document.removeEventListener('mousedown', handleClickOutside);
+                                };
+                              }, [dropdownState.isOpen, dropdownKey]);
+
+                              return (
+                                <div className='w-full relative' ref={dropdownRef}>
+                                  <button
+                                    type='button'
+                                    onClick={() => setDropdownState(dropdownKey, { isOpen: !dropdownState.isOpen })}
+                                    onMouseEnter={() => setDropdownState(dropdownKey, { isButtonHovered: true })}
+                                    onMouseLeave={() => setDropdownState(dropdownKey, { isButtonHovered: false })}
+                                    onBlur={() => setDropdownState(dropdownKey, { isButtonHovered: false })}
+                                    className={`w-full px-2 py-1 rounded-lg border focus:outline-none text-sm text-center transition-colors ${
+                                      theme === 'light' 
+                                        ? 'bg-white text-gray-900' 
+                                        : 'bg-black/40 text-zinc-300'
+                                    }`}
+                                    style={{
+                                      borderWidth: dropdownState.isButtonHovered ? '1.5px' : '1px',
+                                      borderStyle: 'solid',
+                                      borderColor: dropdownState.isButtonHovered && theme === 'light' 
+                                        ? '#0476D9' 
+                                        : (dropdownState.isButtonHovered && theme === 'dark'
+                                          ? '#fff'
+                                          : 'var(--border)'),
+                                      backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='${theme === 'light' ? '%23111827' : '%23ffffff'}' d='M6 9L1 4h10z'/%3E%3C/svg%3E")`,
+                                      backgroundRepeat: 'no-repeat',
+                                      backgroundPosition: 'right 0.5rem center',
+                                      paddingRight: '2rem',
+                                    }}
+                                  >
+                                    + Añadir
+                                  </button>
+                                  {dropdownState.isOpen && (
+                                    <div className={`absolute top-full left-0 mt-1 w-full border border-neutral-border rounded-lg shadow-lg z-50 overflow-hidden ${
+                                      theme === 'light' ? 'bg-white' : 'bg-neutral-panel'
+                                    }`}>
+                                      {options.map((p: AnyRecord, ii: number) => {
+                                        const displayRole =
+                                          p.source === 'pick' && p.role !== 'REF'
+                                            ? `${p.role}R`
+                                            : p.role;
+                                        const optionValue = `${p.role}::${p.name}::pick`;
+                                        return (
+                                          <button
+                                            key={`${p.role}-${p.name}-${ii}`}
+                                            type='button'
+                                            onClick={() => {
+                                              const [role, name, source] = optionValue.split('::');
+                                              addMemberTo(scope, week.id as string, i, 'pickup', {
+                                                role,
+                                                name,
+                                                source,
+                                              });
+                                              setDropdownState(dropdownKey, { isOpen: false, hoveredOption: null });
+                                            }}
+                                            onMouseEnter={() => setDropdownState(dropdownKey, { hoveredOption: optionValue })}
+                                            onMouseLeave={() => setDropdownState(dropdownKey, { hoveredOption: null })}
+                                            className={`w-full text-left px-3 py-2 text-sm transition-colors ${
+                                              theme === 'light' 
+                                                ? 'text-gray-900' 
+                                                : 'text-zinc-300'
+                                            }`}
+                                            style={{
+                                              backgroundColor: dropdownState.hoveredOption === optionValue 
+                                                ? (theme === 'light' ? '#A0D3F2' : focusColor)
+                                                : 'transparent',
+                                              color: dropdownState.hoveredOption === optionValue 
+                                                ? (theme === 'light' ? '#111827' : 'white')
+                                                : 'inherit',
+                                            }}
+                                          >
+                                            {displayRole} · {p.name}
+                                          </button>
+                                        );
+                                      })}
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })()}
                           </div>
                         </div>
                       )}
