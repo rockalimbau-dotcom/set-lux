@@ -351,8 +351,13 @@ function TeamGroup({
 
       <div className='px-5 pb-5'>
         {rows.length === 0 ? (
-          <div className='text-sm text-zinc-400 border border-dashed border-neutral-border rounded-xl p-4 bg-neutral-surface'>
-            No hay miembros aún. Usa “+ Añadir”.
+          <div className='flex flex-col items-center justify-center py-16 px-8 text-center'>
+            <h2 className='text-3xl font-bold mb-4' style={{color: 'var(--text)'}}>
+              No hay equipo
+            </h2>
+            <p className='text-xl max-w-2xl' style={{color: 'var(--text)', opacity: 0.8}}>
+              Pulsa el botón "+ Añadir" para añadir miembros al equipo.
+            </p>
           </div>
         ) : (
           <div className='grid gap-2'>
