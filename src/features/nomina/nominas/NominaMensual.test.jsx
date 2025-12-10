@@ -1,5 +1,6 @@
 import { render } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
+import { MemoryRouter } from 'react-router-dom';
 
 import NominaMensual from './NominaMensual';
 
@@ -72,7 +73,11 @@ describe('NominaMensual - calcWorkedBreakdown with holidayDays', () => {
       },
     ];
 
-    const { container } = render(<NominaMensual project={mockProject} />);
+    const { container } = render(
+      <MemoryRouter>
+        <NominaMensual project={mockProject} />
+      </MemoryRouter>
+    );
 
     // Get the calcWorkedBreakdown function from the component
     // This is a bit tricky to test directly, but we can verify the component renders without errors
@@ -98,7 +103,11 @@ describe('NominaMensual - calcWorkedBreakdown with holidayDays', () => {
       },
     ];
 
-    const { container } = render(<NominaMensual project={mockProject} />);
+    const { container } = render(
+      <MemoryRouter>
+        <NominaMensual project={mockProject} />
+      </MemoryRouter>
+    );
 
     // Component should render without errors
     expect(container).toBeTruthy();
@@ -130,7 +139,11 @@ describe('NominaMensual - calcWorkedBreakdown with holidayDays', () => {
       },
     ];
 
-    const { container } = render(<NominaMensual project={mockProject} />);
+    const { container } = render(
+      <MemoryRouter>
+        <NominaMensual project={mockProject} />
+      </MemoryRouter>
+    );
 
     // Component should render without errors
     expect(container).toBeTruthy();

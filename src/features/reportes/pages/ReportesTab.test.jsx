@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 import { vi } from 'vitest';
+import { MemoryRouter } from 'react-router-dom';
 
 // global seed for plan data used by the mock
 // @ts-ignore
@@ -53,9 +54,16 @@ describe('ReportesTab (smoke)', () => {
 
   it('renders empty hint when no weeks in Planificación', () => {
     const project = { id: 'p1', nombre: 'Proyecto 1' };
-    render(<ReportesTab project={project} />);
+    render(
+      <MemoryRouter>
+        <ReportesTab project={project} />
+      </MemoryRouter>
+    );
     expect(
-      screen.getByText(/No hay semanas en Planificación/i)
+      screen.getByText(/Configura el proyecto/i)
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/Añade semanas en/i)
     ).toBeInTheDocument();
   });
 
@@ -120,7 +128,11 @@ describe('ReportesTab (smoke)', () => {
     // @ts-ignore
     globalThis.__TEST_PLAN__ = { pre: [week], pro: [] };
 
-    render(<ReportesTab project={project} />);
+    render(
+      <MemoryRouter>
+        <ReportesTab project={project} />
+      </MemoryRouter>
+    );
 
     expect(screen.getByText('Semana 1')).toBeInTheDocument();
     expect(screen.getByRole('table')).toBeInTheDocument();
