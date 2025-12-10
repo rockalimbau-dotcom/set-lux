@@ -298,7 +298,8 @@ export default function ProjectDetail({
         </div>
       </div>
 
-      <div className='max-w-6xl mx-auto p-6'>
+      <div className='px-6 pb-6'>
+        <div className='max-w-6xl mx-auto'>
       {/* Parrilla de fases (tarjetas) */}
       {activeTab === null && (
         <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
@@ -420,6 +421,7 @@ export default function ProjectDetail({
           )}
         </div>
       )}
+        </div>
       </div>
     </div>
   );

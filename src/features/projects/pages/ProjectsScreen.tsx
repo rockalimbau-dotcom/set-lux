@@ -955,12 +955,13 @@ function ProjectsScreen({
       </div>
 
       {/* Grid de proyectos */}
-      <div className='max-w-6xl mx-auto p-6'>
-        <div
-          className={`grid gap-6 ${
-            hasProjects ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : ''
-          }`}
-        >
+      <div className='px-6 pb-6'>
+        <div className='max-w-6xl mx-auto'>
+          <div
+            className={`grid gap-6 ${
+              hasProjects ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : ''
+            }`}
+          >
           {/* Mensaje de bienvenida si no hay proyectos o no hay resultados de búsqueda */}
           {filteredAndSortedProjects.length === 0 && (
             <div className='col-span-full flex flex-col items-center justify-center py-16 px-8 text-center'>
@@ -1000,6 +1001,7 @@ function ProjectsScreen({
               }}
             />
           )}
+          </div>
         </div>
       </div>
 
