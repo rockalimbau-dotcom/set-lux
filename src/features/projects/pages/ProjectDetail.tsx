@@ -184,7 +184,7 @@ export default function ProjectDetail({
   }, [proj?.estado]);
 
   const estadoText = isActive ? 'Activo' : 'Cerrado';
-  const themeGlobal = (typeof document !== 'undefined' && document.documentElement.getAttribute('data-theme')) || 'dark';
+  const themeGlobal = (typeof document !== 'undefined' && document.documentElement.getAttribute('data-theme')) || 'light';
   const estadoBg = isActive ? (themeGlobal === 'light' ? '#0476D9' : '#f97316') : '#64748b';
 
   // Lista de equipo simplificada para Planificación
@@ -462,7 +462,7 @@ function PhaseCard({ title, icon, desc, onClick }: PhaseCardProps) {
 // Monochrome project icons (orange/blue friendly). Using currentColor so parent can control color
 function PhaseIcon({ name, color = '#60a5fa', stroke = '#ffffff' }: { name: 'condiciones' | 'equipo' | 'planificacion' | 'reportes' | 'nomina' | 'necesidades'; color?: string; stroke?: string }) {
   const common = { width: 24, height: 24, viewBox: '0 0 24 24' } as const;
-  const themeNow = (typeof document !== 'undefined' && document.documentElement.getAttribute('data-theme')) || 'dark';
+  const themeNow = (typeof document !== 'undefined' && document.documentElement.getAttribute('data-theme')) || 'light';
   const fill = themeNow === 'light' ? '#f97316' : color;
   const strokeColor = themeNow === 'light' ? '#111827' : stroke;
   switch (name) {

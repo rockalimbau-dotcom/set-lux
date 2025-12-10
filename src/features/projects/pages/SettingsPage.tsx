@@ -6,7 +6,7 @@ import { storage } from '@shared/services/localStorage.service';
 export default function SettingsPage() {
   const navigate = useNavigate();
   
-  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
+  const [theme, setTheme] = useState<'dark' | 'light'>('light');
   const [language, setLanguage] = useState<'es' | 'en'>('es');
   const [saved, setSaved] = useState(false);
 
@@ -14,7 +14,7 @@ export default function SettingsPage() {
     const s = storage.getJSON<any>('settings_v1') || {};
     // Check localStorage first for theme (for compatibility with App.tsx)
     const localTheme = typeof localStorage !== 'undefined' && localStorage.getItem('theme');
-    const themeFromSettings = s.theme || localTheme || 'dark';
+    const themeFromSettings = s.theme || localTheme || 'light';
     setTheme(themeFromSettings as 'dark' | 'light');
     setLanguage(s.language || 'es');
   }, []);

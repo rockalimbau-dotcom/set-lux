@@ -51,10 +51,10 @@ function AppInner() {
   const navigate = useNavigate();
   const [themeLabel, setThemeLabel] = useState<string>(() => {
     if (typeof document !== 'undefined') {
-      const curr = document.documentElement.getAttribute('data-theme') || 'dark';
+      const curr = document.documentElement.getAttribute('data-theme') || 'light';
       return curr === 'light' ? 'Daylight' : 'Darklight';
     }
-    return 'Darklight';
+    return 'Daylight';
   });
 
   // Inicializar tema desde localStorage o preferencia del sistema
@@ -62,7 +62,7 @@ function AppInner() {
     try {
       const saved = (typeof localStorage !== 'undefined' && localStorage.getItem('theme')) || '';
       const prefersLight = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
-      const initial = saved === 'light' || saved === 'dark' ? saved : (prefersLight ? 'light' : 'dark');
+      const initial = saved === 'light' || saved === 'dark' ? saved : 'light';
       const root = document.documentElement;
       root.setAttribute('data-theme', initial);
       setThemeLabel(initial === 'light' ? 'Daylight' : 'Darklight');

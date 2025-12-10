@@ -524,7 +524,7 @@ function ProjectsScreen({
 
   const projectCards = useMemo(() => (
     filteredAndSortedProjects.map(p => {
-      const theme = document.documentElement.getAttribute('data-theme') || 'dark';
+      const theme = document.documentElement.getAttribute('data-theme') || 'light';
       const isLight = theme === 'light';
       const estadoVisible = p.estado;
       // removed unused getInitials helper (avatar shows full project name)
@@ -557,7 +557,7 @@ function ProjectsScreen({
       };
 
       const getStatusColor = (estado: string) => {
-        const theme = document.documentElement.getAttribute('data-theme') || 'dark';
+        const theme = document.documentElement.getAttribute('data-theme') || 'light';
         const activeColor = theme === 'light' ? '#0476D9' : '#f97316';
         return estado === 'Activo' ? activeColor : '#64748b';
       };
@@ -663,7 +663,7 @@ function ProjectsScreen({
     })
   ), [filteredAndSortedProjects, handleOpen]);
 
-  const theme = document.documentElement.getAttribute('data-theme') || 'dark';
+  const theme = document.documentElement.getAttribute('data-theme') || 'light';
   const isLight = theme === 'light';
   return (
     <>

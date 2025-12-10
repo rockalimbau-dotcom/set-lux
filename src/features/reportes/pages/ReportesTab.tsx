@@ -434,15 +434,15 @@ function MonthReportGroup({
   // Detectar el tema actual para el color del selector
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
     if (typeof document !== 'undefined') {
-      return (document.documentElement.getAttribute('data-theme') || 'dark') as 'dark' | 'light';
+      return (document.documentElement.getAttribute('data-theme') || 'light') as 'dark' | 'light';
     }
-    return 'dark';
+    return 'light';
   });
 
   useEffect(() => {
     const updateTheme = () => {
       if (typeof document !== 'undefined') {
-        const currentTheme = (document.documentElement.getAttribute('data-theme') || 'dark') as 'dark' | 'light';
+        const currentTheme = (document.documentElement.getAttribute('data-theme') || 'light') as 'dark' | 'light';
         setTheme(currentTheme);
       }
     };

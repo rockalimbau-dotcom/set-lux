@@ -51,8 +51,8 @@ try {
   const s = storage.getJSON<any>('settings_v1') || {};
   // Check both settings_v1 and localStorage
   const localTheme = typeof localStorage !== 'undefined' && localStorage.getItem('theme');
-  const theme = s.theme || localTheme || 'dark';
+  const theme = s.theme || localTheme || 'light';
   document.documentElement.setAttribute('data-theme', theme);
 } catch {
-  document.documentElement.setAttribute('data-theme', 'dark');
+  document.documentElement.setAttribute('data-theme', 'light');
 }

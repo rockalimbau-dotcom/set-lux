@@ -23,7 +23,7 @@ export default function ProfilePage() {
     setTimeout(() => setSaved(false), 1200);
   };
 
-  const theme = (typeof document !== 'undefined' && document.documentElement.getAttribute('data-theme')) || 'dark';
+  const theme = (typeof document !== 'undefined' && document.documentElement.getAttribute('data-theme')) || 'light';
   const isLight = theme === 'light';
   return (
     <div className='min-h-screen' style={{backgroundColor: 'var(--bg)', color: 'var(--text)'}}>
