@@ -449,6 +449,9 @@ function ProjectsScreen({
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [filterMenuOpen, setFilterMenuOpen] = useState(false);
   const [sortMenuOpen, setSortMenuOpen] = useState(false);
+  const [hoveredFilterOption, setHoveredFilterOption] = useState<string | null>(null);
+  const [hoveredSortOption, setHoveredSortOption] = useState<string | null>(null);
+  const [hoveredUserMenuOption, setHoveredUserMenuOption] = useState<string | null>(null);
   const hasProjects = projects.length > 0;
   const menuRef = useRef<HTMLDivElement>(null);
   const filterMenuRef = useRef<HTMLDivElement>(null);
@@ -665,6 +668,7 @@ function ProjectsScreen({
 
   const theme = document.documentElement.getAttribute('data-theme') || 'light';
   const isLight = theme === 'light';
+  const focusColor = isLight ? '#0476D9' : '#F27405';
   return (
     <>
       {/* Header moderno y prominente */}
@@ -700,13 +704,29 @@ function ProjectsScreen({
                 
                 {/* Menú desplegable */}
                 {menuOpen && (
-                  <div className='absolute right-0 top-full mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50'>
+                  <div 
+                    className='absolute right-0 top-full mt-2 w-48 rounded-lg shadow-lg border py-2 z-50'
+                    style={{
+                      backgroundColor: 'var(--panel)',
+                      borderColor: isLight ? 'rgba(229,231,235,0.6)' : 'var(--border)'
+                    }}
+                  >
                     <button
                       onClick={() => {
                         onPerfil?.();
                         setMenuOpen(false);
                       }}
-                      className='w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors'
+                      onMouseEnter={() => setHoveredUserMenuOption('perfil')}
+                      onMouseLeave={() => setHoveredUserMenuOption(null)}
+                      className='w-full text-left px-4 py-2 text-sm transition-colors'
+                      style={{
+                        color: hoveredUserMenuOption === 'perfil' 
+                          ? (isLight ? '#111827' : 'white')
+                          : 'var(--text)',
+                        backgroundColor: hoveredUserMenuOption === 'perfil' 
+                          ? (isLight ? '#A0D3F2' : focusColor)
+                          : 'transparent',
+                      }}
                     >
                       👤 Perfil
                     </button>
@@ -715,7 +735,17 @@ function ProjectsScreen({
                         onConfig?.();
                         setMenuOpen(false);
                       }}
-                      className='w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors'
+                      onMouseEnter={() => setHoveredUserMenuOption('config')}
+                      onMouseLeave={() => setHoveredUserMenuOption(null)}
+                      className='w-full text-left px-4 py-2 text-sm transition-colors'
+                      style={{
+                        color: hoveredUserMenuOption === 'config' 
+                          ? (isLight ? '#111827' : 'white')
+                          : 'var(--text)',
+                        backgroundColor: hoveredUserMenuOption === 'config' 
+                          ? (isLight ? '#A0D3F2' : focusColor)
+                          : 'transparent',
+                      }}
                     >
                       ⚙️ Configuración
                     </button>
@@ -724,7 +754,17 @@ function ProjectsScreen({
                         onSalir?.();
                         setMenuOpen(false);
                       }}
-                      className='w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors'
+                      onMouseEnter={() => setHoveredUserMenuOption('salir')}
+                      onMouseLeave={() => setHoveredUserMenuOption(null)}
+                      className='w-full text-left px-4 py-2 text-sm transition-colors'
+                      style={{
+                        color: hoveredUserMenuOption === 'salir' 
+                          ? (isLight ? '#111827' : 'white')
+                          : 'var(--text)',
+                        backgroundColor: hoveredUserMenuOption === 'salir' 
+                          ? (isLight ? '#A0D3F2' : focusColor)
+                          : 'transparent',
+                      }}
                     >
                       🚪 Salir
                     </button>
@@ -790,8 +830,15 @@ function ProjectsScreen({
                       setFilterStatus('Todos');
                       setFilterMenuOpen(false);
                     }}
-                    className='w-full text-left px-4 py-2 text-sm hover:bg-black/20 transition-colors'
-                    style={{color: 'var(--text)'}}
+                    onMouseEnter={() => setHoveredFilterOption('Todos')}
+                    onMouseLeave={() => setHoveredFilterOption(null)}
+                    className='w-full text-left px-4 py-2 text-sm transition-colors'
+                    style={{
+                      color: 'var(--text)',
+                      backgroundColor: hoveredFilterOption === 'Todos' 
+                        ? (isLight ? '#A0D3F2' : focusColor)
+                        : 'transparent',
+                    }}
                   >
                     {filterStatus === 'Todos' ? '✓ ' : '  '}Todos
                   </button>
@@ -800,8 +847,17 @@ function ProjectsScreen({
                       setFilterStatus('Activo');
                       setFilterMenuOpen(false);
                     }}
-                    className='w-full text-left px-4 py-2 text-sm hover:bg-black/20 transition-colors'
-                    style={{color: 'var(--text)'}}
+                    onMouseEnter={() => setHoveredFilterOption('Activo')}
+                    onMouseLeave={() => setHoveredFilterOption(null)}
+                    className='w-full text-left px-4 py-2 text-sm transition-colors'
+                    style={{
+                      color: hoveredFilterOption === 'Activo' 
+                        ? (isLight ? '#111827' : 'white')
+                        : 'var(--text)',
+                      backgroundColor: hoveredFilterOption === 'Activo' 
+                        ? (isLight ? '#A0D3F2' : focusColor)
+                        : 'transparent',
+                    }}
                   >
                     {filterStatus === 'Activo' ? '✓ ' : '  '}Activo
                   </button>
@@ -810,8 +866,17 @@ function ProjectsScreen({
                       setFilterStatus('Cerrado');
                       setFilterMenuOpen(false);
                     }}
-                    className='w-full text-left px-4 py-2 text-sm hover:bg-black/20 transition-colors'
-                    style={{color: 'var(--text)'}}
+                    onMouseEnter={() => setHoveredFilterOption('Cerrado')}
+                    onMouseLeave={() => setHoveredFilterOption(null)}
+                    className='w-full text-left px-4 py-2 text-sm transition-colors'
+                    style={{
+                      color: hoveredFilterOption === 'Cerrado' 
+                        ? (isLight ? '#111827' : 'white')
+                        : 'var(--text)',
+                      backgroundColor: hoveredFilterOption === 'Cerrado' 
+                        ? (isLight ? '#A0D3F2' : focusColor)
+                        : 'transparent',
+                    }}
                   >
                     {filterStatus === 'Cerrado' ? '✓ ' : '  '}Cerrado
                   </button>
@@ -824,8 +889,17 @@ function ProjectsScreen({
                       setFilterType('Todos');
                       setFilterMenuOpen(false);
                     }}
-                    className='w-full text-left px-4 py-2 text-sm hover:bg-black/20 transition-colors'
-                    style={{color: 'var(--text)'}}
+                    onMouseEnter={() => setHoveredFilterOption('Todos-Tipo')}
+                    onMouseLeave={() => setHoveredFilterOption(null)}
+                    className='w-full text-left px-4 py-2 text-sm transition-colors'
+                    style={{
+                      color: hoveredFilterOption === 'Todos-Tipo' 
+                        ? (isLight ? '#111827' : 'white')
+                        : 'var(--text)',
+                      backgroundColor: hoveredFilterOption === 'Todos-Tipo' 
+                        ? (isLight ? '#A0D3F2' : focusColor)
+                        : 'transparent',
+                    }}
                   >
                     {filterType === 'Todos' ? '✓ ' : '  '}Todos
                   </button>
@@ -834,8 +908,17 @@ function ProjectsScreen({
                       setFilterType('semanal');
                       setFilterMenuOpen(false);
                     }}
-                    className='w-full text-left px-4 py-2 text-sm hover:bg-black/20 transition-colors'
-                    style={{color: 'var(--text)'}}
+                    onMouseEnter={() => setHoveredFilterOption('semanal')}
+                    onMouseLeave={() => setHoveredFilterOption(null)}
+                    className='w-full text-left px-4 py-2 text-sm transition-colors'
+                    style={{
+                      color: hoveredFilterOption === 'semanal' 
+                        ? (isLight ? '#111827' : 'white')
+                        : 'var(--text)',
+                      backgroundColor: hoveredFilterOption === 'semanal' 
+                        ? (isLight ? '#A0D3F2' : focusColor)
+                        : 'transparent',
+                    }}
                   >
                     {filterType === 'semanal' ? '✓ ' : '  '}Semanal
                   </button>
@@ -844,8 +927,17 @@ function ProjectsScreen({
                       setFilterType('mensual');
                       setFilterMenuOpen(false);
                     }}
-                    className='w-full text-left px-4 py-2 text-sm hover:bg-black/20 transition-colors'
-                    style={{color: 'var(--text)'}}
+                    onMouseEnter={() => setHoveredFilterOption('mensual')}
+                    onMouseLeave={() => setHoveredFilterOption(null)}
+                    className='w-full text-left px-4 py-2 text-sm transition-colors'
+                    style={{
+                      color: hoveredFilterOption === 'mensual' 
+                        ? (isLight ? '#111827' : 'white')
+                        : 'var(--text)',
+                      backgroundColor: hoveredFilterOption === 'mensual' 
+                        ? (isLight ? '#A0D3F2' : focusColor)
+                        : 'transparent',
+                    }}
                   >
                     {filterType === 'mensual' ? '✓ ' : '  '}Mensual
                   </button>
@@ -854,8 +946,17 @@ function ProjectsScreen({
                       setFilterType('publicidad');
                       setFilterMenuOpen(false);
                     }}
-                    className='w-full text-left px-4 py-2 text-sm hover:bg-black/20 transition-colors'
-                    style={{color: 'var(--text)'}}
+                    onMouseEnter={() => setHoveredFilterOption('publicidad')}
+                    onMouseLeave={() => setHoveredFilterOption(null)}
+                    className='w-full text-left px-4 py-2 text-sm transition-colors'
+                    style={{
+                      color: hoveredFilterOption === 'publicidad' 
+                        ? (isLight ? '#111827' : 'white')
+                        : 'var(--text)',
+                      backgroundColor: hoveredFilterOption === 'publicidad' 
+                        ? (isLight ? '#A0D3F2' : focusColor)
+                        : 'transparent',
+                    }}
                   >
                     {filterType === 'publicidad' ? '✓ ' : '  '}Publicidad
                   </button>
@@ -897,8 +998,17 @@ function ProjectsScreen({
                       setSortBy('nombre');
                       setSortMenuOpen(false);
                     }}
-                    className='w-full text-left px-4 py-2 text-sm hover:bg-black/20 transition-colors'
-                    style={{color: 'var(--text)'}}
+                    onMouseEnter={() => setHoveredSortOption('nombre')}
+                    onMouseLeave={() => setHoveredSortOption(null)}
+                    className='w-full text-left px-4 py-2 text-sm transition-colors'
+                    style={{
+                      color: hoveredSortOption === 'nombre' 
+                        ? (isLight ? '#111827' : 'white')
+                        : 'var(--text)',
+                      backgroundColor: hoveredSortOption === 'nombre' 
+                        ? (isLight ? '#A0D3F2' : focusColor)
+                        : 'transparent',
+                    }}
                   >
                     {sortBy === 'nombre' ? '✓ ' : '  '}Nombre
                   </button>
@@ -907,8 +1017,17 @@ function ProjectsScreen({
                       setSortBy('estado');
                       setSortMenuOpen(false);
                     }}
-                    className='w-full text-left px-4 py-2 text-sm hover:bg-black/20 transition-colors'
-                    style={{color: 'var(--text)'}}
+                    onMouseEnter={() => setHoveredSortOption('estado')}
+                    onMouseLeave={() => setHoveredSortOption(null)}
+                    className='w-full text-left px-4 py-2 text-sm transition-colors'
+                    style={{
+                      color: hoveredSortOption === 'estado' 
+                        ? (isLight ? '#111827' : 'white')
+                        : 'var(--text)',
+                      backgroundColor: hoveredSortOption === 'estado' 
+                        ? (isLight ? '#A0D3F2' : focusColor)
+                        : 'transparent',
+                    }}
                   >
                     {sortBy === 'estado' ? '✓ ' : '  '}Estado
                   </button>
@@ -917,8 +1036,17 @@ function ProjectsScreen({
                       setSortBy('tipo');
                       setSortMenuOpen(false);
                     }}
-                    className='w-full text-left px-4 py-2 text-sm hover:bg-black/20 transition-colors'
-                    style={{color: 'var(--text)'}}
+                    onMouseEnter={() => setHoveredSortOption('tipo')}
+                    onMouseLeave={() => setHoveredSortOption(null)}
+                    className='w-full text-left px-4 py-2 text-sm transition-colors'
+                    style={{
+                      color: hoveredSortOption === 'tipo' 
+                        ? (isLight ? '#111827' : 'white')
+                        : 'var(--text)',
+                      backgroundColor: hoveredSortOption === 'tipo' 
+                        ? (isLight ? '#A0D3F2' : focusColor)
+                        : 'transparent',
+                    }}
                   >
                     {sortBy === 'tipo' ? '✓ ' : '  '}Tipo
                   </button>
@@ -931,8 +1059,17 @@ function ProjectsScreen({
                       setSortOrder('asc');
                       setSortMenuOpen(false);
                     }}
-                    className='w-full text-left px-4 py-2 text-sm hover:bg-black/20 transition-colors'
-                    style={{color: 'var(--text)'}}
+                    onMouseEnter={() => setHoveredSortOption('asc')}
+                    onMouseLeave={() => setHoveredSortOption(null)}
+                    className='w-full text-left px-4 py-2 text-sm transition-colors'
+                    style={{
+                      color: hoveredSortOption === 'asc' 
+                        ? (isLight ? '#111827' : 'white')
+                        : 'var(--text)',
+                      backgroundColor: hoveredSortOption === 'asc' 
+                        ? (isLight ? '#A0D3F2' : focusColor)
+                        : 'transparent',
+                    }}
                   >
                     {sortOrder === 'asc' ? '✓ ' : '  '}Ascendente
                   </button>
@@ -941,8 +1078,17 @@ function ProjectsScreen({
                       setSortOrder('desc');
                       setSortMenuOpen(false);
                     }}
-                    className='w-full text-left px-4 py-2 text-sm hover:bg-black/20 transition-colors'
-                    style={{color: 'var(--text)'}}
+                    onMouseEnter={() => setHoveredSortOption('desc')}
+                    onMouseLeave={() => setHoveredSortOption(null)}
+                    className='w-full text-left px-4 py-2 text-sm transition-colors'
+                    style={{
+                      color: hoveredSortOption === 'desc' 
+                        ? (isLight ? '#111827' : 'white')
+                        : 'var(--text)',
+                      backgroundColor: hoveredSortOption === 'desc' 
+                        ? (isLight ? '#A0D3F2' : focusColor)
+                        : 'transparent',
+                    }}
                   >
                     {sortOrder === 'desc' ? '✓ ' : '  '}Descendente
                   </button>
