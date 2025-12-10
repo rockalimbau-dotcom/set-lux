@@ -73,13 +73,31 @@ export default function NecesidadesTab({ project }: NecesidadesTabProps) {
         plan = rawPlan ? JSON.parse(rawPlan) : null;
       } catch (parseError) {
         console.error('Error parsing plan data:', parseError);
+        // Si hay error al parsear, limpiar todas las semanas
+        setNeeds({});
         return;
       }
 
-      const pre = Array.isArray(plan?.pre) ? plan!.pre : [];
-      const pro = Array.isArray(plan?.pro) ? plan!.pro : [];
+      // Si plan es null o no existe, limpiar todas las semanas
+      if (!plan) {
+        setNeeds({});
+        return;
+      }
+
+      const pre = Array.isArray(plan?.pre) ? plan.pre : [];
+      const pro = Array.isArray(plan?.pro) ? plan.pro : [];
       const all = [...pre, ...pro];
-      if (!all.length) return;
+      
+      // Si no hay semanas en Planificación, limpiar todas las semanas de needs
+      if (!all.length) {
+        setNeeds((prev: AnyRecord) => {
+          // Si ya está vacío, no hacer nada
+          if (Object.keys(prev).length === 0) return prev;
+          // Limpiar todas las semanas
+          return {};
+        });
+        return;
+      }
 
       setNeeds((prev: AnyRecord) => {
         try {
@@ -121,40 +139,39 @@ export default function NecesidadesTab({ project }: NecesidadesTabProps) {
           const day: AnyRecord = (next[w.id as string].days?.[i] as AnyRecord) || {};
           const planDay: AnyRecord = (w.days && (w.days as AnyRecord[])[i]) || {};
 
-          if (!Array.isArray(day.crewList) || day.crewList.length === 0) {
-            day.crewList = Array.isArray(planDay.team)
-              ? (planDay.team as AnyRecord[])
-                  .map(m => ({
-                    role: (m?.role || '').toUpperCase(),
-                    name: (m?.name || '').trim(),
-                  }))
-                  .filter(m => m.name)
-              : [];
-          }
-          if (!Array.isArray(day.preList) || day.preList.length === 0) {
-            day.preList = Array.isArray(planDay.prelight)
-              ? (planDay.prelight as AnyRecord[])
-                  .map(m => ({
-                    role: (m?.role || '').toUpperCase(),
-                    name: (m?.name || '').trim(),
-                  }))
-                  .filter(m => m.name)
-              : [];
-          }
-          if (!Array.isArray(day.pickList) || day.pickList.length === 0) {
-            day.pickList = Array.isArray(planDay.pickup)
-              ? (planDay.pickup as AnyRecord[])
-                  .map(m => ({
-                    role: (m?.role || '').toUpperCase(),
-                    name: (m?.name || '').trim(),
-                  }))
-                  .filter(m => m.name)
-              : [];
-          }
+          // Sincronizar equipo técnico desde planificación (siempre, incluso si está vacío o sin nombre)
+          day.crewList = Array.isArray(planDay.team)
+            ? (planDay.team as AnyRecord[])
+                .map(m => ({
+                  role: (m?.role || '').toUpperCase(),
+                  name: (m?.name || '').trim(),
+                }))
+                .filter(m => m.role || m.name) // Incluir si tiene rol O nombre
+            : [];
+          
+          // Sincronizar equipo prelight desde planificación (siempre, incluso si está vacío o sin nombre)
+          day.preList = Array.isArray(planDay.prelight)
+            ? (planDay.prelight as AnyRecord[])
+                .map(m => ({
+                  role: (m?.role || '').toUpperCase(),
+                  name: (m?.name || '').trim(),
+                }))
+                .filter(m => m.role || m.name) // Incluir si tiene rol O nombre
+            : [];
+          
+          // Sincronizar equipo recogida desde planificación (siempre, incluso si está vacío o sin nombre)
+          day.pickList = Array.isArray(planDay.pickup)
+            ? (planDay.pickup as AnyRecord[])
+                .map(m => ({
+                  role: (m?.role || '').toUpperCase(),
+                  name: (m?.name || '').trim(),
+                }))
+                .filter(m => m.role || m.name) // Incluir si tiene rol O nombre
+            : [];
 
-          // Sincronizar localización desde planificación
-          if (planDay.loc !== undefined && planDay.loc !== null && planDay.loc !== '') {
-            day.loc = planDay.loc;
+          // Sincronizar localización desde planificación (siempre, incluso si está vacío)
+          if (planDay.loc !== undefined) {
+            day.loc = planDay.loc || '';
           } else {
             day.loc = day.loc || '';
           }
@@ -246,7 +263,9 @@ export default function NecesidadesTab({ project }: NecesidadesTabProps) {
   useEffect(() => {
     try {
       const obj = storage.getJSON<any>(planKey);
-      syncFromPlanRaw(obj ? JSON.stringify(obj) : null);
+      const raw = obj ? JSON.stringify(obj, Object.keys(obj).sort()) : '';
+      lastPlanRawRef.current = raw;
+      syncFromPlanRaw(raw);
     } catch (error) {
       console.error('Error loading plan data:', error);
       setHasError(true);
@@ -259,7 +278,9 @@ export default function NecesidadesTab({ project }: NecesidadesTabProps) {
       if (e.key === planKey) {
         try {
           const obj = storage.getJSON<any>(planKey);
-          syncFromPlanRaw(obj ? JSON.stringify(obj) : null);
+          const raw = obj ? JSON.stringify(obj, Object.keys(obj).sort()) : '';
+          lastPlanRawRef.current = raw;
+          syncFromPlanRaw(raw);
         } catch (error) {
           console.error('Error handling storage event:', error);
         }
@@ -274,15 +295,68 @@ export default function NecesidadesTab({ project }: NecesidadesTabProps) {
     const tick = () => {
       try {
         const obj = storage.getJSON<any>(planKey);
-        const raw = obj ? JSON.stringify(obj) : '';
+        if (!obj) {
+          const raw = '';
+          if (lastPlanRawRef.current !== raw) {
+            lastPlanRawRef.current = raw;
+            syncFromPlanRaw(raw);
+          }
+          return;
+        }
+        // Crear una versión normalizada del objeto para comparación (incluyendo personas sin nombre)
+        const normalized = {
+          pre: Array.isArray(obj.pre) ? obj.pre.map((w: AnyRecord) => ({
+            id: w.id,
+            label: w.label,
+            startDate: w.startDate,
+            days: Array.isArray(w.days) ? w.days.map((d: AnyRecord) => ({
+              team: Array.isArray(d.team) ? d.team.map((m: AnyRecord) => ({
+                role: m?.role || '',
+                name: m?.name || '',
+              })) : [],
+              prelight: Array.isArray(d.prelight) ? d.prelight.map((m: AnyRecord) => ({
+                role: m?.role || '',
+                name: m?.name || '',
+              })) : [],
+              pickup: Array.isArray(d.pickup) ? d.pickup.map((m: AnyRecord) => ({
+                role: m?.role || '',
+                name: m?.name || '',
+              })) : [],
+              loc: d.loc || '',
+            })) : [],
+          })) : [],
+          pro: Array.isArray(obj.pro) ? obj.pro.map((w: AnyRecord) => ({
+            id: w.id,
+            label: w.label,
+            startDate: w.startDate,
+            days: Array.isArray(w.days) ? w.days.map((d: AnyRecord) => ({
+              team: Array.isArray(d.team) ? d.team.map((m: AnyRecord) => ({
+                role: m?.role || '',
+                name: m?.name || '',
+              })) : [],
+              prelight: Array.isArray(d.prelight) ? d.prelight.map((m: AnyRecord) => ({
+                role: m?.role || '',
+                name: m?.name || '',
+              })) : [],
+              pickup: Array.isArray(d.pickup) ? d.pickup.map((m: AnyRecord) => ({
+                role: m?.role || '',
+                name: m?.name || '',
+              })) : [],
+              loc: d.loc || '',
+            })) : [],
+          })) : [],
+        };
+        const raw = JSON.stringify(normalized);
         if (lastPlanRawRef.current !== raw) {
           lastPlanRawRef.current = raw;
-          syncFromPlanRaw(raw);
+          // Pasar el objeto original, no el normalizado
+          syncFromPlanRaw(JSON.stringify(obj));
         }
       } catch {}
     };
     tick();
-    const id = setInterval(tick, 800);
+    // Reducir intervalo para sincronización más rápida
+    const id = setInterval(tick, 300);
     return () => clearInterval(id);
   }, [planKey, syncFromPlanRaw]);
 
