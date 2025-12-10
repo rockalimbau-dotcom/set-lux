@@ -1,5 +1,6 @@
 import { useLocalStorage } from '@shared/hooks/useLocalStorage';
 import React, { useMemo, useEffect, useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { storage } from '@shared/services/localStorage.service';
 
 import ReportesSemana from './ReportesSemana.tsx';
@@ -84,6 +85,8 @@ function weekToPersonas(week: AnyRecord) {
 }
 
 export default function ReportesTab({ project, mode = 'semanal' }: ReportesTabProps) {
+  const navigate = useNavigate();
+  
   // Al entrar en Reportes, asegurar que la página está arriba del todo
   useEffect(() => {
     try {
@@ -113,22 +116,101 @@ export default function ReportesTab({ project, mode = 'semanal' }: ReportesTabPr
       .join('|');
   }, [condSemanal, condMensual, condPublicidad]);
 
-  if (allWeeks.length === 0) {
+  // Verificar si hay equipo guardado
+  const hasTeam = useMemo(() => {
+    try {
+      const teamKey = `team_${baseId}`;
+      const teamData = storage.getJSON<any>(teamKey);
+      if (teamData) {
+        const base = Array.isArray(teamData.base) ? teamData.base : [];
+        const reinforcements = Array.isArray(teamData.reinforcements) ? teamData.reinforcements : [];
+        const prelight = Array.isArray(teamData.prelight) ? teamData.prelight : [];
+        const pickup = Array.isArray(teamData.pickup) ? teamData.pickup : [];
+        return base.length > 0 || reinforcements.length > 0 || prelight.length > 0 || pickup.length > 0;
+      }
+      return false;
+    } catch {
+      return false;
+    }
+  }, [baseId]);
+
+  const hasWeeks = allWeeks.length > 0;
+  const projectId = project?.id || project?.nombre;
+  const planificacionPath = projectId ? `/project/${projectId}/planificacion` : '/projects';
+  const equipoPath = projectId ? `/project/${projectId}/equipo` : '/projects';
+
+  // Caso 1: Faltan ambas cosas (semanas Y equipo)
+  if (!hasWeeks && !hasTeam) {
     return (
-      <div className='text-sm text-zinc-400 border border-dashed border-neutral-border rounded-xl p-4 bg-neutral-surface'>
-        No hay semanas en Planificación. Añade semanas allí para que aparezcan
-        aquí los reportes.
+      <div className='flex flex-col items-center justify-center py-16 px-8 text-center'>
+        <h2 className='text-3xl font-bold mb-4' style={{color: 'var(--text)'}}>
+          Configura el proyecto
+        </h2>
+        <p className='text-xl max-w-2xl mb-4' style={{color: 'var(--text)', opacity: 0.8}}>
+          Añade semanas en{' '}
+          <button
+            onClick={() => navigate(planificacionPath)}
+            className='underline font-semibold hover:opacity-80 transition-opacity'
+            style={{color: 'var(--brand)'}}
+          >
+            Planificación
+          </button>
+          {' '}y equipo en{' '}
+          <button
+            onClick={() => navigate(equipoPath)}
+            className='underline font-semibold hover:opacity-80 transition-opacity'
+            style={{color: 'var(--brand)'}}
+          >
+            Equipo
+          </button>
+          {' '}para generar los reportes.
+        </p>
+      </div>
+    );
+  }
+
+  // Caso 2: Solo faltan semanas (pero SÍ hay equipo)
+  if (!hasWeeks) {
+    return (
+      <div className='flex flex-col items-center justify-center py-16 px-8 text-center'>
+        <h2 className='text-3xl font-bold mb-4' style={{color: 'var(--text)'}}>
+          No hay semanas en Planificación
+        </h2>
+        <p className='text-xl max-w-2xl mb-4' style={{color: 'var(--text)', opacity: 0.8}}>
+          Añade semanas en{' '}
+          <button
+            onClick={() => navigate(planificacionPath)}
+            className='underline font-semibold hover:opacity-80 transition-opacity'
+            style={{color: 'var(--brand)'}}
+          >
+            Planificación
+          </button>
+          {' '}para que aparezcan aquí los reportes.
+        </p>
       </div>
     );
   }
 
   const weeksWithPeople = allWeeks.filter(w => weekToPersonas(w).length > 0);
 
+  // Caso 3: Solo falta equipo (pero SÍ hay semanas)
   if (weeksWithPeople.length === 0) {
     return (
-      <div className='text-sm text-zinc-400 border border-dashed border-neutral-border rounded-xl p-4 bg-neutral-surface'>
-        Falta añadir el equipo. Por favor, rellena en la pestaña <b>Equipo</b>{' '}
-        el equipo base del proyecto para poder generar los reportes.
+      <div className='flex flex-col items-center justify-center py-16 px-8 text-center'>
+        <h2 className='text-3xl font-bold mb-4' style={{color: 'var(--text)'}}>
+          Falta añadir el equipo
+        </h2>
+        <p className='text-xl max-w-2xl mb-4' style={{color: 'var(--text)', opacity: 0.8}}>
+          Rellena el equipo en{' '}
+          <button
+            onClick={() => navigate(equipoPath)}
+            className='underline font-semibold hover:opacity-80 transition-opacity'
+            style={{color: 'var(--brand)'}}
+          >
+            Equipo
+          </button>
+          {' '}para poder generar los reportes.
+        </p>
       </div>
     );
   }

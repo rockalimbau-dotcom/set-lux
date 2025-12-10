@@ -1,6 +1,7 @@
 import { Th } from '@shared/components';
 import { useLocalStorage } from '@shared/hooks/useLocalStorage';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import FieldRow from '../components/FieldRow';
 import ListRow from '../components/ListRow';
@@ -36,6 +37,8 @@ type NecesidadesTabProps = {
 };
 
 export default function NecesidadesTab({ project }: NecesidadesTabProps) {
+  const navigate = useNavigate();
+  
   // Add error boundary state
   const [hasError, setHasError] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string>('');
@@ -449,9 +452,25 @@ export default function NecesidadesTab({ project }: NecesidadesTabProps) {
       )}
 
       {weekEntries.length === 0 ? (
-        <div className='text-sm text-zinc-400 border border-dashed border-neutral-border rounded-xl p-4 bg-neutral-surface'>
-          No hay semanas en Planificación. Crea semanas allí para que aparezcan
-          aquí.
+        <div className='flex flex-col items-center justify-center py-16 px-8 text-center'>
+          <h2 className='text-3xl font-bold mb-4' style={{color: 'var(--text)'}}>
+            No hay semanas en Planificación
+          </h2>
+          <p className='text-xl max-w-2xl mb-4' style={{color: 'var(--text)', opacity: 0.8}}>
+            Crea semanas en{' '}
+            <button
+              onClick={() => {
+                const projectId = (project as AnyRecord)?.id || (project as AnyRecord)?.nombre;
+                const planificacionPath = projectId ? `/project/${projectId}/planificacion` : '/projects';
+                navigate(planificacionPath);
+              }}
+              className='underline font-semibold hover:opacity-80 transition-opacity'
+              style={{color: 'var(--brand)'}}
+            >
+              Planificación
+            </button>
+            {' '}para que aparezcan aquí las necesidades.
+          </p>
         </div>
       ) : (
         weekEntries.map(([wid, wk]) => {

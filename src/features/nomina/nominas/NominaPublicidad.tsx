@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { storage } from '@shared/services/localStorage.service';
 import MonthSection from '../components/MonthSection.jsx';
 import { ROLE_COLORS, roleLabelFromCode } from '@shared/constants/roles';
@@ -34,6 +35,8 @@ interface NominaPublicidadProps {
 }
 
 export default function NominaPublicidad({ project }: NominaPublicidadProps) {
+  const navigate = useNavigate();
+  
   // Asegurar que el proyecto tenga el modo correcto para publicidad
   const projectWithMode = {
     ...project,
@@ -45,12 +48,79 @@ export default function NominaPublicidad({ project }: NominaPublicidadProps) {
   
   const { pre, pro } = usePlanWeeks(projectWithMode as any);
   const allWeeks = [...pre, ...pro];
+  const baseId = project?.id || project?.nombre || 'tmp';
 
-  if (allWeeks.length === 0) {
+  // Verificar si hay equipo guardado
+  const hasTeam = useMemo(() => {
+    try {
+      const teamKey = `team_${baseId}`;
+      const teamData = storage.getJSON<any>(teamKey);
+      if (teamData) {
+        const base = Array.isArray(teamData.base) ? teamData.base : [];
+        const reinforcements = Array.isArray(teamData.reinforcements) ? teamData.reinforcements : [];
+        const prelight = Array.isArray(teamData.prelight) ? teamData.prelight : [];
+        const pickup = Array.isArray(teamData.pickup) ? teamData.pickup : [];
+        return base.length > 0 || reinforcements.length > 0 || prelight.length > 0 || pickup.length > 0;
+      }
+      return false;
+    } catch {
+      return false;
+    }
+  }, [baseId]);
+
+  const hasWeeks = allWeeks.length > 0;
+  const projectId = project?.id || project?.nombre;
+  const planificacionPath = projectId ? `/project/${projectId}/planificacion` : '/projects';
+  const equipoPath = projectId ? `/project/${projectId}/equipo` : '/projects';
+
+  // Caso 1: Faltan ambas cosas (semanas Y equipo)
+  if (!hasWeeks && !hasTeam) {
     return (
-      <div className='text-sm text-zinc-400 border border-dashed border-neutral-border rounded-xl p-4 bg-neutral-surface'>
-        No hay semanas en Planificación. Añade semanas allí para que aparezcan
-        aquí la nómina.
+      <div className='flex flex-col items-center justify-center py-16 px-8 text-center'>
+        <h2 className='text-3xl font-bold mb-4' style={{color: 'var(--text)'}}>
+          Configura el proyecto
+        </h2>
+        <p className='text-xl max-w-2xl mb-4' style={{color: 'var(--text)', opacity: 0.8}}>
+          Añade semanas en{' '}
+          <button
+            onClick={() => navigate(planificacionPath)}
+            className='underline font-semibold hover:opacity-80 transition-opacity'
+            style={{color: 'var(--brand)'}}
+          >
+            Planificación
+          </button>
+          {' '}y equipo en{' '}
+          <button
+            onClick={() => navigate(equipoPath)}
+            className='underline font-semibold hover:opacity-80 transition-opacity'
+            style={{color: 'var(--brand)'}}
+          >
+            Equipo
+          </button>
+          {' '}para calcular la nómina.
+        </p>
+      </div>
+    );
+  }
+
+  // Caso 2: Solo faltan semanas (pero SÍ hay equipo)
+  if (!hasWeeks) {
+    return (
+      <div className='flex flex-col items-center justify-center py-16 px-8 text-center'>
+        <h2 className='text-3xl font-bold mb-4' style={{color: 'var(--text)'}}>
+          No hay semanas en Planificación
+        </h2>
+        <p className='text-xl max-w-2xl mb-4' style={{color: 'var(--text)', opacity: 0.8}}>
+          Añade semanas en{' '}
+          <button
+            onClick={() => navigate(planificacionPath)}
+            className='underline font-semibold hover:opacity-80 transition-opacity'
+            style={{color: 'var(--brand)'}}
+          >
+            Planificación
+          </button>
+          {' '}para que aparezcan aquí la nómina.
+        </p>
       </div>
     );
   }
@@ -58,11 +128,25 @@ export default function NominaPublicidad({ project }: NominaPublicidadProps) {
   const weeksWithPeople = allWeeks.filter(
     (w: any) => weekAllPeopleActive(w).length > 0
   );
+
+  // Caso 3: Solo falta equipo (pero SÍ hay semanas)
   if (weeksWithPeople.length === 0) {
     return (
-      <div className='text-sm text-zinc-400 border border-dashed border-neutral-border rounded-xl p-4 bg-neutral-surface'>
-        Falta añadir el equipo. Por favor, rellena en la pestaña <b>Equipo</b>{' '}
-        el equipo base del proyecto para calcular la nómina.
+      <div className='flex flex-col items-center justify-center py-16 px-8 text-center'>
+        <h2 className='text-3xl font-bold mb-4' style={{color: 'var(--text)'}}>
+          Falta añadir el equipo
+        </h2>
+        <p className='text-xl max-w-2xl mb-4' style={{color: 'var(--text)', opacity: 0.8}}>
+          Rellena el equipo en{' '}
+          <button
+            onClick={() => navigate(equipoPath)}
+            className='underline font-semibold hover:opacity-80 transition-opacity'
+            style={{color: 'var(--brand)'}}
+          >
+            Equipo
+          </button>
+          {' '}para calcular la nómina.
+        </p>
       </div>
     );
   }
@@ -83,7 +167,6 @@ export default function NominaPublicidad({ project }: NominaPublicidadProps) {
   const monthKeys = Array.from(monthMap.keys()).sort();
 
   // === Re-render cuando cambian Condiciones publicidad ===
-  const baseId = project?.id || project?.nombre || 'tmp';
   const condKeys = [
     `cond_${baseId}_publicidad`,
   ];
