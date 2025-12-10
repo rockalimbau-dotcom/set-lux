@@ -131,6 +131,77 @@ function NewProjectModal({ onClose, onCreate }: NewProjectModalProps) {
     region: 'CT',
   }));
 
+  // Detectar el tema actual
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+    if (typeof document !== 'undefined') {
+      return (document.documentElement.getAttribute('data-theme') || 'light') as 'dark' | 'light';
+    }
+    return 'light';
+  });
+
+  useEffect(() => {
+    const updateTheme = () => {
+      if (typeof document !== 'undefined') {
+        const currentTheme = (document.documentElement.getAttribute('data-theme') || 'light') as 'dark' | 'light';
+        setTheme(currentTheme);
+      }
+    };
+
+    const observer = new MutationObserver(updateTheme);
+    if (typeof document !== 'undefined') {
+      observer.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['data-theme'],
+      });
+    }
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
+  const focusColor = theme === 'light' ? '#0476D9' : '#F27405';
+
+  // Estados para los dropdowns
+  const [estadoDropdown, setEstadoDropdown] = useState({ isOpen: false, isButtonHovered: false, hoveredOption: null as string | null });
+  const [condicionesDropdown, setCondicionesDropdown] = useState({ isOpen: false, isButtonHovered: false, hoveredOption: null as string | null });
+  const [paisDropdown, setPaisDropdown] = useState({ isOpen: false, isButtonHovered: false, hoveredOption: null as string | null });
+  const [regionDropdown, setRegionDropdown] = useState({ isOpen: false, isButtonHovered: false, hoveredOption: null as string | null });
+
+  const estadoRef = useRef<HTMLDivElement>(null);
+  const condicionesRef = useRef<HTMLDivElement>(null);
+  const paisRef = useRef<HTMLDivElement>(null);
+  const regionRef = useRef<HTMLDivElement>(null);
+
+  // Cerrar dropdowns al hacer clic fuera
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (estadoRef.current && !estadoRef.current.contains(event.target as Node)) {
+        setEstadoDropdown(prev => ({ ...prev, isOpen: false }));
+      }
+      if (condicionesRef.current && !condicionesRef.current.contains(event.target as Node)) {
+        setCondicionesDropdown(prev => ({ ...prev, isOpen: false }));
+      }
+      if (paisRef.current && !paisRef.current.contains(event.target as Node)) {
+        setPaisDropdown(prev => ({ ...prev, isOpen: false }));
+      }
+      if (regionRef.current && !regionRef.current.contains(event.target as Node)) {
+        setRegionDropdown(prev => ({ ...prev, isOpen: false }));
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  // Obtener labels para mostrar
+  const estadoLabel = form.estado;
+  const condicionesLabel = form.condicionesTipo === 'mensual' ? 'Mensual' : form.condicionesTipo === 'semanal' ? 'Semanal' : 'Publicidad';
+  const paisLabel = COUNTRIES.find(c => c.code === form.country)?.name || 'España';
+  const regionLabel = form.region ? REGIONS[form.country as keyof typeof REGIONS]?.find(r => r.code === form.region)?.name || 'Sin región específica' : 'Sin región específica';
+
   return (
     <div className='fixed inset-0 bg-black/60 grid place-items-center p-4 z-50'>
       <div className='w-full max-w-lg rounded-2xl border border-neutral-border bg-neutral-panel p-6'>
@@ -167,57 +238,289 @@ function NewProjectModal({ onClose, onCreate }: NewProjectModalProps) {
             />
           </Field>
           <Field label='Estado'>
-            <select
-              className='w-full px-4 py-3 rounded-xl bg-black/40 border border-neutral-border focus:outline-none focus:ring-2 focus:ring-blue-500'
-              value={form.estado}
-              onChange={e => setForm({ ...form, estado: e.target.value as ProjectStatus })}
-            >
-              <option>Activo</option>
-              <option>Cerrado</option>
-            </select>
+            <div className='relative w-full' ref={estadoRef}>
+              <button
+                type='button'
+                onClick={() => setEstadoDropdown(prev => ({ ...prev, isOpen: !prev.isOpen }))}
+                onMouseEnter={() => setEstadoDropdown(prev => ({ ...prev, isButtonHovered: true }))}
+                onMouseLeave={() => setEstadoDropdown(prev => ({ ...prev, isButtonHovered: false }))}
+                onBlur={() => setEstadoDropdown(prev => ({ ...prev, isButtonHovered: false }))}
+                className={`w-full px-4 py-3 rounded-xl border focus:outline-none text-sm text-center transition-colors ${
+                  theme === 'light' 
+                    ? 'bg-white text-gray-900' 
+                    : 'bg-black/40 text-zinc-300'
+                }`}
+                style={{
+                  borderWidth: estadoDropdown.isButtonHovered ? '1.5px' : '1px',
+                  borderStyle: 'solid',
+                  borderColor: estadoDropdown.isButtonHovered && theme === 'light' 
+                    ? '#0476D9' 
+                    : (estadoDropdown.isButtonHovered && theme === 'dark'
+                      ? '#fff'
+                      : 'var(--border)'),
+                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='${theme === 'light' ? '%23111827' : '%23ffffff'}' d='M6 9L1 4h10z'/%3E%3C/svg%3E")`,
+                  backgroundRepeat: 'no-repeat',
+                  backgroundPosition: 'right 1rem center',
+                  paddingRight: '2.5rem',
+                }}
+              >
+                {estadoLabel}
+              </button>
+              {estadoDropdown.isOpen && (
+                <div className={`absolute top-full left-0 mt-1 w-full border border-neutral-border rounded-lg shadow-lg z-50 overflow-hidden ${
+                  theme === 'light' ? 'bg-white' : 'bg-neutral-panel'
+                }`}>
+                  {['Activo', 'Cerrado'].map(opcion => (
+                    <button
+                      key={opcion}
+                      type='button'
+                      onClick={() => {
+                        setForm({ ...form, estado: opcion as ProjectStatus });
+                        setEstadoDropdown({ isOpen: false, isButtonHovered: false, hoveredOption: null });
+                      }}
+                      onMouseEnter={() => setEstadoDropdown(prev => ({ ...prev, hoveredOption: opcion }))}
+                      onMouseLeave={() => setEstadoDropdown(prev => ({ ...prev, hoveredOption: null }))}
+                      className={`w-full text-left px-4 py-2 text-sm transition-colors ${
+                        theme === 'light' 
+                          ? 'text-gray-900' 
+                          : 'text-zinc-300'
+                      }`}
+                      style={{
+                        backgroundColor: estadoDropdown.hoveredOption === opcion 
+                          ? (theme === 'light' ? '#A0D3F2' : focusColor)
+                          : 'transparent',
+                        color: estadoDropdown.hoveredOption === opcion 
+                          ? (theme === 'light' ? '#111827' : 'white')
+                          : 'inherit',
+                      }}
+                    >
+                      {opcion}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </Field>
           <Field label='Condiciones'>
-            <select
-              className='w-full px-4 py-3 rounded-xl bg-black/40 border border-neutral-border focus:outline-none focus:ring-2 focus:ring-blue-500'
-              value={form.condicionesTipo}
-              onChange={e =>
-                setForm({ ...form, condicionesTipo: e.target.value as ProjectMode })
-              }
-            >
-              <option value='mensual'>Mensual</option>
-              <option value='semanal'>Semanal</option>
-              <option value='publicidad'>Publicidad</option>
-            </select>
+            <div className='relative w-full' ref={condicionesRef}>
+              <button
+                type='button'
+                onClick={() => setCondicionesDropdown(prev => ({ ...prev, isOpen: !prev.isOpen }))}
+                onMouseEnter={() => setCondicionesDropdown(prev => ({ ...prev, isButtonHovered: true }))}
+                onMouseLeave={() => setCondicionesDropdown(prev => ({ ...prev, isButtonHovered: false }))}
+                onBlur={() => setCondicionesDropdown(prev => ({ ...prev, isButtonHovered: false }))}
+                className={`w-full px-4 py-3 rounded-xl border focus:outline-none text-sm text-center transition-colors ${
+                  theme === 'light' 
+                    ? 'bg-white text-gray-900' 
+                    : 'bg-black/40 text-zinc-300'
+                }`}
+                style={{
+                  borderWidth: condicionesDropdown.isButtonHovered ? '1.5px' : '1px',
+                  borderStyle: 'solid',
+                  borderColor: condicionesDropdown.isButtonHovered && theme === 'light' 
+                    ? '#0476D9' 
+                    : (condicionesDropdown.isButtonHovered && theme === 'dark'
+                      ? '#fff'
+                      : 'var(--border)'),
+                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='${theme === 'light' ? '%23111827' : '%23ffffff'}' d='M6 9L1 4h10z'/%3E%3C/svg%3E")`,
+                  backgroundRepeat: 'no-repeat',
+                  backgroundPosition: 'right 1rem center',
+                  paddingRight: '2.5rem',
+                }}
+              >
+                {condicionesLabel}
+              </button>
+              {condicionesDropdown.isOpen && (
+                <div className={`absolute top-full left-0 mt-1 w-full border border-neutral-border rounded-lg shadow-lg z-50 overflow-hidden ${
+                  theme === 'light' ? 'bg-white' : 'bg-neutral-panel'
+                }`}>
+                  {[
+                    { value: 'mensual', label: 'Mensual' },
+                    { value: 'semanal', label: 'Semanal' },
+                    { value: 'publicidad', label: 'Publicidad' }
+                  ].map(opcion => (
+                    <button
+                      key={opcion.value}
+                      type='button'
+                      onClick={() => {
+                        setForm({ ...form, condicionesTipo: opcion.value as ProjectMode });
+                        setCondicionesDropdown({ isOpen: false, isButtonHovered: false, hoveredOption: null });
+                      }}
+                      onMouseEnter={() => setCondicionesDropdown(prev => ({ ...prev, hoveredOption: opcion.value }))}
+                      onMouseLeave={() => setCondicionesDropdown(prev => ({ ...prev, hoveredOption: null }))}
+                      className={`w-full text-left px-4 py-2 text-sm transition-colors ${
+                        theme === 'light' 
+                          ? 'text-gray-900' 
+                          : 'text-zinc-300'
+                      }`}
+                      style={{
+                        backgroundColor: condicionesDropdown.hoveredOption === opcion.value 
+                          ? (theme === 'light' ? '#A0D3F2' : focusColor)
+                          : 'transparent',
+                        color: condicionesDropdown.hoveredOption === opcion.value 
+                          ? (theme === 'light' ? '#111827' : 'white')
+                          : 'inherit',
+                      }}
+                    >
+                      {opcion.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </Field>
           <Field label='País'>
-            <select
-              className='w-full px-4 py-3 rounded-xl bg-black/40 border border-neutral-border focus:outline-none focus:ring-2 focus:ring-blue-500'
-              value={form.country}
-              onChange={e => {
-                setForm({ ...form, country: e.target.value, region: '' });
-              }}
-            >
-              {COUNTRIES.map(c => (
-                <option key={c.code} value={c.code}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
+            <div className='relative w-full' ref={paisRef}>
+              <button
+                type='button'
+                onClick={() => setPaisDropdown(prev => ({ ...prev, isOpen: !prev.isOpen }))}
+                onMouseEnter={() => setPaisDropdown(prev => ({ ...prev, isButtonHovered: true }))}
+                onMouseLeave={() => setPaisDropdown(prev => ({ ...prev, isButtonHovered: false }))}
+                onBlur={() => setPaisDropdown(prev => ({ ...prev, isButtonHovered: false }))}
+                className={`w-full px-4 py-3 rounded-xl border focus:outline-none text-sm text-center transition-colors ${
+                  theme === 'light' 
+                    ? 'bg-white text-gray-900' 
+                    : 'bg-black/40 text-zinc-300'
+                }`}
+                style={{
+                  borderWidth: paisDropdown.isButtonHovered ? '1.5px' : '1px',
+                  borderStyle: 'solid',
+                  borderColor: paisDropdown.isButtonHovered && theme === 'light' 
+                    ? '#0476D9' 
+                    : (paisDropdown.isButtonHovered && theme === 'dark'
+                      ? '#fff'
+                      : 'var(--border)'),
+                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='${theme === 'light' ? '%23111827' : '%23ffffff'}' d='M6 9L1 4h10z'/%3E%3C/svg%3E")`,
+                  backgroundRepeat: 'no-repeat',
+                  backgroundPosition: 'right 1rem center',
+                  paddingRight: '2.5rem',
+                }}
+              >
+                {paisLabel}
+              </button>
+              {paisDropdown.isOpen && (
+                <div className={`absolute top-full left-0 mt-1 w-full border border-neutral-border rounded-lg shadow-lg z-50 overflow-hidden ${
+                  theme === 'light' ? 'bg-white' : 'bg-neutral-panel'
+                }`}>
+                  {COUNTRIES.map(c => (
+                    <button
+                      key={c.code}
+                      type='button'
+                      onClick={() => {
+                        setForm({ ...form, country: c.code, region: '' });
+                        setPaisDropdown({ isOpen: false, isButtonHovered: false, hoveredOption: null });
+                      }}
+                      onMouseEnter={() => setPaisDropdown(prev => ({ ...prev, hoveredOption: c.code }))}
+                      onMouseLeave={() => setPaisDropdown(prev => ({ ...prev, hoveredOption: null }))}
+                      className={`w-full text-left px-4 py-2 text-sm transition-colors ${
+                        theme === 'light' 
+                          ? 'text-gray-900' 
+                          : 'text-zinc-300'
+                      }`}
+                      style={{
+                        backgroundColor: paisDropdown.hoveredOption === c.code 
+                          ? (theme === 'light' ? '#A0D3F2' : focusColor)
+                          : 'transparent',
+                        color: paisDropdown.hoveredOption === c.code 
+                          ? (theme === 'light' ? '#111827' : 'white')
+                          : 'inherit',
+                      }}
+                    >
+                      {c.name}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </Field>
           {REGIONS[form.country as keyof typeof REGIONS] && (
-            <Field label='Región (opcional)'>
-              <select
-                className='w-full px-4 py-3 rounded-xl bg-black/40 border border-neutral-border focus:outline-none focus:ring-2 focus:ring-blue-500'
-                value={form.region}
-                onChange={e => setForm({ ...form, region: e.target.value })}
-              >
-                <option value=''>Sin región específica</option>
-                {REGIONS[form.country as keyof typeof REGIONS].map(r => (
-                  <option key={r.code} value={r.code}>
-                    {r.name}
-                  </option>
-                ))}
-              </select>
+            <Field label='Región'>
+              <div className='relative w-full' ref={regionRef}>
+                <button
+                  type='button'
+                  onClick={() => setRegionDropdown(prev => ({ ...prev, isOpen: !prev.isOpen }))}
+                  onMouseEnter={() => setRegionDropdown(prev => ({ ...prev, isButtonHovered: true }))}
+                  onMouseLeave={() => setRegionDropdown(prev => ({ ...prev, isButtonHovered: false }))}
+                  onBlur={() => setRegionDropdown(prev => ({ ...prev, isButtonHovered: false }))}
+                  className={`w-full px-4 py-3 rounded-xl border focus:outline-none text-sm text-center transition-colors ${
+                    theme === 'light' 
+                      ? 'bg-white text-gray-900' 
+                      : 'bg-black/40 text-zinc-300'
+                  }`}
+                  style={{
+                    borderWidth: regionDropdown.isButtonHovered ? '1.5px' : '1px',
+                    borderStyle: 'solid',
+                    borderColor: regionDropdown.isButtonHovered && theme === 'light' 
+                      ? '#0476D9' 
+                      : (regionDropdown.isButtonHovered && theme === 'dark'
+                        ? '#fff'
+                        : 'var(--border)'),
+                    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='${theme === 'light' ? '%23111827' : '%23ffffff'}' d='M6 9L1 4h10z'/%3E%3C/svg%3E")`,
+                    backgroundRepeat: 'no-repeat',
+                    backgroundPosition: 'right 1rem center',
+                    paddingRight: '2.5rem',
+                  }}
+                >
+                  {regionLabel}
+                </button>
+                {regionDropdown.isOpen && (
+                  <div className={`absolute top-full left-0 mt-1 w-full border border-neutral-border rounded-lg shadow-lg z-50 overflow-hidden ${
+                    theme === 'light' ? 'bg-white' : 'bg-neutral-panel'
+                  }`}>
+                    <button
+                      type='button'
+                      onClick={() => {
+                        setForm({ ...form, region: '' });
+                        setRegionDropdown({ isOpen: false, isButtonHovered: false, hoveredOption: null });
+                      }}
+                      onMouseEnter={() => setRegionDropdown(prev => ({ ...prev, hoveredOption: '' }))}
+                      onMouseLeave={() => setRegionDropdown(prev => ({ ...prev, hoveredOption: null }))}
+                      className={`w-full text-left px-4 py-2 text-sm transition-colors ${
+                        theme === 'light' 
+                          ? 'text-gray-900' 
+                          : 'text-zinc-300'
+                      }`}
+                      style={{
+                        backgroundColor: regionDropdown.hoveredOption === '' 
+                          ? (theme === 'light' ? '#A0D3F2' : focusColor)
+                          : 'transparent',
+                        color: regionDropdown.hoveredOption === '' 
+                          ? (theme === 'light' ? '#111827' : 'white')
+                          : 'inherit',
+                      }}
+                    >
+                      Sin región específica
+                    </button>
+                    {REGIONS[form.country as keyof typeof REGIONS].map(r => (
+                      <button
+                        key={r.code}
+                        type='button'
+                        onClick={() => {
+                          setForm({ ...form, region: r.code });
+                          setRegionDropdown({ isOpen: false, isButtonHovered: false, hoveredOption: null });
+                        }}
+                        onMouseEnter={() => setRegionDropdown(prev => ({ ...prev, hoveredOption: r.code }))}
+                        onMouseLeave={() => setRegionDropdown(prev => ({ ...prev, hoveredOption: null }))}
+                        className={`w-full text-left px-4 py-2 text-sm transition-colors ${
+                          theme === 'light' 
+                            ? 'text-gray-900' 
+                            : 'text-zinc-300'
+                        }`}
+                        style={{
+                          backgroundColor: regionDropdown.hoveredOption === r.code 
+                            ? (theme === 'light' ? '#A0D3F2' : focusColor)
+                            : 'transparent',
+                          color: regionDropdown.hoveredOption === r.code 
+                            ? (theme === 'light' ? '#111827' : 'white')
+                            : 'inherit',
+                        }}
+                      >
+                        {r.name}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </Field>
           )}
         </div>
@@ -276,6 +579,77 @@ function EditProjectModal({ project, onClose, onSave }: EditProjectModalProps) {
     country: project?.country || 'ES',
     region: project?.region || 'CT',
   }));
+
+  // Detectar el tema actual
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+    if (typeof document !== 'undefined') {
+      return (document.documentElement.getAttribute('data-theme') || 'light') as 'dark' | 'light';
+    }
+    return 'light';
+  });
+
+  useEffect(() => {
+    const updateTheme = () => {
+      if (typeof document !== 'undefined') {
+        const currentTheme = (document.documentElement.getAttribute('data-theme') || 'light') as 'dark' | 'light';
+        setTheme(currentTheme);
+      }
+    };
+
+    const observer = new MutationObserver(updateTheme);
+    if (typeof document !== 'undefined') {
+      observer.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['data-theme'],
+      });
+    }
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
+  const focusColor = theme === 'light' ? '#0476D9' : '#F27405';
+
+  // Estados para los dropdowns
+  const [estadoDropdown, setEstadoDropdown] = useState({ isOpen: false, isButtonHovered: false, hoveredOption: null as string | null });
+  const [condicionesDropdown, setCondicionesDropdown] = useState({ isOpen: false, isButtonHovered: false, hoveredOption: null as string | null });
+  const [paisDropdown, setPaisDropdown] = useState({ isOpen: false, isButtonHovered: false, hoveredOption: null as string | null });
+  const [regionDropdown, setRegionDropdown] = useState({ isOpen: false, isButtonHovered: false, hoveredOption: null as string | null });
+
+  const estadoRef = useRef<HTMLDivElement>(null);
+  const condicionesRef = useRef<HTMLDivElement>(null);
+  const paisRef = useRef<HTMLDivElement>(null);
+  const regionRef = useRef<HTMLDivElement>(null);
+
+  // Cerrar dropdowns al hacer clic fuera
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (estadoRef.current && !estadoRef.current.contains(event.target as Node)) {
+        setEstadoDropdown(prev => ({ ...prev, isOpen: false }));
+      }
+      if (condicionesRef.current && !condicionesRef.current.contains(event.target as Node)) {
+        setCondicionesDropdown(prev => ({ ...prev, isOpen: false }));
+      }
+      if (paisRef.current && !paisRef.current.contains(event.target as Node)) {
+        setPaisDropdown(prev => ({ ...prev, isOpen: false }));
+      }
+      if (regionRef.current && !regionRef.current.contains(event.target as Node)) {
+        setRegionDropdown(prev => ({ ...prev, isOpen: false }));
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  // Obtener labels para mostrar
+  const estadoLabel = form.estado;
+  const condicionesLabel = form.condicionesTipo === 'mensual' ? 'Mensual' : form.condicionesTipo === 'semanal' ? 'Semanal' : 'Publicidad';
+  const paisLabel = COUNTRIES.find(c => c.code === form.country)?.name || 'España';
+  const regionLabel = form.region ? REGIONS[form.country as keyof typeof REGIONS]?.find(r => r.code === form.region)?.name || 'Sin región específica' : 'Sin región específica';
 
   const formatMode = (m: string | undefined): ProjectMode => {
     const v = String(m || '').toLowerCase();
@@ -348,58 +722,290 @@ function EditProjectModal({ project, onClose, onSave }: EditProjectModalProps) {
           </Field>
 
           <Field label='Estado'>
-            <select
-              className='w-full px-4 py-3 rounded-xl bg-black/40 border border-neutral-border focus:outline-none focus:ring-2 focus:ring-blue-500'
-              value={form.estado}
-              onChange={e => setForm({ ...form, estado: e.target.value as ProjectStatus })}
-            >
-              <option>Activo</option>
-              <option>Cerrado</option>
-            </select>
+            <div className='relative w-full' ref={estadoRef}>
+              <button
+                type='button'
+                onClick={() => setEstadoDropdown(prev => ({ ...prev, isOpen: !prev.isOpen }))}
+                onMouseEnter={() => setEstadoDropdown(prev => ({ ...prev, isButtonHovered: true }))}
+                onMouseLeave={() => setEstadoDropdown(prev => ({ ...prev, isButtonHovered: false }))}
+                onBlur={() => setEstadoDropdown(prev => ({ ...prev, isButtonHovered: false }))}
+                className={`w-full px-4 py-3 rounded-xl border focus:outline-none text-sm text-center transition-colors ${
+                  theme === 'light' 
+                    ? 'bg-white text-gray-900' 
+                    : 'bg-black/40 text-zinc-300'
+                }`}
+                style={{
+                  borderWidth: estadoDropdown.isButtonHovered ? '1.5px' : '1px',
+                  borderStyle: 'solid',
+                  borderColor: estadoDropdown.isButtonHovered && theme === 'light' 
+                    ? '#0476D9' 
+                    : (estadoDropdown.isButtonHovered && theme === 'dark'
+                      ? '#fff'
+                      : 'var(--border)'),
+                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='${theme === 'light' ? '%23111827' : '%23ffffff'}' d='M6 9L1 4h10z'/%3E%3C/svg%3E")`,
+                  backgroundRepeat: 'no-repeat',
+                  backgroundPosition: 'right 1rem center',
+                  paddingRight: '2.5rem',
+                }}
+              >
+                {estadoLabel}
+              </button>
+              {estadoDropdown.isOpen && (
+                <div className={`absolute top-full left-0 mt-1 w-full border border-neutral-border rounded-lg shadow-lg z-50 overflow-hidden ${
+                  theme === 'light' ? 'bg-white' : 'bg-neutral-panel'
+                }`}>
+                  {['Activo', 'Cerrado'].map(opcion => (
+                    <button
+                      key={opcion}
+                      type='button'
+                      onClick={() => {
+                        setForm({ ...form, estado: opcion as ProjectStatus });
+                        setEstadoDropdown({ isOpen: false, isButtonHovered: false, hoveredOption: null });
+                      }}
+                      onMouseEnter={() => setEstadoDropdown(prev => ({ ...prev, hoveredOption: opcion }))}
+                      onMouseLeave={() => setEstadoDropdown(prev => ({ ...prev, hoveredOption: null }))}
+                      className={`w-full text-left px-4 py-2 text-sm transition-colors ${
+                        theme === 'light' 
+                          ? 'text-gray-900' 
+                          : 'text-zinc-300'
+                      }`}
+                      style={{
+                        backgroundColor: estadoDropdown.hoveredOption === opcion 
+                          ? (theme === 'light' ? '#A0D3F2' : focusColor)
+                          : 'transparent',
+                        color: estadoDropdown.hoveredOption === opcion 
+                          ? (theme === 'light' ? '#111827' : 'white')
+                          : 'inherit',
+                      }}
+                    >
+                      {opcion}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </Field>
 
           <Field label='Tipo de condiciones'>
-            <select
-              className='w-full px-4 py-3 rounded-xl bg-black/40 border border-neutral-border focus:outline-none focus:ring-2 focus:ring-blue-500'
-              value={form.condicionesTipo}
-              onChange={e =>
-                setForm({ ...form, condicionesTipo: e.target.value as ProjectMode })
-              }
-            >
-              <option value='semanal'>Semanal</option>
-              <option value='mensual'>Mensual</option>
-              <option value='publicidad'>Publicidad</option>
-            </select>
+            <div className='relative w-full' ref={condicionesRef}>
+              <button
+                type='button'
+                onClick={() => setCondicionesDropdown(prev => ({ ...prev, isOpen: !prev.isOpen }))}
+                onMouseEnter={() => setCondicionesDropdown(prev => ({ ...prev, isButtonHovered: true }))}
+                onMouseLeave={() => setCondicionesDropdown(prev => ({ ...prev, isButtonHovered: false }))}
+                onBlur={() => setCondicionesDropdown(prev => ({ ...prev, isButtonHovered: false }))}
+                className={`w-full px-4 py-3 rounded-xl border focus:outline-none text-sm text-center transition-colors ${
+                  theme === 'light' 
+                    ? 'bg-white text-gray-900' 
+                    : 'bg-black/40 text-zinc-300'
+                }`}
+                style={{
+                  borderWidth: condicionesDropdown.isButtonHovered ? '1.5px' : '1px',
+                  borderStyle: 'solid',
+                  borderColor: condicionesDropdown.isButtonHovered && theme === 'light' 
+                    ? '#0476D9' 
+                    : (condicionesDropdown.isButtonHovered && theme === 'dark'
+                      ? '#fff'
+                      : 'var(--border)'),
+                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='${theme === 'light' ? '%23111827' : '%23ffffff'}' d='M6 9L1 4h10z'/%3E%3C/svg%3E")`,
+                  backgroundRepeat: 'no-repeat',
+                  backgroundPosition: 'right 1rem center',
+                  paddingRight: '2.5rem',
+                }}
+              >
+                {condicionesLabel}
+              </button>
+              {condicionesDropdown.isOpen && (
+                <div className={`absolute top-full left-0 mt-1 w-full border border-neutral-border rounded-lg shadow-lg z-50 overflow-hidden ${
+                  theme === 'light' ? 'bg-white' : 'bg-neutral-panel'
+                }`}>
+                  {[
+                    { value: 'mensual', label: 'Mensual' },
+                    { value: 'semanal', label: 'Semanal' },
+                    { value: 'publicidad', label: 'Publicidad' }
+                  ].map(opcion => (
+                    <button
+                      key={opcion.value}
+                      type='button'
+                      onClick={() => {
+                        setForm({ ...form, condicionesTipo: opcion.value as ProjectMode });
+                        setCondicionesDropdown({ isOpen: false, isButtonHovered: false, hoveredOption: null });
+                      }}
+                      onMouseEnter={() => setCondicionesDropdown(prev => ({ ...prev, hoveredOption: opcion.value }))}
+                      onMouseLeave={() => setCondicionesDropdown(prev => ({ ...prev, hoveredOption: null }))}
+                      className={`w-full text-left px-4 py-2 text-sm transition-colors ${
+                        theme === 'light' 
+                          ? 'text-gray-900' 
+                          : 'text-zinc-300'
+                      }`}
+                      style={{
+                        backgroundColor: condicionesDropdown.hoveredOption === opcion.value 
+                          ? (theme === 'light' ? '#A0D3F2' : focusColor)
+                          : 'transparent',
+                        color: condicionesDropdown.hoveredOption === opcion.value 
+                          ? (theme === 'light' ? '#111827' : 'white')
+                          : 'inherit',
+                      }}
+                    >
+                      {opcion.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </Field>
           <Field label='País'>
-            <select
-              className='w-full px-4 py-3 rounded-xl bg-black/40 border border-neutral-border focus:outline-none focus:ring-2 focus:ring-blue-500'
-              value={form.country}
-              onChange={e => {
-                setForm({ ...form, country: e.target.value, region: '' });
-              }}
-            >
-              {COUNTRIES.map(c => (
-                <option key={c.code} value={c.code}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
+            <div className='relative w-full' ref={paisRef}>
+              <button
+                type='button'
+                onClick={() => setPaisDropdown(prev => ({ ...prev, isOpen: !prev.isOpen }))}
+                onMouseEnter={() => setPaisDropdown(prev => ({ ...prev, isButtonHovered: true }))}
+                onMouseLeave={() => setPaisDropdown(prev => ({ ...prev, isButtonHovered: false }))}
+                onBlur={() => setPaisDropdown(prev => ({ ...prev, isButtonHovered: false }))}
+                className={`w-full px-4 py-3 rounded-xl border focus:outline-none text-sm text-center transition-colors ${
+                  theme === 'light' 
+                    ? 'bg-white text-gray-900' 
+                    : 'bg-black/40 text-zinc-300'
+                }`}
+                style={{
+                  borderWidth: paisDropdown.isButtonHovered ? '1.5px' : '1px',
+                  borderStyle: 'solid',
+                  borderColor: paisDropdown.isButtonHovered && theme === 'light' 
+                    ? '#0476D9' 
+                    : (paisDropdown.isButtonHovered && theme === 'dark'
+                      ? '#fff'
+                      : 'var(--border)'),
+                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='${theme === 'light' ? '%23111827' : '%23ffffff'}' d='M6 9L1 4h10z'/%3E%3C/svg%3E")`,
+                  backgroundRepeat: 'no-repeat',
+                  backgroundPosition: 'right 1rem center',
+                  paddingRight: '2.5rem',
+                }}
+              >
+                {paisLabel}
+              </button>
+              {paisDropdown.isOpen && (
+                <div className={`absolute top-full left-0 mt-1 w-full border border-neutral-border rounded-lg shadow-lg z-50 overflow-hidden ${
+                  theme === 'light' ? 'bg-white' : 'bg-neutral-panel'
+                }`}>
+                  {COUNTRIES.map(c => (
+                    <button
+                      key={c.code}
+                      type='button'
+                      onClick={() => {
+                        setForm({ ...form, country: c.code, region: '' });
+                        setPaisDropdown({ isOpen: false, isButtonHovered: false, hoveredOption: null });
+                      }}
+                      onMouseEnter={() => setPaisDropdown(prev => ({ ...prev, hoveredOption: c.code }))}
+                      onMouseLeave={() => setPaisDropdown(prev => ({ ...prev, hoveredOption: null }))}
+                      className={`w-full text-left px-4 py-2 text-sm transition-colors ${
+                        theme === 'light' 
+                          ? 'text-gray-900' 
+                          : 'text-zinc-300'
+                      }`}
+                      style={{
+                        backgroundColor: paisDropdown.hoveredOption === c.code 
+                          ? (theme === 'light' ? '#A0D3F2' : focusColor)
+                          : 'transparent',
+                        color: paisDropdown.hoveredOption === c.code 
+                          ? (theme === 'light' ? '#111827' : 'white')
+                          : 'inherit',
+                      }}
+                    >
+                      {c.name}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </Field>
           {REGIONS[form.country as keyof typeof REGIONS] && (
-            <Field label='Región (opcional)'>
-              <select
-                className='w-full px-4 py-3 rounded-xl bg-black/40 border border-neutral-border focus:outline-none focus:ring-2 focus:ring-blue-500'
-                value={form.region}
-                onChange={e => setForm({ ...form, region: e.target.value })}
-              >
-                <option value=''>Sin región específica</option>
-                {REGIONS[form.country as keyof typeof REGIONS].map(r => (
-                  <option key={r.code} value={r.code}>
-                    {r.name}
-                  </option>
-                ))}
-              </select>
+            <Field label='Región'>
+              <div className='relative w-full' ref={regionRef}>
+                <button
+                  type='button'
+                  onClick={() => setRegionDropdown(prev => ({ ...prev, isOpen: !prev.isOpen }))}
+                  onMouseEnter={() => setRegionDropdown(prev => ({ ...prev, isButtonHovered: true }))}
+                  onMouseLeave={() => setRegionDropdown(prev => ({ ...prev, isButtonHovered: false }))}
+                  onBlur={() => setRegionDropdown(prev => ({ ...prev, isButtonHovered: false }))}
+                  className={`w-full px-4 py-3 rounded-xl border focus:outline-none text-sm text-center transition-colors ${
+                    theme === 'light' 
+                      ? 'bg-white text-gray-900' 
+                      : 'bg-black/40 text-zinc-300'
+                  }`}
+                  style={{
+                    borderWidth: regionDropdown.isButtonHovered ? '1.5px' : '1px',
+                    borderStyle: 'solid',
+                    borderColor: regionDropdown.isButtonHovered && theme === 'light' 
+                      ? '#0476D9' 
+                      : (regionDropdown.isButtonHovered && theme === 'dark'
+                        ? '#fff'
+                        : 'var(--border)'),
+                    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='${theme === 'light' ? '%23111827' : '%23ffffff'}' d='M6 9L1 4h10z'/%3E%3C/svg%3E")`,
+                    backgroundRepeat: 'no-repeat',
+                    backgroundPosition: 'right 1rem center',
+                    paddingRight: '2.5rem',
+                  }}
+                >
+                  {regionLabel}
+                </button>
+                {regionDropdown.isOpen && (
+                  <div className={`absolute top-full left-0 mt-1 w-full border border-neutral-border rounded-lg shadow-lg z-50 overflow-hidden ${
+                    theme === 'light' ? 'bg-white' : 'bg-neutral-panel'
+                  }`}>
+                    <button
+                      type='button'
+                      onClick={() => {
+                        setForm({ ...form, region: '' });
+                        setRegionDropdown({ isOpen: false, isButtonHovered: false, hoveredOption: null });
+                      }}
+                      onMouseEnter={() => setRegionDropdown(prev => ({ ...prev, hoveredOption: '' }))}
+                      onMouseLeave={() => setRegionDropdown(prev => ({ ...prev, hoveredOption: null }))}
+                      className={`w-full text-left px-4 py-2 text-sm transition-colors ${
+                        theme === 'light' 
+                          ? 'text-gray-900' 
+                          : 'text-zinc-300'
+                      }`}
+                      style={{
+                        backgroundColor: regionDropdown.hoveredOption === '' 
+                          ? (theme === 'light' ? '#A0D3F2' : focusColor)
+                          : 'transparent',
+                        color: regionDropdown.hoveredOption === '' 
+                          ? (theme === 'light' ? '#111827' : 'white')
+                          : 'inherit',
+                      }}
+                    >
+                      Sin región específica
+                    </button>
+                    {REGIONS[form.country as keyof typeof REGIONS].map(r => (
+                      <button
+                        key={r.code}
+                        type='button'
+                        onClick={() => {
+                          setForm({ ...form, region: r.code });
+                          setRegionDropdown({ isOpen: false, isButtonHovered: false, hoveredOption: null });
+                        }}
+                        onMouseEnter={() => setRegionDropdown(prev => ({ ...prev, hoveredOption: r.code }))}
+                        onMouseLeave={() => setRegionDropdown(prev => ({ ...prev, hoveredOption: null }))}
+                        className={`w-full text-left px-4 py-2 text-sm transition-colors ${
+                          theme === 'light' 
+                            ? 'text-gray-900' 
+                            : 'text-zinc-300'
+                        }`}
+                        style={{
+                          backgroundColor: regionDropdown.hoveredOption === r.code 
+                            ? (theme === 'light' ? '#A0D3F2' : focusColor)
+                            : 'transparent',
+                          color: regionDropdown.hoveredOption === r.code 
+                            ? (theme === 'light' ? '#111827' : 'white')
+                            : 'inherit',
+                        }}
+                      >
+                        {r.name}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </Field>
           )}
         </div>

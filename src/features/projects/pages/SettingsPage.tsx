@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import LogoIcon from '@shared/components/LogoIcon';
 import { storage } from '@shared/services/localStorage.service';
@@ -9,6 +9,38 @@ export default function SettingsPage() {
   const [theme, setTheme] = useState<'dark' | 'light'>('light');
   const [language, setLanguage] = useState<'es' | 'en'>('es');
   const [saved, setSaved] = useState(false);
+
+  // Estados para los dropdowns
+  const [themeDropdown, setThemeDropdown] = useState({ isOpen: false, isButtonHovered: false, hoveredOption: null as string | null });
+  const [languageDropdown, setLanguageDropdown] = useState({ isOpen: false, isButtonHovered: false, hoveredOption: null as string | null });
+
+  const themeRef = useRef<HTMLDivElement>(null);
+  const languageRef = useRef<HTMLDivElement>(null);
+
+  // Cerrar dropdowns al hacer clic fuera
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (themeRef.current && !themeRef.current.contains(event.target as Node)) {
+        setThemeDropdown(prev => ({ ...prev, isOpen: false }));
+      }
+      if (languageRef.current && !languageRef.current.contains(event.target as Node)) {
+        setLanguageDropdown(prev => ({ ...prev, isOpen: false }));
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  // Detectar el tema actual para los estilos
+  const currentTheme = theme;
+  const focusColor = currentTheme === 'light' ? '#0476D9' : '#F27405';
+
+  // Obtener labels para mostrar
+  const themeLabel = theme === 'dark' ? 'Oscuro' : 'Claro';
+  const languageLabel = language === 'es' ? 'Español' : 'Inglés';
 
   useEffect(() => {
     const s = storage.getJSON<any>('settings_v1') || {};
@@ -82,28 +114,140 @@ export default function SettingsPage() {
           <div className='space-y-6'>
             <label className='block space-y-2'>
               <span className='text-sm font-medium' style={{color: colors.mutedText}}>Tema</span>
-              <select
-                className='w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-1 transition-colors'
-                style={{backgroundColor: colors.inputBg, color: colors.inputText, borderColor: colors.inputBorder, boxShadow: `0 0 0 1px transparent`}}
-                value={theme}
-                onChange={e => setTheme(e.target.value as any)}
-              >
-                <option value='dark'>Oscuro</option>
-                <option value='light'>Claro</option>
-              </select>
+              <div className='relative w-full' ref={themeRef}>
+                <button
+                  type='button'
+                  onClick={() => setThemeDropdown(prev => ({ ...prev, isOpen: !prev.isOpen }))}
+                  onMouseEnter={() => setThemeDropdown(prev => ({ ...prev, isButtonHovered: true }))}
+                  onMouseLeave={() => setThemeDropdown(prev => ({ ...prev, isButtonHovered: false }))}
+                  onBlur={() => setThemeDropdown(prev => ({ ...prev, isButtonHovered: false }))}
+                  className={`w-full px-4 py-3 rounded-xl border focus:outline-none text-sm text-center transition-colors ${
+                    currentTheme === 'light' 
+                      ? 'bg-white text-gray-900' 
+                      : 'bg-black/40 text-zinc-300'
+                  }`}
+                  style={{
+                    borderWidth: themeDropdown.isButtonHovered ? '1.5px' : '1px',
+                    borderStyle: 'solid',
+                    borderColor: themeDropdown.isButtonHovered && currentTheme === 'light' 
+                      ? '#0476D9' 
+                      : (themeDropdown.isButtonHovered && currentTheme === 'dark'
+                        ? '#fff'
+                        : colors.inputBorder),
+                    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='${currentTheme === 'light' ? '%23111827' : '%23ffffff'}' d='M6 9L1 4h10z'/%3E%3C/svg%3E")`,
+                    backgroundRepeat: 'no-repeat',
+                    backgroundPosition: 'right 1rem center',
+                    paddingRight: '2.5rem',
+                  }}
+                >
+                  {themeLabel}
+                </button>
+                {themeDropdown.isOpen && (
+                  <div className={`absolute top-full left-0 mt-1 w-full border border-neutral-border rounded-lg shadow-lg z-50 overflow-hidden ${
+                    currentTheme === 'light' ? 'bg-white' : 'bg-neutral-panel'
+                  }`}>
+                    {[
+                      { value: 'dark', label: 'Oscuro' },
+                      { value: 'light', label: 'Claro' }
+                    ].map(opcion => (
+                      <button
+                        key={opcion.value}
+                        type='button'
+                        onClick={() => {
+                          setTheme(opcion.value as 'dark' | 'light');
+                          setThemeDropdown({ isOpen: false, isButtonHovered: false, hoveredOption: null });
+                        }}
+                        onMouseEnter={() => setThemeDropdown(prev => ({ ...prev, hoveredOption: opcion.value }))}
+                        onMouseLeave={() => setThemeDropdown(prev => ({ ...prev, hoveredOption: null }))}
+                        className={`w-full text-left px-4 py-2 text-sm transition-colors ${
+                          currentTheme === 'light' 
+                            ? 'text-gray-900' 
+                            : 'text-zinc-300'
+                        }`}
+                        style={{
+                          backgroundColor: themeDropdown.hoveredOption === opcion.value 
+                            ? (currentTheme === 'light' ? '#A0D3F2' : focusColor)
+                            : 'transparent',
+                          color: themeDropdown.hoveredOption === opcion.value 
+                            ? (currentTheme === 'light' ? '#111827' : 'white')
+                            : 'inherit',
+                        }}
+                      >
+                        {opcion.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </label>
 
             <label className='block space-y-2'>
               <span className='text-sm font-medium' style={{color: colors.mutedText}}>Idioma</span>
-              <select
-                className='w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-1 transition-colors'
-                style={{backgroundColor: colors.inputBg, color: colors.inputText, borderColor: colors.inputBorder}}
-                value={language}
-                onChange={e => setLanguage(e.target.value as 'es' | 'en')}
-              >
-                <option value='es'>Español</option>
-                <option value='en'>Inglés</option>
-              </select>
+              <div className='relative w-full' ref={languageRef}>
+                <button
+                  type='button'
+                  onClick={() => setLanguageDropdown(prev => ({ ...prev, isOpen: !prev.isOpen }))}
+                  onMouseEnter={() => setLanguageDropdown(prev => ({ ...prev, isButtonHovered: true }))}
+                  onMouseLeave={() => setLanguageDropdown(prev => ({ ...prev, isButtonHovered: false }))}
+                  onBlur={() => setLanguageDropdown(prev => ({ ...prev, isButtonHovered: false }))}
+                  className={`w-full px-4 py-3 rounded-xl border focus:outline-none text-sm text-center transition-colors ${
+                    currentTheme === 'light' 
+                      ? 'bg-white text-gray-900' 
+                      : 'bg-black/40 text-zinc-300'
+                  }`}
+                  style={{
+                    borderWidth: languageDropdown.isButtonHovered ? '1.5px' : '1px',
+                    borderStyle: 'solid',
+                    borderColor: languageDropdown.isButtonHovered && currentTheme === 'light' 
+                      ? '#0476D9' 
+                      : (languageDropdown.isButtonHovered && currentTheme === 'dark'
+                        ? '#fff'
+                        : colors.inputBorder),
+                    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='${currentTheme === 'light' ? '%23111827' : '%23ffffff'}' d='M6 9L1 4h10z'/%3E%3C/svg%3E")`,
+                    backgroundRepeat: 'no-repeat',
+                    backgroundPosition: 'right 1rem center',
+                    paddingRight: '2.5rem',
+                  }}
+                >
+                  {languageLabel}
+                </button>
+                {languageDropdown.isOpen && (
+                  <div className={`absolute top-full left-0 mt-1 w-full border border-neutral-border rounded-lg shadow-lg z-50 overflow-hidden ${
+                    currentTheme === 'light' ? 'bg-white' : 'bg-neutral-panel'
+                  }`}>
+                    {[
+                      { value: 'es', label: 'Español' },
+                      { value: 'en', label: 'Inglés' }
+                    ].map(opcion => (
+                      <button
+                        key={opcion.value}
+                        type='button'
+                        onClick={() => {
+                          setLanguage(opcion.value as 'es' | 'en');
+                          setLanguageDropdown({ isOpen: false, isButtonHovered: false, hoveredOption: null });
+                        }}
+                        onMouseEnter={() => setLanguageDropdown(prev => ({ ...prev, hoveredOption: opcion.value }))}
+                        onMouseLeave={() => setLanguageDropdown(prev => ({ ...prev, hoveredOption: null }))}
+                        className={`w-full text-left px-4 py-2 text-sm transition-colors ${
+                          currentTheme === 'light' 
+                            ? 'text-gray-900' 
+                            : 'text-zinc-300'
+                        }`}
+                        style={{
+                          backgroundColor: languageDropdown.hoveredOption === opcion.value 
+                            ? (currentTheme === 'light' ? '#A0D3F2' : focusColor)
+                            : 'transparent',
+                          color: languageDropdown.hoveredOption === opcion.value 
+                            ? (currentTheme === 'light' ? '#111827' : 'white')
+                            : 'inherit',
+                        }}
+                      >
+                        {opcion.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </label>
 
           </div>
