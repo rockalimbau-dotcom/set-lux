@@ -27,12 +27,14 @@ export default function FieldRow({ weekId, weekObj, fieldKey, label, setCell }: 
   return (
     <Row label={label}>
       {DAYS.map((d, i) => (
-        <Td key={d.key}>
-          <TextAreaAuto
-            value={(weekObj?.days?.[i]?.[fieldKey] as string) || ''}
-            onChange={(val: string) => setCell(weekId, i, fieldKey, val)}
-            placeholder='Escribe aquí…'
-          />
+        <Td key={d.key} align='center' className='text-center'>
+          <div className='flex justify-center'>
+            <TextAreaAuto
+              value={(weekObj?.days?.[i]?.[fieldKey] as string) || ''}
+              onChange={(val: string) => setCell(weekId, i, fieldKey, val)}
+              placeholder='Escribe aquí…'
+            />
+          </div>
         </Td>
       ))}
     </Row>

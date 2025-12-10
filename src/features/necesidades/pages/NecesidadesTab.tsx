@@ -588,7 +588,7 @@ export default function NecesidadesTab({ project }: NecesidadesTabProps) {
                       <tr>
                         <Th>Campo / Día</Th>
                         {DAYS.map((d, i) => (
-                          <Th key={d.key}>
+                          <Th key={d.key} align='center' className='text-center'>
                             <div>{d.name}</div>
                             <div className='text-[11px] text-zinc-400'>
                               {datesRow[i]}

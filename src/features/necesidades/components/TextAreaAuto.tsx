@@ -24,7 +24,7 @@ export default function TextAreaAuto({ value, onChange, placeholder }: TextAreaA
         setV(e.target.value);
         onChange && onChange(e.target.value);
       }}
-      className='w-full min-h-[56px] leading-relaxed whitespace-pre-wrap px-3 py-2 rounded-xl bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm'
+      className='w-full min-h-[56px] leading-relaxed whitespace-pre-wrap px-3 py-2 rounded-xl bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm text-center'
       style={{ overflow: 'hidden', resize: 'none' }}
       rows={1}
       onInput={e => {
