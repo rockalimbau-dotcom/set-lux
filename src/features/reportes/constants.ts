@@ -1,4 +1,4 @@
-export const DAY_NAMES: readonly string[] = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'] as const;
+export const DAY_NAMES: readonly string[] = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'] as const;
 
 export const CONCEPTS: readonly string[] = [
   'Horas extra',

@@ -116,11 +116,12 @@ export default function ReportesTab({ project, mode = 'semanal' }: ReportesTabPr
       .join('|');
   }, [condSemanal, condMensual, condPublicidad]);
 
-  // Verificar si hay equipo guardado
+  // Verificar si hay equipo guardado usando useLocalStorage para detectar cambios automáticamente
+  const teamKey = `team_${baseId}`;
+  const [teamData] = useLocalStorage<any>(teamKey, null);
+  
   const hasTeam = useMemo(() => {
     try {
-      const teamKey = `team_${baseId}`;
-      const teamData = storage.getJSON<any>(teamKey);
       if (teamData) {
         const base = Array.isArray(teamData.base) ? teamData.base : [];
         const reinforcements = Array.isArray(teamData.reinforcements) ? teamData.reinforcements : [];
@@ -132,7 +133,7 @@ export default function ReportesTab({ project, mode = 'semanal' }: ReportesTabPr
     } catch {
       return false;
     }
-  }, [baseId]);
+  }, [teamData]);
 
   const hasWeeks = allWeeks.length > 0;
   const projectId = project?.id || project?.nombre;
@@ -551,6 +552,7 @@ function MonthReportGroup({
   // Estado para el dropdown personalizado
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [hoveredOption, setHoveredOption] = useState<string | null>(null);
+  const [isButtonHovered, setIsButtonHovered] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Cerrar dropdown al hacer clic fuera
@@ -580,9 +582,23 @@ function MonthReportGroup({
             <button
               type='button'
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className='px-3 py-2 rounded-lg bg-black/40 border border-neutral-border focus:outline-none text-sm text-zinc-300 w-full min-w-[280px] text-left'
+              onMouseEnter={() => setIsButtonHovered(true)}
+              onMouseLeave={() => setIsButtonHovered(false)}
+              onBlur={() => setIsButtonHovered(false)}
+              className={`px-3 py-2 rounded-lg border focus:outline-none text-sm w-full min-w-[280px] text-center transition-colors ${
+                theme === 'light' 
+                  ? 'bg-white text-gray-900' 
+                  : 'bg-black/40 text-zinc-300'
+              }`}
               style={{
-                backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 12 12\'%3E%3Cpath fill=\'%23ffffff\' d=\'M6 9L1 4h10z\'/%3E%3C/svg%3E")',
+                borderWidth: isButtonHovered ? '1.5px' : '1px',
+                borderStyle: 'solid',
+                borderColor: isButtonHovered && theme === 'light' 
+                  ? '#0476D9' 
+                  : (isButtonHovered && theme === 'dark'
+                    ? '#fff'
+                    : 'var(--border)'),
+                backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='${theme === 'light' ? '%23111827' : '%23ffffff'}' d='M6 9L1 4h10z'/%3E%3C/svg%3E")`,
                 backgroundRepeat: 'no-repeat',
                 backgroundPosition: 'right 0.75rem center',
                 paddingRight: '2.5rem',
@@ -591,7 +607,9 @@ function MonthReportGroup({
               {horasExtraTipo}
             </button>
             {isDropdownOpen && (
-              <div className='absolute top-full left-0 mt-1 w-full min-w-[280px] bg-neutral-panel border border-neutral-border rounded-lg shadow-lg z-50 overflow-hidden'>
+              <div className={`absolute top-full left-0 mt-1 w-full min-w-[280px] border border-neutral-border rounded-lg shadow-lg z-50 overflow-hidden ${
+                theme === 'light' ? 'bg-white' : 'bg-neutral-panel'
+              }`}>
                 {horasExtraOpciones.map(opcion => (
                   <button
                     key={opcion}
@@ -603,10 +621,18 @@ function MonthReportGroup({
                     }}
                     onMouseEnter={() => setHoveredOption(opcion)}
                     onMouseLeave={() => setHoveredOption(null)}
-                    className='w-full text-left px-3 py-2 text-sm text-zinc-300 transition-colors'
+                    className={`w-full text-left px-3 py-2 text-sm transition-colors ${
+                      theme === 'light' 
+                        ? 'text-gray-900' 
+                        : 'text-zinc-300'
+                    }`}
                     style={{
-                      backgroundColor: hoveredOption === opcion ? focusColor : 'transparent',
-                      color: hoveredOption === opcion ? 'white' : 'inherit',
+                      backgroundColor: hoveredOption === opcion 
+                        ? (theme === 'light' ? '#A0D3F2' : focusColor)
+                        : 'transparent',
+                      color: hoveredOption === opcion 
+                        ? (theme === 'light' ? '#111827' : 'white')
+                        : 'inherit',
                     }}
                   >
                     {opcion}
@@ -621,7 +647,7 @@ function MonthReportGroup({
               type='date'
               value={dateFrom}
               onChange={e => setDateFrom(e.target.value)}
-              className='px-3 py-2 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm'
+              className='px-3 py-2 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm text-center'
             />
           </div>
           <div className='flex items-center gap-2'>
@@ -630,16 +656,14 @@ function MonthReportGroup({
               type='date'
               value={dateTo}
               onChange={e => setDateTo(e.target.value)}
-              className='px-3 py-2 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm'
+              className='px-3 py-2 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm text-center'
             />
           </div>
           <button
             onClick={handleExportPDF}
-            className='px-4 py-2 rounded-lg text-sm font-semibold text-white'
-            style={{
-              background: '#f59e0b',
-              border: '1px solid rgba(255,255,255,0.08)',
-            }}
+            className='px-3 py-2 rounded-lg text-sm font-semibold btn-pdf'
+            style={{ border: '1px solid rgba(255,255,255,0.08)' }}
+            title='Exportar mes (PDF)'
           >
             PDF
           </button>

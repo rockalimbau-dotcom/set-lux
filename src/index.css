@@ -235,6 +235,31 @@ body {
   box-shadow: 0 0 0 0.5px var(--phase-accent) inset;
 }
 
+/* Selectores de reportes: estilizar opciones del dropdown */
+[data-theme='light'] select option {
+  background-color: #ffffff !important;
+  color: #111827 !important;
+  padding: 0.5rem 0.75rem !important;
+}
+
+[data-theme='light'] select option:hover,
+[data-theme='light'] select option:checked {
+  background-color: #A0D3F2 !important;
+  color: #111827 !important;
+}
+
+[data-theme='dark'] select option {
+  background-color: var(--panel) !important;
+  color: #d4d4d8 !important;
+  padding: 0.5rem 0.75rem !important;
+}
+
+[data-theme='dark'] select option:hover,
+[data-theme='dark'] select option:checked {
+  background-color: var(--brand) !important;
+  color: #fff !important;
+}
+
 /* Planificación: Eliminar semana (papelera) en naranja */
 [data-theme='light'] .phase-content button[title='Eliminar semana']:hover,
 [data-theme='light'] .phase-content button[title='Eliminar semana']:focus {

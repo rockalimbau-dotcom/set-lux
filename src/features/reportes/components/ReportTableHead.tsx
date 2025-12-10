@@ -23,33 +23,33 @@ function ReportTableHead({
   return (
     <thead>
       <tr>
-        <Th aria-label='Persona' scope='col' />
+        <Th aria-label='Persona' scope='col' align='left' />
         {semana.map((iso, i) => (
-          <Th key={`dname_${iso}`} scope='col'>
+          <Th key={`dname_${iso}`} scope='col' align='center'>
             {dayNames[i]}
           </Th>
         ))}
-        <Th scope='col' className='font-bold whitespace-nowrap'>Total</Th>
+        <Th scope='col' className='font-bold whitespace-nowrap' align='center'>Total</Th>
       </tr>
 
       <tr>
-        <Th scope='col'>Fecha</Th>
+        <Th scope='col' align='left'>Fecha</Th>
         {semana.map((iso, i) => (
-          <Th key={`fecha_${iso}`} scope='col'>
+          <Th key={`fecha_${iso}`} scope='col' align='center'>
             {dates[i]}
           </Th>
         ))}
-        <Th scope='col' className='whitespace-nowrap'>Semana</Th>
+        <Th scope='col' className='whitespace-nowrap' align='center'>Semana</Th>
       </tr>
 
       <tr>
-        <Th scope='col'>Horario</Th>
+        <Th scope='col' align='left'>Horario</Th>
         {semana.map((iso, i) => (
-          <Th key={`hor_${iso}`} scope='col'>
+          <Th key={`hor_${iso}`} scope='col' align='center'>
             {horarios[i]}
           </Th>
         ))}
-        <Th scope='col'>&nbsp;</Th>
+        <Th scope='col' align='center'>&nbsp;</Th>
       </tr>
     </thead>
   );

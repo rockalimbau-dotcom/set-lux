@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useEffect } from 'react';
+import React, { useMemo, useRef, useEffect, useState } from 'react';
 import { Td } from '@shared/components';
 import { ROLE_COLORS } from '../../../shared/constants/roles';
 import { personaKey as buildPersonaKey } from '../utils/model';
@@ -49,6 +49,59 @@ function ReportPersonRows({
   horasExtraTipo = 'Hora Extra - Normal',
 }: Props) {
   if (!Array.isArray(list)) return null;
+
+  // Detectar el tema actual para el estilo de los selectores
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+    if (typeof document !== 'undefined') {
+      return (document.documentElement.getAttribute('data-theme') || 'light') as 'dark' | 'light';
+    }
+    return 'light';
+  });
+
+  useEffect(() => {
+    const updateTheme = () => {
+      if (typeof document !== 'undefined') {
+        const currentTheme = (document.documentElement.getAttribute('data-theme') || 'light') as 'dark' | 'light';
+        setTheme(currentTheme);
+      }
+    };
+
+    // Observar cambios en el atributo data-theme
+    const observer = new MutationObserver(updateTheme);
+    if (typeof document !== 'undefined') {
+      observer.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['data-theme'],
+      });
+    }
+
+    window.addEventListener('themechange', updateTheme);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('themechange', updateTheme);
+    };
+  }, []);
+
+  // Estados para los dropdowns personalizados
+  const [dropdownStates, setDropdownStates] = useState<Record<string, {
+    isOpen: boolean;
+    hoveredOption: string | null;
+    isButtonHovered: boolean;
+  }>>({});
+
+  const focusColor = theme === 'light' ? '#0476D9' : '#F27405';
+
+  const getDropdownState = (key: string) => {
+    return dropdownStates[key] || { isOpen: false, hoveredOption: null, isButtonHovered: false };
+  };
+
+  const setDropdownState = (key: string, updates: Partial<{ isOpen: boolean; hoveredOption: string | null; isButtonHovered: boolean }>) => {
+    setDropdownStates(prev => ({
+      ...prev,
+      [key]: { ...getDropdownState(key), ...updates }
+    }));
+  };
 
   const personaKeyFrom = (role: string, name: string) => {
     // Usar la misma clave que useReportData/model para evitar mezclas entre bloques
@@ -234,7 +287,7 @@ function ReportPersonRows({
                   : '';
                 
                 return (
-                  <Td key={`head_${pKey}_${block || 'base'}_${iso}`} className={headerCellClasses}> </Td>
+                  <Td key={`head_${pKey}_${block || 'base'}_${iso}`} className={`text-center ${headerCellClasses}`}> </Td>
                 );
               })}
               <Td className='text-center'>&nbsp;</Td>
@@ -260,33 +313,98 @@ function ReportPersonRows({
 
                     if (concepto === 'Dietas') {
                       const parsed = parseDietas(val);
+                      const dropdownKey = `dietas_${pKey}_${concepto}_${fecha}`;
+                      const dropdownState = getDropdownState(dropdownKey);
+                      const dropdownRef = useRef<HTMLDivElement>(null);
+
+                      // Cerrar dropdown al hacer clic fuera
+                      useEffect(() => {
+                        const handleClickOutside = (event: MouseEvent) => {
+                          if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                            setDropdownState(dropdownKey, { isOpen: false });
+                          }
+                        };
+
+                        if (dropdownState.isOpen) {
+                          document.addEventListener('mousedown', handleClickOutside);
+                        }
+
+                        return () => {
+                          document.removeEventListener('mousedown', handleClickOutside);
+                        };
+                      }, [dropdownState.isOpen, dropdownKey]);
+
                       return (
-                        <Td key={`${pKey}_${concepto}_${fecha}`} className={cellClasses}>
-                          <div className='flex flex-col gap-2'>
-                            <select
-                              className='w-full px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm'
-                              defaultValue=''
-                              onChange={e => {
-                                const v = (e.target as HTMLSelectElement).value;
-                                if (!v) return;
-                                const items = new Set(parsed.items);
-                                items.add(v);
-                                const newStr = formatDietas(
-                                  items,
-                                  items.has('Ticket') ? parsed.ticket : null
-                                );
-                                setCell(pKey, concepto, fecha, newStr);
-                                (e.target as HTMLSelectElement).value = '';
-                              }}
-                            >
-                              <option value=''>
-                              </option>
-                              {dietasOptions.map(opt => (
-                                <option key={opt as string} value={opt as string}>
-                                  {opt}
-                                </option>
-                              ))}
-                            </select>
+                        <Td key={`${pKey}_${concepto}_${fecha}`} className={`text-center ${cellClasses}`}>
+                          <div className='flex flex-col gap-2 items-center'>
+                            <div className='w-full relative' ref={dropdownRef}>
+                              <button
+                                type='button'
+                                onClick={() => setDropdownState(dropdownKey, { isOpen: !dropdownState.isOpen })}
+                                onMouseEnter={() => setDropdownState(dropdownKey, { isButtonHovered: true })}
+                                onMouseLeave={() => setDropdownState(dropdownKey, { isButtonHovered: false })}
+                                onBlur={() => setDropdownState(dropdownKey, { isButtonHovered: false })}
+                                className={`w-full px-2 py-1 rounded-lg border focus:outline-none text-sm text-center transition-colors ${
+                                  theme === 'light' 
+                                    ? 'bg-white text-gray-900' 
+                                    : 'bg-black/40 text-zinc-300'
+                                }`}
+                                style={{
+                                  borderWidth: dropdownState.isButtonHovered ? '1.5px' : '1px',
+                                  borderStyle: 'solid',
+                                  borderColor: dropdownState.isButtonHovered && theme === 'light' 
+                                    ? '#0476D9' 
+                                    : (dropdownState.isButtonHovered && theme === 'dark'
+                                      ? '#fff'
+                                      : 'var(--border)'),
+                                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='${theme === 'light' ? '%23111827' : '%23ffffff'}' d='M6 9L1 4h10z'/%3E%3C/svg%3E")`,
+                                  backgroundRepeat: 'no-repeat',
+                                  backgroundPosition: 'right 0.5rem center',
+                                  paddingRight: '2rem',
+                                }}
+                              >
+                                &nbsp;
+                              </button>
+                              {dropdownState.isOpen && (
+                                <div className={`absolute top-full left-0 mt-1 w-full border border-neutral-border rounded-lg shadow-lg z-50 overflow-hidden ${
+                                  theme === 'light' ? 'bg-white' : 'bg-neutral-panel'
+                                }`}>
+                                  {dietasOptions.map(opt => (
+                                    <button
+                                      key={opt as string}
+                                      type='button'
+                                      onClick={() => {
+                                        const items = new Set(parsed.items);
+                                        items.add(opt as string);
+                                        const newStr = formatDietas(
+                                          items,
+                                          items.has('Ticket') ? parsed.ticket : null
+                                        );
+                                        setCell(pKey, concepto, fecha, newStr);
+                                        setDropdownState(dropdownKey, { isOpen: false, hoveredOption: null });
+                                      }}
+                                      onMouseEnter={() => setDropdownState(dropdownKey, { hoveredOption: opt as string })}
+                                      onMouseLeave={() => setDropdownState(dropdownKey, { hoveredOption: null })}
+                                      className={`w-full text-left px-3 py-2 text-sm transition-colors ${
+                                        theme === 'light' 
+                                          ? 'text-gray-900' 
+                                          : 'text-zinc-300'
+                                      }`}
+                                      style={{
+                                        backgroundColor: dropdownState.hoveredOption === opt 
+                                          ? (theme === 'light' ? '#A0D3F2' : focusColor)
+                                          : 'transparent',
+                                        color: dropdownState.hoveredOption === opt 
+                                          ? (theme === 'light' ? '#111827' : 'white')
+                                          : 'inherit',
+                                      }}
+                                    >
+                                      {opt}
+                                    </button>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
 
                             <div className='flex flex-wrap gap-2'>
                               {Array.from(parsed.items)
@@ -375,22 +493,92 @@ function ReportPersonRows({
                       concepto === 'Nocturnidad' ||
                       concepto === 'Penalty lunch'
                     ) {
+                      const dropdownKey = `${concepto}_${pKey}_${fecha}`;
+                      const dropdownState = getDropdownState(dropdownKey);
+                      const dropdownRef = useRef<HTMLDivElement>(null);
+
+                      // Cerrar dropdown al hacer clic fuera
+                      useEffect(() => {
+                        const handleClickOutside = (event: MouseEvent) => {
+                          if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                            setDropdownState(dropdownKey, { isOpen: false });
+                          }
+                        };
+
+                        if (dropdownState.isOpen) {
+                          document.addEventListener('mousedown', handleClickOutside);
+                        }
+
+                        return () => {
+                          document.removeEventListener('mousedown', handleClickOutside);
+                        };
+                      }, [dropdownState.isOpen, dropdownKey]);
+
                       return (
-                        <Td key={`${pKey}_${concepto}_${fecha}`} className={cellClasses}>
-                          <select
-                            className='w-full px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm'
-                            value={val}
-                            onChange={e =>
-                              setCell(pKey, concepto, fecha, (e.target as HTMLSelectElement).value)
-                            }
-                            disabled={off}
-                          >
-                            {SI_NO.map(opt => (
-                              <option key={opt} value={opt}>
-                                {opt}
-                              </option>
-                            ))}
-                          </select>
+                        <Td key={`${pKey}_${concepto}_${fecha}`} className={`text-center ${cellClasses}`}>
+                          <div className='w-full relative' ref={dropdownRef}>
+                            <button
+                              type='button'
+                              onClick={() => !off && setDropdownState(dropdownKey, { isOpen: !dropdownState.isOpen })}
+                              onMouseEnter={() => !off && setDropdownState(dropdownKey, { isButtonHovered: true })}
+                              onMouseLeave={() => setDropdownState(dropdownKey, { isButtonHovered: false })}
+                              onBlur={() => setDropdownState(dropdownKey, { isButtonHovered: false })}
+                              disabled={off}
+                              className={`w-full px-2 py-1 rounded-lg border focus:outline-none text-sm text-center transition-colors ${
+                                theme === 'light' 
+                                  ? 'bg-white text-gray-900' 
+                                  : 'bg-black/40 text-zinc-300'
+                              } ${off ? 'opacity-50 cursor-not-allowed' : ''}`}
+                              style={{
+                                borderWidth: dropdownState.isButtonHovered ? '1.5px' : '1px',
+                                borderStyle: 'solid',
+                                borderColor: dropdownState.isButtonHovered && theme === 'light' 
+                                  ? '#0476D9' 
+                                  : (dropdownState.isButtonHovered && theme === 'dark'
+                                    ? '#fff'
+                                    : 'var(--border)'),
+                                backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='${theme === 'light' ? '%23111827' : '%23ffffff'}' d='M6 9L1 4h10z'/%3E%3C/svg%3E")`,
+                                backgroundRepeat: 'no-repeat',
+                                backgroundPosition: 'right 0.5rem center',
+                                paddingRight: '2rem',
+                              }}
+                            >
+                              {val || '\u00A0'}
+                            </button>
+                            {dropdownState.isOpen && !off && (
+                              <div className={`absolute top-full left-0 mt-1 w-full border border-neutral-border rounded-lg shadow-lg z-50 overflow-hidden ${
+                                theme === 'light' ? 'bg-white' : 'bg-neutral-panel'
+                              }`}>
+                                {SI_NO.map(opt => (
+                                  <button
+                                    key={opt}
+                                    type='button'
+                                    onClick={() => {
+                                      setCell(pKey, concepto, fecha, opt);
+                                      setDropdownState(dropdownKey, { isOpen: false, hoveredOption: null });
+                                    }}
+                                    onMouseEnter={() => setDropdownState(dropdownKey, { hoveredOption: opt })}
+                                    onMouseLeave={() => setDropdownState(dropdownKey, { hoveredOption: null })}
+                                    className={`w-full text-left px-3 py-2 text-sm transition-colors ${
+                                      theme === 'light' 
+                                        ? 'text-gray-900' 
+                                        : 'text-zinc-300'
+                                    }`}
+                                    style={{
+                                      backgroundColor: dropdownState.hoveredOption === opt 
+                                        ? (theme === 'light' ? '#A0D3F2' : focusColor)
+                                        : 'transparent',
+                                      color: dropdownState.hoveredOption === opt 
+                                        ? (theme === 'light' ? '#111827' : 'white')
+                                        : 'inherit',
+                                    }}
+                                  >
+                                    {opt}
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                          </div>
                         </Td>
                       );
                     }
@@ -421,10 +609,10 @@ function ReportPersonRows({
                           };
 
                     return (
-                      <Td key={`${pKey}_${concepto}_${fecha}`} className={cellClasses}>
+                      <Td key={`${pKey}_${concepto}_${fecha}`} className={`text-center ${cellClasses}`}>
                         <input
                           {...numericProps}
-                          className='w-full px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm'
+                          className='w-full px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm text-center'
                           value={val}
                           onChange={e =>
                             setCell(pKey, concepto, fecha, (e.target as HTMLInputElement).value)
