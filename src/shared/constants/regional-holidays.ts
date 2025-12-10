@@ -11,18 +11,23 @@ export interface RegionalHoliday {
 }
 
 export const SPAIN_REGIONAL_HOLIDAYS: RegionalHoliday[] = [
-  // 2025
+  // 2025 - Festivos nacionales que se celebran en todas las regiones
   { date: '2025-01-01', name: 'Año Nuevo', regions: ['ES'], type: 'regional' },
   { date: '2025-01-06', name: 'Reyes', regions: ['ES'], type: 'regional' },
   { date: '2025-03-29', name: 'Viernes Santo', regions: ['ES'], type: 'regional' },
   { date: '2025-04-01', name: 'Lunes de Pascua', regions: ['ES'], type: 'regional' },
   { date: '2025-05-01', name: 'Día del Trabajador', regions: ['ES'], type: 'regional' },
   { date: '2025-08-15', name: 'Asunción', regions: ['ES'], type: 'regional' },
-  { date: '2025-10-12', name: 'Día de la Hispanidad', regions: ['ES'], type: 'regional' },
   { date: '2025-11-01', name: 'Todos los Santos', regions: ['ES'], type: 'regional' },
-  { date: '2025-12-06', name: 'Día de la Constitución', regions: ['ES'], type: 'regional' },
   { date: '2025-12-25', name: 'Navidad', regions: ['ES'], type: 'regional' },
-  { date: '2025-12-26', name: 'San Esteban', regions: ['ES'], type: 'regional' },
+  
+  // Festivos nacionales que NO se celebran en todas las regiones
+  // Día de la Hispanidad (10/12) - NO se celebra en Cataluña
+  { date: '2025-10-12', name: 'Día de la Hispanidad', regions: ['ES', 'MD', 'AN', 'VC', 'GA', 'PV'], type: 'regional' },
+  // Día de la Constitución (12/06) - NO se celebra en Cataluña
+  { date: '2025-12-06', name: 'Día de la Constitución', regions: ['ES', 'MD', 'AN', 'VC', 'GA', 'PV'], type: 'regional' },
+  // San Esteban (26/12) - Solo se celebra en algunas regiones
+  { date: '2025-12-26', name: 'San Esteban', regions: ['CT', 'AN'], type: 'regional' },
 
   // Festivos específicos de Cataluña
   { date: '2025-06-24', name: 'San Juan', regions: ['CT'], type: 'regional' },
@@ -71,13 +76,25 @@ export function getRegionalHolidays(
   }
 
   return SPAIN_REGIONAL_HOLIDAYS.filter(holiday => {
-    // Incluir festivos nacionales (regions incluye 'ES')
+    // Si no hay región especificada, incluir solo festivos nacionales (regions incluye 'ES')
+    if (!region) {
+      return holiday.regions.includes('ES');
+    }
+    
+    // Si hay región, incluir festivos que:
+    // 1. Son nacionales (regions incluye 'ES') Y la región no está excluida
+    // 2. O son específicos de la región (regions incluye la región)
     if (holiday.regions.includes('ES')) {
-      return true;
+      // Si el festivo tiene 'ES' pero también tiene otras regiones específicas,
+      // solo incluirlo si la región actual está en la lista
+      if (holiday.regions.length > 1 && !holiday.regions.includes(region)) {
+        return false; // Festivo nacional que NO se celebra en esta región
+      }
+      return true; // Festivo nacional que se celebra en todas las regiones
     }
     
     // Incluir festivos específicos de la región
-    if (region && holiday.regions.includes(region)) {
+    if (holiday.regions.includes(region)) {
       return true;
     }
     

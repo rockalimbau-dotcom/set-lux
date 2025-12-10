@@ -16,7 +16,7 @@ interface FetchResult {
   holidays: Holiday[];
 }
 
-const CACHE_PREFIX = 'holidays_v1';
+const CACHE_PREFIX = 'holidays_v2';
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 
 function cacheKey({ country, year, region }: HolidayQuery): string {
@@ -95,6 +95,33 @@ export async function fetchHolidays(query: HolidayQuery): Promise<FetchResult> {
 
   // Principal: Calendarific con location (si hay región)
   let result = await fetchFromCalendarific({ country, year, region });
+
+  // Si Calendarific devolvió datos, validarlos y filtrarlos según la región
+  // Esto corrige casos donde Calendarific incluye festivos que no se celebran en ciertas regiones
+  if (result.source === 'calendarific' && country === 'ES') {
+    // Obtener la lista correcta de festivos para esta región (fallback local como referencia)
+    const correctRegionalDates = new Set(getRegionalHolidayDates(country, region || null, year));
+    
+    // Filtrar los festivos de Calendarific para incluir solo los que son correctos para esta región
+    // Si un festivo de Calendarific NO está en nuestra lista correcta, lo excluimos
+    // Esto asegura que solo se incluyan festivos que realmente se celebran en esa región
+    const filteredHolidays = result.holidays.filter(h => {
+      // Incluir si está en la lista correcta de festivos regionales
+      return correctRegionalDates.has(h.date);
+    });
+    
+    // También añadir cualquier festivo de nuestra lista que Calendarific no devolvió
+    // (por ejemplo, festivos regionales específicos que Calendarific no incluye)
+    const calendarificDates = new Set(filteredHolidays.map(h => h.date));
+    const missingHolidays: Holiday[] = correctRegionalDates
+      .filter(date => !calendarificDates.has(date))
+      .map(date => ({ date }));
+    
+    result = { 
+      ...result, 
+      holidays: [...filteredHolidays, ...missingHolidays].sort((a, b) => a.date.localeCompare(b.date))
+    };
+  }
 
   // Fallback local mínimo para ES si Calendarific falla
   if (result.source === 'none' && country === 'ES') {
