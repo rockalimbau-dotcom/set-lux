@@ -575,7 +575,7 @@ export default function PlanificacionTab({
         reinforcements={refsRoster}
         onExportWeek={exportWeek as any}
         onExportWeekPDF={exportWeekPDF as any}
-        emptyText='No hay semanas de preproducción. Pulsa "+ Semana" para añadir la Semana -1.'
+        emptyText='No hay semanas de preproducción'
         containerId='pre-block'
         weeksOnlyId='pre-weeks-only'
         project={project}
@@ -605,7 +605,7 @@ export default function PlanificacionTab({
         reinforcements={refsRoster}
         onExportWeek={exportWeek as any}
         onExportWeekPDF={exportWeekPDF as any}
-        emptyText='No hay semanas de producción. Pulsa "+ Semana" para añadir la Semana 1.'
+        emptyText='No hay semanas de producción'
         containerId='pro-block'
         weeksOnlyId='pro-weeks-only'
         project={project}
