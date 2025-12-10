@@ -206,40 +206,42 @@ function WeekCard({
           <table className='plan min-w-[760px] w-full border-collapse text-sm'>
             <thead>
               <tr>
-                <Th>Fila / Día</Th>
+                <Th align='left'>Fila / Día</Th>
                 {week.days.map((d: AnyRecord, i: number) => (
-                  <Th key={i}>{d.name}</Th>
+                  <Th key={i} align='center'>{d.name}</Th>
                 ))}
               </tr>
             </thead>
             <tbody>
               <Row label='Fecha'>
                 {DAYS.map((d, i) => (
-                  <Td key={i}>
-                    {i === 0 ? (
-                      <input
-                        type='date'
-                        value={week.startDate}
-                        onChange={onChangeMonday}
-                        className='px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand'
-                        title='Cambiar lunes'
-                      />
-                    ) : (
-                      datesRow[i]
-                    )}
+                  <Td key={i} align='middle'>
+                    <div className='text-center flex items-center justify-center h-full'>
+                      {i === 0 ? (
+                        <input
+                          type='date'
+                          value={week.startDate}
+                          onChange={onChangeMonday}
+                          className='w-full px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-center'
+                          title='Cambiar lunes'
+                        />
+                      ) : (
+                        datesRow[i]
+                      )}
+                    </div>
                   </Td>
                 ))}
               </Row>
 
               <Row label='Jornada'>
                 {week.days.map((day: AnyRecord, i: number) => (
-                  <Td key={i}>
+                  <Td key={i} align='top'>
                     <select
                       value={day.tipo}
                       onChange={e =>
                         setDayField(scope, week.id as string, i, { tipo: e.target.value })
                       }
-                      className='w-full px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand'
+                      className='w-full px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-center'
                     >
                       <option>Rodaje</option>
                       <option>Carga</option>
@@ -256,8 +258,8 @@ function WeekCard({
 
               <Row label='Horario'>
                 {week.days.map((day: AnyRecord, i: number) => (
-                  <Td key={i}>
-                    <div className='flex gap-2'>
+                  <Td key={i} align='top'>
+                    <div className='flex gap-2 justify-center'>
                       <input
                         type='time'
                         value={day.start || ''}
@@ -266,7 +268,7 @@ function WeekCard({
                             start: e.target.value,
                           })
                         }
-                        className='flex-1 px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand'
+                        className='flex-1 px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-center'
                         disabled={day.tipo === 'Descanso' || day.tipo === 'Fin'}
                         title='Inicio'
                       />
@@ -276,7 +278,7 @@ function WeekCard({
                         onChange={e =>
                           setDayField(scope, week.id as string, i, { end: e.target.value })
                         }
-                        className='flex-1 px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand'
+                        className='flex-1 px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-center'
                         disabled={day.tipo === 'Descanso' || day.tipo === 'Fin'}
                         title='Fin'
                       />
@@ -287,14 +289,14 @@ function WeekCard({
 
               <Row label='Corte cámara'>
                 {week.days.map((day: AnyRecord, i: number) => (
-                  <Td key={i}>
+                  <Td key={i} align='top'>
                     <input
                       type='time'
                       value={day.cut || ''}
                       onChange={e =>
                         setDayField(scope, week.id as string, i, { cut: e.target.value })
                       }
-                      className='w-full px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand'
+                      className='w-full px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-center'
                       disabled={day.tipo === 'Descanso' || day.tipo === 'Fin'}
                     />
                   </Td>
@@ -303,7 +305,7 @@ function WeekCard({
 
               <Row label='Localización'>
                 {week.days.map((day: AnyRecord, i: number) => (
-                  <Td key={i}>
+                  <Td key={i} align='top'>
                     <input
                       type='text'
                       placeholder={
@@ -317,7 +319,7 @@ function WeekCard({
                       onChange={e =>
                         setDayField(scope, week.id as string, i, { loc: e.target.value })
                       }
-                      className='w-full px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand'
+                      className='w-full px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-center'
                       disabled={day.tipo === 'Descanso' || day.tipo === 'Fin'}
                     />
                   </Td>
@@ -336,8 +338,8 @@ function WeekCard({
                     uniqueByPair([...basePool, ...poolRefs(reinforcements)])
                   );
                   return (
-                    <Td key={i}>
-                      <div className='flex flex-wrap gap-2'>
+                    <Td key={i} align='top'>
+                      <div className='flex flex-wrap gap-2 justify-center'>
                         {(day.team || []).map((m: AnyRecord, idx: number) => (
                           <span
                             key={idx}
@@ -363,7 +365,7 @@ function WeekCard({
                         ))}
                         {day.tipo !== 'Descanso' && day.tipo !== 'Fin' && (
                           <select
-                            className='no-pdf px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm'
+                            className='no-pdf w-full px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-center'
                             onChange={e => {
                               const v = e.target.value;
                               if (!v) return;
@@ -412,10 +414,10 @@ function WeekCard({
                   ]);
                   const options = missingByPair(day.prelight, prePool);
                   return (
-                    <Td key={i}>
+                    <Td key={i} align='top'>
                       {preOpen && (
                         <div className='flex flex-col gap-2'>
-                          <div className='flex gap-2'>
+                          <div className='flex gap-2 justify-center'>
                             <input
                               type='time'
                               value={day.prelightStart || ''}
@@ -424,7 +426,7 @@ function WeekCard({
                                   prelightStart: e.target.value,
                                 })
                               }
-                              className='px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm'
+                              className='px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm text-center'
                               disabled={day.tipo === 'Descanso' || day.tipo === 'Fin'}
                               title='Inicio prelight'
                             />
@@ -436,12 +438,12 @@ function WeekCard({
                                   prelightEnd: e.target.value,
                                 })
                               }
-                              className='px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm'
+                              className='px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm text-center'
                               disabled={day.tipo === 'Descanso' || day.tipo === 'Fin'}
                               title='Fin prelight'
                             />
                           </div>
-                          <div className='flex flex-wrap gap-2'>
+                          <div className='flex flex-wrap gap-2 justify-center'>
                             {(day.prelight || []).map((m: AnyRecord, idx: number) => (
                               <span
                                 key={idx}
@@ -483,7 +485,7 @@ function WeekCard({
                                   });
                                   e.target.value = '';
                                 }}
-                                className='px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm'
+                                className='w-full px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-center'
                                 defaultValue=''
                               >
                                 <option value=''>+ Añadir</option>
@@ -530,10 +532,10 @@ function WeekCard({
                   ]);
                   const options = missingByPair(day.pickup, pickPool);
                   return (
-                    <Td key={i}>
+                    <Td key={i} align='top'>
                       {pickOpen && (
                         <div className='flex flex-col gap-2'>
-                          <div className='flex gap-2'>
+                          <div className='flex gap-2 justify-center'>
                             <input
                               type='time'
                               value={day.pickupStart || ''}
@@ -542,7 +544,7 @@ function WeekCard({
                                   pickupStart: e.target.value,
                                 })
                               }
-                              className='px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm'
+                              className='px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm text-center'
                               disabled={day.tipo === 'Descanso' || day.tipo === 'Fin'}
                               title='Inicio recogida'
                             />
@@ -554,12 +556,12 @@ function WeekCard({
                                   pickupEnd: e.target.value,
                                 })
                               }
-                              className='px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text sm'
+                              className='px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm text-center'
                               disabled={day.tipo === 'Descanso' || day.tipo === 'Fin'}
                               title='Fin recogida'
                             />
                           </div>
-                          <div className='flex flex-wrap gap-2'>
+                          <div className='flex flex-wrap gap-2 justify-center'>
                             {(day.pickup || []).map((m: AnyRecord, idx: number) => (
                               <span
                                 key={idx}
@@ -601,7 +603,7 @@ function WeekCard({
                                   });
                                   e.target.value = '';
                                 }}
-                                className='px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm'
+                                className='w-full px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-center'
                                 defaultValue=''
                               >
                                 <option value=''>+ Añadir</option>
@@ -631,7 +633,7 @@ function WeekCard({
 
               <Row label='Incidencias'>
                 {week.days.map((day: AnyRecord, i: number) => (
-                  <Td key={i}>
+                  <Td key={i} align='top'>
                     <input
                       type='text'
                       value={day.issue || ''}
@@ -640,7 +642,7 @@ function WeekCard({
                           issue: e.target.value,
                         })
                       }
-                      className='w-full px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand'
+                      className='w-full px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-center'
                     />
                   </Td>
                 ))}
