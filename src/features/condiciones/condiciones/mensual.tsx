@@ -450,16 +450,16 @@ function CondicionesMensual({ project, onChange = () => {}, onRegisterExport }: 
         <table className='min-w-[920px] w-full border-collapse text-sm'>
           <thead>
             <tr>
-              <Th>Rol / Precio</Th>
+              <Th align='left'>Rol / Precio</Th>
               {PRICE_HEADERS.map(col => (
-                <Th key={col}>{col}</Th>
+                <Th key={col} align='center'>{col}</Th>
               ))}
             </tr>
           </thead>
           <tbody>
             {roles.map((role: string) => (
               <tr key={role} className='relative'>
-                <Td className='font-semibold whitespace-nowrap'>
+                <Td className='font-semibold whitespace-nowrap' align='top'>
                   <div className='flex items-center gap-1'>
                     <button
                       onClick={() => {
@@ -476,13 +476,13 @@ function CondicionesMensual({ project, onChange = () => {}, onRegisterExport }: 
                   </div>
                 </Td>
                 {PRICE_HEADERS.map(h => (
-                  <Td key={h}>
+                  <Td key={h} align='top'>
                     <input
                       type='text'
                       value={model.prices?.[role]?.[h] ?? ''}
                       onChange={e => handleRoleChange(role, h, e.target.value)}
                       placeholder='€'
-                      className='w-full px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand'
+                      className='w-full px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-center'
                     />
                   </Td>
                 ))}

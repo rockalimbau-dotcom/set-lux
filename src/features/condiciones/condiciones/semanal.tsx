@@ -500,16 +500,16 @@ function CondicionesSemanal({ project, onChange = () => {}, onRegisterExport }: 
         <table className='min-w-[920px] w-full border-collapse text-sm'>
           <thead>
             <tr>
-              <Th>Rol / Precio</Th>
+              <Th align='left'>Rol / Precio</Th>
               {PRICE_HEADERS.map(col => (
-                <Th key={col}>{col}</Th>
+                <Th key={col} align='center'>{col}</Th>
               ))}
             </tr>
           </thead>
           <tbody>
             {roles.map((role: string) => (
               <tr key={role} className='relative'>
-                <Td className='font-semibold whitespace-nowrap'>
+                <Td className='font-semibold whitespace-nowrap' align='top'>
                   <div className='flex items-center gap-1'>
                     <button
                       onClick={() => {
@@ -531,14 +531,14 @@ function CondicionesSemanal({ project, onChange = () => {}, onRegisterExport }: 
                   const hasSemanalValue = model.prices?.[role]?.['Precio semanal'];
                   
                   return (
-                    <Td key={h}>
+                    <Td key={h} align='top'>
                       <input
                         type='text'
                         value={model.prices?.[role]?.[h] ?? ''}
                         onChange={e => handlePriceChange(role, h, (e.target as HTMLInputElement).value)}
                         placeholder={isSemanal ? '€' : ''}
                         disabled={!isSemanal && !isRefuerzo && !hasSemanalValue}
-                        className={`w-full px-2 py-1 rounded-lg border border-neutral-border focus:outline-none focus:ring-1 ${
+                        className={`w-full px-2 py-1 rounded-lg border border-neutral-border focus:outline-none focus:ring-1 text-center ${
                           !isSemanal && !isRefuerzo && !hasSemanalValue
                             ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 cursor-not-allowed' 
                             : 'dark:bg-transparent'
