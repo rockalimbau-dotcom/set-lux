@@ -407,6 +407,112 @@ body {
   box-shadow: 0 0 0 0.5px #0476D9 inset, 0 0 0 1px rgba(4,118,217,0.12);
 }
 
+/* PDF buttons color in dark mode */
+[data-theme='dark'] .btn-pdf,
+[data-theme='dark'] [title*='PDF'] {
+  background-color: #F27405 !important;
+  border-color: #F27405 !important;
+  color: #FFFFFF !important;
+}
+
+[data-theme='dark'] .btn-pdf:hover,
+[data-theme='dark'] [title*='PDF']:hover {
+  filter: brightness(1.1);
+  box-shadow: 0 0 0 0.5px #F27405 inset, 0 0 0 1px rgba(242,116,5,0.2);
+}
+
+/* Danger button colors by theme */
+html[data-theme='light'] button.btn-danger,
+html[data-theme='light'] .btn-danger,
+html[data-theme='light'] button.border.btn-danger {
+  background-color: #BFDBFE !important; /* blue-200 */
+  border: 1px solid #BFDBFE !important;
+  border-color: #BFDBFE !important;
+}
+
+html[data-theme='light'] button.btn-danger:hover,
+html[data-theme='light'] .btn-danger:hover,
+html[data-theme='light'] button.border.btn-danger:hover {
+  background-color: #93C5FD !important; /* blue-300 */
+  border: 1px solid #60A5FA !important; /* blue-400 for border glow */
+  border-color: #60A5FA !important; /* blue-400 for border glow */
+  outline: none !important;
+  box-shadow: none !important;
+  --tw-ring-color: transparent !important;
+}
+
+html[data-theme='light'] button.btn-danger:focus,
+html[data-theme='light'] .btn-danger:focus {
+  --tw-ring-color: #93C5FD;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+html[data-theme='light'] button.btn-danger:hover:focus,
+html[data-theme='light'] .btn-danger:hover:focus {
+  --tw-ring-color: #60A5FA;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+html[data-theme='dark'] button.btn-danger,
+html[data-theme='dark'] .btn-danger {
+  background-color: #FDBA74 !important; /* orange-300 */
+  border: 1px solid #FDBA74 !important;
+}
+
+html[data-theme='dark'] button.btn-danger:hover,
+html[data-theme='dark'] .btn-danger:hover,
+html[data-theme='dark'] button.border.btn-danger:hover {
+  background-color: #FB923C !important; /* orange-400 */
+  border: 1px solid #FFFFFF !important; /* white for border glow */
+  border-color: #FFFFFF !important; /* white for border glow, not orange */
+  outline: none !important;
+  box-shadow: none !important;
+  --tw-ring-color: transparent !important;
+}
+
+/* Force white border for danger button in dark mode, override any orange */
+html[data-theme='dark'] button.btn-danger:hover,
+html[data-theme='dark'] button.border.btn-danger:hover,
+html[data-theme='dark'] .btn-danger.border:hover {
+  border: 1px solid #FFFFFF !important; /* white, not orange */
+  border-color: #FFFFFF !important; /* white, not orange */
+}
+
+html[data-theme='dark'] button.btn-danger:focus,
+html[data-theme='dark'] .btn-danger:focus {
+  --tw-ring-color: #FDBA74;
+}
+
+/* Duplicate button border hover colors by theme - must override Tailwind classes */
+html[data-theme='light'] button.btn-duplicate:hover,
+html[data-theme='light'] .btn-duplicate:hover,
+html[data-theme='light'] button.border-neutral-border.btn-duplicate:hover {
+  border: 1px solid #60A5FA !important; /* blue-400 */
+  border-color: #60A5FA !important; /* blue-400 */
+  outline: none !important;
+  box-shadow: none !important;
+  --tw-ring-color: transparent !important;
+}
+
+html[data-theme='dark'] button.btn-duplicate:hover,
+html[data-theme='dark'] .btn-duplicate:hover,
+html[data-theme='dark'] button.border-neutral-border.btn-duplicate:hover,
+html[data-theme='dark'] button.border.btn-duplicate:hover {
+  border: 1px solid #FFFFFF !important; /* white, not orange */
+  border-color: #FFFFFF !important; /* white, not orange */
+  outline: none !important;
+  box-shadow: none !important;
+  --tw-ring-color: transparent !important;
+}
+
+/* Duplicate button font weight - override font-semibold from baseClasses */
+button.btn-duplicate,
+.btn-duplicate {
+  font-weight: 400 !important; /* normal weight instead of semibold */
+}
+
 /* Plus toggle in parámetros: highlight on hover/focus */
 [data-theme='light'] .phase-content button[aria-label='Alternar parámetros']:hover,
 [data-theme='light'] .phase-content button[aria-label='Alternar parámetros']:focus {

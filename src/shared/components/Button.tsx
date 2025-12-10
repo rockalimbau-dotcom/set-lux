@@ -49,7 +49,7 @@ export default function Button({
   const variantClasses: Record<ButtonVariant, string> = {
     primary: 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500',
     secondary: 'bg-gray-600 text-white hover:bg-gray-700 focus:ring-gray-500',
-    danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500',
+    danger: 'btn-danger text-white border',
     ghost:
       'bg-transparent text-gray-300 hover:bg-gray-800 hover:text-white focus:ring-gray-500',
     export:
@@ -59,7 +59,7 @@ export default function Button({
     remove:
       'text-gray-400 hover:text-red-500 text-xs bg-transparent hover:bg-red-50',
     duplicate:
-      'px-3 py-2 rounded-lg border text-sm border-neutral-border hover:border-orange-500 text-gray-300 hover:text-orange-500',
+      'px-3 py-2 rounded-lg border text-sm border-neutral-border btn-duplicate text-gray-300 font-normal',
   };
 
   // Size classes
