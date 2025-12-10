@@ -22,7 +22,7 @@ describe('Button', () => {
     render(<Button variant='danger'>Danger Button</Button>);
 
     const button = screen.getByText('Danger Button');
-    expect(button).toHaveClass('bg-red-600');
+    expect(button).toHaveClass('btn-danger');
   });
 
   it('applies ghost variant', () => {

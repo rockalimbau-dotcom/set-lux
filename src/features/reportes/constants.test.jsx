@@ -10,13 +10,13 @@ describe('reportes/constants', () => {
 
     it('has correct day names', () => {
       expect(DAY_NAMES).toEqual([
-        'Lun',
-        'Mar',
-        'Mié',
-        'Jue',
-        'Vie',
-        'Sáb',
-        'Dom',
+        'Lunes',
+        'Martes',
+        'Miércoles',
+        'Jueves',
+        'Viernes',
+        'Sábado',
+        'Domingo',
       ]);
     });
 

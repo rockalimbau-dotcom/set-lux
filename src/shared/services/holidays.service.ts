@@ -113,7 +113,7 @@ export async function fetchHolidays(query: HolidayQuery): Promise<FetchResult> {
     // También añadir cualquier festivo de nuestra lista que Calendarific no devolvió
     // (por ejemplo, festivos regionales específicos que Calendarific no incluye)
     const calendarificDates = new Set(filteredHolidays.map(h => h.date));
-    const missingHolidays: Holiday[] = correctRegionalDates
+    const missingHolidays: Holiday[] = Array.from(correctRegionalDates)
       .filter(date => !calendarificDates.has(date))
       .map(date => ({ date }));
     

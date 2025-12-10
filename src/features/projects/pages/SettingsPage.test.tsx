@@ -26,10 +26,11 @@ describe('SettingsPage', () => {
     expect(screen.getByText('›')).toBeInTheDocument();
     expect(screen.getByText('Preferencias')).toBeInTheDocument();
 
-    const select = screen.getByDisplayValue('Oscuro') as HTMLSelectElement;
-    expect(select).toBeInTheDocument();
+    // Ahora son botones personalizados, no selects
+    const themeButton = screen.getByText('Oscuro');
+    expect(themeButton).toBeInTheDocument();
 
-    // Comprobamos que existen selects de Tema e Idioma
+    // Comprobamos que existen labels de Tema e Idioma
     expect(screen.getByLabelText('Tema')).toBeInTheDocument();
     expect(screen.getByLabelText('Idioma')).toBeInTheDocument();
   });
@@ -37,8 +38,13 @@ describe('SettingsPage', () => {
   it('saves settings and shows feedback', () => {
     render(<MemoryRouter><SettingsPage /></MemoryRouter>);
 
-    const select = screen.getByDisplayValue('Oscuro') as HTMLSelectElement;
-    fireEvent.change(select, { target: { value: 'light' } });
+    // Ahora es un botón personalizado, necesitamos hacer clic para abrir el dropdown y luego seleccionar
+    const themeButton = screen.getByText('Oscuro');
+    fireEvent.click(themeButton);
+    
+    // Seleccionar "Claro" del dropdown
+    const claroOption = screen.getByText('Claro');
+    fireEvent.click(claroOption);
 
     fireEvent.click(screen.getByText('Guardar'));
 
