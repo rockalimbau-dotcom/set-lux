@@ -335,8 +335,8 @@ function ReportPersonRows({
                       }, [dropdownState.isOpen, dropdownKey]);
 
                       return (
-                        <Td key={`${pKey}_${concepto}_${fecha}`} className={`text-center ${cellClasses}`}>
-                          <div className='flex flex-col gap-2 items-center'>
+                        <Td key={`${pKey}_${concepto}_${fecha}`} className={`text-center ${cellClasses}`} align='center'>
+                          <div className='flex flex-col gap-2 items-center justify-center'>
                             <div className='w-full relative' ref={dropdownRef}>
                               <button
                                 type='button'
@@ -406,7 +406,7 @@ function ReportPersonRows({
                               )}
                             </div>
 
-                            <div className='flex flex-wrap gap-2'>
+                            <div className='flex flex-wrap gap-2 justify-center'>
                               {Array.from(parsed.items)
                                 .filter(it => it !== 'Ticket')
                                 .map(it => (
@@ -515,8 +515,8 @@ function ReportPersonRows({
                       }, [dropdownState.isOpen, dropdownKey]);
 
                       return (
-                        <Td key={`${pKey}_${concepto}_${fecha}`} className={`text-center ${cellClasses}`}>
-                          <div className='w-full relative' ref={dropdownRef}>
+                        <Td key={`${pKey}_${concepto}_${fecha}`} className={`text-center ${cellClasses}`} align='center'>
+                          <div className='w-full relative flex justify-center' ref={dropdownRef}>
                             <button
                               type='button'
                               onClick={() => !off && setDropdownState(dropdownKey, { isOpen: !dropdownState.isOpen })}
@@ -609,7 +609,7 @@ function ReportPersonRows({
                           };
 
                     return (
-                      <Td key={`${pKey}_${concepto}_${fecha}`} className={`text-center ${cellClasses}`}>
+                      <Td key={`${pKey}_${concepto}_${fecha}`} className={`text-center ${cellClasses}`} align='center'>
                         <input
                           {...numericProps}
                           className='w-full px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm text-center'
