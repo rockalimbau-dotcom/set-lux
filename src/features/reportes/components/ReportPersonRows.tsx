@@ -374,15 +374,15 @@ function ReportPersonRows({
                                       key={opt as string}
                                       type='button'
                                       onClick={() => {
-                                        const items = new Set(parsed.items);
+                                const items = new Set(parsed.items);
                                         items.add(opt as string);
-                                        const newStr = formatDietas(
-                                          items,
-                                          items.has('Ticket') ? parsed.ticket : null
-                                        );
-                                        setCell(pKey, concepto, fecha, newStr);
+                                const newStr = formatDietas(
+                                  items,
+                                  items.has('Ticket') ? parsed.ticket : null
+                                );
+                                setCell(pKey, concepto, fecha, newStr);
                                         setDropdownState(dropdownKey, { isOpen: false, hoveredOption: null });
-                                      }}
+                              }}
                                       onMouseEnter={() => setDropdownState(dropdownKey, { hoveredOption: opt as string })}
                                       onMouseLeave={() => setDropdownState(dropdownKey, { hoveredOption: null })}
                                       className={`w-full text-left px-3 py-2 text-sm transition-colors ${
@@ -399,9 +399,9 @@ function ReportPersonRows({
                                           : 'inherit',
                                       }}
                                     >
-                                      {opt}
+                                  {opt}
                                     </button>
-                                  ))}
+                              ))}
                                 </div>
                               )}
                             </div>
@@ -523,7 +523,7 @@ function ReportPersonRows({
                               onMouseEnter={() => !off && setDropdownState(dropdownKey, { isButtonHovered: true })}
                               onMouseLeave={() => setDropdownState(dropdownKey, { isButtonHovered: false })}
                               onBlur={() => setDropdownState(dropdownKey, { isButtonHovered: false })}
-                              disabled={off}
+                            disabled={off}
                               className={`w-full px-2 py-1 rounded-lg border focus:outline-none text-sm text-center transition-colors ${
                                 theme === 'light' 
                                   ? 'bg-white text-gray-900' 
@@ -549,7 +549,7 @@ function ReportPersonRows({
                               <div className={`absolute top-full left-0 mt-1 w-full border border-neutral-border rounded-lg shadow-lg z-50 overflow-y-auto max-h-60 ${
                                 theme === 'light' ? 'bg-white' : 'bg-neutral-panel'
                               }`}>
-                                {SI_NO.map(opt => (
+                            {SI_NO.map(opt => (
                                   <button
                                     key={opt}
                                     type='button'
@@ -573,9 +573,9 @@ function ReportPersonRows({
                                         : 'inherit',
                                     }}
                                   >
-                                    {opt}
+                                {opt}
                                   </button>
-                                ))}
+                            ))}
                               </div>
                             )}
                           </div>

@@ -900,18 +900,18 @@ function MonthSection({
                     </Td>
                     <Td align='middle' className='text-center'>
                       <div className='flex justify-center'>
+                      <span
+                        className='inline-flex items-center gap-2 px-2 py-1 rounded-lg border border-neutral-border bg-black/40'
+                        title={`${r.role} - ${r.name}`}
+                      >
                         <span
-                          className='inline-flex items-center gap-2 px-2 py-1 rounded-lg border border-neutral-border bg-black/40'
-                          title={`${r.role} - ${r.name}`}
+                          className='inline-flex items-center justify-center w-6 h-5 rounded-md font-bold text-[10px]'
+                          style={{ background: col.bg, color: col.fg }}
                         >
-                          <span
-                            className='inline-flex items-center justify-center w-6 h-5 rounded-md font-bold text-[10px]'
-                            style={{ background: col.bg, color: col.fg }}
-                          >
-                            {r.role || '—'}
-                          </span>
-                          <span className='text-xs text-zinc-200'>{r.name}</span>
+                          {r.role || '—'}
                         </span>
+                        <span className='text-xs text-zinc-200'>{r.name}</span>
+                      </span>
                       </div>
                     </Td>
 
@@ -972,12 +972,12 @@ function MonthSection({
                     {columnVisibility.extras && (
                       <Td align='middle' className='text-center'>
                         <div className='flex justify-center'>
-                          <ExtrasSummary
-                            horasExtra={r.horasExtra}
-                            turnAround={r.turnAround}
-                            nocturnidad={r.nocturnidad}
-                            penaltyLunch={r.penaltyLunch}
-                          />
+                        <ExtrasSummary
+                          horasExtra={r.horasExtra}
+                          turnAround={r.turnAround}
+                          nocturnidad={r.nocturnidad}
+                          penaltyLunch={r.penaltyLunch}
+                        />
                         </div>
                       </Td>
                     )}
@@ -986,10 +986,10 @@ function MonthSection({
                     {columnVisibility.dietas && (
                       <Td align='middle' className='text-center'>
                         <div className='flex justify-center'>
-                          <DietasSummary
-                            dietasCount={r.dietasCount}
-                            ticketTotal={r.ticketTotal}
-                          />
+                        <DietasSummary
+                          dietasCount={r.dietasCount}
+                          ticketTotal={r.ticketTotal}
+                        />
                         </div>
                       </Td>
                     )}

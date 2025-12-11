@@ -2,12 +2,11 @@ import { AuthProvider, useAuth } from '@app/providers/AuthProvider.tsx';
 import AppRouter from '@app/routes/AppRouter.tsx';
 import Button from '@shared/components/Button.tsx';
 import Input from '@shared/components/Input.tsx';
-import Select from '@shared/components/Select.tsx';
 import BrandHero from '@shared/components/BrandHero.jsx';
 import { ROLES } from '@shared/constants/roles';
 import { useLocalStorage } from '@shared/hooks/useLocalStorage';
 import { storage } from '@shared/services/localStorage.service';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState, useRef } from 'react';
 import { BrowserRouter, useNavigate, Routes, Route } from 'react-router-dom';
 
 /** Logo y marca extraídos a shared/components */
@@ -47,6 +46,69 @@ function AppInner() {
   const [success, setSuccess] = useState('');
   const [projects, setProjects] = useLocalStorage<UIProject[]>('projects_v1', []);
   const [activeProject, setActiveProject] = useState<UIProject | null>(null);
+  
+  // Estados para el dropdown de puesto
+  const [puestoDropdownOpen, setPuestoDropdownOpen] = useState(false);
+  const [isPuestoButtonHovered, setIsPuestoButtonHovered] = useState(false);
+  const [hoveredPuestoOption, setHoveredPuestoOption] = useState<string | null>(null);
+  const puestoDropdownRef = useRef<HTMLDivElement>(null);
+  
+  // Estados para el hover de los inputs
+  const [isLoginUserHovered, setIsLoginUserHovered] = useState(false);
+  const [isLoginPassHovered, setIsLoginPassHovered] = useState(false);
+  const [isRegNombreHovered, setIsRegNombreHovered] = useState(false);
+  const [isRegApellidoHovered, setIsRegApellidoHovered] = useState(false);
+  const [isRegEmailHovered, setIsRegEmailHovered] = useState(false);
+  const [isRegPassHovered, setIsRegPassHovered] = useState(false);
+  const [isRegPass2Hovered, setIsRegPass2Hovered] = useState(false);
+  
+  // Detectar el tema actual
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+    if (typeof document !== 'undefined') {
+      return (document.documentElement.getAttribute('data-theme') || 'light') as 'dark' | 'light';
+    }
+    return 'light';
+  });
+
+  useEffect(() => {
+    const updateTheme = () => {
+      if (typeof document !== 'undefined') {
+        const currentTheme = (document.documentElement.getAttribute('data-theme') || 'light') as 'dark' | 'light';
+        setTheme(currentTheme);
+      }
+    };
+
+    const observer = new MutationObserver(updateTheme);
+    if (typeof document !== 'undefined') {
+      observer.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['data-theme'],
+      });
+    }
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+  
+  const focusColor = theme === 'light' ? '#0476D9' : '#F27405';
+  
+  // Cerrar dropdown al hacer clic fuera
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (puestoDropdownRef.current && !puestoDropdownRef.current.contains(event.target as Node)) {
+        setPuestoDropdownOpen(false);
+      }
+    };
+
+    if (puestoDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [puestoDropdownOpen]);
 
   const navigate = useNavigate();
   const [themeLabel, setThemeLabel] = useState<string>(() => {
@@ -218,7 +280,19 @@ function AppInner() {
                         onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                           setLogin(f => ({ ...f, user: e.target.value }))
                         }
+                        onMouseEnter={() => setIsLoginUserHovered(true)}
+                        onMouseLeave={() => setIsLoginUserHovered(false)}
+                        onBlur={() => setIsLoginUserHovered(false)}
                         placeholder='Introduce tu usuario o email'
+                        style={{
+                          borderWidth: isLoginUserHovered ? '1.5px' : '1px',
+                          borderStyle: 'solid',
+                          borderColor: isLoginUserHovered && theme === 'light' 
+                            ? '#0476D9' 
+                            : (isLoginUserHovered && theme === 'dark'
+                              ? '#fff'
+                              : 'var(--border)'),
+                        }}
                       />
                     </div>
 
@@ -232,7 +306,19 @@ function AppInner() {
                         onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                           setLogin(f => ({ ...f, pass: e.target.value }))
                         }
+                        onMouseEnter={() => setIsLoginPassHovered(true)}
+                        onMouseLeave={() => setIsLoginPassHovered(false)}
+                        onBlur={() => setIsLoginPassHovered(false)}
                         placeholder='Introduce tu contraseña'
+                        style={{
+                          borderWidth: isLoginPassHovered ? '1.5px' : '1px',
+                          borderStyle: 'solid',
+                          borderColor: isLoginPassHovered && theme === 'light' 
+                            ? '#0476D9' 
+                            : (isLoginPassHovered && theme === 'dark'
+                              ? '#fff'
+                              : 'var(--border)'),
+                        }}
                       />
                     </div>
 
@@ -285,7 +371,19 @@ function AppInner() {
                           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                               setReg(r => ({ ...r, nombre: e.target.value }))
                             }
+                            onMouseEnter={() => setIsRegNombreHovered(true)}
+                            onMouseLeave={() => setIsRegNombreHovered(false)}
+                            onBlur={() => setIsRegNombreHovered(false)}
                             placeholder='Nombre'
+                            style={{
+                              borderWidth: isRegNombreHovered ? '1.5px' : '1px',
+                              borderStyle: 'solid',
+                              borderColor: isRegNombreHovered && theme === 'light' 
+                                ? '#0476D9' 
+                                : (isRegNombreHovered && theme === 'dark'
+                                  ? '#fff'
+                                  : 'var(--border)'),
+                            }}
                           />
                         </div>
                         <div className='space-y-2'>
@@ -298,7 +396,19 @@ function AppInner() {
                             onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                               setReg(r => ({ ...r, apellido: e.target.value }))
                             }
+                            onMouseEnter={() => setIsRegApellidoHovered(true)}
+                            onMouseLeave={() => setIsRegApellidoHovered(false)}
+                            onBlur={() => setIsRegApellidoHovered(false)}
                             placeholder='Apellido'
+                            style={{
+                              borderWidth: isRegApellidoHovered ? '1.5px' : '1px',
+                              borderStyle: 'solid',
+                              borderColor: isRegApellidoHovered && theme === 'light' 
+                                ? '#0476D9' 
+                                : (isRegApellidoHovered && theme === 'dark'
+                                  ? '#fff'
+                                  : 'var(--border)'),
+                            }}
                           />
                         </div>
                       </div>
@@ -307,14 +417,69 @@ function AppInner() {
                         <label className='block text-sm font-medium' style={{color: 'var(--text)'}}>
                           Puesto
                         </label>
-                        <Select
-                          value={reg.puesto}
-                          onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-                            setReg(r => ({ ...r, puesto: e.target.value }))
-                          }
-                          options={roleOptions}
-                          placeholder='Selecciona tu puesto'
-                        />
+                        <div className='relative' ref={puestoDropdownRef}>
+                          <button
+                            type='button'
+                            onClick={() => setPuestoDropdownOpen(!puestoDropdownOpen)}
+                            onMouseEnter={() => setIsPuestoButtonHovered(true)}
+                            onMouseLeave={() => setIsPuestoButtonHovered(false)}
+                            onBlur={() => setIsPuestoButtonHovered(false)}
+                            className={`w-full px-3 py-2 rounded-lg border focus:outline-none text-sm text-center transition-colors ${
+                              theme === 'light' 
+                                ? 'bg-white text-gray-900' 
+                                : 'bg-black/40 text-zinc-300'
+                            }`}
+                            style={{
+                              borderWidth: isPuestoButtonHovered ? '1.5px' : '1px',
+                              borderStyle: 'solid',
+                              borderColor: isPuestoButtonHovered && theme === 'light' 
+                                ? '#0476D9' 
+                                : (isPuestoButtonHovered && theme === 'dark'
+                                  ? '#fff'
+                                  : 'var(--border)'),
+                              backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='${theme === 'light' ? '%23111827' : '%23ffffff'}' d='M6 9L1 4h10z'/%3E%3C/svg%3E")`,
+                              backgroundRepeat: 'no-repeat',
+                              backgroundPosition: 'right 0.5rem center',
+                              paddingRight: '2rem',
+                            }}
+                          >
+                            {reg.puesto || '\u00A0'}
+                          </button>
+                          {puestoDropdownOpen && (
+                            <div className={`absolute top-full left-0 mt-1 w-full border border-neutral-border rounded-lg shadow-lg z-50 overflow-y-auto max-h-60 ${
+                              theme === 'light' ? 'bg-white' : 'bg-neutral-panel'
+                            }`}>
+                              {roleOptions.map(opt => (
+                                <button
+                                  key={opt}
+                                  type='button'
+                                  onClick={() => {
+                                    setReg(r => ({ ...r, puesto: opt }));
+                                    setPuestoDropdownOpen(false);
+                                    setHoveredPuestoOption(null);
+                                  }}
+                                  onMouseEnter={() => setHoveredPuestoOption(opt)}
+                                  onMouseLeave={() => setHoveredPuestoOption(null)}
+                                  className={`w-full text-left px-3 py-2 text-sm transition-colors ${
+                                    theme === 'light' 
+                                      ? 'text-gray-900' 
+                                      : 'text-zinc-300'
+                                  }`}
+                                  style={{
+                                    backgroundColor: hoveredPuestoOption === opt 
+                                      ? (theme === 'light' ? '#A0D3F2' : focusColor)
+                                      : 'transparent',
+                                    color: hoveredPuestoOption === opt 
+                                      ? (theme === 'light' ? '#111827' : 'white')
+                                      : 'inherit',
+                                  }}
+                                >
+                                  {opt}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
                       </div>
 
                       <div className='space-y-2'>
@@ -327,7 +492,19 @@ function AppInner() {
                           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                             setReg(r => ({ ...r, email: e.target.value }))
                           }
+                          onMouseEnter={() => setIsRegEmailHovered(true)}
+                          onMouseLeave={() => setIsRegEmailHovered(false)}
+                          onBlur={() => setIsRegEmailHovered(false)}
                           placeholder='tucorreo@ejemplo.com'
+                          style={{
+                            borderWidth: isRegEmailHovered ? '1.5px' : '1px',
+                            borderStyle: 'solid',
+                            borderColor: isRegEmailHovered && theme === 'light' 
+                              ? '#0476D9' 
+                              : (isRegEmailHovered && theme === 'dark'
+                                ? '#fff'
+                                : 'var(--border)'),
+                          }}
                         />
                       </div>
 
@@ -342,7 +519,19 @@ function AppInner() {
                           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                               setReg(r => ({ ...r, pass: e.target.value }))
                             }
+                            onMouseEnter={() => setIsRegPassHovered(true)}
+                            onMouseLeave={() => setIsRegPassHovered(false)}
+                            onBlur={() => setIsRegPassHovered(false)}
                             placeholder='********'
+                            style={{
+                              borderWidth: isRegPassHovered ? '1.5px' : '1px',
+                              borderStyle: 'solid',
+                              borderColor: isRegPassHovered && theme === 'light' 
+                                ? '#0476D9' 
+                                : (isRegPassHovered && theme === 'dark'
+                                  ? '#fff'
+                                  : 'var(--border)'),
+                            }}
                           />
                         </div>
                         <div className='space-y-2'>
@@ -355,7 +544,19 @@ function AppInner() {
                           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                               setReg(r => ({ ...r, pass2: e.target.value }))
                             }
+                            onMouseEnter={() => setIsRegPass2Hovered(true)}
+                            onMouseLeave={() => setIsRegPass2Hovered(false)}
+                            onBlur={() => setIsRegPass2Hovered(false)}
                             placeholder='********'
+                            style={{
+                              borderWidth: isRegPass2Hovered ? '1.5px' : '1px',
+                              borderStyle: 'solid',
+                              borderColor: isRegPass2Hovered && theme === 'light' 
+                                ? '#0476D9' 
+                                : (isRegPass2Hovered && theme === 'dark'
+                                  ? '#fff'
+                                  : 'var(--border)'),
+                            }}
                           />
                         </div>
                       </div>

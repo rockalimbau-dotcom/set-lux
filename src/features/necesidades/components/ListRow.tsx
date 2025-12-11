@@ -50,11 +50,11 @@ export default function ListRow({ label, listKey, notesKey, weekId, weekObj, con
               ))}
             </div>
             <div className='flex justify-center'>
-              <TextAreaAuto
-                value={(day as AnyRecord)[notesKey] || ''}
-                onChange={(v: string) => setCell(weekId, i, notesKey, v)}
-                placeholder='Añade notas…'
-              />
+            <TextAreaAuto
+              value={(day as AnyRecord)[notesKey] || ''}
+              onChange={(v: string) => setCell(weekId, i, notesKey, v)}
+              placeholder='Añade notas…'
+            />
             </div>
           </Td>
         );

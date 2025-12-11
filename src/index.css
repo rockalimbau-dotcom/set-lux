@@ -59,17 +59,17 @@ body {
   border-color: var(--hover-border) !important;
 }
 
-[data-theme='dark'] input:hover,
-[data-theme='dark'] select:hover,
-[data-theme='dark'] textarea:hover,
-[data-theme='dark'] button:hover {
+[data-theme='dark'] input:hover:not([style*="borderColor"]):not([style*="borderWidth"]),
+[data-theme='dark'] select:hover:not([style*="borderColor"]):not([style*="borderWidth"]),
+[data-theme='dark'] textarea:hover:not([style*="borderColor"]):not([style*="borderWidth"]),
+[data-theme='dark'] button:hover:not([style*="borderColor"]):not([style*="borderWidth"]) {
   border-color: var(--hover-border) !important;
 }
 
 /* Dark mode: keep default focus highlight from components */
-[data-theme='dark'] input:focus,
-[data-theme='dark'] select:focus,
-[data-theme='dark'] textarea:focus {
+[data-theme='dark'] input:focus:not([style*="borderColor"]):not([style*="borderWidth"]),
+[data-theme='dark'] select:focus:not([style*="borderColor"]):not([style*="borderWidth"]),
+[data-theme='dark'] textarea:focus:not([style*="borderColor"]):not([style*="borderWidth"]) {
   /* Force Tailwind ring utilities to use white in dark mode */
   --tw-ring-color: #fff !important;
 
@@ -77,9 +77,9 @@ body {
 }
 
 /* Light mode: force white focus ring/border on form fields */
-[data-theme='light'] input:focus,
-[data-theme='light'] select:focus,
-[data-theme='light'] textarea:focus {
+[data-theme='light'] input:focus:not([style*="borderColor"]):not([style*="borderWidth"]),
+[data-theme='light'] select:focus:not([style*="borderColor"]):not([style*="borderWidth"]),
+[data-theme='light'] textarea:focus:not([style*="borderColor"]):not([style*="borderWidth"]) {
   /* Use theme blue in light mode */
   --tw-ring-color: var(--accent) !important; /* #0476D9 */
 
@@ -94,11 +94,19 @@ body {
   border-color: var(--hover-border) !important;
 }
 
-[data-theme='light'] input:hover,
-[data-theme='light'] select:hover,
-[data-theme='light'] textarea:hover,
-[data-theme='light'] button:hover {
+[data-theme='light'] input:hover:not([style*="borderColor"]):not([style*="borderWidth"]),
+[data-theme='light'] select:hover:not([style*="borderColor"]):not([style*="borderWidth"]),
+[data-theme='light'] textarea:hover:not([style*="borderColor"]):not([style*="borderWidth"]),
+[data-theme='light'] button:hover:not([style*="borderColor"]):not([style*="borderWidth"]) {
   border-color: var(--hover-border) !important;
+}
+
+/* Forzar que los estilos inline siempre tengan prioridad máxima */
+html input[style*="borderColor"],
+html input[style*="borderWidth"] {
+  border-color: var(--inline-border-color) !important;
+  border-width: var(--inline-border-width) !important;
+  border-style: var(--inline-border-style) !important;
 }
 
 /* Light mode: unified look for phase content (fases) */

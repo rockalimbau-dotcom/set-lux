@@ -35,20 +35,21 @@ export default function Input({
   id,
   name,
   title,
+  style,
   ...rest
 }: InputProps) {
   // Base classes
   const baseClasses =
-    'w-full rounded-xl border transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed';
+    'w-full rounded-xl border transition-colors duration-200 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed';
 
   // Variant classes
   const variantClasses: Record<InputVariant, string> = {
     default:
-      'bg-black/40 border-neutral-border text-white placeholder-gray-400 focus:ring-blue-500 focus:border-blue-500',
+      'bg-black/40 border-neutral-border text-white placeholder-gray-400',
     search:
-      'bg-gray-800 border-gray-600 text-white placeholder-gray-400 focus:ring-blue-500 focus:border-blue-500',
+      'bg-gray-800 border-gray-600 text-white placeholder-gray-400',
     error:
-      'bg-red-50 border-red-300 text-red-900 placeholder-red-400 focus:ring-red-500 focus:border-red-500',
+      'bg-red-50 border-red-300 text-red-900 placeholder-red-400',
   };
 
   // Size classes
@@ -61,18 +62,24 @@ export default function Input({
   // Combine all classes
   const inputClasses = `${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${className}`;
 
+  // Si hay estilos inline, quitar la clase border-neutral-border para evitar conflictos
+  const finalClasses = style && (style as any).borderColor 
+    ? inputClasses.replace('border-neutral-border', '')
+    : inputClasses;
+
   return (
     <input
       type={type}
       id={id}
       name={name}
-      className={inputClasses}
+      className={finalClasses}
       placeholder={placeholder}
       value={value}
       onChange={onChange}
       disabled={disabled}
       required={required}
       title={title}
+      style={style}
       {...rest}
     />
   );

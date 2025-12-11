@@ -489,7 +489,7 @@ function TeamRow({ row, onChange, onRemove, canEdit, allowedRoles, groupKey = 'b
             <div className={`absolute top-full left-0 mt-1 w-full border border-neutral-border rounded-lg shadow-lg z-50 overflow-y-auto max-h-60 ${
               theme === 'light' ? 'bg-white' : 'bg-neutral-panel'
             }`}>
-              {allowedRoles.map((r: AnyRecord) => (
+            {allowedRoles.map((r: AnyRecord) => (
                 <button
                   key={r.code}
                   type='button'
@@ -514,9 +514,9 @@ function TeamRow({ row, onChange, onRemove, canEdit, allowedRoles, groupKey = 'b
                       : 'inherit',
                   }}
                 >
-                  {r.label}
+                {r.label}
                 </button>
-              ))}
+            ))}
             </div>
           )}
         </div>

@@ -140,34 +140,34 @@ export default function NecesidadesTab({ project }: NecesidadesTabProps) {
           const planDay: AnyRecord = (w.days && (w.days as AnyRecord[])[i]) || {};
 
           // Sincronizar equipo técnico desde planificación (siempre, incluso si está vacío o sin nombre)
-          day.crewList = Array.isArray(planDay.team)
-            ? (planDay.team as AnyRecord[])
-                .map(m => ({
-                  role: (m?.role || '').toUpperCase(),
-                  name: (m?.name || '').trim(),
-                }))
+            day.crewList = Array.isArray(planDay.team)
+              ? (planDay.team as AnyRecord[])
+                  .map(m => ({
+                    role: (m?.role || '').toUpperCase(),
+                    name: (m?.name || '').trim(),
+                  }))
                 .filter(m => m.role || m.name) // Incluir si tiene rol O nombre
-            : [];
+              : [];
           
           // Sincronizar equipo prelight desde planificación (siempre, incluso si está vacío o sin nombre)
-          day.preList = Array.isArray(planDay.prelight)
-            ? (planDay.prelight as AnyRecord[])
-                .map(m => ({
-                  role: (m?.role || '').toUpperCase(),
-                  name: (m?.name || '').trim(),
-                }))
+            day.preList = Array.isArray(planDay.prelight)
+              ? (planDay.prelight as AnyRecord[])
+                  .map(m => ({
+                    role: (m?.role || '').toUpperCase(),
+                    name: (m?.name || '').trim(),
+                  }))
                 .filter(m => m.role || m.name) // Incluir si tiene rol O nombre
-            : [];
+              : [];
           
           // Sincronizar equipo recogida desde planificación (siempre, incluso si está vacío o sin nombre)
-          day.pickList = Array.isArray(planDay.pickup)
-            ? (planDay.pickup as AnyRecord[])
-                .map(m => ({
-                  role: (m?.role || '').toUpperCase(),
-                  name: (m?.name || '').trim(),
-                }))
+            day.pickList = Array.isArray(planDay.pickup)
+              ? (planDay.pickup as AnyRecord[])
+                  .map(m => ({
+                    role: (m?.role || '').toUpperCase(),
+                    name: (m?.name || '').trim(),
+                  }))
                 .filter(m => m.role || m.name) // Incluir si tiene rol O nombre
-            : [];
+              : [];
 
           // Sincronizar localización desde planificación (siempre, incluso si está vacío)
           if (planDay.loc !== undefined) {

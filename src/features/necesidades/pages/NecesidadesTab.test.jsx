@@ -120,18 +120,18 @@ describe('NecesidadesTab (smoke)', () => {
         // If component doesn't render, that's okay for this test
       });
 
-      const exportAllBtn = await screen.findByRole('button', {
-        name: /PDF Entero/i,
+    const exportAllBtn = await screen.findByRole('button', {
+      name: /PDF Entero/i,
       }).catch(() => null);
       
       if (exportAllBtn) {
-        expect(exportAllBtn).toBeInTheDocument();
-        fireEvent.click(exportAllBtn);
+    expect(exportAllBtn).toBeInTheDocument();
+    fireEvent.click(exportAllBtn);
       }
 
       const exportWeekBtn = await screen.findByTitle('Exportar semana PDF').catch(() => null);
       if (exportWeekBtn) {
-        fireEvent.click(exportWeekBtn);
+    fireEvent.click(exportWeekBtn);
       }
     } catch (error) {
       // If there's a hooks error, skip this test for now

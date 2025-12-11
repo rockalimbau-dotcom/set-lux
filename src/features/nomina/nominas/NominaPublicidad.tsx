@@ -320,7 +320,7 @@ export default function NominaPublicidad({ project }: NominaPublicidadProps) {
         }
         
         if (!isWorking) continue;
-        
+          
         // Contar por tipo de día según planificación
         const dayType = day?.tipo || '';
         if (dayType === 'Rodaje') {
@@ -339,14 +339,14 @@ export default function NominaPublicidad({ project }: NominaPublicidadProps) {
           localizar += 1;
           // No contar en workedDays porque tiene su propia columna
         } else if (dayType === 'Rodaje Festivo') {
-          holidayDays += 1;
+            holidayDays += 1;
           // Rodaje Festivo no cuenta en workedDays (tiene su propia columna)
-        }
-        
+          }
+          
         // Mantener compatibilidad con código existente
-        if (wantedSuffix === 'P') workedPre += 1;
-        else if (wantedSuffix === 'R') workedPick += 1;
-        else workedBase += 1;
+          if (wantedSuffix === 'P') workedPre += 1;
+          else if (wantedSuffix === 'R') workedPick += 1;
+          else workedBase += 1;
       }
     }
     return { 

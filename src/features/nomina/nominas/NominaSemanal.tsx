@@ -311,7 +311,7 @@ export default function NominaSemanal({ project }: NominaSemanalProps) {
         }
         
         if (!isWorking) continue;
-        
+          
         // Contar por tipo de día según planificación
         const dayType = day?.tipo || '';
         if (dayType === 'Rodaje') {
@@ -332,13 +332,13 @@ export default function NominaSemanal({ project }: NominaSemanalProps) {
           workedDays += 1;
         } else if (dayType === 'Rodaje Festivo') {
           rodajeFestivo += 1;
-          holidayDays += 1;
-        }
-        
+            holidayDays += 1;
+          }
+          
         // Mantener compatibilidad con código existente
-        if (wantedSuffix === 'P') workedPre += 1;
-        else if (wantedSuffix === 'R') workedPick += 1;
-        else workedBase += 1;
+          if (wantedSuffix === 'P') workedPre += 1;
+          else if (wantedSuffix === 'R') workedPick += 1;
+          else workedBase += 1;
       }
     }
     return { 
