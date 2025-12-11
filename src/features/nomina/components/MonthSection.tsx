@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect, useCallback } from 'react';
+import React, { useMemo, useEffect, useCallback, useState } from 'react';
 import { Th, Td } from '@shared/components';
 import { useLocalStorage } from '@shared/hooks/useLocalStorage';
 import { storage } from '@shared/services/localStorage.service';
@@ -116,94 +116,90 @@ function MonthSection({
     return `reportes_dateRange_${base}_${projectMode}_${monthKey}`;
   }, [project?.id, project?.nombre, projectMode, monthKey]);
   
-  // Leer fechas desde las mismas claves que reportes
-  // useLocalStorage ya lee del localStorage automáticamente, pero necesitamos forzar la lectura cuando cambia la clave
-  const [dateFrom, setDateFrom] = useLocalStorage<string>(`${dateRangeKey}_from`, '');
-  const [dateTo, setDateTo] = useLocalStorage<string>(`${dateRangeKey}_to`, '');
+  // Función simple para leer valores de localStorage (useLocalStorage guarda como JSON string)
+  const readStorageValue = useCallback((key: string): string => {
+    const stored = storage.getString(key);
+    if (stored) {
+      try {
+        return JSON.parse(stored);
+      } catch {
+        return stored;
+      }
+    }
+    return '';
+  }, []);
   
-  // Función para leer y actualizar fechas desde localStorage
-  const syncDatesFromStorage = useCallback(() => {
-    // Leer directamente del localStorage (useLocalStorage guarda como JSON string)
-    const storedFromRaw = storage.getString(`${dateRangeKey}_from`);
-    const storedToRaw = storage.getString(`${dateRangeKey}_to`);
-    
-    // Parsear los valores JSON
-    let storedFrom = '';
-    let storedTo = '';
-    
-    if (storedFromRaw !== null) {
+  // Leer fechas directamente de localStorage (las mismas claves que usa Reportes)
+  const [dateFrom, setDateFrom] = useState<string>(() => {
+    const stored = storage.getString(`${dateRangeKey}_from`);
+    if (stored) {
       try {
-        storedFrom = JSON.parse(storedFromRaw);
+        return JSON.parse(stored);
       } catch {
-        storedFrom = storedFromRaw; // Si no es JSON, usar el valor directo
+        return stored;
       }
     }
-    
-    if (storedToRaw !== null) {
+    return '';
+  });
+  
+  const [dateTo, setDateTo] = useState<string>(() => {
+    const stored = storage.getString(`${dateRangeKey}_to`);
+    if (stored) {
       try {
-        storedTo = JSON.parse(storedToRaw);
+        return JSON.parse(stored);
       } catch {
-        storedTo = storedToRaw; // Si no es JSON, usar el valor directo
+        return stored;
       }
     }
+    return '';
+  });
+  
+  // Sincronizar con localStorage cuando cambia la clave
+  useEffect(() => {
+    const keyFrom = `${dateRangeKey}_from`;
+    const keyTo = `${dateRangeKey}_to`;
+    const storedFrom = readStorageValue(keyFrom);
+    const storedTo = readStorageValue(keyTo);
     
-    // Actualizar solo si hay valores y son diferentes
-    if (storedFrom && storedFrom !== dateFrom) {
+    if (storedFrom) {
       setDateFrom(storedFrom);
     }
-    if (storedTo && storedTo !== dateTo) {
+    if (storedTo) {
       setDateTo(storedTo);
     }
-  }, [dateRangeKey, dateFrom, dateTo, setDateFrom, setDateTo]);
+  }, [dateRangeKey, readStorageValue]);
   
-  // Sincronizar con valores existentes cuando cambia la clave o al montar
-  // Esto asegura que si Reportes ya tiene fechas guardadas (automáticamente o manualmente), se muestren en Nómina
+  // Verificar periódicamente por si Reportes guarda las fechas después
   useEffect(() => {
-    // Sincronizar inmediatamente al montar o cuando cambia la clave
-    syncDatesFromStorage();
-    
-    // También verificar periódicamente por si Reportes guarda las fechas después de que Nómina se monta
-    // Esto es necesario porque cuando Reportes calcula fechas automáticamente, puede que Nómina ya esté montado
     const interval = setInterval(() => {
-      syncDatesFromStorage();
-    }, 1000); // Verificar cada segundo
-    
-    return () => {
-      clearInterval(interval);
-    };
-  }, [dateRangeKey, syncDatesFromStorage]);
-  
-  // Escuchar cambios en localStorage desde reportes (CustomEvent)
-  useEffect(() => {
-    const handleStorageChange = (e: CustomEvent) => {
-      const { key, value } = e.detail || {};
-      if (key === `${dateRangeKey}_from`) {
-        setDateFrom(value || '');
-      } else if (key === `${dateRangeKey}_to`) {
-        setDateTo(value || '');
+      const keyFrom = `${dateRangeKey}_from`;
+      const keyTo = `${dateRangeKey}_to`;
+      const storedFrom = readStorageValue(keyFrom);
+      const storedTo = readStorageValue(keyTo);
+      
+      if (storedFrom && storedFrom !== dateFrom) {
+        setDateFrom(storedFrom);
       }
-    };
-    
-    window.addEventListener('localStorageChange', handleStorageChange as EventListener);
-    return () => {
-      window.removeEventListener('localStorageChange', handleStorageChange as EventListener);
-    };
-  }, [dateRangeKey, setDateFrom, setDateTo]);
-  
-  // También escuchar eventos nativos de storage del navegador (para cambios desde otras pestañas o componentes)
-  useEffect(() => {
-    const handleNativeStorage = (e: StorageEvent) => {
-      if (e.key === `${dateRangeKey}_from` || e.key === `${dateRangeKey}_to`) {
-        // Cuando cambia el storage nativo, sincronizar
-        syncDatesFromStorage();
+      if (storedTo && storedTo !== dateTo) {
+        setDateTo(storedTo);
       }
-    };
+    }, 300);
     
-    window.addEventListener('storage', handleNativeStorage);
-    return () => {
-      window.removeEventListener('storage', handleNativeStorage);
-    };
-  }, [dateRangeKey, syncDatesFromStorage]);
+    return () => clearInterval(interval);
+  }, [dateRangeKey, readStorageValue, dateFrom, dateTo]);
+  
+  // Guardar en localStorage cuando cambian (para persistencia si el usuario las modifica)
+  useEffect(() => {
+    if (dateFrom) {
+      storage.setString(`${dateRangeKey}_from`, JSON.stringify(dateFrom));
+    }
+  }, [dateRangeKey, dateFrom]);
+  
+  useEffect(() => {
+    if (dateTo) {
+      storage.setString(`${dateRangeKey}_to`, JSON.stringify(dateTo));
+    }
+  }, [dateRangeKey, dateTo]);
 
   // Calcular días del mes (30 o 31) para nómina mensual
   const getDaysInMonth = (monthKey: string): number => {

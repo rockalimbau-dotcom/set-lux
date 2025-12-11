@@ -357,14 +357,21 @@ function MonthReportGroup({
   const [dateTo, setDateTo] = useLocalStorage<string>(`${dateRangeKey}_to`, defaultTo);
 
   // Actualizar fechas si los valores por defecto cambian y las fechas actuales están vacías
+  // También verificar si están en localStorage, porque useLocalStorage puede inicializar el estado sin guardar
   useEffect(() => {
-    if (!dateFrom && defaultFrom) {
+    const keyFrom = `${dateRangeKey}_from`;
+    const keyTo = `${dateRangeKey}_to`;
+    const storedFrom = storage.getString(keyFrom);
+    const storedTo = storage.getString(keyTo);
+    
+    // Si hay valores por defecto y no están en localStorage, guardarlos
+    if (defaultFrom && !storedFrom) {
       setDateFrom(defaultFrom);
     }
-    if (!dateTo && defaultTo) {
+    if (defaultTo && !storedTo) {
       setDateTo(defaultTo);
     }
-  }, [defaultFrom, defaultTo, dateFrom, dateTo, setDateFrom, setDateTo]);
+  }, [defaultFrom, defaultTo, dateFrom, dateTo, setDateFrom, setDateTo, dateRangeKey]);
 
   // Escuchar cambios en localStorage desde otros componentes (mes anterior)
   useEffect(() => {
