@@ -7,6 +7,7 @@ import { weekISOdays } from '../utils/plan';
 import DietasSummary from './DietasSummary.jsx';
 import ExtrasSummary from './ExtrasSummary.jsx';
 import WorkedDaysSummary from './WorkedDaysSummary.tsx';
+import CargaDescargaSummary from './CargaDescargaSummary.tsx';
 
 type RolePrices = {
   getForRole: (roleCode: string, baseRoleCode?: string | null) => {
@@ -79,12 +80,12 @@ interface MonthSectionProps {
     workedPre: number; 
     workedPick: number; 
     holidayDays: number;
-    rodaje: number;
-    travelDay: number;
-    carga: number;
-    descarga: number;
-    localizar: number;
-    rodajeFestivo: number;
+    rodaje?: number;
+    travelDay?: number;
+    carga?: number;
+    descarga?: number;
+    localizar?: number;
+    rodajeFestivo?: number;
   };
   monthLabelEs: (key: string, withYear?: boolean) => string;
   ROLE_COLORS: Record<string, { bg: string; fg: string }>;
@@ -394,12 +395,17 @@ function MonthSection({
   const enriched = useMemo(() => {
     return rows.map(r => {
       const person = { role: r.role, name: r.name };
-      const { workedDays, travelDays, workedBase, workedPre, workedPick, holidayDays, rodaje, travelDay, carga, descarga, localizar, rodajeFestivo } =
-        calcWorkedBreakdown(weeksForMonth, filterISO, person);
+      const breakdown = calcWorkedBreakdown(weeksForMonth, filterISO, person);
+      const { workedDays, travelDays, workedBase, workedPre, workedPick, holidayDays, rodaje, travelDay, carga, descarga, localizar, rodajeFestivo } = breakdown;
       
       // Para mensual, "Total días trabajados" debe ser desde el primer día trabajado hasta el último día trabajado
       // (incluyendo rodaje + descansos en ese rango)
-      const totalDiasTrabajados = projectMode === 'mensual' ? calculateWorkingDaysInMonth : workedDays;
+      // Para publicidad, solo contar Rodaje en días trabajados
+      const totalDiasTrabajados = projectMode === 'mensual' 
+        ? calculateWorkingDaysInMonth 
+        : projectMode === 'publicidad' 
+          ? (rodaje || 0)
+          : workedDays;
 
       const keyNoPR = `${stripPR(r.role)}__${r.name}`;
       const baseRoleCode = stripPR(r.role);
@@ -485,18 +491,21 @@ function MonthSection({
       let _totalTrans: number;
       let _totalKm: number;
       let _totalBruto: number;
+      let _totalLocalizacion: number = 0;
+      let _totalCargaDescarga: number = 0;
 
       if (projectMode === 'publicidad') {
         // Cálculo específico para publicidad
-        // Total días = (carga/descarga × precio) + (localización × precio) + (rodaje × precio jornada)
-        const cargaDescargaDays = workedPre + workedPick;
-        const localizacionDays = 0; // TODO: Necesitamos datos de localización técnica
-        const rodajeDays = workedBase;
+        // Total días = solo rodaje × precio jornada (carga/descarga y localización tienen sus propias columnas)
+        const rodajeDays = rodaje || 0;
+        totalDias = rodajeDays * (pr.jornada || 0);
         
-        totalDias = 
-          (cargaDescargaDays * (pr.cargaDescarga || 0)) +
-          (localizacionDays * (pr.localizacionTecnica || 0)) +
-          (rodajeDays * (pr.jornada || 0));
+        // Calcular totales para las nuevas columnas
+        const localizacionDays = localizar || 0;
+        const cargaDays = carga || 0;
+        const descargaDays = descarga || 0;
+        _totalLocalizacion = localizacionDays * (pr.localizacionTecnica || 0);
+        _totalCargaDescarga = (cargaDays + descargaDays) * (pr.cargaDescarga || 0);
         
         totalTravel = travelDays * (pr.travelDay || 0);
         totalHolidays = holidayDays * (pr.holidayDay || 0);
@@ -515,6 +524,8 @@ function MonthSection({
         
         _totalBruto =
           totalDias +
+          _totalLocalizacion +
+          _totalCargaDescarga +
           totalTravel +
           totalHolidays +
           _totalExtras +
@@ -599,6 +610,11 @@ function MonthSection({
         _totalTrans,
         _totalKm,
         _totalBruto,
+        _totalLocalizacion: projectMode === 'publicidad' ? _totalLocalizacion : 0,
+        _totalCargaDescarga: projectMode === 'publicidad' ? _totalCargaDescarga : 0,
+        _localizarDays: projectMode === 'publicidad' ? (localizar || 0) : 0,
+        _cargaDays: projectMode === 'publicidad' ? (carga || 0) : 0,
+        _descargaDays: projectMode === 'publicidad' ? (descarga || 0) : 0,
         _dietasLabel: dietasLabelParts.join(' · ') || '—',
         _pr: pr,
       };
@@ -618,6 +634,17 @@ function MonthSection({
     calculateWorkingDaysInMonth,
     priceDays,
   ]);
+
+  // Verificar si hay datos de localización o carga/descarga para mostrar columnas solo cuando haya datos
+  const hasLocalizacionData = React.useMemo(() => {
+    if (projectMode !== 'publicidad') return false;
+    return enriched.some(r => (r._localizarDays || 0) > 0 || (r._totalLocalizacion || 0) > 0);
+  }, [enriched, projectMode]);
+
+  const hasCargaDescargaData = React.useMemo(() => {
+    if (projectMode !== 'publicidad') return false;
+    return enriched.some(r => (r._cargaDays || 0) > 0 || (r._descargaDays || 0) > 0 || (r._totalCargaDescarga || 0) > 0);
+  }, [enriched, projectMode]);
 
   // Estado para filas seleccionadas para exportación (por defecto todas seleccionadas)
   const selectedRowsKey = `${persistKey}_selectedRows`;
@@ -819,6 +846,10 @@ function MonthSection({
                 <Th align='center'>Persona</Th>
                 <Th align='center'>Días trabajados</Th>
                 <Th align='center'>Total días</Th>
+                {hasLocalizacionData && <Th align='center'>Días Localización Técnica</Th>}
+                {hasLocalizacionData && <Th align='center'>Total Días Localización Técnica</Th>}
+                {hasCargaDescargaData && <Th align='center'>Días Carga / Descarga</Th>}
+                {hasCargaDescargaData && <Th align='center'>Total días Carga / Descarga</Th>}
                 {columnVisibility.holidays && <Th align='center'>Días festivos</Th>}
                 {columnVisibility.holidays && <Th align='center'>Total días festivos</Th>}
                 {columnVisibility.travel && <Th align='center'>Días Travel Day</Th>}
@@ -862,7 +893,7 @@ function MonthSection({
                         />
                       </div>
                     </Td>
-                    <Td align='center' className='text-center'>
+                    <Td align='middle' className='text-center'>
                       <div className='flex justify-center'>
                         <span
                           className='inline-flex items-center gap-2 px-2 py-1 rounded-lg border border-neutral-border bg-black/40'
@@ -879,29 +910,58 @@ function MonthSection({
                       </div>
                     </Td>
 
-                    <Td align='center' className='text-center'>
+                    <Td align='middle' className='text-center'>
                       <div className='flex flex-col items-center'>
                         {r._worked > 0 && (
                           <div className='text-right font-medium text-zinc-100 mb-1'>{r._worked}</div>
                         )}
-                        <WorkedDaysSummary
-                          carga={r._carga || 0}
-                          descarga={r._descarga || 0}
-                          localizar={r._localizar || 0}
-                          rodaje={r._rodaje || 0}
-                        />
+                        {projectMode !== 'publicidad' && (
+                          <WorkedDaysSummary
+                            carga={r._carga || 0}
+                            descarga={r._descarga || 0}
+                            localizar={r._localizar || 0}
+                            rodaje={r._rodaje || 0}
+                          />
+                        )}
                       </div>
                     </Td>
-                    <Td align='center' className='text-center'>{displayValue(r._totalDias, 2)}</Td>
+                    <Td align='middle' className='text-center'>{displayValue(r._totalDias, 2)}</Td>
 
-                    {columnVisibility.holidays && <Td align='center' className='text-center'>{displayValue(r._holidays)}</Td>}
-                    {columnVisibility.holidays && <Td align='center' className='text-center'>{displayValue(r._totalHolidays, 2)}</Td>}
+                    {hasLocalizacionData && (
+                      <Td align='middle' className='text-center'>
+                        {r._localizarDays > 0 ? r._localizarDays : '—'}
+                      </Td>
+                    )}
+                    {hasLocalizacionData && (
+                      <Td align='middle' className='text-center'>{displayValue(r._totalLocalizacion, 2)}</Td>
+                    )}
+                    {hasCargaDescargaData && (
+                      <Td align='middle' className='text-center'>
+                        <div className='flex flex-col items-center'>
+                          {(r._cargaDays || 0) + (r._descargaDays || 0) > 0 && (
+                            <div className='text-right font-medium text-zinc-100 mb-1'>
+                              {(r._cargaDays || 0) + (r._descargaDays || 0)}
+                            </div>
+                          )}
+                          <CargaDescargaSummary
+                            carga={r._cargaDays || 0}
+                            descarga={r._descargaDays || 0}
+                          />
+                        </div>
+                      </Td>
+                    )}
+                    {hasCargaDescargaData && (
+                      <Td align='middle' className='text-center'>{displayValue(r._totalCargaDescarga, 2)}</Td>
+                    )}
 
-                    {columnVisibility.travel && <Td align='center' className='text-center'>{displayValue(r._travel)}</Td>}
-                    {columnVisibility.travel && <Td align='center' className='text-center'>{displayValue(r._totalTravel, 2)}</Td>}
+                    {columnVisibility.holidays && <Td align='middle' className='text-center'>{displayValue(r._holidays)}</Td>}
+                    {columnVisibility.holidays && <Td align='middle' className='text-center'>{displayValue(r._totalHolidays, 2)}</Td>}
+
+                    {columnVisibility.travel && <Td align='middle' className='text-center'>{displayValue(r._travel)}</Td>}
+                    {columnVisibility.travel && <Td align='middle' className='text-center'>{displayValue(r._totalTravel, 2)}</Td>}
 
                     {columnVisibility.extras && (
-                      <Td align='center' className='text-center'>
+                      <Td align='middle' className='text-center'>
                         <div className='flex justify-center'>
                           <ExtrasSummary
                             horasExtra={r.horasExtra}
@@ -912,10 +972,10 @@ function MonthSection({
                         </div>
                       </Td>
                     )}
-                    {columnVisibility.extras && <Td align='center' className='text-center'>{displayValue(r._totalExtras, 2)}</Td>}
+                    {columnVisibility.extras && <Td align='middle' className='text-center'>{displayValue(r._totalExtras, 2)}</Td>}
 
                     {columnVisibility.dietas && (
-                      <Td align='center' className='text-center'>
+                      <Td align='middle' className='text-center'>
                         <div className='flex justify-center'>
                           <DietasSummary
                             dietasCount={r.dietasCount}
@@ -924,19 +984,19 @@ function MonthSection({
                         </div>
                       </Td>
                     )}
-                    {columnVisibility.dietas && <Td align='center' className='text-center'>{displayValue(r._totalDietas, 2)}</Td>}
+                    {columnVisibility.dietas && <Td align='middle' className='text-center'>{displayValue(r._totalDietas, 2)}</Td>}
 
-                    {columnVisibility.transporte && <Td align='center' className='text-center'>{displayValue(r.transporte)}</Td>}
-                    {columnVisibility.transporte && <Td align='center' className='text-center'>{displayValue(r._totalTrans, 2)}</Td>}
+                    {columnVisibility.transporte && <Td align='middle' className='text-center'>{displayValue(r.transporte)}</Td>}
+                    {columnVisibility.transporte && <Td align='middle' className='text-center'>{displayValue(r._totalTrans, 2)}</Td>}
 
-                    {columnVisibility.km && <Td align='center' className='text-center'>{displayValue(r.km, 1)}</Td>}
-                    {columnVisibility.km && <Td align='center' className='text-center'>{displayValue(r._totalKm, 2)}</Td>}
+                    {columnVisibility.km && <Td align='middle' className='text-center'>{displayValue(r.km, 1)}</Td>}
+                    {columnVisibility.km && <Td align='middle' className='text-center'>{displayValue(r._totalKm, 2)}</Td>}
 
-                    <Td align='center' className='text-center font-semibold'>
+                    <Td align='middle' className='text-center font-semibold'>
                       {displayValue(r._totalBruto, 2)}
                     </Td>
 
-                    <Td align='center' className='text-center'>
+                    <Td align='middle' className='text-center'>
                       <div className='flex items-center justify-center gap-2'>
                         <input
                           type='checkbox'

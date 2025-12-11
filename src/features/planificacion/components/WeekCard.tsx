@@ -309,7 +309,7 @@ function WeekCard({
                   }, [dropdownState.isOpen, dropdownKey]);
 
                   return (
-                    <Td key={i} align='top'>
+                    <Td key={i} align='middle'>
                       <div className='w-full relative' ref={dropdownRef}>
                         <button
                           type='button'
@@ -379,7 +379,7 @@ function WeekCard({
 
               <Row label='Horario'>
                 {week.days.map((day: AnyRecord, i: number) => (
-                  <Td key={i} align='top'>
+                  <Td key={i} align='middle'>
                     <div className='flex gap-2 justify-center'>
                       <input
                         type='time'
@@ -410,7 +410,7 @@ function WeekCard({
 
               <Row label='Corte cámara'>
                 {week.days.map((day: AnyRecord, i: number) => (
-                  <Td key={i} align='top'>
+                  <Td key={i} align='middle'>
                     <input
                       type='time'
                       value={day.cut || ''}
@@ -426,7 +426,7 @@ function WeekCard({
 
               <Row label='Localización'>
                 {week.days.map((day: AnyRecord, i: number) => (
-                  <Td key={i} align='top'>
+                  <Td key={i} align='middle'>
                     <input
                       type='text'
                       placeholder={
@@ -459,7 +459,7 @@ function WeekCard({
                     uniqueByPair([...basePool, ...poolRefs(reinforcements)])
                   );
                   return (
-                    <Td key={i} align='top'>
+                    <Td key={i} align='middle'>
                       <div className='flex flex-wrap gap-2 justify-center'>
                         {(day.team || []).map((m: AnyRecord, idx: number) => (
                           <span
@@ -599,7 +599,7 @@ function WeekCard({
                   ]);
                   const options = missingByPair(day.prelight, prePool);
                   return (
-                    <Td key={i} align='top'>
+                    <Td key={i} align='middle'>
                       {preOpen && (
                         <div className='flex flex-col gap-2'>
                           <div className='flex gap-2 justify-center'>
@@ -782,7 +782,7 @@ function WeekCard({
                   ]);
                   const options = missingByPair(day.pickup, pickPool);
                   return (
-                    <Td key={i} align='top'>
+                    <Td key={i} align='middle'>
                       {pickOpen && (
                         <div className='flex flex-col gap-2'>
                           <div className='flex gap-2 justify-center'>
@@ -948,7 +948,7 @@ function WeekCard({
 
               <Row label='Incidencias'>
                 {week.days.map((day: AnyRecord, i: number) => (
-                  <Td key={i} align='top'>
+                  <Td key={i} align='middle'>
                     <input
                       type='text'
                       value={day.issue || ''}

@@ -34,7 +34,7 @@ export default function ListRow({ label, listKey, notesKey, weekId, weekObj, con
         const day: AnyRecord = (weekObj as AnyRecord).days?.[i] || {};
         const list = Array.isArray(day[listKey]) ? (day[listKey] as AnyRecord[]) : [];
         return (
-          <Td key={d.key} align='center' className='text-center'>
+          <Td key={d.key} align='middle' className='text-center'>
             <div className='flex flex-wrap gap-2 mb-2 justify-center'>
               {list.length === 0 && (
                 <span className='text-xs text-zinc-400'>—</span>

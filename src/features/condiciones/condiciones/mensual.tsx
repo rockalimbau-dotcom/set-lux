@@ -459,7 +459,7 @@ function CondicionesMensual({ project, onChange = () => {}, onRegisterExport }: 
           <tbody>
             {roles.map((role: string) => (
               <tr key={role} className='relative'>
-                <Td className='font-semibold whitespace-nowrap' align='top'>
+                <Td className='font-semibold whitespace-nowrap' align='middle'>
                   <div className='flex items-center gap-1'>
                     <button
                       onClick={() => {
@@ -476,7 +476,7 @@ function CondicionesMensual({ project, onChange = () => {}, onRegisterExport }: 
                   </div>
                 </Td>
                 {PRICE_HEADERS.map(h => (
-                  <Td key={h} align='top'>
+                  <Td key={h} align='middle'>
                     <input
                       type='text'
                       value={model.prices?.[role]?.[h] ?? ''}
