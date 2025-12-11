@@ -607,7 +607,7 @@ function MonthReportGroup({
               {horasExtraTipo}
             </button>
             {isDropdownOpen && (
-              <div className={`absolute top-full left-0 mt-1 w-full min-w-[280px] border border-neutral-border rounded-lg shadow-lg z-50 overflow-hidden ${
+              <div className={`absolute top-full left-0 mt-1 w-full min-w-[280px] border border-neutral-border rounded-lg shadow-lg z-50 overflow-y-auto max-h-60 ${
                 theme === 'light' ? 'bg-white' : 'bg-neutral-panel'
               }`}>
                 {horasExtraOpciones.map(opcion => (

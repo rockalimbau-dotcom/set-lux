@@ -267,7 +267,7 @@ function NewProjectModal({ onClose, onCreate }: NewProjectModalProps) {
                 {estadoLabel}
               </button>
               {estadoDropdown.isOpen && (
-                <div className={`absolute top-full left-0 mt-1 w-full border border-neutral-border rounded-lg shadow-lg z-50 overflow-hidden ${
+                <div className={`absolute top-full left-0 mt-1 w-full border border-neutral-border rounded-lg shadow-lg z-50 overflow-y-auto max-h-60 ${
                   theme === 'light' ? 'bg-white' : 'bg-neutral-panel'
                 }`}>
                   {['Activo', 'Cerrado'].map(opcion => (
@@ -331,7 +331,7 @@ function NewProjectModal({ onClose, onCreate }: NewProjectModalProps) {
                 {condicionesLabel}
               </button>
               {condicionesDropdown.isOpen && (
-                <div className={`absolute top-full left-0 mt-1 w-full border border-neutral-border rounded-lg shadow-lg z-50 overflow-hidden ${
+                <div className={`absolute top-full left-0 mt-1 w-full border border-neutral-border rounded-lg shadow-lg z-50 overflow-y-auto max-h-60 ${
                   theme === 'light' ? 'bg-white' : 'bg-neutral-panel'
                 }`}>
                   {[
@@ -399,7 +399,7 @@ function NewProjectModal({ onClose, onCreate }: NewProjectModalProps) {
                 {paisLabel}
               </button>
               {paisDropdown.isOpen && (
-                <div className={`absolute top-full left-0 mt-1 w-full border border-neutral-border rounded-lg shadow-lg z-50 overflow-hidden ${
+                <div className={`absolute top-full left-0 mt-1 w-full border border-neutral-border rounded-lg shadow-lg z-50 overflow-y-auto max-h-60 ${
                   theme === 'light' ? 'bg-white' : 'bg-neutral-panel'
                 }`}>
                   {COUNTRIES.map(c => (
@@ -464,7 +464,7 @@ function NewProjectModal({ onClose, onCreate }: NewProjectModalProps) {
                   {regionLabel}
                 </button>
                 {regionDropdown.isOpen && (
-                  <div className={`absolute top-full left-0 mt-1 w-full border border-neutral-border rounded-lg shadow-lg z-50 overflow-hidden ${
+                  <div className={`absolute top-full left-0 mt-1 w-full border border-neutral-border rounded-lg shadow-lg z-50 overflow-y-auto max-h-60 ${
                     theme === 'light' ? 'bg-white' : 'bg-neutral-panel'
                   }`}>
                     <button
@@ -751,7 +751,7 @@ function EditProjectModal({ project, onClose, onSave }: EditProjectModalProps) {
                 {estadoLabel}
               </button>
               {estadoDropdown.isOpen && (
-                <div className={`absolute top-full left-0 mt-1 w-full border border-neutral-border rounded-lg shadow-lg z-50 overflow-hidden ${
+                <div className={`absolute top-full left-0 mt-1 w-full border border-neutral-border rounded-lg shadow-lg z-50 overflow-y-auto max-h-60 ${
                   theme === 'light' ? 'bg-white' : 'bg-neutral-panel'
                 }`}>
                   {['Activo', 'Cerrado'].map(opcion => (
@@ -816,7 +816,7 @@ function EditProjectModal({ project, onClose, onSave }: EditProjectModalProps) {
                 {condicionesLabel}
               </button>
               {condicionesDropdown.isOpen && (
-                <div className={`absolute top-full left-0 mt-1 w-full border border-neutral-border rounded-lg shadow-lg z-50 overflow-hidden ${
+                <div className={`absolute top-full left-0 mt-1 w-full border border-neutral-border rounded-lg shadow-lg z-50 overflow-y-auto max-h-60 ${
                   theme === 'light' ? 'bg-white' : 'bg-neutral-panel'
                 }`}>
                   {[
@@ -884,7 +884,7 @@ function EditProjectModal({ project, onClose, onSave }: EditProjectModalProps) {
                 {paisLabel}
               </button>
               {paisDropdown.isOpen && (
-                <div className={`absolute top-full left-0 mt-1 w-full border border-neutral-border rounded-lg shadow-lg z-50 overflow-hidden ${
+                <div className={`absolute top-full left-0 mt-1 w-full border border-neutral-border rounded-lg shadow-lg z-50 overflow-y-auto max-h-60 ${
                   theme === 'light' ? 'bg-white' : 'bg-neutral-panel'
                 }`}>
                   {COUNTRIES.map(c => (
@@ -949,7 +949,7 @@ function EditProjectModal({ project, onClose, onSave }: EditProjectModalProps) {
                   {regionLabel}
                 </button>
                 {regionDropdown.isOpen && (
-                  <div className={`absolute top-full left-0 mt-1 w-full border border-neutral-border rounded-lg shadow-lg z-50 overflow-hidden ${
+                  <div className={`absolute top-full left-0 mt-1 w-full border border-neutral-border rounded-lg shadow-lg z-50 overflow-y-auto max-h-60 ${
                     theme === 'light' ? 'bg-white' : 'bg-neutral-panel'
                   }`}>
                     <button

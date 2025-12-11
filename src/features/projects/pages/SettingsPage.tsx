@@ -143,7 +143,7 @@ export default function SettingsPage() {
                   {themeLabel}
                 </button>
                 {themeDropdown.isOpen && (
-                  <div className={`absolute top-full left-0 mt-1 w-full border border-neutral-border rounded-lg shadow-lg z-50 overflow-hidden ${
+                  <div className={`absolute top-full left-0 mt-1 w-full border border-neutral-border rounded-lg shadow-lg z-50 overflow-y-auto max-h-60 ${
                     currentTheme === 'light' ? 'bg-white' : 'bg-neutral-panel'
                   }`}>
                     {[
@@ -212,7 +212,7 @@ export default function SettingsPage() {
                   {languageLabel}
                 </button>
                 {languageDropdown.isOpen && (
-                  <div className={`absolute top-full left-0 mt-1 w-full border border-neutral-border rounded-lg shadow-lg z-50 overflow-hidden ${
+                  <div className={`absolute top-full left-0 mt-1 w-full border border-neutral-border rounded-lg shadow-lg z-50 overflow-y-auto max-h-60 ${
                     currentTheme === 'light' ? 'bg-white' : 'bg-neutral-panel'
                   }`}>
                     {[

@@ -339,7 +339,7 @@ function WeekCard({
                           {day.tipo || '\u00A0'}
                         </button>
                         {dropdownState.isOpen && (
-                          <div className={`absolute top-full left-0 mt-1 w-full border border-neutral-border rounded-lg shadow-lg z-50 overflow-hidden ${
+                          <div className={`absolute top-full left-0 mt-1 w-full border border-neutral-border rounded-lg shadow-lg z-50 overflow-y-auto max-h-60 ${
                             theme === 'light' ? 'bg-white' : 'bg-neutral-panel'
                           }`}>
                             {jornadaOptions.map(opt => (
@@ -535,7 +535,7 @@ function WeekCard({
                                 + Añadir
                               </button>
                               {dropdownState.isOpen && (
-                                <div className={`absolute top-full left-0 mt-1 w-full border border-neutral-border rounded-lg shadow-lg z-50 overflow-hidden ${
+                                <div className={`absolute top-full left-0 mt-1 w-full border border-neutral-border rounded-lg shadow-lg z-50 overflow-y-auto max-h-60 ${
                                   theme === 'light' ? 'bg-white' : 'bg-neutral-panel'
                                 }`}>
                                   {options.map((p: AnyRecord, ii: number) => (
@@ -708,7 +708,7 @@ function WeekCard({
                                     + Añadir
                                   </button>
                                   {dropdownState.isOpen && (
-                                    <div className={`absolute top-full left-0 mt-1 w-full border border-neutral-border rounded-lg shadow-lg z-50 overflow-hidden ${
+                                    <div className={`absolute top-full left-0 mt-1 w-full border border-neutral-border rounded-lg shadow-lg z-50 overflow-y-auto max-h-60 ${
                                       theme === 'light' ? 'bg-white' : 'bg-neutral-panel'
                                     }`}>
                                       {options.map((p: AnyRecord, ii: number) => {
@@ -891,7 +891,7 @@ function WeekCard({
                                     + Añadir
                                   </button>
                                   {dropdownState.isOpen && (
-                                    <div className={`absolute top-full left-0 mt-1 w-full border border-neutral-border rounded-lg shadow-lg z-50 overflow-hidden ${
+                                    <div className={`absolute top-full left-0 mt-1 w-full border border-neutral-border rounded-lg shadow-lg z-50 overflow-y-auto max-h-60 ${
                                       theme === 'light' ? 'bg-white' : 'bg-neutral-panel'
                                     }`}>
                                       {options.map((p: AnyRecord, ii: number) => {
