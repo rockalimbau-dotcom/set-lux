@@ -11,16 +11,16 @@ function ReportBlockScheduleRow({ label, semana, valueForISO }: Props) {
   if (!Array.isArray(semana) || semana.length === 0) return null;
   const values = useMemo(() => semana.map(iso => valueForISO(iso)), [semana, valueForISO]);
   return (
-    <tr>
-      <Td className='whitespace-nowrap align-middle'>
-        <div className='text-sm font-semibold text-zinc-200'>{label}</div>
+    <tr className='schedule-row'>
+      <Td className='whitespace-nowrap align-middle bg-white/5' align='middle'>
+        <div className='text-sm font-semibold text-zinc-200 flex items-center'>{label}</div>
       </Td>
       {semana.map((iso, i) => (
-        <Td key={`sched_${label}_${iso}`} className='text-sm font-semibold'>
-          {values[i]}
+        <Td key={`sched_${label}_${iso}`} className='text-sm font-semibold text-center align-middle bg-white/5' align='middle'>
+          <div className='flex items-center justify-center'>{values[i]}</div>
         </Td>
       ))}
-      <Td className='text-center'>&nbsp;</Td>
+      <Td className='text-center align-middle bg-white/5' align='middle'>&nbsp;</Td>
     </tr>
   );
 }

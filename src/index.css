@@ -141,6 +141,11 @@ html input[style*="borderWidth"] {
   border-bottom: 1px solid #e5e7eb !important;
 }
 
+/* Filas de horario (Prelight/Recogida) con el mismo color que el encabezado */
+[data-theme='light'] .phase-content table tr.schedule-row td {
+  background: var(--bg) !important; /* naranja claro del fondo, igual que el encabezado */
+}
+
 [data-theme='light'] .phase-content td {
   background: #fff !important;
   border-bottom: 1px solid var(--bg) !important;
