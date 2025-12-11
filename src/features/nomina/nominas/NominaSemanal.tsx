@@ -255,6 +255,13 @@ export default function NominaSemanal({ project }: NominaSemanalProps) {
     let workedDays = 0;
     let travelDays = 0;
     let holidayDays = 0;
+    // Contadores por tipo de día
+    let rodaje = 0;
+    let travelDay = 0;
+    let carga = 0;
+    let descarga = 0;
+    let localizar = 0;
+    let rodajeFestivo = 0;
 
     const nameEq = (s: string) =>
       String(s || '')
@@ -283,20 +290,12 @@ export default function NominaSemanal({ project }: NominaSemanalProps) {
         
         if ((day?.tipo || '') === 'Descanso') continue;
 
+        // Verificar si la persona está trabajando en este día (en team, prelight o pickup)
+        let isWorking = false;
         if (wantedRole === 'REF') {
           const anyRef = (arr: any[]) =>
             (arr || []).some((m: any) => nameEq(m?.name) && /ref/i.test(String(m?.role || '')));
-          if (!(anyRef(day?.team) || anyRef(day?.prelight) || anyRef(day?.pickup)))
-            continue;
-          
-          // Separar días festivos de días normales
-          if ((day?.tipo || '') === 'Rodaje Festivo') {
-            holidayDays += 1;
-          } else {
-            workedDays += 1;
-          }
-          
-          if ((day?.tipo || '') === 'Travel Day') travelDays += 1;
+          isWorking = anyRef(day?.team) || anyRef(day?.prelight) || anyRef(day?.pickup);
         } else {
           const list =
             wantedSuffix === 'P'
@@ -304,28 +303,58 @@ export default function NominaSemanal({ project }: NominaSemanalProps) {
               : wantedSuffix === 'R'
               ? day?.pickup
               : day?.team;
-          const inBlock = (list || []).some((m: any) => {
+          isWorking = (list || []).some((m: any) => {
             if (!nameEq(m?.name)) return false;
             const mBase = String(m?.role || '').replace(/[PR]$/, '');
             return !m?.role || !wantedBase || mBase === wantedBase;
           });
-          if (!inBlock) continue;
-          
-          // Separar días festivos de días normales
-          if ((day?.tipo || '') === 'Rodaje Festivo') {
-            holidayDays += 1;
-          } else {
-            workedDays += 1;
-          }
-          
-          if (wantedSuffix === 'P') workedPre += 1;
-          else if (wantedSuffix === 'R') workedPick += 1;
-          else workedBase += 1;
-          if ((day?.tipo || '') === 'Travel Day') travelDays += 1;
         }
+        
+        if (!isWorking) continue;
+        
+        // Contar por tipo de día según planificación
+        const dayType = day?.tipo || '';
+        if (dayType === 'Rodaje') {
+          rodaje += 1;
+          workedDays += 1;
+        } else if (dayType === 'Travel Day') {
+          travelDay += 1;
+          travelDays += 1;
+          // No contar en workedDays porque tiene su propia columna
+        } else if (dayType === 'Carga') {
+          carga += 1;
+          workedDays += 1;
+        } else if (dayType === 'Descarga') {
+          descarga += 1;
+          workedDays += 1;
+        } else if (dayType === 'Localizar') {
+          localizar += 1;
+          workedDays += 1;
+        } else if (dayType === 'Rodaje Festivo') {
+          rodajeFestivo += 1;
+          holidayDays += 1;
+        }
+        
+        // Mantener compatibilidad con código existente
+        if (wantedSuffix === 'P') workedPre += 1;
+        else if (wantedSuffix === 'R') workedPick += 1;
+        else workedBase += 1;
       }
     }
-    return { workedDays, travelDays, workedBase, workedPre, workedPick, holidayDays };
+    return { 
+      workedDays, 
+      travelDays, 
+      workedBase, 
+      workedPre, 
+      workedPick, 
+      holidayDays,
+      rodaje,
+      travelDay,
+      carga,
+      descarga,
+      localizar,
+      rodajeFestivo
+    };
   }
 
   return (

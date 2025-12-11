@@ -6,6 +6,7 @@ import { parseYYYYMMDD, monthKeyFromISO, toISO } from '../utils/date';
 import { weekISOdays } from '../utils/plan';
 import DietasSummary from './DietasSummary.jsx';
 import ExtrasSummary from './ExtrasSummary.jsx';
+import WorkedDaysSummary from './WorkedDaysSummary.tsx';
 
 type RolePrices = {
   getForRole: (roleCode: string, baseRoleCode?: string | null) => {
@@ -71,7 +72,20 @@ interface MonthSectionProps {
     weeks: any[],
     filterISO: (iso: string) => boolean,
     person: { role: string; name: string }
-  ) => { workedDays: number; travelDays: number; workedBase: number; workedPre: number; workedPick: number; holidayDays: number };
+  ) => { 
+    workedDays: number; 
+    travelDays: number; 
+    workedBase: number; 
+    workedPre: number; 
+    workedPick: number; 
+    holidayDays: number;
+    rodaje: number;
+    travelDay: number;
+    carga: number;
+    descarga: number;
+    localizar: number;
+    rodajeFestivo: number;
+  };
   monthLabelEs: (key: string, withYear?: boolean) => string;
   ROLE_COLORS: Record<string, { bg: string; fg: string }>;
   roleLabelFromCode: (code: string) => string;
@@ -380,7 +394,7 @@ function MonthSection({
   const enriched = useMemo(() => {
     return rows.map(r => {
       const person = { role: r.role, name: r.name };
-      const { workedDays, travelDays, workedBase, workedPre, workedPick, holidayDays } =
+      const { workedDays, travelDays, workedBase, workedPre, workedPick, holidayDays, rodaje, travelDay, carga, descarga, localizar, rodajeFestivo } =
         calcWorkedBreakdown(weeksForMonth, filterISO, person);
       
       // Para mensual, "Total días trabajados" debe ser desde el primer día trabajado hasta el último día trabajado
@@ -568,6 +582,15 @@ function MonthSection({
         _worked: totalDiasTrabajados, // Para mensual es desde el primer día trabajado hasta el final del mes, para otros es workedDays
         _travel: travelDays,
         _holidays: holidayDays,
+        _workedBase: workedBase, // Días de rodaje (compatibilidad)
+        _workedPre: workedPre, // Días de prelight (compatibilidad)
+        _workedPick: workedPick, // Días de pickup (compatibilidad)
+        _rodaje: rodaje, // Días de tipo "Rodaje"
+        _travelDay: travelDay, // Días de tipo "Travel Day"
+        _carga: carga, // Días de tipo "Carga"
+        _descarga: descarga, // Días de tipo "Descarga"
+        _localizar: localizar, // Días de tipo "Localizar"
+        _rodajeFestivo: rodajeFestivo, // Días de tipo "Rodaje Festivo"
         _totalDias: totalDias,
         _totalTravel: totalTravel,
         _totalHolidays: totalHolidays,
@@ -856,7 +879,19 @@ function MonthSection({
                       </div>
                     </Td>
 
-                    <Td align='center' className='text-center'>{displayValue(r._worked)}</Td>
+                    <Td align='center' className='text-center'>
+                      <div className='flex flex-col items-center'>
+                        {r._worked > 0 && (
+                          <div className='text-right font-medium text-zinc-100 mb-1'>{r._worked}</div>
+                        )}
+                        <WorkedDaysSummary
+                          carga={r._carga || 0}
+                          descarga={r._descarga || 0}
+                          localizar={r._localizar || 0}
+                          rodaje={r._rodaje || 0}
+                        />
+                      </div>
+                    </Td>
                     <Td align='center' className='text-center'>{displayValue(r._totalDias, 2)}</Td>
 
                     {columnVisibility.holidays && <Td align='center' className='text-center'>{displayValue(r._holidays)}</Td>}
