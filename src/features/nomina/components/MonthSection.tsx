@@ -646,6 +646,11 @@ function MonthSection({
     return enriched.some(r => (r._cargaDays || 0) > 0 || (r._descargaDays || 0) > 0 || (r._totalCargaDescarga || 0) > 0);
   }, [enriched, projectMode]);
 
+  // Verificar si hay datos de días trabajados o total días para mostrar columnas solo cuando haya datos
+  const hasWorkedDaysData = React.useMemo(() => {
+    return enriched.some(r => (r._worked || 0) > 0 || (r._totalDias || 0) > 0);
+  }, [enriched]);
+
   // Estado para filas seleccionadas para exportación (por defecto todas seleccionadas)
   const selectedRowsKey = `${persistKey}_selectedRows`;
   const [selectedRowsArray, setSelectedRowsArray] = useLocalStorage<string[]>(
@@ -844,8 +849,8 @@ function MonthSection({
                   </div>
                 </Th>
                 <Th align='center'>Persona</Th>
-                <Th align='center'>Días trabajados</Th>
-                <Th align='center'>Total días</Th>
+                {hasWorkedDaysData && <Th align='center'>Días trabajados</Th>}
+                {hasWorkedDaysData && <Th align='center'>Total días</Th>}
                 {hasLocalizacionData && <Th align='center'>Días Localización Técnica</Th>}
                 {hasLocalizacionData && <Th align='center'>Total Días Localización Técnica</Th>}
                 {hasCargaDescargaData && <Th align='center'>Días Carga / Descarga</Th>}
@@ -910,22 +915,26 @@ function MonthSection({
                       </div>
                     </Td>
 
-                    <Td align='middle' className='text-center'>
-                      <div className='flex flex-col items-center'>
-                        {r._worked > 0 && (
-                          <div className='text-right font-medium text-zinc-100 mb-1'>{r._worked}</div>
-                        )}
-                        {projectMode !== 'publicidad' && (
-                          <WorkedDaysSummary
-                            carga={r._carga || 0}
-                            descarga={r._descarga || 0}
-                            localizar={r._localizar || 0}
-                            rodaje={r._rodaje || 0}
-                          />
-                        )}
-                      </div>
-                    </Td>
-                    <Td align='middle' className='text-center'>{displayValue(r._totalDias, 2)}</Td>
+                    {hasWorkedDaysData && (
+                      <Td align='middle' className='text-center'>
+                        <div className='flex flex-col items-center'>
+                          {r._worked > 0 && (
+                            <div className='text-right font-medium text-zinc-100 mb-1'>{r._worked}</div>
+                          )}
+                          {projectMode !== 'publicidad' && (
+                            <WorkedDaysSummary
+                              carga={r._carga || 0}
+                              descarga={r._descarga || 0}
+                              localizar={r._localizar || 0}
+                              rodaje={r._rodaje || 0}
+                            />
+                          )}
+                        </div>
+                      </Td>
+                    )}
+                    {hasWorkedDaysData && (
+                      <Td align='middle' className='text-center'>{displayValue(r._totalDias, 2)}</Td>
+                    )}
 
                     {hasLocalizacionData && (
                       <Td align='middle' className='text-center'>
