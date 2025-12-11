@@ -102,12 +102,13 @@ const formatMode = (m: string | undefined): string => {
 interface FieldProps {
   label: string;
   children: React.ReactNode;
+  theme?: 'light' | 'dark';
 }
 
-function Field({ label, children }: FieldProps) {
+function Field({ label, children, theme = 'light' }: FieldProps) {
   return (
     <label className='space-y-1'>
-      <span className='block text-sm text-zinc-300'>{label}</span>
+      <span className={`block text-sm ${theme === 'light' ? 'text-gray-900' : 'text-zinc-300'}`}>{label}</span>
       {children}
     </label>
   );
@@ -167,11 +168,22 @@ function NewProjectModal({ onClose, onCreate }: NewProjectModalProps) {
   const [condicionesDropdown, setCondicionesDropdown] = useState({ isOpen: false, isButtonHovered: false, hoveredOption: null as string | null });
   const [paisDropdown, setPaisDropdown] = useState({ isOpen: false, isButtonHovered: false, hoveredOption: null as string | null });
   const [regionDropdown, setRegionDropdown] = useState({ isOpen: false, isButtonHovered: false, hoveredOption: null as string | null });
+  
+  // Estados para el hover de los inputs
+  const [inputHovered, setInputHovered] = useState({
+    proyecto: false,
+    dop: false,
+    almacen: false,
+    productora: false,
+  });
 
   const estadoRef = useRef<HTMLDivElement>(null);
   const condicionesRef = useRef<HTMLDivElement>(null);
   const paisRef = useRef<HTMLDivElement>(null);
   const regionRef = useRef<HTMLDivElement>(null);
+  
+  // Estado para el hover del botón Cancelar
+  const [cancelButtonHovered, setCancelButtonHovered] = useState(false);
 
   // Cerrar dropdowns al hacer clic fuera
   useEffect(() => {
@@ -205,39 +217,103 @@ function NewProjectModal({ onClose, onCreate }: NewProjectModalProps) {
   return (
     <div className='fixed inset-0 bg-black/60 grid place-items-center p-4 z-50'>
       <div className='w-full max-w-lg rounded-2xl border border-neutral-border bg-neutral-panel p-6'>
-        <h3 className='text-lg font-semibold mb-4 text-orange-500'>
+        <h3 className={`text-lg font-semibold mb-4 ${theme === 'light' ? 'text-blue-600' : 'text-orange-500'}`}>
           Nuevo proyecto
         </h3>
         <div className='grid grid-cols-2 gap-4'>
-          <Field label='Proyecto'>
+          <Field label='Proyecto' theme={theme}>
             <input
-              className='w-full px-4 py-3 rounded-xl bg-black/40 border border-neutral-border focus:outline-none focus:ring-2 focus:ring-blue-500'
+              className={`w-full px-4 py-3 rounded-xl border focus:outline-none transition-colors ${
+                theme === 'light' 
+                  ? 'bg-white text-gray-900' 
+                  : 'bg-black/40 text-zinc-300'
+              }`}
+              style={{
+                borderWidth: inputHovered.proyecto ? '1.5px' : '1px',
+                borderStyle: 'solid',
+                borderColor: inputHovered.proyecto && theme === 'light' 
+                  ? '#0476D9' 
+                  : (inputHovered.proyecto && theme === 'dark'
+                    ? '#fff'
+                    : 'var(--border)'),
+              }}
               value={form.nombre}
               onChange={e => setForm({ ...form, nombre: e.target.value })}
+              onMouseEnter={() => setInputHovered(prev => ({ ...prev, proyecto: true }))}
+              onMouseLeave={() => setInputHovered(prev => ({ ...prev, proyecto: false }))}
+              onBlur={() => setInputHovered(prev => ({ ...prev, proyecto: false }))}
             />
           </Field>
-          <Field label='DoP'>
+          <Field label='DoP' theme={theme}>
             <input
-              className='w-full px-4 py-3 rounded-xl bg-black/40 border border-neutral-border focus:outline-none focus:ring-2 focus:ring-blue-500'
+              className={`w-full px-4 py-3 rounded-xl border focus:outline-none transition-colors ${
+                theme === 'light' 
+                  ? 'bg-white text-gray-900' 
+                  : 'bg-black/40 text-zinc-300'
+              }`}
+              style={{
+                borderWidth: inputHovered.dop ? '1.5px' : '1px',
+                borderStyle: 'solid',
+                borderColor: inputHovered.dop && theme === 'light' 
+                  ? '#0476D9' 
+                  : (inputHovered.dop && theme === 'dark'
+                    ? '#fff'
+                    : 'var(--border)'),
+              }}
               value={form.dop}
               onChange={e => setForm({ ...form, dop: e.target.value })}
+              onMouseEnter={() => setInputHovered(prev => ({ ...prev, dop: true }))}
+              onMouseLeave={() => setInputHovered(prev => ({ ...prev, dop: false }))}
+              onBlur={() => setInputHovered(prev => ({ ...prev, dop: false }))}
             />
           </Field>
-          <Field label='Almacén'>
+          <Field label='Almacén' theme={theme}>
             <input
-              className='w-full px-4 py-3 rounded-xl bg-black/40 border border-neutral-border focus:outline-none focus:ring-2 focus:ring-blue-500'
+              className={`w-full px-4 py-3 rounded-xl border focus:outline-none transition-colors ${
+                theme === 'light' 
+                  ? 'bg-white text-gray-900' 
+                  : 'bg-black/40 text-zinc-300'
+              }`}
+              style={{
+                borderWidth: inputHovered.almacen ? '1.5px' : '1px',
+                borderStyle: 'solid',
+                borderColor: inputHovered.almacen && theme === 'light' 
+                  ? '#0476D9' 
+                  : (inputHovered.almacen && theme === 'dark'
+                    ? '#fff'
+                    : 'var(--border)'),
+              }}
               value={form.almacen}
               onChange={e => setForm({ ...form, almacen: e.target.value })}
+              onMouseEnter={() => setInputHovered(prev => ({ ...prev, almacen: true }))}
+              onMouseLeave={() => setInputHovered(prev => ({ ...prev, almacen: false }))}
+              onBlur={() => setInputHovered(prev => ({ ...prev, almacen: false }))}
             />
           </Field>
-          <Field label='Productora'>
+          <Field label='Productora' theme={theme}>
             <input
-              className='w-full px-4 py-3 rounded-xl bg-black/40 border border-neutral-border focus:outline-none focus:ring-2 focus:ring-blue-500'
+              className={`w-full px-4 py-3 rounded-xl border focus:outline-none transition-colors ${
+                theme === 'light' 
+                  ? 'bg-white text-gray-900' 
+                  : 'bg-black/40 text-zinc-300'
+              }`}
+              style={{
+                borderWidth: inputHovered.productora ? '1.5px' : '1px',
+                borderStyle: 'solid',
+                borderColor: inputHovered.productora && theme === 'light' 
+                  ? '#0476D9' 
+                  : (inputHovered.productora && theme === 'dark'
+                    ? '#fff'
+                    : 'var(--border)'),
+              }}
               value={form.productora}
               onChange={e => setForm({ ...form, productora: e.target.value })}
+              onMouseEnter={() => setInputHovered(prev => ({ ...prev, productora: true }))}
+              onMouseLeave={() => setInputHovered(prev => ({ ...prev, productora: false }))}
+              onBlur={() => setInputHovered(prev => ({ ...prev, productora: false }))}
             />
           </Field>
-          <Field label='Estado'>
+          <Field label='Estado' theme={theme}>
             <div className='relative w-full' ref={estadoRef}>
               <button
                 type='button'
@@ -291,7 +367,7 @@ function NewProjectModal({ onClose, onCreate }: NewProjectModalProps) {
                           : 'transparent',
                         color: estadoDropdown.hoveredOption === opcion 
                           ? (theme === 'light' ? '#111827' : 'white')
-                          : 'inherit',
+                          : (theme === 'light' ? '#111827' : 'inherit'),
                       }}
                     >
                       {opcion}
@@ -301,7 +377,7 @@ function NewProjectModal({ onClose, onCreate }: NewProjectModalProps) {
               )}
             </div>
           </Field>
-          <Field label='Condiciones'>
+          <Field label='Condiciones' theme={theme}>
             <div className='relative w-full' ref={condicionesRef}>
               <button
                 type='button'
@@ -359,7 +435,7 @@ function NewProjectModal({ onClose, onCreate }: NewProjectModalProps) {
                           : 'transparent',
                         color: condicionesDropdown.hoveredOption === opcion.value 
                           ? (theme === 'light' ? '#111827' : 'white')
-                          : 'inherit',
+                          : (theme === 'light' ? '#111827' : 'inherit'),
                       }}
                     >
                       {opcion.label}
@@ -369,7 +445,7 @@ function NewProjectModal({ onClose, onCreate }: NewProjectModalProps) {
               )}
             </div>
           </Field>
-          <Field label='País'>
+          <Field label='País' theme={theme}>
             <div className='relative w-full' ref={paisRef}>
               <button
                 type='button'
@@ -423,7 +499,7 @@ function NewProjectModal({ onClose, onCreate }: NewProjectModalProps) {
                           : 'transparent',
                         color: paisDropdown.hoveredOption === c.code 
                           ? (theme === 'light' ? '#111827' : 'white')
-                          : 'inherit',
+                          : (theme === 'light' ? '#111827' : 'inherit'),
                       }}
                     >
                       {c.name}
@@ -434,7 +510,7 @@ function NewProjectModal({ onClose, onCreate }: NewProjectModalProps) {
             </div>
           </Field>
           {REGIONS[form.country as keyof typeof REGIONS] && (
-            <Field label='Región'>
+            <Field label='Región' theme={theme}>
               <div className='relative w-full' ref={regionRef}>
                 <button
                   type='button'
@@ -486,7 +562,7 @@ function NewProjectModal({ onClose, onCreate }: NewProjectModalProps) {
                           : 'transparent',
                         color: regionDropdown.hoveredOption === '' 
                           ? (theme === 'light' ? '#111827' : 'white')
-                          : 'inherit',
+                          : (theme === 'light' ? '#111827' : 'inherit'),
                       }}
                     >
                       Sin región específica
@@ -512,7 +588,7 @@ function NewProjectModal({ onClose, onCreate }: NewProjectModalProps) {
                             : 'transparent',
                           color: regionDropdown.hoveredOption === r.code 
                             ? (theme === 'light' ? '#111827' : 'white')
-                            : 'inherit',
+                            : (theme === 'light' ? '#111827' : 'inherit'),
                         }}
                       >
                         {r.name}
@@ -527,7 +603,22 @@ function NewProjectModal({ onClose, onCreate }: NewProjectModalProps) {
 
         <div className='flex justify-end gap-3 mt-6'>
           <button
-            className='inline-flex items-center justify-center px-4 py-3 rounded-xl font-semibold border border-neutral-border hover:border-orange-500 text-zinc-300 hover:text-orange-500 transition'
+            className={`inline-flex items-center justify-center px-4 py-3 rounded-xl font-semibold border transition-colors ${
+              theme === 'light' 
+                ? 'text-gray-900' 
+                : 'text-zinc-300'
+            }`}
+            style={{
+              borderWidth: cancelButtonHovered ? '1.5px' : '1px',
+              borderStyle: 'solid',
+              borderColor: cancelButtonHovered && theme === 'light' 
+                ? '#0476D9' 
+                : (cancelButtonHovered && theme === 'dark'
+                  ? '#fff'
+                  : 'var(--border)'),
+            }}
+            onMouseEnter={() => setCancelButtonHovered(true)}
+            onMouseLeave={() => setCancelButtonHovered(false)}
             onClick={onClose}
           >
             Cancelar
@@ -616,6 +707,17 @@ function EditProjectModal({ project, onClose, onSave }: EditProjectModalProps) {
   const [condicionesDropdown, setCondicionesDropdown] = useState({ isOpen: false, isButtonHovered: false, hoveredOption: null as string | null });
   const [paisDropdown, setPaisDropdown] = useState({ isOpen: false, isButtonHovered: false, hoveredOption: null as string | null });
   const [regionDropdown, setRegionDropdown] = useState({ isOpen: false, isButtonHovered: false, hoveredOption: null as string | null });
+  
+  // Estados para el hover de los inputs
+  const [inputHovered, setInputHovered] = useState({
+    proyecto: false,
+    dop: false,
+    almacen: false,
+    productora: false,
+  });
+  
+  // Estado para el hover del botón Cancelar
+  const [cancelButtonHovered, setCancelButtonHovered] = useState(false);
 
   const estadoRef = useRef<HTMLDivElement>(null);
   const condicionesRef = useRef<HTMLDivElement>(null);
@@ -684,44 +786,108 @@ function EditProjectModal({ project, onClose, onSave }: EditProjectModalProps) {
   return (
     <div className='fixed inset-0 bg-black/60 grid place-items-center p-4 z-50'>
       <div className='w-full max-w-lg rounded-2xl border border-neutral-border bg-neutral-panel p-6'>
-        <h3 className='text-lg font-semibold mb-4 text-brand'>
+        <h3 className={`text-lg font-semibold mb-4 ${theme === 'light' ? 'text-blue-600' : 'text-orange-500'}`}>
           Editar proyecto
         </h3>
 
         <div className='grid grid-cols-2 gap-4'>
-          <Field label='Proyecto'>
+          <Field label='Proyecto' theme={theme}>
             <input
-              className='w-full px-4 py-3 rounded-xl bg-black/40 border border-neutral-border focus:outline-none focus:ring-2 focus:ring-blue-500'
+              className={`w-full px-4 py-3 rounded-xl border focus:outline-none transition-colors ${
+                theme === 'light' 
+                  ? 'bg-white text-gray-900' 
+                  : 'bg-black/40 text-zinc-300'
+              }`}
+              style={{
+                borderWidth: inputHovered.proyecto ? '1.5px' : '1px',
+                borderStyle: 'solid',
+                borderColor: inputHovered.proyecto && theme === 'light' 
+                  ? '#0476D9' 
+                  : (inputHovered.proyecto && theme === 'dark'
+                    ? '#fff'
+                    : 'var(--border)'),
+              }}
               value={form.nombre}
               onChange={e => setForm({ ...form, nombre: e.target.value })}
+              onMouseEnter={() => setInputHovered(prev => ({ ...prev, proyecto: true }))}
+              onMouseLeave={() => setInputHovered(prev => ({ ...prev, proyecto: false }))}
+              onBlur={() => setInputHovered(prev => ({ ...prev, proyecto: false }))}
             />
           </Field>
 
-          <Field label='DoP'>
+          <Field label='DoP' theme={theme}>
             <input
-              className='w-full px-4 py-3 rounded-xl bg-black/40 border border-neutral-border focus:outline-none focus:ring-2 focus:ring-blue-500'
+              className={`w-full px-4 py-3 rounded-xl border focus:outline-none transition-colors ${
+                theme === 'light' 
+                  ? 'bg-white text-gray-900' 
+                  : 'bg-black/40 text-zinc-300'
+              }`}
+              style={{
+                borderWidth: inputHovered.dop ? '1.5px' : '1px',
+                borderStyle: 'solid',
+                borderColor: inputHovered.dop && theme === 'light' 
+                  ? '#0476D9' 
+                  : (inputHovered.dop && theme === 'dark'
+                    ? '#fff'
+                    : 'var(--border)'),
+              }}
               value={form.dop}
               onChange={e => setForm({ ...form, dop: e.target.value })}
+              onMouseEnter={() => setInputHovered(prev => ({ ...prev, dop: true }))}
+              onMouseLeave={() => setInputHovered(prev => ({ ...prev, dop: false }))}
+              onBlur={() => setInputHovered(prev => ({ ...prev, dop: false }))}
             />
           </Field>
 
-          <Field label='Almacén'>
+          <Field label='Almacén' theme={theme}>
             <input
-              className='w-full px-4 py-3 rounded-xl bg-black/40 border border-neutral-border focus:outline-none focus:ring-2 focus:ring-blue-500'
+              className={`w-full px-4 py-3 rounded-xl border focus:outline-none transition-colors ${
+                theme === 'light' 
+                  ? 'bg-white text-gray-900' 
+                  : 'bg-black/40 text-zinc-300'
+              }`}
+              style={{
+                borderWidth: inputHovered.almacen ? '1.5px' : '1px',
+                borderStyle: 'solid',
+                borderColor: inputHovered.almacen && theme === 'light' 
+                  ? '#0476D9' 
+                  : (inputHovered.almacen && theme === 'dark'
+                    ? '#fff'
+                    : 'var(--border)'),
+              }}
               value={form.almacen}
               onChange={e => setForm({ ...form, almacen: e.target.value })}
+              onMouseEnter={() => setInputHovered(prev => ({ ...prev, almacen: true }))}
+              onMouseLeave={() => setInputHovered(prev => ({ ...prev, almacen: false }))}
+              onBlur={() => setInputHovered(prev => ({ ...prev, almacen: false }))}
             />
           </Field>
 
-          <Field label='Productora'>
+          <Field label='Productora' theme={theme}>
             <input
-              className='w-full px-4 py-3 rounded-xl bg-black/40 border border-neutral-border focus:outline-none focus:ring-2 focus:ring-blue-500'
+              className={`w-full px-4 py-3 rounded-xl border focus:outline-none transition-colors ${
+                theme === 'light' 
+                  ? 'bg-white text-gray-900' 
+                  : 'bg-black/40 text-zinc-300'
+              }`}
+              style={{
+                borderWidth: inputHovered.productora ? '1.5px' : '1px',
+                borderStyle: 'solid',
+                borderColor: inputHovered.productora && theme === 'light' 
+                  ? '#0476D9' 
+                  : (inputHovered.productora && theme === 'dark'
+                    ? '#fff'
+                    : 'var(--border)'),
+              }}
               value={form.productora}
               onChange={e => setForm({ ...form, productora: e.target.value })}
+              onMouseEnter={() => setInputHovered(prev => ({ ...prev, productora: true }))}
+              onMouseLeave={() => setInputHovered(prev => ({ ...prev, productora: false }))}
+              onBlur={() => setInputHovered(prev => ({ ...prev, productora: false }))}
             />
           </Field>
 
-          <Field label='Estado'>
+          <Field label='Estado' theme={theme}>
             <div className='relative w-full' ref={estadoRef}>
               <button
                 type='button'
@@ -775,7 +941,7 @@ function EditProjectModal({ project, onClose, onSave }: EditProjectModalProps) {
                           : 'transparent',
                         color: estadoDropdown.hoveredOption === opcion 
                           ? (theme === 'light' ? '#111827' : 'white')
-                          : 'inherit',
+                          : (theme === 'light' ? '#111827' : 'inherit'),
                       }}
                     >
                       {opcion}
@@ -786,7 +952,7 @@ function EditProjectModal({ project, onClose, onSave }: EditProjectModalProps) {
             </div>
           </Field>
 
-          <Field label='Tipo de condiciones'>
+          <Field label='Tipo de condiciones' theme={theme}>
             <div className='relative w-full' ref={condicionesRef}>
               <button
                 type='button'
@@ -844,7 +1010,7 @@ function EditProjectModal({ project, onClose, onSave }: EditProjectModalProps) {
                           : 'transparent',
                         color: condicionesDropdown.hoveredOption === opcion.value 
                           ? (theme === 'light' ? '#111827' : 'white')
-                          : 'inherit',
+                          : (theme === 'light' ? '#111827' : 'inherit'),
                       }}
                     >
                       {opcion.label}
@@ -854,7 +1020,7 @@ function EditProjectModal({ project, onClose, onSave }: EditProjectModalProps) {
               )}
             </div>
           </Field>
-          <Field label='País'>
+          <Field label='País' theme={theme}>
             <div className='relative w-full' ref={paisRef}>
               <button
                 type='button'
@@ -908,7 +1074,7 @@ function EditProjectModal({ project, onClose, onSave }: EditProjectModalProps) {
                           : 'transparent',
                         color: paisDropdown.hoveredOption === c.code 
                           ? (theme === 'light' ? '#111827' : 'white')
-                          : 'inherit',
+                          : (theme === 'light' ? '#111827' : 'inherit'),
                       }}
                     >
                       {c.name}
@@ -919,7 +1085,7 @@ function EditProjectModal({ project, onClose, onSave }: EditProjectModalProps) {
             </div>
           </Field>
           {REGIONS[form.country as keyof typeof REGIONS] && (
-            <Field label='Región'>
+            <Field label='Región' theme={theme}>
               <div className='relative w-full' ref={regionRef}>
                 <button
                   type='button'
@@ -971,7 +1137,7 @@ function EditProjectModal({ project, onClose, onSave }: EditProjectModalProps) {
                           : 'transparent',
                         color: regionDropdown.hoveredOption === '' 
                           ? (theme === 'light' ? '#111827' : 'white')
-                          : 'inherit',
+                          : (theme === 'light' ? '#111827' : 'inherit'),
                       }}
                     >
                       Sin región específica
@@ -997,7 +1163,7 @@ function EditProjectModal({ project, onClose, onSave }: EditProjectModalProps) {
                             : 'transparent',
                           color: regionDropdown.hoveredOption === r.code 
                             ? (theme === 'light' ? '#111827' : 'white')
-                            : 'inherit',
+                            : (theme === 'light' ? '#111827' : 'inherit'),
                         }}
                       >
                         {r.name}
@@ -1012,7 +1178,22 @@ function EditProjectModal({ project, onClose, onSave }: EditProjectModalProps) {
 
         <div className='flex justify-end gap-3 mt-6'>
           <button
-            className='inline-flex items-center justify-center px-4 py-3 rounded-xl font-semibold border border-neutral-border hover:border-orange-500 text-zinc-300 hover:text-orange-500 transition'
+            className={`inline-flex items-center justify-center px-4 py-3 rounded-xl font-semibold border transition-colors ${
+              theme === 'light' 
+                ? 'text-gray-900' 
+                : 'text-zinc-300'
+            }`}
+            style={{
+              borderWidth: cancelButtonHovered ? '1.5px' : '1px',
+              borderStyle: 'solid',
+              borderColor: cancelButtonHovered && theme === 'light' 
+                ? '#0476D9' 
+                : (cancelButtonHovered && theme === 'dark'
+                  ? '#fff'
+                  : 'var(--border)'),
+            }}
+            onMouseEnter={() => setCancelButtonHovered(true)}
+            onMouseLeave={() => setCancelButtonHovered(false)}
             onClick={onClose}
             type='button'
           >
