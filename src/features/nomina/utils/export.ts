@@ -47,7 +47,7 @@ export function buildNominaMonthHTML(
       return '';
     }
     
-    return `${totalDietas}<br/>${parts.join(' ')}`;
+    return `<div style="text-align:center;"><strong>${totalDietas}</strong><br/>${parts.join(' ')}</div>`;
   };
 
   // Helper function to generate extras summary text for export
@@ -75,13 +75,22 @@ export function buildNominaMonthHTML(
       return '';
     }
     
-    return `${totalExtras}<br/>${parts.join(' ')}`;
+    return `<div style="text-align:center;"><strong>${totalExtras}</strong><br/>${parts.join(' ')}</div>`;
   };
 
   // Helper function to display empty string for zero values in export
   const displayValue = (value: number | undefined | null, decimals: number = 0): string => {
     if (value === null || value === undefined || value === 0) return '';
     return decimals > 0 ? value.toFixed(decimals) : String(value);
+  };
+
+  // Helper function to display monetary values with € symbol (removes .00 if no decimals)
+  const displayMoney = (value: number | undefined | null, decimals: number = 2): string => {
+    if (value === null || value === undefined || value === 0) return '';
+    const formatted = value.toFixed(decimals);
+    // Remove .00 if there are no meaningful decimals
+    const cleaned = formatted.replace(/\.00$/, '');
+    return `${cleaned}€`;
   };
 
   // Detect which columns have data to show/hide empty columns in export
@@ -95,42 +104,42 @@ export function buildNominaMonthHTML(
   };
 
       const headerCells = [
-        '<th>Persona</th>',
-        '<th>Días trabajados</th>',
-        '<th>Total días</th>',
+        '<th style="text-align:center !important;vertical-align:middle !important;">Persona</th>',
+        '<th style="text-align:center !important;vertical-align:middle !important;">Días trabajados</th>',
+        '<th style="text-align:center !important;vertical-align:middle !important;">Total días</th>',
       ];
 
   if (columnVisibility.holidays) {
-    headerCells.push('<th>Días festivos</th>');
-    headerCells.push('<th>Total días festivos</th>');
+    headerCells.push('<th style="text-align:center !important;vertical-align:middle !important;">Días festivos</th>');
+    headerCells.push('<th style="text-align:center !important;vertical-align:middle !important;">Total días festivos</th>');
   }
 
   if (columnVisibility.travel) {
-    headerCells.push('<th>Días Travel Day</th>');
-    headerCells.push('<th>Total travel days</th>');
+    headerCells.push('<th style="text-align:center !important;vertical-align:middle !important;">Días Travel Day</th>');
+    headerCells.push('<th style="text-align:center !important;vertical-align:middle !important;">Total travel days</th>');
   }
 
   if (columnVisibility.extras) {
-    headerCells.push('<th>Horas extras</th>');
-    headerCells.push('<th>Total horas extra</th>');
+    headerCells.push('<th style="text-align:center !important;vertical-align:middle !important;">Horas extras</th>');
+    headerCells.push('<th style="text-align:center !important;vertical-align:middle !important;">Total horas extra</th>');
   }
 
   if (columnVisibility.dietas) {
-    headerCells.push('<th>Dietas</th>');
-    headerCells.push('<th>Total dietas</th>');
+    headerCells.push('<th style="text-align:center !important;vertical-align:middle !important;">Dietas</th>');
+    headerCells.push('<th style="text-align:center !important;vertical-align:middle !important;">Total dietas</th>');
   }
 
   if (columnVisibility.transporte) {
-    headerCells.push('<th>Transportes</th>');
-    headerCells.push('<th>Total transportes</th>');
+    headerCells.push('<th style="text-align:center !important;vertical-align:middle !important;">Transportes</th>');
+    headerCells.push('<th style="text-align:center !important;vertical-align:middle !important;">Total transportes</th>');
   }
 
   if (columnVisibility.km) {
-    headerCells.push('<th>Kilometraje</th>');
-    headerCells.push('<th>Total kilometraje</th>');
+    headerCells.push('<th style="text-align:center !important;vertical-align:middle !important;">Kilometraje</th>');
+    headerCells.push('<th style="text-align:center !important;vertical-align:middle !important;">Total kilometraje</th>');
   }
 
-  headerCells.push('<th>TOTAL BRUTO</th>');
+  headerCells.push('<th style="text-align:center !important;vertical-align:middle !important;">TOTAL BRUTO</th>');
 
   const head = `<tr>${headerCells.join('')}</tr>`;
 
@@ -138,42 +147,42 @@ export function buildNominaMonthHTML(
     .map(r => {
 
       const dataCells = [
-        `<td class="text-left" style="font-weight:600;">${esc(r.role)} — ${esc(r.name)}</td>`,
-        `<td>${esc(displayValue(r._worked))}</td>`,
-        `<td>${esc(displayValue(r._totalDias, 2))}</td>`,
+        `<td class="text-left" style="font-weight:600;vertical-align:middle !important;">${esc(r.role)} — ${esc(r.name)}</td>`,
+        `<td style="text-align:center !important;vertical-align:middle !important;">${generateWorkedDaysText(r) || esc(displayValue(r._worked))}</td>`,
+        `<td style="text-align:center !important;vertical-align:middle !important;">${esc(displayMoney(r._totalDias, 2))}</td>`,
       ];
 
       if (columnVisibility.holidays) {
-        dataCells.push(`<td>${esc(displayValue(r._holidays))}</td>`);
-        dataCells.push(`<td>${esc(displayValue(r._totalHolidays, 2))}</td>`);
+        dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;">${esc(displayValue(r._holidays))}</td>`);
+        dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;">${esc(displayMoney(r._totalHolidays, 2))}</td>`);
       }
 
       if (columnVisibility.travel) {
-        dataCells.push(`<td>${esc(displayValue(r._travel))}</td>`);
-        dataCells.push(`<td>${esc(displayValue(r._totalTravel, 2))}</td>`);
+        dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;">${esc(displayValue(r._travel))}</td>`);
+        dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;">${esc(displayMoney(r._totalTravel, 2))}</td>`);
       }
 
       if (columnVisibility.extras) {
-        dataCells.push(`<td class="extras-cell">${generateExtrasText(r)}</td>`);
-        dataCells.push(`<td>${esc(displayValue(r._totalExtras, 2))}</td>`);
+        dataCells.push(`<td class="extras-cell" style="text-align:center !important;vertical-align:middle !important;">${generateExtrasText(r)}</td>`);
+        dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;">${esc(displayMoney(r._totalExtras, 2))}</td>`);
       }
 
       if (columnVisibility.dietas) {
-        dataCells.push(`<td class="dietas-cell">${generateDietasText(r)}</td>`);
-        dataCells.push(`<td>${esc(displayValue(r._totalDietas, 2))}</td>`);
+        dataCells.push(`<td class="dietas-cell" style="text-align:center !important;vertical-align:middle !important;">${generateDietasText(r)}</td>`);
+        dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;">${esc(displayMoney(r._totalDietas, 2))}</td>`);
       }
 
       if (columnVisibility.transporte) {
-        dataCells.push(`<td>${esc(displayValue(r.transporte))}</td>`);
-        dataCells.push(`<td>${esc(displayValue(r._totalTrans, 2))}</td>`);
+        dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;">${esc(displayValue(r.transporte))}</td>`);
+        dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;">${esc(displayMoney(r._totalTrans, 2))}</td>`);
       }
 
       if (columnVisibility.km) {
-        dataCells.push(`<td>${esc(displayValue(r.km, 1))}</td>`);
-        dataCells.push(`<td>${esc(displayValue(r._totalKm, 2))}</td>`);
+        dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;">${esc(displayValue(r.km, 1))}</td>`);
+        dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;">${esc(displayMoney(r._totalKm, 2))}</td>`);
       }
 
-      dataCells.push(`<td class="total-cell">${esc(displayValue(r._totalBruto, 2))}</td>`);
+      dataCells.push(`<td class="total-cell" style="text-align:center !important;vertical-align:middle !important;">${esc(displayMoney(r._totalBruto, 2))}</td>`);
 
       return `<tr>${dataCells.join('')}</tr>`;
     })
@@ -271,30 +280,42 @@ export function buildNominaMonthHTML(
     }
     
     th {
-      background: #1e40af;
-      color: white;
-      padding: 6px 6px;
-      text-align: left;
-      font-weight: 600;
-      font-size: 9px;
-      text-transform: uppercase;
-      border: 1px solid white;
+      background: #1e40af !important;
+      color: white !important;
+      padding: 8px 6px !important;
+      text-align: center !important;
+      vertical-align: middle !important;
+      font-weight: 600 !important;
+      font-size: 9px !important;
+      text-transform: uppercase !important;
+      border: 1px solid white !important;
+      height: 40px !important;
+      line-height: 1.2 !important;
+      display: table-cell !important;
+    }
+    
+    thead th {
+      text-align: center !important;
+      vertical-align: middle !important;
+      height: 40px !important;
+      line-height: 1.2 !important;
     }
     
     td {
       padding: 6px 6px;
       border: 1px solid #999;
       background: white;
-      vertical-align: top;
+      vertical-align: middle !important;
+      text-align: center !important;
       color: #1e293b;
     }
     
     td.text-right {
-      text-align: right;
+      text-align: right !important;
     }
     
     td.text-left {
-      text-align: left;
+      text-align: left !important;
     }
     
     tr:hover td {
@@ -409,6 +430,35 @@ export function buildNominaMonthHTMLForPDF(
   _currentPage: number = 1,
   _totalPages: number = 1
 ) {
+  // Helper function to generate worked days summary text for export
+  const generateWorkedDaysText = (r: any): string => {
+    const parts: string[] = [];
+    
+    // Orden: Localizar, Carga, Rodaje, Descarga
+    if ((r._localizar || 0) > 0) {
+      parts.push(`Localizar x${r._localizar}`);
+    }
+    
+    if ((r._carga || 0) > 0) {
+      parts.push(`Carga x${r._carga}`);
+    }
+    
+    if ((r._rodaje || 0) > 0) {
+      parts.push(`Rodaje x${r._rodaje}`);
+    }
+    
+    if ((r._descarga || 0) > 0) {
+      parts.push(`Descarga x${r._descarga}`);
+    }
+    
+    if (parts.length === 0) {
+      return '';
+    }
+    
+    const totalWorked = r._worked || 0;
+    return `<div style="text-align:center;"><strong>${totalWorked}</strong><br/><div style="font-size:10px;line-height:1.2;">${parts.join('<br/>')}</div></div>`;
+  };
+
   // Helper function to generate dietas summary text for export
   const generateDietasText = (r: any): string => {
     const want = [
@@ -441,7 +491,7 @@ export function buildNominaMonthHTMLForPDF(
       return '';
     }
     
-    return `${totalDietas}<br/>${parts.join(' ')}`;
+    return `<div style="text-align:center;"><strong>${totalDietas}</strong><br/>${parts.join(' ')}</div>`;
   };
 
   // Helper function to generate extras summary text for export
@@ -469,13 +519,22 @@ export function buildNominaMonthHTMLForPDF(
       return '';
     }
     
-    return `${totalExtras}<br/>${parts.join(' ')}`;
+    return `<div style="text-align:center;"><strong>${totalExtras}</strong><br/>${parts.join(' ')}</div>`;
   };
 
   // Helper function to display empty string for zero values
   const displayValue = (value: number | undefined | null, decimals: number = 0): string => {
     if (value === null || value === undefined || value === 0) return '';
     return decimals > 0 ? value.toFixed(decimals) : String(value);
+  };
+
+  // Helper function to display monetary values with € symbol (removes .00 if no decimals)
+  const displayMoney = (value: number | undefined | null, decimals: number = 2): string => {
+    if (value === null || value === undefined || value === 0) return '';
+    const formatted = value.toFixed(decimals);
+    // Remove .00 if there are no meaningful decimals
+    const cleaned = formatted.replace(/\.00$/, '');
+    return `${cleaned}€`;
   };
 
   // Column visibility logic
@@ -490,42 +549,42 @@ export function buildNominaMonthHTMLForPDF(
 
   // Build header cells
   const headerCells = [
-    '<th>Persona</th>',
-    '<th>Días trabajados</th>',
-    '<th>Total días</th>',
+    '<th style="text-align:center !important;vertical-align:middle !important;">Persona</th>',
+    '<th style="text-align:center !important;vertical-align:middle !important;">Días trabajados</th>',
+    '<th style="text-align:center !important;vertical-align:middle !important;">Total días</th>',
   ];
 
   if (columnVisibility.holidays) {
-    headerCells.push('<th>Días festivos</th>');
-    headerCells.push('<th>Total días festivos</th>');
+    headerCells.push('<th style="text-align:center !important;vertical-align:middle !important;">Días festivos</th>');
+    headerCells.push('<th style="text-align:center !important;vertical-align:middle !important;">Total días festivos</th>');
   }
 
   if (columnVisibility.travel) {
-    headerCells.push('<th>Días Travel Day</th>');
-    headerCells.push('<th>Total travel days</th>');
+    headerCells.push('<th style="text-align:center !important;vertical-align:middle !important;">Días Travel Day</th>');
+    headerCells.push('<th style="text-align:center !important;vertical-align:middle !important;">Total travel days</th>');
   }
 
   if (columnVisibility.extras) {
-    headerCells.push('<th>Horas extras</th>');
-    headerCells.push('<th>Total horas extra</th>');
+    headerCells.push('<th style="text-align:center !important;vertical-align:middle !important;">Horas extras</th>');
+    headerCells.push('<th style="text-align:center !important;vertical-align:middle !important;">Total horas extra</th>');
   }
 
   if (columnVisibility.dietas) {
-    headerCells.push('<th>Dietas</th>');
-    headerCells.push('<th>Total dietas</th>');
+    headerCells.push('<th style="text-align:center !important;vertical-align:middle !important;">Dietas</th>');
+    headerCells.push('<th style="text-align:center !important;vertical-align:middle !important;">Total dietas</th>');
   }
 
   if (columnVisibility.transporte) {
-    headerCells.push('<th>Transportes</th>');
-    headerCells.push('<th>Total transportes</th>');
+    headerCells.push('<th style="text-align:center !important;vertical-align:middle !important;">Transportes</th>');
+    headerCells.push('<th style="text-align:center !important;vertical-align:middle !important;">Total transportes</th>');
   }
 
   if (columnVisibility.km) {
-    headerCells.push('<th>Kilometraje</th>');
-    headerCells.push('<th>Total kilometraje</th>');
+    headerCells.push('<th style="text-align:center !important;vertical-align:middle !important;">Kilometraje</th>');
+    headerCells.push('<th style="text-align:center !important;vertical-align:middle !important;">Total kilometraje</th>');
   }
 
-  headerCells.push('<th>TOTAL BRUTO</th>');
+  headerCells.push('<th style="text-align:center !important;vertical-align:middle !important;">TOTAL BRUTO</th>');
   const head = `<tr>${headerCells.join('')}</tr>`;
 
   // Función para determinar el bloque basándose en el rol
@@ -613,42 +672,42 @@ export function buildNominaMonthHTMLForPDF(
   // Función para generar una fila
   const generateRowHTML = (r: any) => {
     const dataCells = [
-      `<td class="text-left" style="font-weight:600;">${esc(r.role)} — ${esc(r.name)}</td>`,
-      `<td>${esc(displayValue(r._worked))}</td>`,
-      `<td>${esc(displayValue(r._totalDias, 2))}</td>`,
+      `<td class="text-left" style="font-weight:600;vertical-align:middle !important;">${esc(r.role)} — ${esc(r.name)}</td>`,
+      `<td style="text-align:center !important;vertical-align:middle !important;">${generateWorkedDaysText(r) || esc(displayValue(r._worked))}</td>`,
+      `<td style="text-align:center !important;vertical-align:middle !important;">${esc(displayMoney(r._totalDias, 2))}</td>`,
     ];
 
     if (columnVisibility.holidays) {
-      dataCells.push(`<td>${esc(displayValue(r._holidays))}</td>`);
-      dataCells.push(`<td>${esc(displayValue(r._totalHolidays, 2))}</td>`);
+      dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;">${esc(displayValue(r._holidays))}</td>`);
+      dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;">${esc(displayMoney(r._totalHolidays, 2))}</td>`);
     }
 
     if (columnVisibility.travel) {
-      dataCells.push(`<td>${esc(displayValue(r._travel))}</td>`);
-      dataCells.push(`<td>${esc(displayValue(r._totalTravel, 2))}</td>`);
+      dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;">${esc(displayValue(r._travel))}</td>`);
+      dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;">${esc(displayMoney(r._totalTravel, 2))}</td>`);
     }
 
     if (columnVisibility.extras) {
-      dataCells.push(`<td class="extras-cell">${generateExtrasText(r)}</td>`);
-      dataCells.push(`<td>${esc(displayValue(r._totalExtras, 2))}</td>`);
+      dataCells.push(`<td class="extras-cell" style="text-align:center !important;vertical-align:middle !important;">${generateExtrasText(r)}</td>`);
+      dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;">${esc(displayMoney(r._totalExtras, 2))}</td>`);
     }
 
     if (columnVisibility.dietas) {
-      dataCells.push(`<td class="dietas-cell">${generateDietasText(r)}</td>`);
-      dataCells.push(`<td>${esc(displayValue(r._totalDietas, 2))}</td>`);
+      dataCells.push(`<td class="dietas-cell" style="text-align:center !important;vertical-align:middle !important;">${generateDietasText(r)}</td>`);
+      dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;">${esc(displayMoney(r._totalDietas, 2))}</td>`);
     }
 
     if (columnVisibility.transporte) {
-      dataCells.push(`<td>${esc(displayValue(r.transporte))}</td>`);
-      dataCells.push(`<td>${esc(displayValue(r._totalTrans, 2))}</td>`);
+      dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;">${esc(displayValue(r.transporte))}</td>`);
+      dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;">${esc(displayMoney(r._totalTrans, 2))}</td>`);
     }
 
     if (columnVisibility.km) {
-      dataCells.push(`<td>${esc(displayValue(r.km, 1))}</td>`);
-      dataCells.push(`<td>${esc(displayValue(r._totalKm, 2))}</td>`);
+      dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;">${esc(displayValue(r.km, 1))}</td>`);
+      dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;">${esc(displayMoney(r._totalKm, 2))}</td>`);
     }
 
-    dataCells.push(`<td class="total-cell">${esc(displayValue(r._totalBruto, 2))}</td>`);
+    dataCells.push(`<td class="total-cell" style="text-align:center !important;vertical-align:middle !important;">${esc(displayMoney(r._totalBruto, 2))}</td>`);
 
     return `<tr>${dataCells.join('')}</tr>`;
   };
@@ -661,7 +720,7 @@ export function buildNominaMonthHTMLForPDF(
   if (rowsByBlock.base.length > 0) {
     const baseTitle = `
       <tr>
-        <td colspan="${numColumns}" style="border:1px solid #999;padding:8px;font-weight:700;background:#fff3e0;color:#e65100;text-align:center;">
+        <td colspan="${numColumns}" style="border:1px solid #999;padding:12px 8px;font-weight:700;background:#fff3e0;color:#e65100;text-align:center !important;vertical-align:middle !important;height:40px;line-height:1.2;display:table-cell;">
           EQUIPO BASE
         </td>
       </tr>`;
@@ -673,7 +732,7 @@ export function buildNominaMonthHTMLForPDF(
   if (rowsByBlock.pre.length > 0) {
     const preTitle = `
       <tr>
-        <td colspan="${numColumns}" style="border:1px solid #999;padding:8px;font-weight:700;background:#e3f2fd;color:#1565c0;text-align:center;">
+        <td colspan="${numColumns}" style="border:1px solid #999;padding:12px 8px;font-weight:700;background:#e3f2fd;color:#1565c0;text-align:center !important;vertical-align:middle !important;height:40px;line-height:1.2;display:table-cell;">
           EQUIPO PRELIGHT
         </td>
       </tr>`;
@@ -685,7 +744,7 @@ export function buildNominaMonthHTMLForPDF(
   if (rowsByBlock.pick.length > 0) {
     const pickTitle = `
       <tr>
-        <td colspan="${numColumns}" style="border:1px solid #999;padding:8px;font-weight:700;background:#e3f2fd;color:#1565c0;text-align:center;">
+        <td colspan="${numColumns}" style="border:1px solid #999;padding:12px 8px;font-weight:700;background:#e3f2fd;color:#1565c0;text-align:center !important;vertical-align:middle !important;height:40px;line-height:1.2;display:table-cell;">
           EQUIPO RECOGIDA
         </td>
       </tr>`;
@@ -794,30 +853,42 @@ export function buildNominaMonthHTMLForPDF(
     }
     
     th {
-      background: #1e40af;
-      color: white;
-      padding: 6px 6px;
-      text-align: left;
-      font-weight: 600;
-      font-size: 9px;
-      text-transform: uppercase;
-      border: 1px solid white;
+      background: #1e40af !important;
+      color: white !important;
+      padding: 8px 6px !important;
+      text-align: center !important;
+      vertical-align: middle !important;
+      font-weight: 600 !important;
+      font-size: 9px !important;
+      text-transform: uppercase !important;
+      border: 1px solid white !important;
+      height: 40px !important;
+      line-height: 1.2 !important;
+      display: table-cell !important;
+    }
+    
+    thead th {
+      text-align: center !important;
+      vertical-align: middle !important;
+      height: 40px !important;
+      line-height: 1.2 !important;
     }
     
     td {
       padding: 6px 6px;
       border: 1px solid #999;
       background: white;
-      vertical-align: top;
+      vertical-align: middle !important;
+      text-align: center !important;
       color: #1e293b;
     }
     
     td.text-right {
-      text-align: right;
+      text-align: right !important;
     }
     
     td.text-left {
-      text-align: left;
+      text-align: left !important;
     }
     
     .person-cell {
@@ -929,78 +1000,110 @@ export async function exportToPDF(
   enrichedRows: any[],
   monthLabelEs: (key: string, withYear?: boolean) => string
 ) {
+  console.log('🚀 exportToPDF called with', enrichedRows.length, 'rows');
   try {
-    // Smart pagination with auto-fill logic (copied from reportes)
-    const totalRows = enrichedRows.length;
-    
-    // Smart pagination with auto-fill logic
-    const estimateContentHeight = (numRows: number) => {
-      const headerHeight = 80; // Header + info panel
-      const footerHeight = 25; // Footer (same as reportes)
-      const tableHeaderHeight = 40; // Table headers
-      const rowHeight = 25; // Height per row
-      
-      const totalRowsHeight = numRows * rowHeight;
-      return headerHeight + footerHeight + tableHeaderHeight + totalRowsHeight;
+    // Group rows by blocks first to understand the structure
+    const getBlockFromRole = (role: string) => {
+      const roleUpper = String(role || '').toUpperCase();
+      if (roleUpper.endsWith('P')) return 'pre';
+      if (roleUpper.endsWith('R')) return 'pick';
+      return 'base';
     };
     
-    // Smart pagination: start aggressive and adjust dynamically
-    let rowsPerPage = Math.min(25, totalRows); // Start more aggressive
-    const maxPageHeight = 720; // Available height for content (more space for content)
-    const minRowsPerPage = 1; // Minimum to prevent infinite loops
+    const rowsByBlock = {
+      base: [] as any[],
+      pre: [] as any[],
+      pick: [] as any[],
+    };
     
-    // Dynamic adjustment
-    while (estimateContentHeight(rowsPerPage) > maxPageHeight && rowsPerPage > minRowsPerPage) {
-      rowsPerPage--;
+    enrichedRows.forEach(row => {
+      const block = getBlockFromRole(row.role);
+      rowsByBlock[block].push(row);
+    });
+    
+    // Create a flat list of grouped rows with section titles
+    const groupedRows: Array<{ type: 'title' | 'row', block?: string, row?: any }> = [];
+    
+    if (rowsByBlock.base.length > 0) {
+      groupedRows.push({ type: 'title', block: 'base' });
+      rowsByBlock.base.forEach(row => groupedRows.push({ type: 'row', row }));
+    }
+    if (rowsByBlock.pre.length > 0) {
+      groupedRows.push({ type: 'title', block: 'pre' });
+      rowsByBlock.pre.forEach(row => groupedRows.push({ type: 'row', row }));
+    }
+    if (rowsByBlock.pick.length > 0) {
+      groupedRows.push({ type: 'title', block: 'pick' });
+      rowsByBlock.pick.forEach(row => groupedRows.push({ type: 'row', row }));
     }
     
-    // Auto-fill logic: if we have space, try to add more rows
-    let optimalRowsPerPage = rowsPerPage;
-    const spaceBuffer = 20; // Buffer to maintain nice margins
+    // Smart pagination with auto-fill logic
+    // More accurate height calculations based on actual rendered content
+    const headerHeight = 90; // Header + info panel
+    const footerHeight = 25; // Footer
+    const tableHeaderHeight = 35; // Table headers
+    const rowHeight = 28; // Height per row (accounts for padding and content)
+    const sectionTitleHeight = 32; // Height per section title
+    const maxPageHeight = 794; // Total page height (210mm at 96 DPI)
+    const spaceBuffer = 20; // Buffer to maintain margins
     
-    for (let testRows = rowsPerPage + 1; testRows <= totalRows; testRows++) {
-      const testHeight = estimateContentHeight(testRows);
-      const availableSpace = maxPageHeight - testHeight;
+    const baseHeight = headerHeight + footerHeight + tableHeaderHeight;
+    const availableHeight = maxPageHeight - baseHeight;
+    
+    console.log(`📏 Height calculation: maxPage=${maxPageHeight}px, base=${baseHeight}px, available=${availableHeight}px`);
+    
+    // Calculate pages dynamically - each page can have different number of items
+    const pages: Array<Array<{ type: 'title' | 'row', block?: string, row?: any }>> = [];
+    let currentPage: Array<{ type: 'title' | 'row', block?: string, row?: any }> = [];
+    let currentHeight = 0;
+    
+    // Calculate max items per page (more aggressive)
+    const maxItemsPerPage = Math.floor(availableHeight / Math.min(rowHeight, sectionTitleHeight));
+    console.log(`📏 Max items per page calculation: ${maxItemsPerPage} items (available height: ${availableHeight}px)`);
+    
+    for (let i = 0; i < groupedRows.length; i++) {
+      const item = groupedRows[i];
+      const itemHeight = item.type === 'title' ? sectionTitleHeight : rowHeight;
       
-      if (testHeight <= maxPageHeight && availableSpace >= spaceBuffer) {
-        optimalRowsPerPage = testRows;
-        console.log(`🎯 Auto-fill: Can fit ${testRows} rows (height: ${testHeight}px, space left: ${availableSpace}px)`);
-      } else if (testHeight <= maxPageHeight && availableSpace < spaceBuffer) {
-        // We can fit it but would be too tight, stop here
-        console.log(`⚠️ Auto-fill: ${testRows} rows would fit but too tight (space left: ${availableSpace}px < ${spaceBuffer}px buffer)`);
-        break;
-      } else {
-        // Would exceed page height
-        console.log(`❌ Auto-fill: ${testRows} rows would exceed page height (${testHeight}px > ${maxPageHeight}px)`);
-        break;
+      // If adding this item would exceed the page, start a new page
+      if (currentHeight + itemHeight > availableHeight - spaceBuffer && currentPage.length > 0) {
+        pages.push([...currentPage]);
+        currentPage = [];
+        currentHeight = 0;
+      }
+      
+      // Add item to current page
+      currentPage.push(item);
+      currentHeight += itemHeight;
+      
+      // Safety check: if we have too many items, force a new page
+      if (currentPage.length >= maxItemsPerPage) {
+        pages.push([...currentPage]);
+        currentPage = [];
+        currentHeight = 0;
       }
     }
     
-    rowsPerPage = optimalRowsPerPage;
-    let totalPages = Math.ceil(totalRows / rowsPerPage) || 1;
+    // Add the last page if it has items
+    if (currentPage.length > 0) {
+      pages.push(currentPage);
+    }
     
-    // Additional optimization: aggressive mode for better space utilization
-    const aggressiveMaxHeight = 800; // More space for aggressive mode
-    let aggressiveRowsPerPage = rowsPerPage;
-    
-    for (let testRows = rowsPerPage + 1; testRows <= totalRows; testRows++) {
-      const testHeight = estimateContentHeight(testRows);
-      if (testHeight <= aggressiveMaxHeight) {
-        aggressiveRowsPerPage = testRows;
-        console.log(`🚀 Aggressive mode: Can fit ${testRows} rows (height: ${testHeight}px)`);
-      } else {
-        break;
+    // Force multiple pages if we have enough content
+    if (pages.length === 1 && groupedRows.length > 10) {
+      // Split into multiple pages more aggressively
+      const itemsPerPage = Math.max(8, Math.floor(groupedRows.length / 2));
+      pages.length = 0;
+      for (let i = 0; i < groupedRows.length; i += itemsPerPage) {
+        pages.push(groupedRows.slice(i, i + itemsPerPage));
       }
+      console.log(`⚠️ Forced split into ${pages.length} pages`);
     }
     
-    if (aggressiveRowsPerPage > rowsPerPage) {
-      rowsPerPage = aggressiveRowsPerPage;
-      totalPages = Math.ceil(totalRows / rowsPerPage) || 1;
-      console.log(`🚀 Applied aggressive optimization: ${rowsPerPage} rows per page`);
-    }
+    const totalPages = pages.length || 1;
     
-    console.log(`📄 Smart Pagination: ${totalRows} rows, ${rowsPerPage} per page, ${totalPages} pages`);
-    console.log(`📏 Final height for ${rowsPerPage} rows: ${estimateContentHeight(rowsPerPage)}px`);
+    console.log(`📄 Smart Pagination: ${groupedRows.length} grouped items (${enrichedRows.length} rows + section titles), ${totalPages} pages`);
+    console.log(`📊 Pages breakdown:`, pages.map((p, i) => `Page ${i + 1}: ${p.length} items (${p.filter(x => x.type === 'title').length} titles, ${p.filter(x => x.type === 'row').length} rows)`));
     
     // Create PDF
     const pdf = new jsPDF({
@@ -1009,11 +1112,18 @@ export async function exportToPDF(
       format: 'a4',
     });
     
-    // Generate pages
+    // Generate pages using grouped rows
+    console.log(`🔄 Starting PDF generation with ${totalPages} pages`);
     for (let pageIndex = 0; pageIndex < totalPages; pageIndex++) {
-      const startRow = pageIndex * rowsPerPage;
-      const endRow = Math.min(startRow + rowsPerPage, enrichedRows.length);
-      const pageRows = enrichedRows.slice(startRow, endRow);
+      const pageGroupedItems = pages[pageIndex];
+      console.log(`📄 Generating page ${pageIndex + 1}/${totalPages} with ${pageGroupedItems.length} items`);
+      
+      // Extract only the rows (not titles) for this page
+      const pageRows = pageGroupedItems
+        .filter(item => item.type === 'row')
+        .map(item => item.row!);
+      
+      console.log(`   - Extracted ${pageRows.length} rows for this page`);
       
       // Generate HTML for this page
       const html = buildNominaMonthHTMLForPDF(project, monthKey, pageRows, monthLabelEs, pageIndex + 1, totalPages);
@@ -1050,13 +1160,17 @@ export async function exportToPDF(
       
       // Add new page if not the first page
       if (pageIndex > 0) {
+        console.log(`   - Adding new page to PDF`);
         pdf.addPage();
       }
       
       // Add image to PDF (full page)
       const imgData = canvas.toDataURL('image/png');
       pdf.addImage(imgData, 'PNG', 0, 0, 297, 210);
+      console.log(`   - Page ${pageIndex + 1} added to PDF`);
     }
+    
+    console.log(`✅ PDF generation complete with ${totalPages} pages`);
     
     // Generate filename
     const projectName = project?.nombre || 'Proyecto';

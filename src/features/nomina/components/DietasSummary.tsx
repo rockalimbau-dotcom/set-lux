@@ -38,7 +38,7 @@ export default function DietasSummary({ dietasCount, ticketTotal }: DietasSummar
   
   return (
     <div>
-      <div className='text-right font-medium text-zinc-100 mb-1'>{totalDietas}</div>
+      <div className='text-center font-medium text-zinc-100 mb-1'>{totalDietas}</div>
       <div className='text-[10px] text-zinc-200 space-y-0.5'>
         {parts.map((part, index) => (
           <div key={index}>{part}</div>

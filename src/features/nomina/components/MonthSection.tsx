@@ -121,6 +121,15 @@ function MonthSection({
     return decimals > 0 ? value.toFixed(decimals) : String(value);
   };
 
+  // Helper function to display monetary values with € symbol
+  const displayMoney = (value: number | undefined | null, decimals: number = 2): string => {
+    if (value === null || value === undefined || value === 0) return '';
+    const formatted = value.toFixed(decimals);
+    // Remove .00 if there are no meaningful decimals
+    const cleaned = formatted.replace(/\.00$/, '');
+    return `${cleaned}€`;
+  };
+
   const openKey = `${persistKeyBase}_${monthKey}_open`;
   const [open, setOpen] = useLocalStorage<boolean>(openKey, defaultOpen);
 
@@ -857,8 +866,8 @@ function MonthSection({
                 {hasCargaDescargaData && <Th align='center'>Total días Carga / Descarga</Th>}
                 {columnVisibility.holidays && <Th align='center'>Días festivos</Th>}
                 {columnVisibility.holidays && <Th align='center'>Total días festivos</Th>}
-                {columnVisibility.travel && <Th align='center'>Días Travel Day</Th>}
-                {columnVisibility.travel && <Th align='center'>Total travel days</Th>}
+                {columnVisibility.travel && <Th align='center'>Días travel day</Th>}
+                {columnVisibility.travel && <Th align='center'>Total travel day</Th>}
                 {columnVisibility.extras && <Th align='center'>Horas extras</Th>}
                 {columnVisibility.extras && <Th align='center'>Total horas extra</Th>}
                 {columnVisibility.dietas && <Th align='center'>Dietas</Th>}
@@ -933,7 +942,7 @@ function MonthSection({
                       </Td>
                     )}
                     {hasWorkedDaysData && (
-                      <Td align='middle' className='text-center'>{displayValue(r._totalDias, 2)}</Td>
+                      <Td align='middle' className='text-center'>{displayMoney(r._totalDias, 2)}</Td>
                     )}
 
                     {hasLocalizacionData && (
@@ -942,7 +951,7 @@ function MonthSection({
                       </Td>
                     )}
                     {hasLocalizacionData && (
-                      <Td align='middle' className='text-center'>{displayValue(r._totalLocalizacion, 2)}</Td>
+                      <Td align='middle' className='text-center'>{displayMoney(r._totalLocalizacion, 2)}</Td>
                     )}
                     {hasCargaDescargaData && (
                       <Td align='middle' className='text-center'>
@@ -960,14 +969,14 @@ function MonthSection({
                       </Td>
                     )}
                     {hasCargaDescargaData && (
-                      <Td align='middle' className='text-center'>{displayValue(r._totalCargaDescarga, 2)}</Td>
+                      <Td align='middle' className='text-center'>{displayMoney(r._totalCargaDescarga, 2)}</Td>
                     )}
 
                     {columnVisibility.holidays && <Td align='middle' className='text-center'>{displayValue(r._holidays)}</Td>}
-                    {columnVisibility.holidays && <Td align='middle' className='text-center'>{displayValue(r._totalHolidays, 2)}</Td>}
+                    {columnVisibility.holidays && <Td align='middle' className='text-center'>{displayMoney(r._totalHolidays, 2)}</Td>}
 
                     {columnVisibility.travel && <Td align='middle' className='text-center'>{displayValue(r._travel)}</Td>}
-                    {columnVisibility.travel && <Td align='middle' className='text-center'>{displayValue(r._totalTravel, 2)}</Td>}
+                    {columnVisibility.travel && <Td align='middle' className='text-center'>{displayMoney(r._totalTravel, 2)}</Td>}
 
                     {columnVisibility.extras && (
                       <Td align='middle' className='text-center'>
@@ -981,7 +990,7 @@ function MonthSection({
                         </div>
                       </Td>
                     )}
-                    {columnVisibility.extras && <Td align='middle' className='text-center'>{displayValue(r._totalExtras, 2)}</Td>}
+                    {columnVisibility.extras && <Td align='middle' className='text-center'>{displayMoney(r._totalExtras, 2)}</Td>}
 
                     {columnVisibility.dietas && (
                       <Td align='middle' className='text-center'>
@@ -993,16 +1002,16 @@ function MonthSection({
                         </div>
                       </Td>
                     )}
-                    {columnVisibility.dietas && <Td align='middle' className='text-center'>{displayValue(r._totalDietas, 2)}</Td>}
+                    {columnVisibility.dietas && <Td align='middle' className='text-center'>{displayMoney(r._totalDietas, 2)}</Td>}
 
                     {columnVisibility.transporte && <Td align='middle' className='text-center'>{displayValue(r.transporte)}</Td>}
-                    {columnVisibility.transporte && <Td align='middle' className='text-center'>{displayValue(r._totalTrans, 2)}</Td>}
+                    {columnVisibility.transporte && <Td align='middle' className='text-center'>{displayMoney(r._totalTrans, 2)}</Td>}
 
                     {columnVisibility.km && <Td align='middle' className='text-center'>{displayValue(r.km, 1)}</Td>}
-                    {columnVisibility.km && <Td align='middle' className='text-center'>{displayValue(r._totalKm, 2)}</Td>}
+                    {columnVisibility.km && <Td align='middle' className='text-center'>{displayMoney(r._totalKm, 2)}</Td>}
 
                     <Td align='middle' className='text-center font-semibold'>
-                      {displayValue(r._totalBruto, 2)}
+                      {displayMoney(r._totalBruto, 2)}
                     </Td>
 
                     <Td align='middle' className='text-center'>
