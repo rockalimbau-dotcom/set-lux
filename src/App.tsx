@@ -3,6 +3,7 @@ import AppRouter from '@app/routes/AppRouter.tsx';
 import Button from '@shared/components/Button.tsx';
 import Input from '@shared/components/Input.tsx';
 import BrandHero from '@shared/components/BrandHero.jsx';
+import { Footer } from '@shared/components/Footer.tsx';
 import { ROLES } from '@shared/constants/roles';
 import { useLocalStorage } from '@shared/hooks/useLocalStorage';
 import { storage } from '@shared/services/localStorage.service';
@@ -222,8 +223,9 @@ function AppInner() {
   );
 
   return (
-    <main id='main-content' role='main'>
-      <Routes>
+    <>
+      <main id='main-content' role='main' className='pb-12'>
+        <Routes>
       <Route
         path='/'
         element={
@@ -659,8 +661,10 @@ function AppInner() {
           />
         }
       />
-      </Routes>
-    </main>
+        </Routes>
+      </main>
+      <Footer />
+    </>
   );
 }
 

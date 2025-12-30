@@ -75,7 +75,7 @@ export default function AppRouter({
 
   if (isProjectsPath || mode === 'projects') {
     return (
-      <div className='min-h-screen bg-neutral-bg text-neutral-text'>
+      <div className='min-h-screen bg-neutral-bg text-neutral-text pb-12'>
         <ErrorBoundary>
           <React.Suspense fallback={null}>
           <ProjectsScreen

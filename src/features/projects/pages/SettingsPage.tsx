@@ -85,7 +85,7 @@ export default function SettingsPage() {
   } as const;
 
   return (
-    <div className='min-h-screen' style={{backgroundColor: colors.pageBg, color: colors.pageText}}>
+    <div className='min-h-screen pb-12' style={{backgroundColor: colors.pageBg, color: colors.pageText}}>
       {/* Header moderno y prominente */}
       <div className='px-6 py-8' style={{backgroundColor: colors.headerBg}}>
         <div className='max-w-6xl mx-auto'>

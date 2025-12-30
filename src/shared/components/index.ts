@@ -13,3 +13,4 @@ export { default as BrandHero } from './BrandHero.tsx';
 export { default as ToggleIconButton } from './ToggleIconButton.tsx';
 export { default as ErrorBoundary } from './ErrorBoundary.tsx';
 export { Th, Td, Row, TableAlign, TableVariant } from './TableCells.tsx';
+export { Footer } from './Footer.tsx';

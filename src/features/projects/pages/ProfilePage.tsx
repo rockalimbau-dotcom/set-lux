@@ -54,7 +54,7 @@ export default function ProfilePage() {
     ? ROLES.map(r => (typeof r === 'string' ? r : (r as any).label as string))
     : [];
   return (
-    <div className='min-h-screen' style={{backgroundColor: 'var(--bg)', color: 'var(--text)'}}>
+    <div className='min-h-screen pb-12' style={{backgroundColor: 'var(--bg)', color: 'var(--text)'}}>
       {/* Header moderno y prominente */}
       <div className='px-6 py-8' style={{backgroundColor: 'var(--bg)'}}>
         <div className='max-w-6xl mx-auto'>

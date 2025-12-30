@@ -32,7 +32,7 @@ export default function MainLayout({ project, onBack }: MainLayoutProps) {
     }`;
 
   return (
-    <div className='min-h-screen grid grid-cols-[260px_1fr] bg-neutral-bg text-neutral-text'>
+    <div className='min-h-screen grid grid-cols-[260px_1fr] bg-neutral-bg text-neutral-text pb-12'>
       <aside className='border-r border-neutral-border p-4 space-y-4'>
         <button
           onClick={onBack}
