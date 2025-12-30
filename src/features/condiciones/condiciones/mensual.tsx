@@ -417,7 +417,7 @@ function CondicionesMensual({ project, onChange = () => {}, onRegisterExport }: 
             <>
               <button
                 onClick={() => setShowRoleSelect(!showRoleSelect)}
-                className='px-3 py-1 text-sm bg-brand text-white rounded-lg hover:bg-brand/80'
+                className='px-3 py-1 text-sm bg-brand text-white rounded-lg hover:bg-brand/80 btn-add-role'
               >
                 + Añadir rol
               </button>

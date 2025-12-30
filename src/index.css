@@ -290,6 +290,11 @@ html input[style*="borderWidth"] {
   color: #111827 !important;
 }
 
+/* Títulos con text-brand en modo oscuro: usar el mismo naranja que los botones */
+[data-theme='dark'] .phase-content .text-brand {
+  color: #F27405 !important;
+}
+
 /* Planificación: "píldoras" de equipo (Chip base) en naranja claro del fondo */
 [data-theme='light'] .phase-content .wk-card span.bg-black\/40 {
   background-color: var(--bg) !important; /* usa el naranja claro global */
@@ -375,6 +380,27 @@ html input[style*="borderWidth"] {
   color: #111827;
 }
 
+/* Excepción: botón \"+ Añadir rol\" debe tener texto blanco en modo claro */
+[data-theme='light'] .phase-content button.btn-add-role {
+  color: #ffffff !important;
+  background-color: #0468BF !important;
+  border-color: #0468BF !important;
+}
+
+/* Botón \"+ Añadir rol\" - efecto de iluminación en hover (modo claro) */
+[data-theme='light'] .phase-content button.btn-add-role:hover,
+[data-theme='light'] .phase-content button.btn-add-role:focus {
+  border-color: var(--phase-accent) !important;
+  box-shadow: 0 0 0 0.5px var(--phase-accent) inset;
+}
+
+/* Botón \"+ Añadir rol\" - efecto de iluminación en hover (modo oscuro) */
+[data-theme='dark'] .phase-content button.btn-add-role:hover,
+[data-theme='dark'] .phase-content button.btn-add-role:focus {
+  border-color: var(--hover-border) !important;
+  box-shadow: 0 0 0 0.5px var(--hover-border) inset;
+}
+
 /* Landing form overrides in light mode: white inputs with black text */
 [data-theme='light'] .landing input {
   background-color: #ffffff !important;
@@ -423,8 +449,8 @@ html input[style*="borderWidth"] {
 /* PDF buttons color in dark mode */
 [data-theme='dark'] .btn-pdf,
 [data-theme='dark'] [title*='PDF'] {
-  background-color: #F27405 !important;
-  border-color: #F27405 !important;
+  background-color: #f59e0b !important;
+  border-color: #f59e0b !important;
   color: #FFFFFF !important;
 }
 

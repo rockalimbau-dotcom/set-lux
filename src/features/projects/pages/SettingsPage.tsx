@@ -78,7 +78,7 @@ export default function SettingsPage() {
     inputBg: isLight ? '#ffffff' : 'rgba(0,0,0,0.4)',
     inputText: isLight ? '#111827' : '#ffffff',
     inputBorder: isLight ? '#e5e7eb' : '#3b5568',
-    primary: isLight ? '#1D4ED8' : '#f97316', // azul corporativo en claro, naranja en oscuro
+    primary: isLight ? '#0468BF' : '#F27405', // azul corporativo en claro, naranja en oscuro
     accentText: isLight ? '#1f2937' : '#ffffff',
     mutedText: isLight ? '#6b7280' : '#d1d5db',
     titleMain: isLight ? '#000000' : '#ffffff', // SetLux color

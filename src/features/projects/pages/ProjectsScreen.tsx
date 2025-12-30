@@ -217,7 +217,7 @@ function NewProjectModal({ onClose, onCreate }: NewProjectModalProps) {
   return (
     <div className='fixed inset-0 bg-black/60 grid place-items-center p-4 z-50'>
       <div className='w-full max-w-lg rounded-2xl border border-neutral-border bg-neutral-panel p-6'>
-        <h3 className={`text-lg font-semibold mb-4 ${theme === 'light' ? 'text-blue-600' : 'text-orange-500'}`}>
+        <h3 className='text-lg font-semibold mb-4' style={{color: theme === 'light' ? '#0468BF' : '#F27405'}}>
           Nuevo proyecto
         </h3>
         <div className='grid grid-cols-2 gap-4'>
@@ -624,7 +624,11 @@ function NewProjectModal({ onClose, onCreate }: NewProjectModalProps) {
             Cancelar
           </button>
           <button
-            className='inline-flex items-center justify-center px-4 py-3 rounded-xl font-semibold bg-brand hover:bg-brand-dark transition shadow-lg'
+            className='inline-flex items-center justify-center px-4 py-3 rounded-xl font-semibold text-white transition shadow-lg hover:shadow-xl'
+            style={{
+              backgroundColor: theme === 'light' ? '#0468BF' : 'var(--brand)',
+              borderColor: theme === 'light' ? '#0468BF' : 'var(--brand)'
+            }}
             onClick={() => {
               if (!form.nombre.trim()) return;
               const proj: Project = {
@@ -786,7 +790,7 @@ function EditProjectModal({ project, onClose, onSave }: EditProjectModalProps) {
   return (
     <div className='fixed inset-0 bg-black/60 grid place-items-center p-4 z-50'>
       <div className='w-full max-w-lg rounded-2xl border border-neutral-border bg-neutral-panel p-6'>
-        <h3 className={`text-lg font-semibold mb-4 ${theme === 'light' ? 'text-blue-600' : 'text-orange-500'}`}>
+        <h3 className='text-lg font-semibold mb-4' style={{color: theme === 'light' ? '#0468BF' : '#F27405'}}>
           Editar proyecto
         </h3>
 
@@ -1200,11 +1204,98 @@ function EditProjectModal({ project, onClose, onSave }: EditProjectModalProps) {
             Cancelar
           </button>
           <button
-            className='inline-flex items-center justify-center px-4 py-3 rounded-xl font-semibold bg-brand hover:bg-brand-dark transition shadow-lg'
+            className='inline-flex items-center justify-center px-4 py-3 rounded-xl font-semibold text-white transition shadow-lg hover:shadow-xl'
+            style={{
+              backgroundColor: theme === 'light' ? '#0468BF' : 'var(--brand)',
+              borderColor: theme === 'light' ? '#0468BF' : 'var(--brand)'
+            }}
             onClick={handleSave}
             type='button'
           >
             Guardar cambios
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** Modal de confirmación para eliminar proyecto */
+interface DeleteConfirmModalProps {
+  project: Project;
+  onClose: () => void;
+  onConfirm: () => void;
+}
+
+function DeleteConfirmModal({ project, onClose, onConfirm }: DeleteConfirmModalProps) {
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+    if (typeof document !== 'undefined') {
+      return (document.documentElement.getAttribute('data-theme') || 'light') as 'dark' | 'light';
+    }
+    return 'light';
+  });
+
+  useEffect(() => {
+    const updateTheme = () => {
+      if (typeof document !== 'undefined') {
+        const currentTheme = (document.documentElement.getAttribute('data-theme') || 'light') as 'dark' | 'light';
+        setTheme(currentTheme);
+      }
+    };
+
+    const observer = new MutationObserver(updateTheme);
+    if (typeof document !== 'undefined') {
+      observer.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['data-theme'],
+      });
+    }
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
+  const isLight = theme === 'light';
+
+  return (
+    <div className='fixed inset-0 bg-black/60 grid place-items-center p-4 z-50'>
+      <div className='w-full max-w-md rounded-2xl border border-neutral-border bg-neutral-panel p-6'>
+        <h3 className='text-lg font-semibold mb-4' style={{color: isLight ? '#0476D9' : '#F27405'}}>
+          Confirmar eliminación
+        </h3>
+        
+        <p className='text-sm mb-6' style={{color: isLight ? '#111827' : '#d1d5db'}}>
+          ¿Estás seguro de que quieres eliminar el proyecto <strong>{project.nombre}</strong>?
+        </p>
+
+        <div className='flex justify-center gap-3'>
+          <button
+            onClick={onClose}
+            className='px-3 py-2 rounded-lg border transition text-sm font-medium hover:border-[var(--hover-border)]'
+            style={{
+              borderColor: 'var(--border)',
+              backgroundColor: isLight ? '#ffffff' : 'rgba(0,0,0,0.2)',
+              color: isLight ? '#111827' : '#d1d5db'
+            }}
+            type='button'
+          >
+            No
+          </button>
+          <button
+            onClick={() => {
+              onConfirm();
+              onClose();
+            }}
+            className='px-3 py-2 rounded-lg border transition text-sm font-medium hover:border-[var(--hover-border)]'
+            style={{
+              borderColor: isLight ? '#F27405' : '#F27405',
+              color: isLight ? '#F27405' : '#F27405',
+              backgroundColor: isLight ? '#ffffff' : 'rgba(0,0,0,0.2)'
+            }}
+            type='button'
+          >
+            Sí
           </button>
         </div>
       </div>
@@ -1229,6 +1320,7 @@ function ProjectsScreen({
   const [showNew, setShowNew] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [editing, setEditing] = useState<Project | null>(null);
+  const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<ProjectStatus | 'Todos'>('Todos');
   const [filterType, setFilterType] = useState<ProjectMode | 'Todos'>('Todos');
@@ -1327,14 +1419,14 @@ function ProjectsScreen({
           if (v) return v;
         } catch {}
         const themeFallback = document.documentElement.getAttribute('data-theme') || 'dark';
-        return themeFallback === 'light' ? '#0476D9' : '#f59e0b';
+        return themeFallback === 'light' ? '#0468BF' : '#f59e0b';
       };
 
       const getConditionColor = (tipo: string) => {
         const v = tipo?.toLowerCase();
         if (isLight) {
           // Tonalidades de naranja en modo claro
-          if (v === 'semanal') return '#ea580c';     // orange-600
+          if (v === 'semanal') return '#F2790F';
           if (v === 'mensual') return '#f59e0b';     // amber-500
           if (v === 'publicidad') return '#fdba74';  // orange-300
           return '#a3a3a3';
@@ -1346,9 +1438,21 @@ function ProjectsScreen({
         return '#64748b';
       };
 
+      const getConditionTextColor = (tipo: string) => {
+        const v = tipo?.toLowerCase();
+        if (isLight) {
+          // Para fondos claros (mensual y publicidad), usar texto negro
+          if (v === 'mensual' || v === 'publicidad') return '#111827';
+          // Para fondos oscuros (semanal), usar texto blanco
+          return '#ffffff';
+        }
+        // En modo oscuro, siempre texto blanco
+        return '#ffffff';
+      };
+
       const getStatusColor = (estado: string) => {
         const theme = document.documentElement.getAttribute('data-theme') || 'light';
-        const activeColor = theme === 'light' ? '#0476D9' : '#f97316';
+        const activeColor = theme === 'light' ? '#0468BF' : '#F27405';
         return estado === 'Activo' ? activeColor : '#64748b';
       };
 
@@ -1370,7 +1474,7 @@ function ProjectsScreen({
           {/* Avatar y nombre del proyecto */}
           <div className='flex items-start gap-4 mb-4'>
             <div 
-              className='w-12 h-12 rounded-full flex items-center justify-center font-bold text-base px-2 border border-transparent hover:border-[var(--hover-border)] transition'
+              className='w-12 h-12 rounded-full flex items-center justify-center font-bold text-base px-2 border border-transparent pointer-events-none'
               style={{backgroundColor: getAvatarColor(p.nombre), color: '#ffffff'}}
             >
               {p.nombre}
@@ -1394,15 +1498,18 @@ function ProjectsScreen({
           </div>
 
           {/* Tags */}
-          <div className='flex flex-wrap gap-2 mb-4'>
+          <div className='flex flex-wrap gap-2 mb-4 pointer-events-none'>
             <span 
-              className='px-3 py-1 rounded-full text-xs font-medium text-white hover:ring-1 hover:ring-[var(--hover-border)] transition'
-              style={{backgroundColor: getConditionColor(p.conditions?.tipo || 'semanal')}}
+              className='px-3 py-1 rounded-full text-xs font-medium'
+              style={{
+                backgroundColor: getConditionColor(p.conditions?.tipo || 'semanal'),
+                color: getConditionTextColor(p.conditions?.tipo || 'semanal')
+              }}
             >
               {formatMode(p.conditions?.tipo || 'semanal')}
             </span>
             <span 
-              className='px-3 py-1 rounded-full text-xs font-medium text-white hover:ring-1 hover:ring-[var(--hover-border)] transition'
+              className='px-3 py-1 rounded-full text-xs font-medium text-white'
               style={{backgroundColor: getStatusColor(estadoVisible)}}
             >
               {estadoVisible}
@@ -1419,27 +1526,25 @@ function ProjectsScreen({
               }}
               className='flex-1 px-3 py-2 rounded-lg border transition text-sm font-medium hover:border-[var(--hover-border)]'
               style={{
-                borderColor: 'var(--border)',
+                borderColor: isLight ? '#0468BF' : 'var(--border)',
                 backgroundColor: isLight ? '#ffffff' : 'rgba(0,0,0,0.2)',
-                color: isLight ? '#111827' : '#d1d5db'
+                color: isLight ? '#0468BF' : '#d1d5db'
               }}
               title='Editar proyecto'
               aria-label={`Editar ${p.nombre}`}
             >
-              <span style={{color: isLight ? '#0476D9' : undefined}}>Editar</span>
+              Editar
             </button>
             <button
               type='button'
               onClick={e => {
                 e.stopPropagation();
-                const ok = window.confirm(`¿Eliminar el proyecto "${p.nombre}"?`);
-                if (!ok) return;
-                onDeleteProject?.(p.id);
+                setProjectToDelete(p);
               }}
               className='flex-1 px-3 py-2 rounded-lg border transition text-sm font-medium hover:border-[var(--hover-border)]'
               style={{
-                borderColor: isLight ? '#fecaca' : '#ef4444',
-                color: isLight ? '#b91c1c' : '#fca5a5',
+                borderColor: isLight ? '#F27405' : '#F27405',
+                color: isLight ? '#F27405' : '#F27405',
                 backgroundColor: isLight ? '#ffffff' : 'rgba(0,0,0,0.2)'
               }}
               title='Eliminar proyecto'
@@ -1475,7 +1580,7 @@ function ProjectsScreen({
               <button
                 onClick={() => setShowNew(true)}
                 className='px-6 py-3 rounded-xl font-semibold text-white transition-all hover:shadow-lg border border-transparent hover:border-[var(--hover-border)]'
-                style={{backgroundColor: 'var(--brand)'}}
+                style={{backgroundColor: (document.documentElement.getAttribute('data-theme')||'dark')==='light' ? '#0468BF' : 'var(--brand)'}}
               >
                 Nuevo proyecto
               </button>
@@ -1486,7 +1591,7 @@ function ProjectsScreen({
                   className='text-sm text-zinc-300 hover:text-white transition-colors cursor-pointer'
                 >
                   <span style={{color: (document.documentElement.getAttribute('data-theme')||'dark')==='light' ? '#111827' : undefined}}>Bienvenido, </span>
-                  <span className='font-semibold' style={{color: (document.documentElement.getAttribute('data-theme')||'dark')==='light' ? '#0476D9' : '#f97316'}}>{userName}</span> ✨
+                  <span className='font-semibold' style={{color: (document.documentElement.getAttribute('data-theme')||'dark')==='light' ? '#0468BF' : '#F27405'}}>{userName}</span> ✨
                 </button>
                 
                 {/* Menú desplegable */}
@@ -1946,6 +2051,18 @@ function ProjectsScreen({
             onCreateProject(proj);
             setShowNew(false);
             onOpen && onOpen(proj);
+          }}
+        />
+      )}
+
+      {/* Modal confirmar eliminación */}
+      {projectToDelete && (
+        <DeleteConfirmModal
+          project={projectToDelete}
+          onClose={() => setProjectToDelete(null)}
+          onConfirm={() => {
+            onDeleteProject?.(projectToDelete.id);
+            setProjectToDelete(null);
           }}
         />
       )}

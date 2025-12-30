@@ -78,7 +78,7 @@ export default function ProfilePage() {
 
       <div className='max-w-6xl mx-auto p-6 flex justify-center'>
         <div className='max-w-md w-full rounded-2xl border p-8' style={{backgroundColor: 'var(--panel)', borderColor: 'var(--border)'}}>
-          <h3 className='text-xl font-semibold mb-6' style={{color: isLight ? '#0476D9' : '#f97316'}}>Datos de usuario</h3>
+          <h3 className='text-xl font-semibold mb-6' style={{color: isLight ? '#0468BF' : '#F27405'}}>Datos de usuario</h3>
 
         <div className='space-y-6'>
           <label className='block space-y-2'>
@@ -174,7 +174,7 @@ export default function ProfilePage() {
           <button 
             onClick={save} 
             className='px-6 py-3 rounded-xl font-semibold text-white transition-colors'
-            style={{backgroundColor: isLight ? '#0476D9' : '#f97316'}}
+            style={{backgroundColor: isLight ? '#0468BF' : '#F27405'}}
           >
             Guardar
           </button>
