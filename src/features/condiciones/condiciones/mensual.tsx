@@ -9,14 +9,14 @@ import { exportCondicionesToPDF } from '../utils/exportPDF';
 
 type AnyRecord = Record<string, any>;
 
-const defaultLegend = `Tarifa mensual: Este precio equivale al precio semanal multiplicado por {{SEMANAS_MES}} semanas.
-Tarifa semanal: Este precio equivale a semanas completas de {{DIAS_DIARIO}} días ({{DIAS_JORNADA}} días de trabajo de {{JORNADA_TRABAJO}}h + {{JORNADA_COMIDA}}h para el almuerzo/cena).
-Precio diario: Es el resultado de dividir el precio mensual entre 30 días.
-Precio jornada: Precio equivalente a semanas incompletas (menos de {{DIAS_DIARIO}} días) de trabajo. Se calcula dividiendo el precio mensual entre el resultado de {{DIAS_JORNADA}} × {{SEMANAS_MES}}.
-Precio refuerzo: Precio para el trabajador que trabaja días esporádicos.
-Precio día extra/festivo: Es el precio equivalente al de jornada multiplicado por {{FACTOR_FESTIVO}}.
-Travel day: Es el precio equivalente al de jornada dividido entre {{DIV_TRAVEL}}.
-Horas extras: Resultado de dividir el precio mensual entre ({{HORAS_SEMANA}} × {{SEMANAS_MES}}) y aplicar un factor {{FACTOR_HORA_EXTRA}}×. Se considera hora extra a partir de {{CORTESIA_MIN}} minutos después del fin de la jornada pactada. A partir de la segunda hora extra no habrá cortesía de {{CORTESIA_MIN}}′. Las horas extras son voluntarias y deberán comunicarse antes del final de la jornada pactada.`;
+const defaultLegend = `<strong>Tarifa mensual:</strong> Este precio equivale al precio semanal multiplicado por {{SEMANAS_MES}} semanas.
+<strong>Tarifa semanal:</strong> Este precio equivale a semanas completas de {{DIAS_DIARIO}} días ({{DIAS_JORNADA}} días de trabajo de {{JORNADA_TRABAJO}}h + {{JORNADA_COMIDA}}h para el almuerzo/cena).
+<strong>Precio diario:</strong> Es el resultado de dividir el precio mensual entre 30 días.
+<strong>Precio jornada:</strong> Precio equivalente a semanas incompletas (menos de {{DIAS_DIARIO}} días) de trabajo. Se calcula dividiendo el precio mensual entre el resultado de {{DIAS_JORNADA}} × {{SEMANAS_MES}}.
+<strong>Precio refuerzo:</strong> Precio para el trabajador que trabaja días esporádicos.
+<strong>Precio día extra/festivo:</strong> Es el precio equivalente al de jornada multiplicado por {{FACTOR_FESTIVO}}.
+<strong>Travel day:</strong> Es el precio equivalente al de jornada dividido entre {{DIV_TRAVEL}}.
+<strong>Horas extras:</strong> Resultado de dividir el precio mensual entre ({{HORAS_SEMANA}} × {{SEMANAS_MES}}) y aplicar un factor {{FACTOR_HORA_EXTRA}}×. Se considera hora extra a partir de {{CORTESIA_MIN}} minutos después del fin de la jornada pactada. A partir de la segunda hora extra no habrá cortesía de {{CORTESIA_MIN}}′. Las horas extras son voluntarias y deberán comunicarse antes del final de la jornada pactada.`;
 
 // Variable global para festivos dinámicos
 let globalDynamicFestivosText = DEFAULT_FESTIVOS_TEXT;
@@ -30,15 +30,15 @@ const updateDynamicFestivos = async () => {
   }
 };
 
-const defaultHorarios = `TURN AROUND: El descanso entre jornadas será de {{TA_DIARIO}}h entre días laborables y de {{TA_FINDE}}h los fines de semana. Todas las horas que no se descansen serán consideradas horas extras.
-NOCTURNIDADES: Se considerará jornada nocturna cuando el inicio o final de la jornada sea entre las {{NOCTURNO_INI}} y las {{NOCTURNO_FIN}}. Se bonificará con un complemento salarial equivalente a una hora extra a cada miembro del equipo.`;
+const defaultHorarios = `<strong>Turn around:</strong> El descanso entre jornadas será de {{TA_DIARIO}}h entre días laborables y de {{TA_FINDE}}h los fines de semana. Todas las horas que no se descansen serán consideradas horas extras.
+<strong>Nocturnidad:</strong> Se considerará jornada nocturna cuando el inicio o final de la jornada sea entre las {{NOCTURNO_INI}} y las {{NOCTURNO_FIN}}. Se bonificará con un complemento salarial equivalente a una hora extra a cada miembro del equipo.`;
 
 const defaultDietas = `Se ingresarán en nómina (importe libre de impuestos) las siguientes cantidades cuando no se disponga de manutención en el rodaje así como cuando se trabaje fuera del centro de actividades habitual. Se incrementará en un 50% fuera del territorio nacional. También se efectuará un anticipo de éstas.
-Comida: {{DIETA_COMIDA}}€
-Cena: {{DIETA_CENA}}€
-Dieta completa sin pernocta: {{DIETA_SIN_PERNOCTA}} €
-Dieta completa y desayuno: {{DIETA_ALOJ_DES}}€
-Gastos de bolsillo: {{GASTOS_BOLSILLO}}€`;
+<strong>Comida:</strong> {{DIETA_COMIDA}}€
+<strong>Cena:</strong> {{DIETA_CENA}}€
+<strong>Dieta completa sin pernocta:</strong> {{DIETA_SIN_PERNOCTA}} €
+<strong>Dieta completa y desayuno:</strong> {{DIETA_ALOJ_DES}}€
+<strong>Gastos de bolsillo:</strong> {{GASTOS_BOLSILLO}}€`;
 
 const defaultTransportes = `Cuando por necesidades de rodaje, el trabajador se desplace fuera del centro habitual de trabajo, se abonará la cantidad de {{KM_EURO}}€/km más los peajes y gastos de estacionamiento pertinentes.
 En caso de transportar a miembros del equipo se bonificará también con la cantidad de {{TRANSPORTE_DIA}}€/día extra.`;
@@ -315,19 +315,6 @@ function CondicionesMensual({ project, onChange = () => {}, onRegisterExport }: 
               onChange={(v: string) => setParam('factorHoraExtra', v)}
             />
             <ParamInput
-              label='Contab. H. extra (día ini / fin)'
-              duo={[
-                {
-                  value: (p.heCierreIni ?? '').toString(),
-                  onChange: (v: string) => setParam('heCierreIni', v),
-                },
-                {
-                  value: (p.heCierreFin ?? '').toString(),
-                  onChange: (v: string) => setParam('heCierreFin', v),
-                },
-              ]}
-            />
-            <ParamInput
               label='Travel day (divisor)'
               value={p.divTravel ?? '2'}
               onChange={(v: string) => setParam('divTravel', v)}
@@ -362,32 +349,32 @@ function CondicionesMensual({ project, onChange = () => {}, onRegisterExport }: 
             />
             <ParamInput
               label='Comida (€)'
-              value={p.dietaComida ?? '14,02'}
+              value={p.dietaComida ?? '14.02'}
               onChange={(v: string) => setParam('dietaComida', v)}
             />
             <ParamInput
               label='Cena (€)'
-              value={p.dietaCena ?? '16,36'}
+              value={p.dietaCena ?? '16.36'}
               onChange={(v: string) => setParam('dietaCena', v)}
             />
             <ParamInput
               label='Dieta s/ pernocta (€)'
-              value={p.dietaSinPernocta ?? '30,38'}
+              value={p.dietaSinPernocta ?? '30.38'}
               onChange={(v: string) => setParam('dietaSinPernocta', v)}
             />
             <ParamInput
               label='Alojamiento + desayuno (€)'
-              value={p.dietaAlojDes ?? '51,39'}
+              value={p.dietaAlojDes ?? '51.39'}
               onChange={(v: string) => setParam('dietaAlojDes', v)}
             />
             <ParamInput
               label='Gastos de bolsillo (€)'
-              value={p.gastosBolsillo ?? '8,81'}
+              value={p.gastosBolsillo ?? '8.81'}
               onChange={(v: string) => setParam('gastosBolsillo', v)}
             />
             <ParamInput
               label='Kilometraje (€/km)'
-              value={p.kilometrajeKm ?? '0,26'}
+              value={p.kilometrajeKm ?? '0.26'}
               onChange={(v: string) => setParam('kilometrajeKm', v)}
             />
             <ParamInput
@@ -476,13 +463,14 @@ function CondicionesMensual({ project, onChange = () => {}, onRegisterExport }: 
                   </div>
                 </Td>
                 {PRICE_HEADERS.map(h => (
-                  <Td key={h} align='middle'>
+                  <Td key={h} align='center'>
                     <input
-                      type='text'
+                      type='number'
                       value={model.prices?.[role]?.[h] ?? ''}
                       onChange={e => handleRoleChange(role, h, e.target.value)}
                       placeholder='€'
-                      className='w-full px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-left'
+                      step='0.01'
+                      className='w-full px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-center'
                     />
                   </Td>
                 ))}
@@ -596,19 +584,28 @@ function loadOrSeed(storageKey: string): AnyRecord {
       taFinde: '48',
       nocturnoIni: '22:00',
       nocturnoFin: '06:00',
-      dietaComida: '14,02',
-      dietaCena: '16,36',
-      dietaSinPernocta: '30,38',
-      dietaAlojDes: '51,39',
-      gastosBolsillo: '8,81',
-      kilometrajeKm: '0,26',
+      dietaComida: '14.02',
+      dietaCena: '16.36',
+      dietaSinPernocta: '30.38',
+      dietaAlojDes: '51.39',
+      gastosBolsillo: '8.81',
+      kilometrajeKm: '0.26',
       transporteDia: '12',
-      heCierreIni: '',
-      heCierreFin: '',
     },
   };
 
   const parsed: AnyRecord = loadJSON(storageKey, fallback);
+
+  // Función helper para normalizar valores numéricos (convertir comas a puntos)
+  const normalizeNumeric = (val: any): string => {
+    if (val == null) return '';
+    const str = String(val);
+    // Si contiene coma y no es una hora (no contiene :), convertir coma a punto
+    if (str.includes(',') && !str.includes(':')) {
+      return str.replace(',', '.');
+    }
+    return str;
+  };
 
   if (parsed) {
     if (parsed.legend && !parsed.legendTemplate) {
@@ -645,29 +642,27 @@ function loadOrSeed(storageKey: string): AnyRecord {
     }
 
     parsed.params = {
-      jornadaTrabajo: parsed.params?.jornadaTrabajo ?? '9',
-      jornadaComida: parsed.params?.jornadaComida ?? '1',
-      diasJornada: parsed.params?.diasJornada ?? '5',
-      diasDiario: parsed.params?.diasDiario ?? '7',
-      semanasMes: parsed.params?.semanasMes ?? '4',
-      horasSemana: parsed.params?.horasSemana ?? '45',
-      factorFestivo: parsed.params?.factorFestivo ?? '1.75',
-      factorHoraExtra: parsed.params?.factorHoraExtra ?? '1.5',
-      divTravel: parsed.params?.divTravel ?? '2',
-      cortesiaMin: parsed.params?.cortesiaMin ?? '15',
-      taDiario: parsed.params?.taDiario ?? '12',
-      taFinde: parsed.params?.taFinde ?? '48',
+      jornadaTrabajo: normalizeNumeric(parsed.params?.jornadaTrabajo) || '9',
+      jornadaComida: normalizeNumeric(parsed.params?.jornadaComida) || '1',
+      diasJornada: normalizeNumeric(parsed.params?.diasJornada) || '5',
+      diasDiario: normalizeNumeric(parsed.params?.diasDiario) || '7',
+      semanasMes: normalizeNumeric(parsed.params?.semanasMes) || '4',
+      horasSemana: normalizeNumeric(parsed.params?.horasSemana) || '45',
+      factorFestivo: normalizeNumeric(parsed.params?.factorFestivo) || '1.75',
+      factorHoraExtra: normalizeNumeric(parsed.params?.factorHoraExtra) || '1.5',
+      divTravel: normalizeNumeric(parsed.params?.divTravel) || '2',
+      cortesiaMin: normalizeNumeric(parsed.params?.cortesiaMin) || '15',
+      taDiario: normalizeNumeric(parsed.params?.taDiario) || '12',
+      taFinde: normalizeNumeric(parsed.params?.taFinde) || '48',
       nocturnoIni: parsed.params?.nocturnoIni ?? '22:00',
       nocturnoFin: parsed.params?.nocturnoFin ?? '06:00',
-      dietaComida: parsed.params?.dietaComida ?? '14,02',
-      dietaCena: parsed.params?.dietaCena ?? '16,36',
-      dietaSinPernocta: parsed.params?.dietaSinPernocta ?? '30,38',
-      dietaAlojDes: parsed.params?.dietaAlojDes ?? '51,39',
-      gastosBolsillo: parsed.params?.gastosBolsillo ?? '8,81',
-      kilometrajeKm: parsed.params?.kilometrajeKm ?? '0,26',
-      transporteDia: parsed.params?.transporteDia ?? '12',
-      heCierreIni: parsed.params?.heCierreIni ?? '',
-      heCierreFin: parsed.params?.heCierreFin ?? '',
+      dietaComida: normalizeNumeric(parsed.params?.dietaComida) || '14.02',
+      dietaCena: normalizeNumeric(parsed.params?.dietaCena) || '16.36',
+      dietaSinPernocta: normalizeNumeric(parsed.params?.dietaSinPernocta) || '30.38',
+      dietaAlojDes: normalizeNumeric(parsed.params?.dietaAlojDes) || '51.39',
+      gastosBolsillo: normalizeNumeric(parsed.params?.gastosBolsillo) || '8.81',
+      kilometrajeKm: normalizeNumeric(parsed.params?.kilometrajeKm) || '0.26',
+      transporteDia: normalizeNumeric(parsed.params?.transporteDia) || '12',
     };
 
     parsed.legendTemplate = parsed.legendTemplate ?? defaultLegend;

@@ -268,23 +268,29 @@ interface ParamInputProps {
   onChange?: (val: string) => void;
   suffix?: string;
   duo?: [DuoField, DuoField];
+  type?: 'number' | 'time' | 'text';
 }
 
-export function ParamInput({ label, value, onChange, suffix, duo }: ParamInputProps) {
+export function ParamInput({ label, value, onChange, suffix, duo, type }: ParamInputProps) {
+  // Determinar el tipo de input: si es nocturno usa 'time', si no se especifica usa 'number' por defecto
+  const inputType = type || (label.toLowerCase().includes('nocturno') ? 'time' : 'number');
+  
   if (duo && Array.isArray(duo) && duo.length === 2) {
     return (
       <label className='space-y-1'>
         <span className='block text-sm text-zinc-300'>{label}</span>
         <div className='flex items-center gap-2'>
           <input
-            className='w-full px-3 py-2 rounded-lg dark:bg-transparent border border-neutral-border focus:outline-none focus:ring-1 text-sm'
+            type={inputType}
+            className='w-full px-3 py-2 rounded-lg dark:bg-transparent border border-neutral-border focus:outline-none focus:ring-1 text-sm text-right'
             value={duo[0].value}
             onChange={e => duo[0].onChange(e.target.value)}
             placeholder=''
           />
           <span className='text-zinc-400'>+</span>
           <input
-            className='w-full px-3 py-2 rounded-lg dark:bg-transparent border border-neutral-border focus:outline-none focus:ring-1 text-sm'
+            type={inputType}
+            className='w-full px-3 py-2 rounded-lg dark:bg-transparent border border-neutral-border focus:outline-none focus:ring-1 text-sm text-right'
             value={duo[1].value}
             onChange={e => duo[1].onChange(e.target.value)}
             placeholder=''
@@ -300,7 +306,8 @@ export function ParamInput({ label, value, onChange, suffix, duo }: ParamInputPr
       <span className='block text-sm text-zinc-300'>{label}</span>
       <div className='flex items-center gap-2'>
         <input
-          className='w-full px-3 py-2 rounded-lg dark:bg-transparent border border-neutral-border focus:outline-none focus:ring-1 text-sm'
+          type={inputType}
+          className='w-full px-3 py-2 rounded-lg dark:bg-transparent border border-neutral-border focus:outline-none focus:ring-1 text-sm text-right'
           value={value || ''}
           onChange={e => onChange && onChange(e.target.value)}
           placeholder=''

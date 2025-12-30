@@ -10,12 +10,12 @@ import { exportCondicionesToPDF } from '../utils/exportPDF';
 
 type AnyRecord = Record<string, any>;
 
-const defaultLegendPubli = `Precio jornada: Importe base por jornada.
-Precio día extra/festivo: Equivale al precio de jornada multiplicado por {{FACTOR_FESTIVO}}. Horas extras festivas equivale al precio de jornada multiplicado por {{FACTOR_HORA_EXTRA_FESTIVA}}.
-Localización técnica: Importe por día de trabajo en localizaciones técnicas previas al rodaje. Si la localización técnica es mayor de 5h + 1h, se contará como jornada completa.
-Carga/descarga: Importe por jornada de carga y descarga de material. Esto equivale a 3 horas extras.
-Travel day: Equivale al precio de jornada.
-Horas extras: Se considera hora extra a partir de {{CORTESIA_MIN}} minutos después del fin de la jornada pactada. A partir de la segunda hora extra no habrá cortesía de {{CORTESIA_MIN}}′. Las horas extras son voluntarias y deberán comunicarse antes del final de la jornada pactada.`;
+const defaultLegendPubli = `<strong>Precio jornada:</strong> Importe base por jornada.
+<strong>Precio día extra/festivo:</strong> Equivale al precio de jornada multiplicado por {{FACTOR_FESTIVO}}. Horas extras festivas equivale al precio de jornada multiplicado por {{FACTOR_HORA_EXTRA_FESTIVA}}.
+<strong>Localización técnica:</strong> Importe por día de trabajo en localizaciones técnicas previas al rodaje. Si la localización técnica es mayor de 5h + 1h, se contará como jornada completa.
+<strong>Carga/descarga:</strong> Importe por jornada de carga y descarga de material. Esto equivale a 3 horas extras.
+<strong>Travel day:</strong> Equivale al precio de jornada.
+<strong>Horas extras:</strong> Se considera hora extra a partir de {{CORTESIA_MIN}} minutos después del fin de la jornada pactada. A partir de la segunda hora extra no habrá cortesía de {{CORTESIA_MIN}}′. Las horas extras son voluntarias y deberán comunicarse antes del final de la jornada pactada.`;
 
 // Variable global para festivos dinámicos
 let globalDynamicFestivosText = DEFAULT_FESTIVOS_TEXT;
@@ -28,15 +28,15 @@ const updateDynamicFestivos = async () => {
     globalDynamicFestivosText = DEFAULT_FESTIVOS_TEXT;
   }
 };
-const defaultHorarios = `Turn Around: El descanso entre jornadas será de {{TA_DIARIO}}h entre días laborables y de {{TA_FINDE}}h los fines de semana. Todas las horas que no se descansen serán consideradas horas extras.
-Nocturnidades: Se considerará jornada nocturna cuando el inicio o final de la jornada sea entre las {{NOCTURNO_INI}} y las {{NOCTURNO_FIN}}. Se bonificará con un complemento salarial equivalente a {{NOCTURNIDAD_COMPLEMENTO}}€. Aparte, tambien las horas nocturnas se bonificarán con un factor {{FACTOR_HORA_EXTRA_FESTIVA}} a las horas extras.`;
+const defaultHorarios = `<strong>Turn around:</strong> El descanso entre jornadas será de {{TA_DIARIO}}h entre días laborables y de {{TA_FINDE}}h los fines de semana. Todas las horas que no se descansen serán consideradas horas extras.
+<strong>Nocturnidad:</strong> Se considerará jornada nocturna cuando el inicio o final de la jornada sea entre las {{NOCTURNO_INI}} y las {{NOCTURNO_FIN}}. Se bonificará con un complemento salarial equivalente a {{NOCTURNIDAD_COMPLEMENTO}}€. Aparte, tambien las horas nocturnas se bonificarán con un factor {{FACTOR_HORA_EXTRA_FESTIVA}} a las horas extras.`;
 const defaultDietas = `Se ingresarán en nómina (importe libre de impuestos) las siguientes cantidades cuando no se disponga de manutención en el rodaje así como cuando se trabaje fuera del centro de actividades habitual. Se incrementará en un 50% fuera del territorio nacional. También se efectuará un anticipo de éstas.
-Desayuno: {{DIETA_DESAYUNO}}€
-Comida: {{DIETA_COMIDA}}€
-Cena: {{DIETA_CENA}}€
-Dieta completa sin pernocta: {{DIETA_SIN_PERNOCTA}} €
-Dieta completa y desayuno: {{DIETA_ALOJ_DES}}€
-Gastos de bolsillo: {{GASTOS_BOLSILLO}}€`;
+<strong>Desayuno:</strong> {{DIETA_DESAYUNO}}€
+<strong>Comida:</strong> {{DIETA_COMIDA}}€
+<strong>Cena:</strong> {{DIETA_CENA}}€
+<strong>Dieta completa sin pernocta:</strong> {{DIETA_SIN_PERNOCTA}} €
+<strong>Dieta completa y desayuno:</strong> {{DIETA_ALOJ_DES}}€
+<strong>Gastos de bolsillo:</strong> {{GASTOS_BOLSILLO}}€`;
 const defaultTransportes = `Cuando por necesidades de rodaje, el trabajador se desplace fuera del centro habitual de trabajo, se abonará la cantidad de {{KM_EURO}}€/km más los peajes y gastos de estacionamiento pertinentes.
 En caso de transportar a miembros del equipo se bonificará también con la cantidad de {{TRANSPORTE_DIA}}€/día extra.`;
 const defaultAlojamiento = `En caso de tener que pernoctar fuera del domicilio habitual del trabajador, la productora deberá facilitar un hotel (mínimo 3 estrellas) con habitación individual y las dietas y gastos de bolsillo pertinentes.`;
@@ -408,7 +408,7 @@ function CondicionesPublicidad({
             />
             <ParamInput
               label='Kilometraje (€/km)'
-              value={p.kilometrajeKm ?? '0,40'}
+              value={p.kilometrajeKm ?? '0.40'}
               onChange={(v: string) => setParam('kilometrajeKm', v)}
             />
             <ParamInput
@@ -496,13 +496,14 @@ function CondicionesPublicidad({
                   </div>
                 </Td>
                 {PRICE_HEADERS_PUBLI.map(h => (
-                  <Td key={h} align='middle'>
+                  <Td key={h} align='center'>
                     <input
-                      type='text'
+                      type='number'
                       value={model.prices?.[role]?.[h] ?? ''}
                       onChange={e => handlePriceChange(role, h, e.target.value)}
                       placeholder='€'
-                      className='w-full px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-left'
+                      step='0.01'
+                      className='w-full px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-center'
                     />
                   </Td>
                 ))}
@@ -671,6 +672,17 @@ function loadOrSeedPublicidad(storageKey: string): AnyRecord {
 
     const parsed: AnyRecord = loadJSON(storageKey, fallback);
 
+    // Función helper para normalizar valores numéricos (convertir comas a puntos)
+    const normalizeNumeric = (val: any): string => {
+      if (val == null) return '';
+      const str = String(val);
+      // Si contiene coma y no es una hora (no contiene :), convertir coma a punto
+      if (str.includes(',') && !str.includes(':')) {
+        return str.replace(',', '.');
+      }
+      return str;
+    };
+
     if (parsed) {
     if (parsed.legend && !parsed.legendTemplate) {
       parsed.legendTemplate = parsed.legend;
@@ -703,24 +715,24 @@ function loadOrSeedPublicidad(storageKey: string): AnyRecord {
     }
 
     parsed.params = {
-      jornadaTrabajo: parsed.params?.jornadaTrabajo ?? '10',
-      jornadaComida: parsed.params?.jornadaComida ?? '1',
-      factorFestivo: parsed.params?.factorFestivo ?? '1.75',
-      factorHoraExtraFestiva: parsed.params?.factorHoraExtraFestiva ?? '1.5',
-      cortesiaMin: parsed.params?.cortesiaMin ?? '15',
-      taDiario: parsed.params?.taDiario ?? '10',
-      taFinde: parsed.params?.taFinde ?? '48',
-      nocturnidadComplemento: parsed.params?.nocturnidadComplemento ?? '50',
+      jornadaTrabajo: normalizeNumeric(parsed.params?.jornadaTrabajo) || '10',
+      jornadaComida: normalizeNumeric(parsed.params?.jornadaComida) || '1',
+      factorFestivo: normalizeNumeric(parsed.params?.factorFestivo) || '1.75',
+      factorHoraExtraFestiva: normalizeNumeric(parsed.params?.factorHoraExtraFestiva) || '1.5',
+      cortesiaMin: normalizeNumeric(parsed.params?.cortesiaMin) || '15',
+      taDiario: normalizeNumeric(parsed.params?.taDiario) || '10',
+      taFinde: normalizeNumeric(parsed.params?.taFinde) || '48',
+      nocturnidadComplemento: normalizeNumeric(parsed.params?.nocturnidadComplemento) || '50',
       nocturnoIni: parsed.params?.nocturnoIni ?? '02:00',
       nocturnoFin: parsed.params?.nocturnoFin ?? '06:00',
-      dietaDesayuno: parsed.params?.dietaDesayuno ?? '10',
-      dietaComida: parsed.params?.dietaComida ?? '20',
-      dietaCena: parsed.params?.dietaCena ?? '30',
-      dietaSinPernocta: parsed.params?.dietaSinPernocta ?? '50',
-      dietaAlojDes: parsed.params?.dietaAlojDes ?? '60',
-      gastosBolsillo: parsed.params?.gastosBolsillo ?? '10',
-      kilometrajeKm: parsed.params?.kilometrajeKm ?? '0,40',
-      transporteDia: parsed.params?.transporteDia ?? '12',
+      dietaDesayuno: normalizeNumeric(parsed.params?.dietaDesayuno) || '10',
+      dietaComida: normalizeNumeric(parsed.params?.dietaComida) || '20',
+      dietaCena: normalizeNumeric(parsed.params?.dietaCena) || '30',
+      dietaSinPernocta: normalizeNumeric(parsed.params?.dietaSinPernocta) || '50',
+      dietaAlojDes: normalizeNumeric(parsed.params?.dietaAlojDes) || '60',
+      gastosBolsillo: normalizeNumeric(parsed.params?.gastosBolsillo) || '10',
+      kilometrajeKm: normalizeNumeric(parsed.params?.kilometrajeKm) || '0.40',
+      transporteDia: normalizeNumeric(parsed.params?.transporteDia) || '15',
     };
 
     parsed.legendTemplate = parsed.legendTemplate ?? defaultLegendPubli;
