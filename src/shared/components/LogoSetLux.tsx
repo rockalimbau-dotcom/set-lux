@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 interface LogoSetLuxProps {
   compact?: boolean;
@@ -32,9 +32,45 @@ export default function LogoSetLux({
 
 /** Logo inline (el que te gustó): cuadrado cálido + triángulo oscuro */
 function LogoIcon({ size = 80 }: { size?: number }) {
+  const [theme, setTheme] = useState<string>(() => {
+    if (typeof document !== 'undefined') {
+      return document.documentElement.getAttribute('data-theme') || 'dark';
+    }
+    return 'dark';
+  });
+
+  useEffect(() => {
+    // Función para detectar cambios en el tema
+    const updateTheme = () => {
+      if (typeof document !== 'undefined') {
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        setTheme(currentTheme);
+      }
+    };
+
+    // Observar cambios en el atributo data-theme
+    const observer = new MutationObserver(updateTheme);
+    if (typeof document !== 'undefined') {
+      observer.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['data-theme'],
+      });
+    }
+
+    // También escuchar eventos personalizados si se emiten al cambiar el tema
+    window.addEventListener('themechange', updateTheme);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('themechange', updateTheme);
+    };
+  }, []);
+
+  const logoSrc = theme === 'light' ? '/Logo_SetLux_02_01.png' : '/Logo_SetLux_02.png';
+
   return (
     <img
-      src={'/Logo_SetLux_02.png'}
+      src={logoSrc}
       alt='SetLux'
       width={size}
       height={size}
