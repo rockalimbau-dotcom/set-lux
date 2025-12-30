@@ -430,6 +430,32 @@ function MonthSection({
         console.debug('[NOMINA.MONTH] Role prices for', baseRoleLabel, ':', pr);
       }
 
+      // Para publicidad: si el rol no tiene precio jornada (no está en condiciones), 
+      // forzar todos los precios a 0 para que no se muestren cantidades
+      // pero sí se pueden mostrar días trabajados
+      const hasValidPrices = projectMode === 'publicidad' ? pr.jornada > 0 : true;
+      const effectivePr = projectMode === 'publicidad' && !hasValidPrices
+        ? {
+            ...pr,
+            jornada: 0,
+            travelDay: 0,
+            horaExtra: 0,
+            holidayDay: 0,
+            transporte: 0,
+            km: 0,
+            cargaDescarga: 0,
+            localizacionTecnica: 0,
+            dietas: {
+              Desayuno: 0,
+              Comida: 0,
+              Cena: 0,
+              'Dieta sin pernoctar': 0,
+              'Dieta completa + desayuno': 0,
+              'Gastos de bolsillo': 0,
+            },
+          }
+        : pr;
+
       let roleDisplay = r.role;
       if (r.role !== 'REF') {
         if (workedPre > 0 && workedBase === 0 && workedPick === 0)
@@ -485,13 +511,13 @@ function MonthSection({
 
       const cnt = (label: string) => dietasMap.get(label) || 0;
       const totalDietas =
-        cnt('Desayuno') * (pr.dietas['Desayuno'] || 0) +
-        cnt('Comida') * (pr.dietas['Comida'] || 0) +
-        cnt('Cena') * (pr.dietas['Cena'] || 0) +
-        cnt('Dieta sin pernoctar') * (pr.dietas['Dieta sin pernoctar'] || 0) +
+        cnt('Desayuno') * (effectivePr.dietas['Desayuno'] || 0) +
+        cnt('Comida') * (effectivePr.dietas['Comida'] || 0) +
+        cnt('Cena') * (effectivePr.dietas['Cena'] || 0) +
+        cnt('Dieta sin pernoctar') * (effectivePr.dietas['Dieta sin pernoctar'] || 0) +
         cnt('Dieta completa + desayuno') *
-          (pr.dietas['Dieta completa + desayuno'] || 0) +
-        cnt('Gastos de bolsillo') * (pr.dietas['Gastos de bolsillo'] || 0) +
+          (effectivePr.dietas['Dieta completa + desayuno'] || 0) +
+        cnt('Gastos de bolsillo') * (effectivePr.dietas['Gastos de bolsillo'] || 0) +
         (ticketValue || 0);
 
       // Cálculo de días según el modo del proyecto
@@ -505,33 +531,89 @@ function MonthSection({
       let _totalLocalizacion: number = 0;
       let _totalCargaDescarga: number = 0;
 
+      // Detectar qué precios faltan para mostrar mensajes
+      const missingPrices: {
+        jornada?: boolean;
+        localizacionTecnica?: boolean;
+        cargaDescarga?: boolean;
+        travelDay?: boolean;
+        holidayDay?: boolean;
+        horaExtra?: boolean;
+        transporte?: boolean;
+        km?: boolean;
+        dietas?: boolean;
+      } = {};
+
       if (projectMode === 'publicidad') {
         // Cálculo específico para publicidad
         // Total días = solo rodaje × precio jornada (carga/descarga y localización tienen sus propias columnas)
         const rodajeDays = rodaje || 0;
-        totalDias = rodajeDays * (pr.jornada || 0);
+        if (rodajeDays > 0 && (effectivePr.jornada || 0) === 0) {
+          missingPrices.jornada = true;
+        }
+        totalDias = rodajeDays * (effectivePr.jornada || 0);
         
         // Calcular totales para las nuevas columnas
         const localizacionDays = localizar || 0;
         const cargaDays = carga || 0;
         const descargaDays = descarga || 0;
-        _totalLocalizacion = localizacionDays * (pr.localizacionTecnica || 0);
-        _totalCargaDescarga = (cargaDays + descargaDays) * (pr.cargaDescarga || 0);
+        if (localizacionDays > 0 && (effectivePr.localizacionTecnica || 0) === 0) {
+          missingPrices.localizacionTecnica = true;
+        }
+        if ((cargaDays + descargaDays) > 0 && (effectivePr.cargaDescarga || 0) === 0) {
+          missingPrices.cargaDescarga = true;
+        }
+        _totalLocalizacion = localizacionDays * (effectivePr.localizacionTecnica || 0);
+        _totalCargaDescarga = (cargaDays + descargaDays) * (effectivePr.cargaDescarga || 0);
         
-        totalTravel = travelDays * (pr.travelDay || 0);
-        totalHolidays = holidayDays * (pr.holidayDay || 0);
+        if (travelDays > 0 && (effectivePr.travelDay || 0) === 0) {
+          missingPrices.travelDay = true;
+        }
+        if (holidayDays > 0 && (effectivePr.holidayDay || 0) === 0) {
+          missingPrices.holidayDay = true;
+        }
+        totalTravel = travelDays * (effectivePr.travelDay || 0);
+        totalHolidays = holidayDays * (effectivePr.holidayDay || 0);
         
         // Total horas extras = horas extras + turn around + nocturnidad + penalty lunch + horas extras festivas
         const horasExtrasFestivas = 0; // TODO: Necesitamos datos de horas extras festivas
+        const totalExtrasCount = horasExtraValue + turnAroundValue + nocturnidadValue + penaltyLunchValue;
+        if (totalExtrasCount > 0 && (effectivePr.horaExtra || 0) === 0) {
+          missingPrices.horaExtra = true;
+        }
         _totalExtras = 
-          (horasExtraValue * (pr.horaExtra || 0)) +
-          (turnAroundValue * (pr.horaExtra || 0)) +
-          (nocturnidadValue * (pr.horaExtra || 0) * (pr.factorHoraExtraFestiva || 1)) +
-          (penaltyLunchValue * (pr.horaExtra || 0)) +
-          (horasExtrasFestivas * (pr.horaExtra || 0) * (pr.factorHoraExtraFestiva || 1));
+          (horasExtraValue * (effectivePr.horaExtra || 0)) +
+          (turnAroundValue * (effectivePr.horaExtra || 0)) +
+          (nocturnidadValue * (effectivePr.horaExtra || 0) * (effectivePr.factorHoraExtraFestiva || 1)) +
+          (penaltyLunchValue * (effectivePr.horaExtra || 0)) +
+          (horasExtrasFestivas * (effectivePr.horaExtra || 0) * (effectivePr.factorHoraExtraFestiva || 1));
         
-        _totalTrans = transporteValue * (pr.transporte || 0);
-        _totalKm = (kmValue || 0) * (pr.km || 0);
+        if (transporteValue > 0 && (effectivePr.transporte || 0) === 0) {
+          missingPrices.transporte = true;
+        }
+        if ((kmValue || 0) > 0 && (effectivePr.km || 0) === 0) {
+          missingPrices.km = true;
+        }
+        _totalTrans = transporteValue * (effectivePr.transporte || 0);
+        _totalKm = (kmValue || 0) * (effectivePr.km || 0);
+        
+        // Verificar dietas
+        const hasDietasData = cnt('Desayuno') > 0 || cnt('Comida') > 0 || cnt('Cena') > 0 || 
+                              cnt('Dieta sin pernoctar') > 0 || cnt('Dieta completa + desayuno') > 0 || 
+                              cnt('Gastos de bolsillo') > 0 || (ticketValue || 0) > 0;
+        if (hasDietasData && totalDietas === 0) {
+          // Verificar si todos los precios de dietas son 0
+          const allDietasPricesZero = 
+            (effectivePr.dietas['Desayuno'] || 0) === 0 &&
+            (effectivePr.dietas['Comida'] || 0) === 0 &&
+            (effectivePr.dietas['Cena'] || 0) === 0 &&
+            (effectivePr.dietas['Dieta sin pernoctar'] || 0) === 0 &&
+            (effectivePr.dietas['Dieta completa + desayuno'] || 0) === 0 &&
+            (effectivePr.dietas['Gastos de bolsillo'] || 0) === 0;
+          if (allDietasPricesZero) {
+            missingPrices.dietas = true;
+          }
+        }
         
         _totalBruto =
           totalDias +
@@ -548,18 +630,59 @@ function MonthSection({
         if (projectMode === 'mensual') {
           // Para mensual: usar precio diario calculado desde precio mensual
           // Total días = totalDiasTrabajados (todos los días del mes) * precio diario
-          const precioMensual = (pr as any).precioMensual || 0;
-          const precioDiario = precioMensual > 0 && priceDays > 0 ? precioMensual / priceDays : (pr.jornada || 0);
+          const precioMensual = (effectivePr as any).precioMensual || 0;
+          const precioDiario = precioMensual > 0 && priceDays > 0 ? precioMensual / priceDays : (effectivePr.jornada || 0);
+          if (totalDiasTrabajados > 0 && precioDiario === 0) {
+            missingPrices.jornada = true;
+          }
           totalDias = totalDiasTrabajados * precioDiario;
         } else {
           // Para semanal: usar precio jornada como antes
-          totalDias = workedDays * (pr.jornada || 0);
+          if (workedDays > 0 && (effectivePr.jornada || 0) === 0) {
+            missingPrices.jornada = true;
+          }
+          totalDias = workedDays * (effectivePr.jornada || 0);
         }
-        totalTravel = travelDays * (pr.travelDay || 0);
-        totalHolidays = holidayDays * (pr.holidayDay || 0);
-        _totalExtras = (horasExtraValue + turnAroundValue + nocturnidadValue + penaltyLunchValue) * (pr.horaExtra || 0);
-        _totalTrans = transporteValue * (pr.transporte || 0);
-        _totalKm = (kmValue || 0) * (pr.km || 0);
+        if (travelDays > 0 && (effectivePr.travelDay || 0) === 0) {
+          missingPrices.travelDay = true;
+        }
+        if (holidayDays > 0 && (effectivePr.holidayDay || 0) === 0) {
+          missingPrices.holidayDay = true;
+        }
+        const totalExtrasCount = horasExtraValue + turnAroundValue + nocturnidadValue + penaltyLunchValue;
+        if (totalExtrasCount > 0 && (effectivePr.horaExtra || 0) === 0) {
+          missingPrices.horaExtra = true;
+        }
+        totalTravel = travelDays * (effectivePr.travelDay || 0);
+        totalHolidays = holidayDays * (effectivePr.holidayDay || 0);
+        _totalExtras = (horasExtraValue + turnAroundValue + nocturnidadValue + penaltyLunchValue) * (effectivePr.horaExtra || 0);
+        if (transporteValue > 0 && (effectivePr.transporte || 0) === 0) {
+          missingPrices.transporte = true;
+        }
+        if ((kmValue || 0) > 0 && (effectivePr.km || 0) === 0) {
+          missingPrices.km = true;
+        }
+        _totalTrans = transporteValue * (effectivePr.transporte || 0);
+        _totalKm = (kmValue || 0) * (effectivePr.km || 0);
+        
+        // Verificar dietas
+        const hasDietasData = cnt('Desayuno') > 0 || cnt('Comida') > 0 || cnt('Cena') > 0 || 
+                              cnt('Dieta sin pernoctar') > 0 || cnt('Dieta completa + desayuno') > 0 || 
+                              cnt('Gastos de bolsillo') > 0 || (ticketValue || 0) > 0;
+        if (hasDietasData && totalDietas === 0) {
+          // Verificar si todos los precios de dietas son 0
+          const allDietasPricesZero = 
+            (effectivePr.dietas['Desayuno'] || 0) === 0 &&
+            (effectivePr.dietas['Comida'] || 0) === 0 &&
+            (effectivePr.dietas['Cena'] || 0) === 0 &&
+            (effectivePr.dietas['Dieta sin pernoctar'] || 0) === 0 &&
+            (effectivePr.dietas['Dieta completa + desayuno'] || 0) === 0 &&
+            (effectivePr.dietas['Gastos de bolsillo'] || 0) === 0;
+          if (allDietasPricesZero) {
+            missingPrices.dietas = true;
+          }
+        }
+        
         _totalBruto =
           totalDias +
           totalTravel +
@@ -627,7 +750,8 @@ function MonthSection({
         _cargaDays: projectMode === 'publicidad' ? (carga || 0) : 0,
         _descargaDays: projectMode === 'publicidad' ? (descarga || 0) : 0,
         _dietasLabel: dietasLabelParts.join(' · ') || '—',
-        _pr: pr,
+        _pr: effectivePr,
+        _missingPrices: missingPrices,
       };
     });
   }, [
@@ -960,7 +1084,13 @@ function MonthSection({
                       </Td>
                     )}
                     {hasWorkedDaysData && (
-                      <Td align='middle' className='text-center'>{displayMoney(r._totalDias, 2)}</Td>
+                      <Td align='middle' className='text-center'>
+                        {r._missingPrices?.jornada ? (
+                          <span className='text-xs text-zinc-400 italic'>Añade precio en condiciones</span>
+                        ) : (
+                          displayMoney(r._totalDias, 2)
+                        )}
+                      </Td>
                     )}
 
                     {hasLocalizacionData && (
@@ -969,7 +1099,13 @@ function MonthSection({
                       </Td>
                     )}
                     {hasLocalizacionData && (
-                      <Td align='middle' className='text-center'>{displayMoney(r._totalLocalizacion, 2)}</Td>
+                      <Td align='middle' className='text-center'>
+                        {r._missingPrices?.localizacionTecnica ? (
+                          <span className='text-xs text-zinc-400 italic'>Añade precio en condiciones</span>
+                        ) : (
+                          displayMoney(r._totalLocalizacion, 2)
+                        )}
+                      </Td>
                     )}
                     {hasCargaDescargaData && (
                       <Td align='middle' className='text-center'>
@@ -987,14 +1123,36 @@ function MonthSection({
                       </Td>
                     )}
                     {hasCargaDescargaData && (
-                      <Td align='middle' className='text-center'>{displayMoney(r._totalCargaDescarga, 2)}</Td>
+                      <Td align='middle' className='text-center'>
+                        {r._missingPrices?.cargaDescarga ? (
+                          <span className='text-xs text-zinc-400 italic'>Añade precio en condiciones</span>
+                        ) : (
+                          displayMoney(r._totalCargaDescarga, 2)
+                        )}
+                      </Td>
                     )}
 
                     {columnVisibility.holidays && <Td align='middle' className='text-center'>{displayValue(r._holidays)}</Td>}
-                    {columnVisibility.holidays && <Td align='middle' className='text-center'>{displayMoney(r._totalHolidays, 2)}</Td>}
+                    {columnVisibility.holidays && (
+                      <Td align='middle' className='text-center'>
+                        {r._missingPrices?.holidayDay ? (
+                          <span className='text-xs text-zinc-400 italic'>Añade precio en condiciones</span>
+                        ) : (
+                          displayMoney(r._totalHolidays, 2)
+                        )}
+                      </Td>
+                    )}
 
                     {columnVisibility.travel && <Td align='middle' className='text-center'>{displayValue(r._travel)}</Td>}
-                    {columnVisibility.travel && <Td align='middle' className='text-center'>{displayMoney(r._totalTravel, 2)}</Td>}
+                    {columnVisibility.travel && (
+                      <Td align='middle' className='text-center'>
+                        {r._missingPrices?.travelDay ? (
+                          <span className='text-xs text-zinc-400 italic'>Añade precio en condiciones</span>
+                        ) : (
+                          displayMoney(r._totalTravel, 2)
+                        )}
+                      </Td>
+                    )}
 
                     {columnVisibility.extras && (
                       <Td align='middle' className='text-center'>
@@ -1008,7 +1166,15 @@ function MonthSection({
                         </div>
                       </Td>
                     )}
-                    {columnVisibility.extras && <Td align='middle' className='text-center'>{displayMoney(r._totalExtras, 2)}</Td>}
+                    {columnVisibility.extras && (
+                      <Td align='middle' className='text-center'>
+                        {r._missingPrices?.horaExtra ? (
+                          <span className='text-xs text-zinc-400 italic'>Añade precio en condiciones</span>
+                        ) : (
+                          displayMoney(r._totalExtras, 2)
+                        )}
+                      </Td>
+                    )}
 
                     {columnVisibility.dietas && (
                       <Td align='middle' className='text-center'>
@@ -1020,13 +1186,37 @@ function MonthSection({
                         </div>
                       </Td>
                     )}
-                    {columnVisibility.dietas && <Td align='middle' className='text-center'>{displayMoney(r._totalDietas, 2)}</Td>}
+                    {columnVisibility.dietas && (
+                      <Td align='middle' className='text-center'>
+                        {r._missingPrices?.dietas ? (
+                          <span className='text-xs text-zinc-400 italic'>Añade precio en condiciones</span>
+                        ) : (
+                          displayMoney(r._totalDietas, 2)
+                        )}
+                      </Td>
+                    )}
 
                     {columnVisibility.transporte && <Td align='middle' className='text-center'>{displayValue(r.transporte)}</Td>}
-                    {columnVisibility.transporte && <Td align='middle' className='text-center'>{displayMoney(r._totalTrans, 2)}</Td>}
+                    {columnVisibility.transporte && (
+                      <Td align='middle' className='text-center'>
+                        {r._missingPrices?.transporte ? (
+                          <span className='text-xs text-zinc-400 italic'>Añade precio en condiciones</span>
+                        ) : (
+                          displayMoney(r._totalTrans, 2)
+                        )}
+                      </Td>
+                    )}
 
                     {columnVisibility.km && <Td align='middle' className='text-center'>{displayValue(r.km, 1)}</Td>}
-                    {columnVisibility.km && <Td align='middle' className='text-center'>{displayMoney(r._totalKm, 2)}</Td>}
+                    {columnVisibility.km && (
+                      <Td align='middle' className='text-center'>
+                        {r._missingPrices?.km ? (
+                          <span className='text-xs text-zinc-400 italic'>Añade precio en condiciones</span>
+                        ) : (
+                          displayMoney(r._totalKm, 2)
+                        )}
+                      </Td>
+                    )}
 
                     <Td align='middle' className='text-center font-semibold'>
                       {displayMoney(r._totalBruto, 2)}

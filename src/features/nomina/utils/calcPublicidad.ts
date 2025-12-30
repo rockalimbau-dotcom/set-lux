@@ -3,6 +3,7 @@ import { storage } from '@shared/services/localStorage.service';
 import { parseYYYYMMDD } from './date';
 import { parseNum, parseDietasValue, parseHorasExtra } from './parse';
 import { stripPR, buildRefuerzoIndex, weekISOdays, weekAllPeopleActive } from './plan';
+import { ROLE_CODE_TO_LABEL } from '@shared/constants/roles';
 
 export function makeRolePrices(project: any) {
   // Forzar el modo a publicidad para que loadCondModel cargue las condiciones correctas
@@ -280,6 +281,56 @@ export function aggregateReports(project: any, weeks: any[], filterISO: ((iso: s
   const totals = new Map<string, any>();
   const refuerzoSet = buildRefuerzoIndex(weeks);
 
+  // Obtener los roles que están definidos en condiciones
+  const projectWithMode = {
+    ...project,
+    conditions: {
+      ...project?.conditions,
+      tipo: 'publicidad'
+    }
+  };
+  const model = loadCondModel(projectWithMode, 'publicidad');
+  const priceRows = model?.prices || {};
+  const rolesInCondiciones = new Set(Object.keys(priceRows).map(r => {
+    // Normalizar el nombre del rol (sin acentos, minúsculas, sin sufijos P/R)
+    return String(r || '')
+      .replace(/[PR]$/i, '')
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/\p{Diacritic}/gu, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }));
+
+  // Debug: mostrar qué roles están en condiciones
+  if ((import.meta as any).env.DEV) {
+    console.debug('[NOMINA.PUBLICIDAD.aggregateReports] Roles en condiciones (originales):', Object.keys(priceRows));
+    console.debug('[NOMINA.PUBLICIDAD.aggregateReports] Roles en condiciones (normalizados):', Array.from(rolesInCondiciones));
+  }
+
+  // Función para verificar si un rol está en condiciones
+  const isRoleInCondiciones = (roleCode: string): boolean => {
+    // Convertir código a nombre (ej: "BB" -> "Best boy")
+    const roleName = ROLE_CODE_TO_LABEL[roleCode as keyof typeof ROLE_CODE_TO_LABEL] || roleCode;
+    // Normalizar el nombre (sin acentos, minúsculas, sin sufijos P/R)
+    const normalized = String(roleName || '')
+      .replace(/[PR]$/i, '')
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/\p{Diacritic}/gu, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+    
+    const isIn = rolesInCondiciones.has(normalized);
+    
+    // Debug: mostrar la verificación
+    if ((import.meta as any).env.DEV) {
+      console.debug(`[NOMINA.PUBLICIDAD.aggregateReports] isRoleInCondiciones: código="${roleCode}", nombre="${roleName}", normalizado="${normalized}", está en condiciones=${isIn}`);
+    }
+    
+    return isIn;
+  };
+
   const storageKeyFor = (roleCode: string, name: string, block?: string) => {
     const base = stripPR(roleCode || '');
     
@@ -347,17 +398,19 @@ export function aggregateReports(project: any, weeks: any[], filterISO: ((iso: s
       const r = p.role || '';
       const n = p.name || '';
       const vk = visibleRoleFor(r, n);
+      
+      // REF no se procesa en publicidad (no hay refuerzos)
       if (vk === 'REF') {
-        // Claves posibles en Reportes por bloque
-        for (const sk of [`REF__${n}`, `REF.pre__${n}`, `REF.pick__${n}`]) {
-          if (!uniqStorage.has(sk)) uniqStorage.set(sk, vk);
-        }
-      } else {
-        // Detectar bloque basándose en el sufijo del rol
-        const block = r.endsWith('P') ? 'pre' : r.endsWith('R') ? 'pick' : undefined;
-        const sk = storageKeyFor(r, n, block);
-        if (!uniqStorage.has(sk)) uniqStorage.set(sk, vk);
+        continue; // En publicidad no hay refuerzos
       }
+      
+      // NO filtrar aquí: permitir que todos los roles aparezcan
+      // El filtrado de cantidades se hace en MonthSection basándose en si tienen precios válidos
+      
+      // Detectar bloque basándose en el sufijo del rol
+      const block = r.endsWith('P') ? 'pre' : r.endsWith('R') ? 'pick' : undefined;
+      const sk = storageKeyFor(r, n, block);
+      if (!uniqStorage.has(sk)) uniqStorage.set(sk, vk);
     }
 
     // Debug: log week data
@@ -370,6 +423,9 @@ export function aggregateReports(project: any, weeks: any[], filterISO: ((iso: s
     for (const [storageKey, visibleKey] of uniqStorage) {
       const pk = storageKey;
       const roleVis = visibleKey;
+      
+      // NO filtrar aquí: permitir que todos los roles aparezcan
+      // El filtrado de cantidades se hace en MonthSection basándose en si tienen precios válidos
       
       // Debug: mostrar qué claves estamos buscando
       if ((import.meta as any).env.DEV) {
@@ -537,6 +593,42 @@ export function aggregateWindowedReport(project: any, weeks: any[], filterISO: (
   const totals = new Map<string, any>();
   const refuerzoSet = buildRefuerzoIndex(weeks);
 
+  // Obtener los roles que están definidos en condiciones
+  const projectWithMode = {
+    ...project,
+    conditions: {
+      ...project?.conditions,
+      tipo: 'publicidad'
+    }
+  };
+  const model = loadCondModel(projectWithMode, 'publicidad');
+  const priceRows = model?.prices || {};
+  const rolesInCondiciones = new Set(Object.keys(priceRows).map(r => {
+    // Normalizar el nombre del rol (sin acentos, minúsculas, sin sufijos P/R)
+    return String(r || '')
+      .replace(/[PR]$/i, '')
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/\p{Diacritic}/gu, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }));
+
+  // Función para verificar si un rol está en condiciones
+  const isRoleInCondiciones = (roleCode: string): boolean => {
+    // Convertir código a nombre (ej: "BB" -> "Best boy")
+    const roleName = ROLE_CODE_TO_LABEL[roleCode as keyof typeof ROLE_CODE_TO_LABEL] || roleCode;
+    // Normalizar el nombre (sin acentos, minúsculas, sin sufijos P/R)
+    const normalized = String(roleName || '')
+      .replace(/[PR]$/i, '')
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/\p{Diacritic}/gu, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+    return rolesInCondiciones.has(normalized);
+  };
+
   const storageKeyFor = (roleCode: string, name: string, block?: string) => {
     const base = stripPR(roleCode || '');
     
@@ -601,17 +693,19 @@ export function aggregateWindowedReport(project: any, weeks: any[], filterISO: (
       const r = p.role || '';
       const n = p.name || '';
       const vk = visibleRoleFor(r, n);
+      
+      // REF no se procesa en publicidad (no hay refuerzos)
       if (vk === 'REF') {
-        // Claves posibles en Reportes por bloque
-        for (const sk of [`REF__${n}`, `REF.pre__${n}`, `REF.pick__${n}`]) {
-          if (!uniqStorage.has(sk)) uniqStorage.set(sk, vk);
-        }
-      } else {
-        // Detectar bloque basándose en el sufijo del rol
-        const block = r.endsWith('P') ? 'pre' : r.endsWith('R') ? 'pick' : undefined;
-        const sk = storageKeyFor(r, n, block);
-        if (!uniqStorage.has(sk)) uniqStorage.set(sk, vk);
+        continue; // En publicidad no hay refuerzos
       }
+      
+      // NO filtrar aquí: permitir que todos los roles aparezcan
+      // El filtrado de cantidades se hace en MonthSection basándose en si tienen precios válidos
+      
+      // Detectar bloque basándose en el sufijo del rol
+      const block = r.endsWith('P') ? 'pre' : r.endsWith('R') ? 'pick' : undefined;
+      const sk = storageKeyFor(r, n, block);
+      if (!uniqStorage.has(sk)) uniqStorage.set(sk, vk);
     }
 
     // Nota: nombres originales conservados arriba en colCandidates
@@ -626,6 +720,17 @@ export function aggregateWindowedReport(project: any, weeks: any[], filterISO: (
     } as const;
     for (const [storageKey, visibleKey] of uniqStorage) {
       const pk = storageKey;
+      
+      // Verificar nuevamente si el rol está en condiciones (por seguridad)
+      // Extraer el rol base del visibleKey (puede tener sufijo P/R)
+      const baseRoleFromVisible = stripPR(visibleKey);
+      if (!isRoleInCondiciones(baseRoleFromVisible)) {
+        if ((import.meta as any).env.DEV) {
+          console.debug(`[NOMINA.PUBLICIDAD.aggregateWindowedReport] FILTRANDO en agregación: Rol "${baseRoleFromVisible}" (de visibleKey "${visibleKey}") no está en condiciones, saltando...`);
+        }
+        continue; // Saltar este rol completamente
+      }
+      
       const keysToUse = storageKeyVariants(pk);
       for (const iso of isoDays) {
         const slot = ensure(visibleKey);

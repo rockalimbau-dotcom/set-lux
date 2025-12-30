@@ -150,6 +150,84 @@ function StatusConfirmModal({ projectName, isClosing, onClose, onConfirm }: Stat
   );
 }
 
+/** Modal de validación de nombres de roles */
+interface NameValidationModalProps {
+  role: string;
+  group: string;
+  onClose: () => void;
+}
+
+function NameValidationModal({ role, group, onClose }: NameValidationModalProps) {
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+    if (typeof document !== 'undefined') {
+      return (document.documentElement.getAttribute('data-theme') || 'light') as 'dark' | 'light';
+    }
+    return 'light';
+  });
+
+  useEffect(() => {
+    const updateTheme = () => {
+      if (typeof document !== 'undefined') {
+        const currentTheme = (document.documentElement.getAttribute('data-theme') || 'light') as 'dark' | 'light';
+        setTheme(currentTheme);
+      }
+    };
+
+    const observer = new MutationObserver(updateTheme);
+    if (typeof document !== 'undefined') {
+      observer.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['data-theme'],
+      });
+    }
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
+  const isLight = theme === 'light';
+  
+  // Traducir el nombre del grupo a español
+  const groupName = group === 'base' ? 'Equipo base' 
+    : group === 'refuerzos' ? 'Refuerzos'
+    : group === 'prelight' ? 'Equipo Prelight'
+    : group === 'recogida' ? 'Equipo Recogida'
+    : group;
+
+  return (
+    <div className='fixed inset-0 bg-black/60 grid place-items-center p-4 z-50'>
+      <div className='w-full max-w-md rounded-2xl border border-neutral-border bg-neutral-panel p-6'>
+        <h3 className='text-lg font-semibold mb-4' style={{color: isLight ? '#0476D9' : '#F27405'}}>
+          Nombre requerido
+        </h3>
+        
+        <p 
+          className='text-sm mb-6' 
+          style={{color: isLight ? '#111827' : '#d1d5db'}}
+        >
+          Debes añadir un nombre al rol <strong>{role}</strong> en <strong>{groupName}</strong> antes de continuar.
+        </p>
+
+        <div className='flex justify-center gap-3'>
+          <button
+            onClick={onClose}
+            className='px-3 py-2 rounded-lg border transition text-sm font-medium hover:border-[var(--hover-border)]'
+            style={{
+              borderColor: isLight ? '#F27405' : '#F27405',
+              color: isLight ? '#F27405' : '#F27405',
+              backgroundColor: isLight ? '#ffffff' : 'rgba(0,0,0,0.2)'
+            }}
+            type='button'
+          >
+            Entendido
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /**
  * ProjectDetail
  * - Vista de detalle de proyecto
@@ -185,6 +263,54 @@ export default function ProjectDetail({
       t.pickup?.length ?? 0,
     ];
     return lens.every(n => n === 0);
+  };
+
+  // Validar que todos los roles tengan nombre
+  const validateTeamNames = (team: ProjectTeam | undefined): { role: string; group: string } | null => {
+    if (!team) return null;
+    
+    const groups = [
+      { name: 'base', members: team.base || [] },
+      { name: 'refuerzos', members: team.reinforcements || [] },
+      { name: 'prelight', members: team.prelight || [] },
+      { name: 'recogida', members: team.pickup || [] },
+    ];
+
+    for (const group of groups) {
+      for (const member of group.members) {
+        if (!member.name || member.name.trim() === '') {
+          return { role: member.role || 'Sin rol', group: group.name };
+        }
+      }
+    }
+    
+    return null;
+  };
+
+  // Wrapper para setActiveTab que valida nombres antes de cambiar
+  const handleTabChange = (newTab: ProjectTab | null) => {
+    // Si estamos en la pestaña de equipo o saliendo de ella, validar nombres
+    if (activeTab === 'equipo' || newTab === 'equipo') {
+      const invalidRole = validateTeamNames(proj?.team);
+      if (invalidRole) {
+        setShowNameValidationModal({ targetTab: newTab, roleWithoutName: invalidRole });
+        return;
+      }
+    }
+    setActiveTab(newTab);
+  };
+
+  // Wrapper para navegar fuera del proyecto que valida nombres
+  const handleNavigateAway = () => {
+    // Si estamos en la pestaña de equipo, validar nombres antes de salir
+    if (activeTab === 'equipo') {
+      const invalidRole = validateTeamNames(proj?.team);
+      if (invalidRole) {
+        setShowNameValidationModal({ targetTab: null, roleWithoutName: invalidRole });
+        return;
+      }
+    }
+    navigate('/projects');
   };
 
   // Claves de almacenamiento por proyecto
@@ -284,6 +410,7 @@ export default function ProjectDetail({
 
   const [activeTab, setActiveTab] = useState<ProjectTab | null>(initialTab as ProjectTab ?? null);
   const [showStatusModal, setShowStatusModal] = useState<{ isClosing: boolean } | null>(null);
+  const [showNameValidationModal, setShowNameValidationModal] = useState<{ targetTab: ProjectTab | null; roleWithoutName: { role: string; group: string } } | null>(null);
 
   // Ruta -> pestaña (al entrar directamente por URL o al refrescar)
   useEffect(() => {
@@ -392,10 +519,10 @@ export default function ProjectDetail({
         <div className='max-w-6xl mx-auto'>
           <div className='flex items-center justify-between mb-8'>
             <div className='flex items-center gap-6'>
-              <LogoIcon size={80} onClick={() => navigate('/projects')} />
+              <LogoIcon size={80} onClick={handleNavigateAway} />
               <h1 className='text-3xl font-bold' style={{color: 'var(--text)'}}>
                 <button 
-                  onClick={() => navigate('/projects')}
+                  onClick={handleNavigateAway}
                   className='hover:underline transition-all'
                   style={{color: 'var(--text)'}}
                 >
@@ -404,7 +531,17 @@ export default function ProjectDetail({
                 <span className='mx-2' style={{color: 'var(--text)'}}>›</span>
                 {activePhaseLabel ? (
                   <button 
-                    onClick={() => navigate(`/project/${proj?.id}`)}
+                    onClick={() => {
+                      // Validar nombres antes de volver al menú del proyecto
+                      if (activeTab === 'equipo') {
+                        const invalidRole = validateTeamNames(proj?.team);
+                        if (invalidRole) {
+                          setShowNameValidationModal({ targetTab: null, roleWithoutName: invalidRole });
+                          return;
+                        }
+                      }
+                      navigate(`/project/${proj?.id}`);
+                    }}
                     className='hover:underline transition-all'
                     style={{color: 'var(--text)'}}
                   >
@@ -448,40 +585,40 @@ export default function ProjectDetail({
             title={`Condiciones ${condModeLabel}`}
             icon={<PhaseIcon name='condiciones' color='#60a5fa' />}
             desc='Precios, Jornadas, márgenes y políticas'
-            onClick={() => setActiveTab('condiciones')}
+            onClick={() => handleTabChange('condiciones')}
           />
           <PhaseCard
             title='Equipo'
             icon={<PhaseIcon name='equipo' color='#60a5fa' />}
-            desc='Base, refuerzos, prelight y recogida'
-            onClick={() => setActiveTab('equipo')}
+            desc={condTipo === 'publicidad' ? 'Base, prelight y recogida' : 'Base, refuerzos, prelight y recogida'}
+            onClick={() => handleTabChange('equipo')}
           />
 
           <PhaseCard
             title='Planificación'
             icon={<PhaseIcon name='planificacion' color='#60a5fa' />}
             desc='Semanas, horarios y equipo por día'
-            onClick={() => setActiveTab('planificacion')}
+            onClick={() => handleTabChange('planificacion')}
           />
           <PhaseCard
             title='Reportes'
             icon={<PhaseIcon name='reportes' color='#60a5fa' />}
             desc='Horas extra, dietas, kilometraje, transportes'
-            onClick={() => setActiveTab('reportes')}
+            onClick={() => handleTabChange('reportes')}
           />
 
           <PhaseCard
             title='Nómina'
             icon={<PhaseIcon name='nomina' color='#60a5fa' />}
             desc='Jornadas + Reportes, aquí sabes lo que va a cobrar el equipo'
-            onClick={() => setActiveTab('nomina')}
+            onClick={() => handleTabChange('nomina')}
           />
 
           <PhaseCard
             title='Necesidades de rodaje'
             icon={<PhaseIcon name='necesidades' color='#60a5fa' />}
             desc='Listado de lo que se necesita de forma ordenada por el orden de rodaje'
-            onClick={() => setActiveTab('necesidades')}
+            onClick={() => handleTabChange('necesidades')}
           />
         </div>
       )}
@@ -589,6 +726,15 @@ export default function ProjectDetail({
               return updated;
             });
           }}
+        />
+      )}
+
+      {/* Modal validación de nombres de roles */}
+      {showNameValidationModal && (
+        <NameValidationModal
+          role={showNameValidationModal.roleWithoutName.role}
+          group={showNameValidationModal.roleWithoutName.group}
+          onClose={() => setShowNameValidationModal(null)}
         />
       )}
     </div>

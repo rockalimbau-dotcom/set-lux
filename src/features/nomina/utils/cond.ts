@@ -102,6 +102,26 @@ export function loadCondModel(project: { id?: string; nombre?: string; condition
           return seed;
         }
       }
+      
+      // Filtrar prices para incluir solo los roles que están en roles
+      // Esto asegura que si un rol fue eliminado de roles, no aparezca en prices
+      if (obj?.roles && Array.isArray(obj.roles) && obj.roles.length > 0 && obj?.prices) {
+        const filteredPrices: any = {};
+        const rolesSet = new Set(obj.roles);
+        for (const role of obj.roles) {
+          if (obj.prices[role]) {
+            filteredPrices[role] = obj.prices[role];
+          }
+        }
+        // También mantener roles que están en prices pero no en roles (retrocompatibilidad)
+        // pero solo si no hay roles definidos explícitamente
+        if (Object.keys(filteredPrices).length === 0 && Object.keys(obj.prices).length > 0) {
+          // Si no hay roles definidos pero sí hay prices, usar todos los prices
+          return obj;
+        }
+        return { ...obj, prices: filteredPrices };
+      }
+      
       return obj; // { prices:{...}, params:{...} }
     } catch {}
   }
