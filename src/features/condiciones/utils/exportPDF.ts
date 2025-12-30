@@ -1,6 +1,6 @@
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
-import { renderWithParams } from '../condiciones/shared';
+import { renderWithParams, restoreStrongTags } from '../condiciones/shared';
 
 // Función para construir HTML para PDF de condiciones
 export function buildCondicionesHTMLForPDF(
@@ -63,7 +63,7 @@ export function buildCondicionesHTMLForPDF(
       ([title, txt]) => `
       <section>
         <h4>${esc(title)}</h4>
-        <pre>${esc(txt)}</pre>
+        <div class="legend-content">${txt}</div>
       </section>`
     )
     .join('');
@@ -186,6 +186,23 @@ export function buildCondicionesHTMLForPDF(
       line-height: 1.4;
       font-size: 10px;
       color: #1e293b;
+    }
+    section .legend-content {
+      white-space: pre-wrap;
+      font-family: inherit;
+      line-height: 1.4;
+      font-size: 10px;
+      color: #1e293b;
+    }
+    section .legend-content strong {
+      font-weight: 700 !important;
+      font-weight: bold !important;
+      display: inline !important;
+    }
+    section .legend-content br {
+      display: block;
+      content: "";
+      margin-top: 0.5em;
     }
     .footer {
       text-align: center;
@@ -314,7 +331,7 @@ function buildCondicionesPageHTMLForPDF(
       ([title, txt]) => `
       <section>
         <h4>${esc(title)}</h4>
-        <pre>${esc(txt)}</pre>
+        <div class="legend-content">${txt}</div>
       </section>`
     )
     .join('');
@@ -439,6 +456,23 @@ function buildCondicionesPageHTMLForPDF(
       font-size: 10px;
       color: #1e293b;
     }
+    section .legend-content {
+      white-space: pre-wrap;
+      font-family: inherit;
+      line-height: 1.4;
+      font-size: 10px;
+      color: #1e293b;
+    }
+    section .legend-content strong {
+      font-weight: 700 !important;
+      font-weight: bold !important;
+      display: inline !important;
+    }
+    section .legend-content br {
+      display: block;
+      content: "";
+      margin-top: 0.5em;
+    }
     .footer {
       text-align: center;
       padding: 10px 0;
@@ -530,10 +564,10 @@ export async function exportCondicionesToPDF(
 
     // Calcular paginación con ajuste dinámico (igual que reportes)
     const blocks = [
-      ['Leyenda cálculos', renderWithParams(model.legendTemplate, model.params)],
+      ['Leyenda cálculos', restoreStrongTags(renderWithParams(model.legendTemplate, model.params))],
       ['Festivos', renderWithParams(model.festivosTemplate, model.params)],
-      ['Horarios', renderWithParams(model.horariosTemplate, model.params)],
-      ['Dietas', renderWithParams(model.dietasTemplate, model.params)],
+      ['Horarios', restoreStrongTags(renderWithParams(model.horariosTemplate, model.params))],
+      ['Dietas', restoreStrongTags(renderWithParams(model.dietasTemplate, model.params))],
       ['Transportes', renderWithParams(model.transportesTemplate, model.params)],
       ['Alojamiento', renderWithParams(model.alojamientoTemplate, model.params)],
       ['Pre producción', renderWithParams(model.preproTemplate, model.params)],
@@ -598,14 +632,46 @@ export async function exportCondicionesToPDF(
         i === 0 // Primera página incluye header y tabla
       );
       
+      // Verificar que el HTML contiene los tags strong
+      if (pageHTML.includes('<strong>')) {
+        console.log('✅ HTML generado contiene tags <strong>');
+      } else {
+        console.log('❌ HTML generado NO contiene tags <strong>');
+      }
+      
       const tempContainer = document.createElement('div');
       tempContainer.innerHTML = pageHTML;
       tempContainer.style.position = 'absolute';
       tempContainer.style.left = '-9999px';
       tempContainer.style.top = '0';
       tempContainer.style.width = '794px'; // 210mm at 96 DPI (vertical)
+      tempContainer.style.height = '1123px'; // 297mm at 96 DPI (vertical)
+      tempContainer.style.backgroundColor = 'white';
+      tempContainer.style.overflow = 'hidden';
       document.body.appendChild(tempContainer);
 
+      // Esperar a que el HTML se renderice completamente
+      await new Promise(resolve => setTimeout(resolve, 200));
+      
+      // Verificar y forzar el renderizado del HTML
+      const legendDivs = tempContainer.querySelectorAll('.legend-content');
+      legendDivs.forEach((div) => {
+        const html = div.innerHTML;
+        // Si el HTML contiene tags strong pero no se están renderizando, forzar renderizado
+        if (html && html.includes('<strong>')) {
+          const strongElements = div.querySelectorAll('strong');
+          // Si no hay elementos strong en el DOM, significa que el HTML no se renderizó
+          if (strongElements.length === 0) {
+            // Forzar re-renderizado limpiando y reinsertando
+            const temp = div.innerHTML;
+            div.innerHTML = '';
+            // Usar insertAdjacentHTML para forzar el renderizado
+            div.insertAdjacentHTML('beforeend', temp);
+          }
+        }
+      });
+      
+      // Esperar un poco más para que se renderice
       await new Promise(resolve => setTimeout(resolve, 100));
 
       const canvas = await html2canvas(tempContainer, {
@@ -620,6 +686,46 @@ export async function exportCondicionesToPDF(
         windowWidth: 794,
         windowHeight: 1123,
         ignoreElements: () => false,
+        logging: true,
+        onclone: (clonedDoc) => {
+          // Asegurar que el HTML se renderice en el documento clonado
+          const clonedLegendDivs = clonedDoc.querySelectorAll('.legend-content');
+          clonedLegendDivs.forEach((div, idx) => {
+            const html = div.innerHTML;
+            console.log(`🔍 Clonado Div ${idx} - innerHTML:`, html.substring(0, 100));
+            if (html && html.includes('<strong>')) {
+              // Verificar si los elementos strong existen
+              const strongElements = div.querySelectorAll('strong');
+              console.log(`🔍 Clonado Div ${idx} - elementos strong encontrados: ${strongElements.length}`);
+              if (strongElements.length === 0) {
+                // Forzar renderizado en el documento clonado usando insertAdjacentHTML
+                const temp = div.innerHTML;
+                div.innerHTML = '';
+                div.insertAdjacentHTML('beforeend', temp);
+                console.log(`🔄 Clonado Div ${idx} - HTML re-renderizado`);
+              } else {
+                // Aplicar estilos directamente a los elementos strong
+                strongElements.forEach(strong => {
+                  (strong as HTMLElement).style.fontWeight = '700';
+                  (strong as HTMLElement).style.display = 'inline';
+                });
+                console.log(`✅ Clonado Div ${idx} - Estilos aplicados a ${strongElements.length} elementos strong`);
+              }
+            }
+          });
+          
+          // Aplicar estilos al footer también
+          const footer = clonedDoc.querySelector('.footer') as HTMLElement;
+          if (footer) {
+            footer.style.position = 'relative';
+            footer.style.display = 'flex';
+            footer.style.visibility = 'visible';
+            footer.style.opacity = '1';
+            console.log('🔧 Condiciones PDF: Footer styles applied in cloned document');
+          } else {
+            console.log('❌ Condiciones PDF: Footer not found in cloned document');
+          }
+        },
         onclone: (clonedDoc) => {
           const footer = clonedDoc.querySelector('.footer') as HTMLElement;
           if (footer) {

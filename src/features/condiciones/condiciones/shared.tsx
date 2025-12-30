@@ -101,6 +101,53 @@ export function visibleToTemplate(
   return tpl;
 }
 
+// ------ Helper para restaurar tags <strong> en textos ------
+export function restoreStrongTags(text: string): string {
+  if (!text) return text;
+  
+  // Si ya tiene tags, normalizar "Turn around" y "Nocturnidades" a minúsculas
+  if (text.includes('<strong>')) {
+    let result = text;
+    result = result.replace(/<strong>(TURN AROUND:)/gi, '<strong>Turn around:');
+    result = result.replace(/<strong>(NOCTURNIDADES:)/gi, '<strong>Nocturnidad:');
+    result = result.replace(/(TURN AROUND:)/gi, 'Turn around:');
+    result = result.replace(/(NOCTURNIDADES:)/gi, 'Nocturnidad:');
+    return result;
+  }
+  
+  // Primero normalizar mayúsculas/minúsculas
+  let normalized = text;
+  normalized = normalized.replace(/TURN AROUND:/gi, 'Turn around:');
+  normalized = normalized.replace(/NOCTURNIDADES:/gi, 'Nocturnidad:');
+  
+  // Patrones comunes que deberían estar en negrita
+  const patterns: Array<[RegExp, string]> = [
+    [/^(Tarifa mensual:)/m, '<strong>$1</strong>'],
+    [/^(Tarifa semanal:)/m, '<strong>$1</strong>'],
+    [/^(Precio diario:)/m, '<strong>$1</strong>'],
+    [/^(Precio jornada:)/m, '<strong>$1</strong>'],
+    [/^(Precio refuerzo:)/m, '<strong>$1</strong>'],
+    [/^(Precio Día extra \/ Festivo:)/m, '<strong>$1</strong>'],
+    [/^(Precio Travel Day:)/m, '<strong>$1</strong>'],
+    [/^(Horas extras:)/m, '<strong>$1</strong>'],
+    [/^(Turn around:)/m, '<strong>$1</strong>'],
+    [/^(Nocturnidad:)/m, '<strong>$1</strong>'],
+    [/^(Comida:)/m, '<strong>$1</strong>'],
+    [/^(Cena:)/m, '<strong>$1</strong>'],
+    [/^(Dieta completa sin pernocta:)/m, '<strong>$1</strong>'],
+    [/^(Dieta completa y desayuno:)/m, '<strong>$1</strong>'],
+    [/^(Gastos de bolsillo:)/m, '<strong>$1</strong>'],
+    [/^(Gastos de Bolsillo:)/m, '<strong>Gastos de bolsillo:</strong>'],
+  ];
+  
+  let result = normalized;
+  for (const [pattern, replacement] of patterns) {
+    result = result.replace(pattern, replacement);
+  }
+  
+  return result;
+}
+
 // ------ Export helper (HTML) ------
 export function renderExportHTML(projectName: string, which: string, model: any) {
   const esc = (s: unknown) =>
@@ -204,32 +251,65 @@ interface TextAreaAutoProps {
 
 export function TextAreaAuto({ value, onChange, className = '' }: TextAreaAutoProps) {
   const [v, setV] = useState<string>(value || '');
-  const ref = useRef<HTMLTextAreaElement | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const displayRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => setV(value || ''), [value]);
 
   useEffect(() => {
-    if (!ref.current) return;
-    ref.current.style.height = 'auto';
-    ref.current.style.height = ref.current.scrollHeight + 'px';
-  }, [v]);
+    if (!textareaRef.current || !isEditing) return;
+    textareaRef.current.style.height = 'auto';
+    textareaRef.current.style.height = textareaRef.current.scrollHeight + 'px';
+  }, [v, isEditing]);
 
+  // Si hay HTML tags en el valor, mostrar renderizado; si no, mostrar textarea normal
+  const hasHTML = /<[^>]+>/.test(v);
+
+  // Si no hay HTML o está editando, mostrar textarea
+  if (!hasHTML || isEditing) {
+    return (
+      <textarea
+        ref={textareaRef}
+        value={v}
+        onChange={e => {
+          setV(e.target.value);
+          onChange && onChange(e.target.value);
+        }}
+        onBlur={() => {
+          setIsEditing(false);
+        }}
+        onFocus={() => {
+          setIsEditing(true);
+        }}
+        className={`w-full leading-relaxed whitespace-pre-wrap px-3 py-2 rounded-xl bg-neutral-surface border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm ${className}`}
+        style={{ height: 'auto', overflow: 'hidden', resize: 'none' }}
+        rows={1}
+        onInput={e => {
+          const t = e.target as HTMLTextAreaElement;
+          t.style.height = 'auto';
+          t.style.height = t.scrollHeight + 'px';
+        }}
+      />
+    );
+  }
+
+  // Mostrar HTML renderizado
+  // Convertir saltos de línea a <br> para preservar el formato
+  // Primero procesar el HTML, luego convertir los saltos de línea restantes
+  let htmlWithBreaks = v;
+  // Si hay tags HTML, preservar los saltos de línea convirtiéndolos a <br>
+  // pero solo los que no están dentro de tags
+  htmlWithBreaks = htmlWithBreaks.replace(/\n/g, '<br>');
+  
   return (
-    <textarea
-      ref={ref}
-      value={v}
-      onChange={e => {
-        setV(e.target.value);
-        onChange && onChange(e.target.value);
-      }}
-      className={`w-full leading-relaxed whitespace-pre-wrap px-3 py-2 rounded-xl bg-neutral-surface border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm ${className}`}
-      style={{ height: 'auto', overflow: 'hidden', resize: 'none' }}
-      rows={1}
-      onInput={e => {
-        const t = e.target as HTMLTextAreaElement;
-        t.style.height = 'auto';
-        t.style.height = t.scrollHeight + 'px';
-      }}
+    <div
+      ref={displayRef}
+      onClick={() => setIsEditing(true)}
+      onBlur={() => setIsEditing(false)}
+      dangerouslySetInnerHTML={{ __html: htmlWithBreaks }}
+      className={`w-full leading-relaxed px-3 py-2 rounded-xl bg-neutral-surface border border-neutral-border cursor-text text-sm ${className}`}
+      style={{ minHeight: '56px', whiteSpace: 'pre-wrap' }}
     />
   );
 }

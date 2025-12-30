@@ -3,7 +3,7 @@ import { Th, Td } from '@shared/components';
 import { useLocalStorage } from '@shared/hooks/useLocalStorage';
 
 import { PRICE_HEADERS, PRICE_ROLES } from './shared.constants';
-import { extractFestivosDatesForPlan, renderWithParams, visibleToTemplate, loadJSON, TextAreaAuto, InfoCard, ParamInput } from './shared';
+import { extractFestivosDatesForPlan, renderWithParams, visibleToTemplate, loadJSON, TextAreaAuto, InfoCard, ParamInput, restoreStrongTags } from './shared';
 import { DEFAULT_FESTIVOS_TEXT, generateDynamicFestivosText } from '@shared/constants/festivos';
 import { exportCondicionesToPDF } from '../utils/exportPDF';
 
@@ -544,7 +544,7 @@ function CondicionesSemanal({ project, onChange = () => {}, onRegisterExport }: 
       <section className='rounded-2xl border border-neutral-border bg-neutral-panel/90 p-4'>
         <h4 className='text-brand font-semibold mb-2'>Leyenda cálculos</h4>
         <TextAreaAuto
-          value={renderWithParams(model.legendTemplate, model.params)}
+          value={restoreStrongTags(renderWithParams(model.legendTemplate, model.params))}
           onChange={v => setText('legendTemplate', visibleToTemplate(v, model.params))}
           className='min-h-[180px]'
         />
@@ -558,12 +558,12 @@ function CondicionesSemanal({ project, onChange = () => {}, onRegisterExport }: 
       />
       <InfoCard
         title='Horarios'
-        value={renderWithParams(model.horariosTemplate, model.params)}
+        value={restoreStrongTags(renderWithParams(model.horariosTemplate, model.params))}
         onChange={v => setText('horariosTemplate', visibleToTemplate(v, model.params))}
       />
       <InfoCard
         title='Dietas'
-        value={renderWithParams(model.dietasTemplate, model.params)}
+        value={restoreStrongTags(renderWithParams(model.dietasTemplate, model.params))}
         onChange={v => setText('dietasTemplate', visibleToTemplate(v, model.params))}
       />
       <InfoCard
