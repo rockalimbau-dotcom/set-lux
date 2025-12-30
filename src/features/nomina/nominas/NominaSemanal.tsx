@@ -50,9 +50,23 @@ export default function NominaSemanal({ project }: NominaSemanalProps) {
   const allWeeks = [...pre, ...pro];
   const baseId = project?.id || project?.nombre || 'tmp';
 
-  // Verificar si hay equipo guardado
+  // Verificar si hay equipo guardado (verifica tanto en el objeto del proyecto como en localStorage)
+  // Esta verificación debe ser independiente del orden de creación (equipo vs planificación)
   const hasTeam = useMemo(() => {
     try {
+      // 1. Verificar si el equipo está en el objeto del proyecto directamente
+      const projectTeam = (project as any)?.team;
+      if (projectTeam) {
+        const base = Array.isArray(projectTeam.base) ? projectTeam.base : [];
+        const reinforcements = Array.isArray(projectTeam.reinforcements) ? projectTeam.reinforcements : [];
+        const prelight = Array.isArray(projectTeam.prelight) ? projectTeam.prelight : [];
+        const pickup = Array.isArray(projectTeam.pickup) ? projectTeam.pickup : [];
+        if (base.length > 0 || reinforcements.length > 0 || prelight.length > 0 || pickup.length > 0) {
+          return true;
+        }
+      }
+      
+      // 2. Verificar en localStorage con la clave que usa EquipoTab
       const teamKey = `team_${baseId}`;
       const teamData = storage.getJSON<any>(teamKey);
       if (teamData) {
@@ -60,13 +74,29 @@ export default function NominaSemanal({ project }: NominaSemanalProps) {
         const reinforcements = Array.isArray(teamData.reinforcements) ? teamData.reinforcements : [];
         const prelight = Array.isArray(teamData.prelight) ? teamData.prelight : [];
         const pickup = Array.isArray(teamData.pickup) ? teamData.pickup : [];
-        return base.length > 0 || reinforcements.length > 0 || prelight.length > 0 || pickup.length > 0;
+        if (base.length > 0 || reinforcements.length > 0 || prelight.length > 0 || pickup.length > 0) {
+          return true;
+        }
       }
+      
+      // 3. Verificar también en la clave del proyecto completo (por si acaso)
+      const projectKey = `project_${baseId}`;
+      const projectData = storage.getJSON<any>(projectKey);
+      if (projectData?.team) {
+        const base = Array.isArray(projectData.team.base) ? projectData.team.base : [];
+        const reinforcements = Array.isArray(projectData.team.reinforcements) ? projectData.team.reinforcements : [];
+        const prelight = Array.isArray(projectData.team.prelight) ? projectData.team.prelight : [];
+        const pickup = Array.isArray(projectData.team.pickup) ? projectData.team.pickup : [];
+        if (base.length > 0 || reinforcements.length > 0 || prelight.length > 0 || pickup.length > 0) {
+          return true;
+        }
+      }
+      
       return false;
     } catch {
       return false;
     }
-  }, [baseId]);
+  }, [baseId, project]);
 
   const hasWeeks = allWeeks.length > 0;
   const projectId = project?.id || project?.nombre;
@@ -130,7 +160,9 @@ export default function NominaSemanal({ project }: NominaSemanalProps) {
   );
 
   // Caso 3: Solo falta equipo (pero SÍ hay semanas)
-  if (weeksWithPeople.length === 0) {
+  // IMPORTANTE: Verificar hasTeam directamente, no weeksWithPeople.length
+  // porque weeksWithPeople puede ser 0 si no hay semanas, pero el equipo puede existir
+  if (hasWeeks && !hasTeam) {
     return (
       <div className='flex flex-col items-center justify-center py-16 px-8 text-center'>
         <h2 className='text-3xl font-bold mb-4' style={{color: 'var(--text)'}}>
@@ -146,6 +178,28 @@ export default function NominaSemanal({ project }: NominaSemanalProps) {
             Equipo
           </button>
           {' '}para calcular la nómina.
+        </p>
+      </div>
+    );
+  }
+
+  // Caso 4: Hay semanas y equipo, pero las semanas no tienen personas asignadas
+  if (hasWeeks && hasTeam && weeksWithPeople.length === 0) {
+    return (
+      <div className='flex flex-col items-center justify-center py-16 px-8 text-center'>
+        <h2 className='text-3xl font-bold mb-4' style={{color: 'var(--text)'}}>
+          Asigna personas a las semanas
+        </h2>
+        <p className='text-xl max-w-2xl mb-4' style={{color: 'var(--text)', opacity: 0.8}}>
+          Tienes {allWeeks.length} semana{allWeeks.length !== 1 ? 's' : ''} en{' '}
+          <button
+            onClick={() => navigate(planificacionPath)}
+            className='underline font-semibold hover:opacity-80 transition-opacity'
+            style={{color: 'var(--brand)'}}
+          >
+            Planificación
+          </button>
+          {' '}pero no tienen personas asignadas a los días. Asigna el equipo a los días de las semanas para calcular la nómina.
         </p>
       </div>
     );

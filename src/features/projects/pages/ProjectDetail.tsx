@@ -8,6 +8,8 @@ import LogoIcon from '@shared/components/LogoIcon';
 import { useLocalStorage } from '@shared/hooks/useLocalStorage';
 import { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { syncAllWeeks } from '@features/planificacion/utils/sync';
+import { storage } from '@shared/services/localStorage.service';
 
 export type ProjectMode = 'semanal' | 'mensual' | 'publicidad';
 export type ProjectStatus = 'Activo' | 'Cerrado';
@@ -143,6 +145,51 @@ export default function ProjectDetail({
       setTeam(proj.team);
     }
   }, [proj?.team, loaded, setTeam]);
+
+  // Sincronizar automáticamente las semanas de planificación cuando se guarda el equipo
+  // Esto permite que las semanas se autocompleten sin necesidad de entrar en planificación
+  useEffect(() => {
+    if (!loaded) return;
+    if (!proj?.team || isEmptyTeam(proj.team)) return;
+
+    const planKey = `plan_${proj?.id || proj?.nombre || 'tmp'}`;
+    try {
+      const planData = storage.getJSON<{ pre?: any[]; pro?: any[] }>(planKey);
+      if (!planData || (!planData.pre?.length && !planData.pro?.length)) {
+        // No hay semanas, no hay nada que sincronizar
+        return;
+      }
+
+      const baseTeam = proj.team.base || [];
+      const prelightTeam = proj.team.prelight || [];
+      const pickupTeam = proj.team.pickup || [];
+      const reinforcements = proj.team.reinforcements || [];
+
+      // Sincronizar semanas pre y pro
+      const syncedPre = syncAllWeeks(
+        planData.pre || [],
+        baseTeam,
+        prelightTeam,
+        pickupTeam,
+        reinforcements
+      );
+      const syncedPro = syncAllWeeks(
+        planData.pro || [],
+        baseTeam,
+        prelightTeam,
+        pickupTeam,
+        reinforcements
+      );
+
+      // Guardar las semanas sincronizadas
+      storage.setJSON(planKey, {
+        pre: syncedPre,
+        pro: syncedPro,
+      });
+    } catch (error) {
+      // Silenciar errores de sincronización
+    }
+  }, [proj?.team, proj?.id, proj?.nombre, loaded]);
 
   const [activeTab, setActiveTab] = useState<ProjectTab | null>(initialTab as ProjectTab ?? null);
 
