@@ -57,7 +57,7 @@ export default function Button({
     'export-orange':
       'bg-orange-600 text-white hover:bg-orange-700 focus:ring-orange-500 border border-orange-500',
     remove:
-      'text-gray-400 hover:text-red-500 text-xs bg-transparent hover:bg-red-50',
+      'text-gray-400 hover:text-red-500 dark:hover:text-red-500 text-xs bg-transparent hover:bg-red-50 dark:hover:bg-red-50',
     duplicate:
       'px-3 py-2 rounded-lg border text-sm border-neutral-border btn-duplicate text-gray-300 font-normal',
   };

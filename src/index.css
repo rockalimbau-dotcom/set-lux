@@ -118,7 +118,7 @@ html input[style*="borderWidth"] {
 
 [data-theme='light'] .phase-content h1,
 [data-theme='light'] .phase-content h2,
-[data-theme='light'] .phase-content h3,
+[data-theme='light'] .phase-content h3:not([style*="color"]),
 [data-theme='light'] .phase-content h4,
 [data-theme='light'] .phase-content h5,
 [data-theme='light'] .phase-content h6,
@@ -211,18 +211,20 @@ html input[style*="borderWidth"] {
   box-shadow: 0 0 0 0.5px var(--phase-accent) inset;
 }
 
-/* Equipo: eliminar fila ("×") — iluminar en naranja */
+/* Equipo: eliminar fila ("×") — iluminar en azul */
 [data-theme='light'] .phase-content button[title='Eliminar fila']:hover,
 [data-theme='light'] .phase-content button[title='Eliminar fila']:focus {
-  border-color: #f97316 !important; /* orange-500 */
-  box-shadow: 0 0 0 0.5px #f97316 inset;
+  border-color: #0476D9 !important; /* azul corporativo */
+  box-shadow: 0 0 0 0.5px #0476D9 inset;
 }
 
-/* Equipo: quitar grupo — iluminar en naranja */
+/* Equipo: quitar grupo — iluminar en azul */
 [data-theme='light'] .phase-content button[aria-label='Quitar grupo']:hover,
-[data-theme='light'] .phase-content button[aria-label='Quitar grupo']:focus {
-  border-color: #f97316 !important;
-  box-shadow: 0 0 0 0.5px #f97316 inset;
+[data-theme='light'] .phase-content button[aria-label='Quitar grupo']:focus,
+[data-theme='light'] button[aria-label='Quitar grupo']:hover,
+[data-theme='light'] button[aria-label='Quitar grupo']:focus {
+  border-color: #0476D9 !important; /* azul corporativo */
+  box-shadow: 0 0 0 0.5px #0476D9 inset;
 }
 
 /* Planificación: toggles (+ / −) de secciones y semanas */
@@ -350,6 +352,18 @@ html input[style*="borderWidth"] {
   color: #f97316 !important;
 }
 
+/* Planificación: botones "×" de quitar miembros - fondo azul en modo claro */
+[data-theme='light'] .phase-content button[title='Quitar']:hover {
+  background-color: #EFF6FF !important; /* blue-50 */
+  color: #111827 !important; /* mantener negro */
+}
+
+/* Equipo: botón de eliminar fila en azul en modo claro */
+[data-theme='light'] button[title='Eliminar fila']:hover,
+[data-theme='light'] button[title='Eliminar fila']:focus {
+  border-color: #0476D9 !important;
+}
+
 /* Reportes: botón de colapso con "−" (title="Contraer") en azul */
 [data-theme='light'] .phase-content button[title='Contraer']:hover,
 [data-theme='light'] .phase-content button[title='Contraer']:focus {
@@ -365,6 +379,11 @@ html input[style*="borderWidth"] {
 
 [data-theme='light'] .phase-content .border-neutral-border {
   border-color: #e5e7eb !important;
+}
+
+/* Modal de confirmación: títulos en azul en modo claro */
+[data-theme='light'] .fixed.inset-0.bg-black\/60 h3 {
+  color: #0476D9 !important;
 }
 
 [data-theme='light'] .phase-content input,

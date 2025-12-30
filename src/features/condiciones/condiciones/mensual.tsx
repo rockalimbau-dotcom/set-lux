@@ -1,11 +1,103 @@
 import { Th, Td } from '@shared/components';
 import { useLocalStorage } from '@shared/hooks/useLocalStorage';
 import { useEffect, useMemo, useState, useRef, memo } from 'react';
+import { createPortal } from 'react-dom';
 
 import { PRICE_HEADERS, PRICE_ROLES } from './shared.constants';
 import { renderWithParams, visibleToTemplate, loadJSON, TextAreaAuto, InfoCard, ParamInput, restoreStrongTags } from './shared';
 import { DEFAULT_FESTIVOS_TEXT, generateDynamicFestivosText } from '@shared/constants/festivos';
 import { exportCondicionesToPDF } from '../utils/exportPDF';
+
+interface DeleteRoleConfirmModalProps {
+  roleName: string;
+  onClose: () => void;
+  onConfirm: () => void;
+}
+
+function DeleteRoleConfirmModal({ roleName, onClose, onConfirm }: DeleteRoleConfirmModalProps) {
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+    if (typeof document !== 'undefined') {
+      return (document.documentElement.getAttribute('data-theme') || 'light') as 'dark' | 'light';
+    }
+    return 'light';
+  });
+
+  useEffect(() => {
+    const updateTheme = () => {
+      if (typeof document !== 'undefined') {
+        const currentTheme = (document.documentElement.getAttribute('data-theme') || 'light') as 'dark' | 'light';
+        setTheme(currentTheme);
+      }
+    };
+
+    const observer = new MutationObserver(updateTheme);
+    if (typeof document !== 'undefined') {
+      observer.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['data-theme'],
+      });
+    }
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
+  const isLight = theme === 'light';
+
+  return (
+    <div className='fixed inset-0 bg-black/60 grid place-items-center p-4 z-50'>
+      <div 
+        className='w-full max-w-md rounded-2xl border border-neutral-border p-6'
+        style={{
+          backgroundColor: isLight ? '#ffffff' : 'var(--panel)'
+        }}
+      >
+        <h3 className='text-lg font-semibold mb-4' style={{color: isLight ? '#0476D9' : '#F27405'}}>
+          Confirmar eliminación
+        </h3>
+        
+        <p 
+          className='text-sm mb-6' 
+          style={{color: isLight ? '#111827' : '#d1d5db'}}
+          dangerouslySetInnerHTML={{
+            __html: `¿Estás seguro de eliminar el rol <strong>${roleName}</strong>?`
+          }}
+        />
+
+        <div className='flex justify-center gap-3'>
+          <button
+            onClick={onClose}
+            className='px-3 py-2 rounded-lg border transition text-sm font-medium hover:border-[var(--hover-border)]'
+            style={{
+              borderColor: 'var(--border)',
+              backgroundColor: isLight ? '#ffffff' : 'rgba(0,0,0,0.2)',
+              color: isLight ? '#111827' : '#d1d5db'
+            }}
+            type='button'
+          >
+            No
+          </button>
+          <button
+            onClick={() => {
+              onConfirm();
+              onClose();
+            }}
+            className='px-3 py-2 rounded-lg border transition text-sm font-medium hover:border-[var(--hover-border)]'
+            style={{
+              borderColor: isLight ? '#F27405' : '#F27405',
+              color: isLight ? '#F27405' : '#F27405',
+              backgroundColor: isLight ? '#ffffff' : 'rgba(0,0,0,0.2)'
+            }}
+            type='button'
+          >
+            Sí
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 type AnyRecord = Record<string, any>;
 
@@ -98,6 +190,7 @@ function CondicionesMensual({ project, onChange = () => {}, onRegisterExport, re
     loadOrSeed(storageKey)
   );
   const [showRoleSelect, setShowRoleSelect] = useState(false);
+  const [roleToDelete, setRoleToDelete] = useState<string | null>(null);
 
   const onChangeRef = useRef(onChange);
   useEffect(() => {
@@ -473,9 +566,7 @@ function CondicionesMensual({ project, onChange = () => {}, onRegisterExport, re
                     <button
                       onClick={() => {
                         if (readOnly) return;
-                        if (confirm(`¿Eliminar el rol "${role}"?`)) {
-                          removeRole(role);
-                        }
+                        setRoleToDelete(role);
                       }}
                       disabled={readOnly}
                       className={`text-gray-400 hover:text-blue-500 hover:bg-blue-100 dark:hover:text-amber-500 dark:hover:bg-amber-900/20 font-bold text-sm w-6 h-6 flex items-center justify-center rounded transition-all hover:scale-110 ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
@@ -591,6 +682,18 @@ function CondicionesMensual({ project, onChange = () => {}, onRegisterExport, re
           )
         }
       />
+      {roleToDelete && typeof document !== 'undefined' && createPortal(
+        <DeleteRoleConfirmModal
+          roleName={roleToDelete}
+          onClose={() => setRoleToDelete(null)}
+          onConfirm={() => {
+            if (roleToDelete) {
+              removeRole(roleToDelete);
+            }
+          }}
+        />,
+        document.body
+      )}
     </div>
   );
 }

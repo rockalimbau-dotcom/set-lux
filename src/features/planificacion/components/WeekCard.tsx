@@ -5,6 +5,103 @@ import { ROLE_COLORS } from '@shared/constants/roles';
 import { useLocalStorage } from '@shared/hooks/useLocalStorage';
 import React, { useMemo, useCallback, useState, useEffect, useRef } from 'react';
 
+interface ConfirmModalProps {
+  title: string;
+  message: string;
+  onClose: () => void;
+  onConfirm: () => void;
+}
+
+function ConfirmModal({ title, message, onClose, onConfirm }: ConfirmModalProps) {
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+    if (typeof document !== 'undefined') {
+      return (document.documentElement.getAttribute('data-theme') || 'light') as 'dark' | 'light';
+    }
+    return 'light';
+  });
+
+  useEffect(() => {
+    const updateTheme = () => {
+      if (typeof document !== 'undefined') {
+        const currentTheme = (document.documentElement.getAttribute('data-theme') || 'light') as 'dark' | 'light';
+        setTheme(currentTheme);
+      }
+    };
+
+    const observer = new MutationObserver(updateTheme);
+    if (typeof document !== 'undefined') {
+      observer.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['data-theme'],
+      });
+    }
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
+  const isLight = theme === 'light';
+
+  return (
+    <div className='fixed inset-0 bg-black/60 grid place-items-center p-4 z-50'>
+      <div 
+        className='w-full max-w-md rounded-2xl border border-neutral-border p-6'
+        style={{
+          backgroundColor: isLight ? '#ffffff' : 'var(--panel)'
+        }}
+      >
+        <h3 
+          className='text-lg font-semibold mb-4' 
+          style={{
+            color: isLight ? '#0476D9' : '#F27405'
+          }}
+        >
+          {title}
+        </h3>
+        
+        <p 
+          className='text-sm mb-6' 
+          style={{color: isLight ? '#111827' : '#d1d5db'}}
+          dangerouslySetInnerHTML={{
+            __html: message
+          }}
+        />
+
+        <div className='flex justify-center gap-3'>
+          <button
+            onClick={onClose}
+            className='px-3 py-2 rounded-lg border transition text-sm font-medium hover:border-[var(--hover-border)]'
+            style={{
+              borderColor: 'var(--border)',
+              backgroundColor: isLight ? '#ffffff' : 'rgba(0,0,0,0.2)',
+              color: isLight ? '#111827' : '#d1d5db'
+            }}
+            type='button'
+          >
+            No
+          </button>
+          <button
+            onClick={() => {
+              onConfirm();
+              onClose();
+            }}
+            className='px-3 py-2 rounded-lg border transition text-sm font-medium hover:border-[var(--hover-border)]'
+            style={{
+              borderColor: isLight ? '#F27405' : '#F27405',
+              color: isLight ? '#F27405' : '#F27405',
+              backgroundColor: isLight ? '#ffffff' : 'rgba(0,0,0,0.2)'
+            }}
+            type='button'
+          >
+            Sí
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 type AnyRecord = Record<string, any>;
 
 type WeekCardProps = {
@@ -621,6 +718,16 @@ function WeekCard({
   project,
   readOnly = false,
 }: WeekCardProps) {
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  const [memberToRemove, setMemberToRemove] = useState<{
+    scope: 'pre' | 'pro';
+    weekId: string;
+    dayIndex: number;
+    listKey: 'team' | 'prelight' | 'pickup';
+    idx: number;
+    memberName: string;
+  } | null>(null);
+  
   // Detectar el tema actual
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
     if (typeof document !== 'undefined') {
@@ -779,7 +886,7 @@ function WeekCard({
             variant='danger'
             size='sm'
             className={`no-pdf ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
-            onClick={() => !readOnly && deleteWeek(scope, week.id as string)}
+            onClick={() => !readOnly && setShowConfirmDelete(true)}
             disabled={readOnly}
             title={readOnly ? 'El proyecto está cerrado' : 'Eliminar semana'}
             type='button'
@@ -948,9 +1055,17 @@ function WeekCard({
                               variant='remove'
                               size='sm'
                               className={`no-pdf ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
-                              onClick={() =>
-                                !readOnly && removeMemberFrom(scope, week.id as string, i, 'team', idx)
-                              }
+                              onClick={() => {
+                                if (readOnly) return;
+                                setMemberToRemove({
+                                  scope,
+                                  weekId: week.id as string,
+                                  dayIndex: i,
+                                  listKey: 'team',
+                                  idx,
+                                  memberName: m.name || 'este miembro'
+                                });
+                              }}
                               disabled={readOnly}
                               title={readOnly ? 'El proyecto está cerrado' : 'Quitar'}
                             >
@@ -1043,15 +1158,17 @@ function WeekCard({
                                 <Button
                                   variant='remove'
                                   size='sm'
-                                  onClick={() =>
-                                    !readOnly && removeMemberFrom(
+                                  onClick={() => {
+                                    if (readOnly) return;
+                                    setMemberToRemove({
                                       scope,
-                                      week.id as string,
-                                      i,
-                                      'prelight',
-                                      idx
-                                    )
-                                  }
+                                      weekId: week.id as string,
+                                      dayIndex: i,
+                                      listKey: 'prelight',
+                                      idx,
+                                      memberName: m.name || 'este miembro'
+                                    });
+                                  }}
                                   disabled={readOnly}
                                   title={readOnly ? 'El proyecto está cerrado' : 'Quitar'}
                                   className={readOnly ? 'opacity-50 cursor-not-allowed' : ''}
@@ -1147,15 +1264,17 @@ function WeekCard({
                                 <Button
                                   variant='remove'
                                   size='sm'
-                                  onClick={() =>
-                                    !readOnly && removeMemberFrom(
+                                  onClick={() => {
+                                    if (readOnly) return;
+                                    setMemberToRemove({
                                       scope,
-                                      week.id as string,
-                                      i,
-                                      'pickup',
-                                      idx
-                                    )
-                                  }
+                                      weekId: week.id as string,
+                                      dayIndex: i,
+                                      listKey: 'pickup',
+                                      idx,
+                                      memberName: m.name || 'este miembro'
+                                    });
+                                  }}
                                   disabled={readOnly}
                                   title={readOnly ? 'El proyecto está cerrado' : 'Quitar'}
                                   className={readOnly ? 'opacity-50 cursor-not-allowed' : ''}
@@ -1208,6 +1327,32 @@ function WeekCard({
             </tbody>
           </table>
         </div>
+      )}
+      {showConfirmDelete && (
+        <ConfirmModal
+          title='Confirmar eliminación'
+          message={`¿Estás seguro de eliminar <strong>${week.label || 'esta semana'}</strong>?`}
+          onClose={() => setShowConfirmDelete(false)}
+          onConfirm={() => {
+            deleteWeek(scope, week.id as string);
+          }}
+        />
+      )}
+      {memberToRemove && (
+        <ConfirmModal
+          title='Confirmar eliminación'
+          message={`¿Estás seguro de eliminar a <strong>${memberToRemove.memberName}</strong>?`}
+          onClose={() => setMemberToRemove(null)}
+          onConfirm={() => {
+            removeMemberFrom(
+              memberToRemove.scope,
+              memberToRemove.weekId,
+              memberToRemove.dayIndex,
+              memberToRemove.listKey,
+              memberToRemove.idx
+            );
+          }}
+        />
       )}
     </div>
   );
