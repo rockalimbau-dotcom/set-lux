@@ -224,9 +224,9 @@ export default function ProjectDetail({
   // Helper para mostrar el modo de condiciones
   const formatMode = (m: string | undefined): string => {
     const v = String(m || '').toLowerCase();
-    if (v === 'mensual') return 'Mensual';
-    if (v === 'publicidad') return 'Publicidad';
-    return 'Semanal'; // por defecto
+    if (v === 'mensual') return 'mensuales';
+    if (v === 'publicidad') return 'publicidad';
+    return 'semanales'; // por defecto
   };
 
   // Lee el modo (nuevo: conditions.tipo). Mantén compat con "mode" si existiera.
@@ -338,14 +338,14 @@ export default function ProjectDetail({
           />
 
           <PhaseCard
-            title='Nomina'
+            title='Nómina'
             icon={<PhaseIcon name='nomina' color='#60a5fa' />}
             desc='Jornadas + Reportes, aquí sabes lo que va a cobrar el equipo'
             onClick={() => setActiveTab('nomina')}
           />
 
           <PhaseCard
-            title='Necesidades de Rodaje'
+            title='Necesidades de rodaje'
             icon={<PhaseIcon name='necesidades' color='#60a5fa' />}
             desc='Listado de lo que se necesita de forma ordenada por el orden de rodaje'
             onClick={() => setActiveTab('necesidades')}
