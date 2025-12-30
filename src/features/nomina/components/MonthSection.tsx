@@ -755,7 +755,7 @@ function MonthSection({
                       setPriceDays(val);
                     }
                   }}
-                  className='w-12 px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-xs text-center'
+                  className='w-12 px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-xs text-left'
                 />
                 <label className='text-xs text-zinc-400 whitespace-nowrap'>días</label>
               </div>
@@ -776,7 +776,7 @@ function MonthSection({
                     })
                   );
                 }}
-                className='px-3 py-2 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm text-center'
+                className='px-3 py-2 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm text-left'
               />
             </div>
             <div className='flex items-center gap-2'>
@@ -795,7 +795,7 @@ function MonthSection({
                     })
                   );
                 }}
-                className='px-3 py-2 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm text-center'
+                className='px-3 py-2 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm text-left'
               />
             </div>
           </div>

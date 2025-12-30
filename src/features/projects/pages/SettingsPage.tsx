@@ -108,7 +108,7 @@ export default function SettingsPage() {
       </div>
 
       <div className='max-w-6xl mx-auto p-6 flex justify-center'>
-        <div className='max-w-2xl w-full rounded-2xl border p-8' style={{backgroundColor: colors.panelBg, borderColor: colors.panelBorder}}>
+        <div className='max-w-md w-full rounded-2xl border p-8' style={{backgroundColor: colors.panelBg, borderColor: colors.panelBorder}}>
           <h3 className='text-xl font-semibold mb-6' style={{color: colors.primary}}>Preferencias</h3>
 
           <div className='space-y-6'>
@@ -121,7 +121,7 @@ export default function SettingsPage() {
                   onMouseEnter={() => setThemeDropdown(prev => ({ ...prev, isButtonHovered: true }))}
                   onMouseLeave={() => setThemeDropdown(prev => ({ ...prev, isButtonHovered: false }))}
                   onBlur={() => setThemeDropdown(prev => ({ ...prev, isButtonHovered: false }))}
-                  className={`w-full px-4 py-3 rounded-xl border focus:outline-none text-sm text-center transition-colors ${
+                  className={`w-full px-4 py-3 rounded-xl border focus:outline-none text-sm text-left transition-colors ${
                     currentTheme === 'light' 
                       ? 'bg-white text-gray-900' 
                       : 'bg-black/40 text-zinc-300'
@@ -190,7 +190,7 @@ export default function SettingsPage() {
                   onMouseEnter={() => setLanguageDropdown(prev => ({ ...prev, isButtonHovered: true }))}
                   onMouseLeave={() => setLanguageDropdown(prev => ({ ...prev, isButtonHovered: false }))}
                   onBlur={() => setLanguageDropdown(prev => ({ ...prev, isButtonHovered: false }))}
-                  className={`w-full px-4 py-3 rounded-xl border focus:outline-none text-sm text-center transition-colors ${
+                  className={`w-full px-4 py-3 rounded-xl border focus:outline-none text-sm text-left transition-colors ${
                     currentTheme === 'light' 
                       ? 'bg-white text-gray-900' 
                       : 'bg-black/40 text-zinc-300'

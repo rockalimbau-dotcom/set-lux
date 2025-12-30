@@ -344,7 +344,7 @@ function ReportPersonRows({
                                 onMouseEnter={() => setDropdownState(dropdownKey, { isButtonHovered: true })}
                                 onMouseLeave={() => setDropdownState(dropdownKey, { isButtonHovered: false })}
                                 onBlur={() => setDropdownState(dropdownKey, { isButtonHovered: false })}
-                                className={`w-full px-2 py-1 rounded-lg border focus:outline-none text-sm text-center transition-colors ${
+                                className={`w-full px-2 py-1 rounded-lg border focus:outline-none text-sm text-left transition-colors ${
                                   theme === 'light' 
                                     ? 'bg-white text-gray-900' 
                                     : 'bg-black/40 text-zinc-300'
@@ -524,7 +524,7 @@ function ReportPersonRows({
                               onMouseLeave={() => setDropdownState(dropdownKey, { isButtonHovered: false })}
                               onBlur={() => setDropdownState(dropdownKey, { isButtonHovered: false })}
                             disabled={off}
-                              className={`w-full px-2 py-1 rounded-lg border focus:outline-none text-sm text-center transition-colors ${
+                              className={`w-full px-2 py-1 rounded-lg border focus:outline-none text-sm text-left transition-colors ${
                                 theme === 'light' 
                                   ? 'bg-white text-gray-900' 
                                   : 'bg-black/40 text-zinc-300'
@@ -612,7 +612,7 @@ function ReportPersonRows({
                       <Td key={`${pKey}_${concepto}_${fecha}`} className={`text-center ${cellClasses}`} align='center'>
                         <input
                           {...numericProps}
-                          className='w-full px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm text-center'
+                          className='w-full px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm text-left'
                           value={val}
                           onChange={e =>
                             setCell(pKey, concepto, fecha, (e.target as HTMLInputElement).value)

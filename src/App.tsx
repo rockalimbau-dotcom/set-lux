@@ -168,6 +168,14 @@ function AppInner() {
         return;
       }
 
+      // Guardar datos del perfil al registrarse
+      const fullName = `${nombre} ${apellido}`.trim();
+      storage.setJSON('profile_v1', {
+        name: fullName,
+        email: reg.email,
+        role: reg.puesto,
+      });
+
       setSuccess('Registro completado con éxito ✅');
       setTimeout(() => {
         setMode('login');
@@ -424,7 +432,7 @@ function AppInner() {
                             onMouseEnter={() => setIsPuestoButtonHovered(true)}
                             onMouseLeave={() => setIsPuestoButtonHovered(false)}
                             onBlur={() => setIsPuestoButtonHovered(false)}
-                            className={`w-full px-3 py-2 rounded-lg border focus:outline-none text-sm text-center transition-colors ${
+                            className={`w-full px-3 py-2 rounded-lg border focus:outline-none text-sm text-left transition-colors ${
                               theme === 'light' 
                                 ? 'bg-white text-gray-900' 
                                 : 'bg-black/40 text-zinc-300'

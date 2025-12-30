@@ -124,7 +124,7 @@ function JornadaDropdown({
           onMouseEnter={() => setDropdownState(dropdownKey, { isButtonHovered: true })}
           onMouseLeave={() => setDropdownState(dropdownKey, { isButtonHovered: false })}
           onBlur={() => setDropdownState(dropdownKey, { isButtonHovered: false })}
-          className={`w-full px-2 py-1 rounded-lg border focus:outline-none text-sm text-center transition-colors ${
+          className={`w-full px-2 py-1 rounded-lg border focus:outline-none text-sm text-left transition-colors ${
             theme === 'light' 
               ? 'bg-white text-gray-900' 
               : 'bg-black/40 text-zinc-300'
@@ -253,7 +253,7 @@ function AddMemberDropdown({
         onMouseEnter={() => setDropdownState(dropdownKey, { isButtonHovered: true })}
         onMouseLeave={() => setDropdownState(dropdownKey, { isButtonHovered: false })}
         onBlur={() => setDropdownState(dropdownKey, { isButtonHovered: false })}
-        className={`w-full px-2 py-1 rounded-lg border focus:outline-none text-sm text-center transition-colors ${
+        className={`w-full px-2 py-1 rounded-lg border focus:outline-none text-sm text-left transition-colors ${
           theme === 'light' 
             ? 'bg-white text-gray-900' 
             : 'bg-black/40 text-zinc-300'
@@ -374,7 +374,7 @@ function AddPrelightDropdown({
         onMouseEnter={() => setDropdownState(dropdownKey, { isButtonHovered: true })}
         onMouseLeave={() => setDropdownState(dropdownKey, { isButtonHovered: false })}
         onBlur={() => setDropdownState(dropdownKey, { isButtonHovered: false })}
-        className={`w-full px-2 py-1 rounded-lg border focus:outline-none text-sm text-center transition-colors ${
+        className={`w-full px-2 py-1 rounded-lg border focus:outline-none text-sm text-left transition-colors ${
           theme === 'light' 
             ? 'bg-white text-gray-900' 
             : 'bg-black/40 text-zinc-300'
@@ -503,7 +503,7 @@ function AddPickupDropdown({
         onMouseEnter={() => setDropdownState(dropdownKey, { isButtonHovered: true })}
         onMouseLeave={() => setDropdownState(dropdownKey, { isButtonHovered: false })}
         onBlur={() => setDropdownState(dropdownKey, { isButtonHovered: false })}
-        className={`w-full px-2 py-1 rounded-lg border focus:outline-none text-sm text-center transition-colors ${
+        className={`w-full px-2 py-1 rounded-lg border focus:outline-none text-sm text-left transition-colors ${
           theme === 'light' 
             ? 'bg-white text-gray-900' 
             : 'bg-black/40 text-zinc-300'
@@ -777,7 +777,7 @@ function WeekCard({
                         type='date'
                         value={week.startDate}
                         onChange={onChangeMonday}
-                          className='w-full px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-center'
+                          className='w-full px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-left'
                         title='Cambiar lunes'
                       />
                     ) : (
@@ -823,7 +823,7 @@ function WeekCard({
                             start: e.target.value,
                           })
                         }
-                        className='flex-1 px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-center'
+                        className='flex-1 px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-left'
                         disabled={day.tipo === 'Descanso' || day.tipo === 'Fin'}
                         title='Inicio'
                       />
@@ -833,7 +833,7 @@ function WeekCard({
                         onChange={e =>
                           setDayField(scope, week.id as string, i, { end: e.target.value })
                         }
-                        className='flex-1 px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-center'
+                        className='flex-1 px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-left'
                         disabled={day.tipo === 'Descanso' || day.tipo === 'Fin'}
                         title='Fin'
                       />
@@ -851,7 +851,7 @@ function WeekCard({
                       onChange={e =>
                         setDayField(scope, week.id as string, i, { cut: e.target.value })
                       }
-                      className='w-full px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-center'
+                      className='w-full px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-left'
                       disabled={day.tipo === 'Descanso' || day.tipo === 'Fin'}
                     />
                   </Td>
@@ -874,7 +874,7 @@ function WeekCard({
                       onChange={e =>
                         setDayField(scope, week.id as string, i, { loc: e.target.value })
                       }
-                      className='w-full px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-center'
+                      className='w-full px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-left'
                       disabled={day.tipo === 'Descanso' || day.tipo === 'Fin'}
                     />
                   </Td>
@@ -968,7 +968,7 @@ function WeekCard({
                                   prelightStart: e.target.value,
                                 })
                               }
-                              className='px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm text-center'
+                              className='px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm text-left'
                               disabled={day.tipo === 'Descanso' || day.tipo === 'Fin'}
                               title='Inicio prelight'
                             />
@@ -980,7 +980,7 @@ function WeekCard({
                                   prelightEnd: e.target.value,
                                 })
                               }
-                              className='px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm text-center'
+                              className='px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm text-left'
                               disabled={day.tipo === 'Descanso' || day.tipo === 'Fin'}
                               title='Fin prelight'
                             />
@@ -1066,7 +1066,7 @@ function WeekCard({
                                   pickupStart: e.target.value,
                                 })
                               }
-                              className='px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm text-center'
+                              className='px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm text-left'
                               disabled={day.tipo === 'Descanso' || day.tipo === 'Fin'}
                               title='Inicio recogida'
                             />
@@ -1078,7 +1078,7 @@ function WeekCard({
                                   pickupEnd: e.target.value,
                                 })
                               }
-                              className='px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm text-center'
+                              className='px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm text-left'
                               disabled={day.tipo === 'Descanso' || day.tipo === 'Fin'}
                               title='Fin recogida'
                             />
@@ -1144,7 +1144,7 @@ function WeekCard({
                           issue: e.target.value,
                         })
                       }
-                      className='w-full px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-center'
+                      className='w-full px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-left'
                     />
                   </Td>
                 ))}

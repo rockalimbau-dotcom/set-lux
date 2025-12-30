@@ -321,7 +321,7 @@ function NewProjectModal({ onClose, onCreate }: NewProjectModalProps) {
                 onMouseEnter={() => setEstadoDropdown(prev => ({ ...prev, isButtonHovered: true }))}
                 onMouseLeave={() => setEstadoDropdown(prev => ({ ...prev, isButtonHovered: false }))}
                 onBlur={() => setEstadoDropdown(prev => ({ ...prev, isButtonHovered: false }))}
-                className={`w-full px-4 py-3 rounded-xl border focus:outline-none text-sm text-center transition-colors ${
+                className={`w-full px-4 py-3 rounded-xl border focus:outline-none text-sm text-left transition-colors ${
                   theme === 'light' 
                     ? 'bg-white text-gray-900' 
                     : 'bg-black/40 text-zinc-300'
@@ -385,7 +385,7 @@ function NewProjectModal({ onClose, onCreate }: NewProjectModalProps) {
                 onMouseEnter={() => setCondicionesDropdown(prev => ({ ...prev, isButtonHovered: true }))}
                 onMouseLeave={() => setCondicionesDropdown(prev => ({ ...prev, isButtonHovered: false }))}
                 onBlur={() => setCondicionesDropdown(prev => ({ ...prev, isButtonHovered: false }))}
-                className={`w-full px-4 py-3 rounded-xl border focus:outline-none text-sm text-center transition-colors ${
+                className={`w-full px-4 py-3 rounded-xl border focus:outline-none text-sm text-left transition-colors ${
                   theme === 'light' 
                     ? 'bg-white text-gray-900' 
                     : 'bg-black/40 text-zinc-300'
@@ -453,7 +453,7 @@ function NewProjectModal({ onClose, onCreate }: NewProjectModalProps) {
                 onMouseEnter={() => setPaisDropdown(prev => ({ ...prev, isButtonHovered: true }))}
                 onMouseLeave={() => setPaisDropdown(prev => ({ ...prev, isButtonHovered: false }))}
                 onBlur={() => setPaisDropdown(prev => ({ ...prev, isButtonHovered: false }))}
-                className={`w-full px-4 py-3 rounded-xl border focus:outline-none text-sm text-center transition-colors ${
+                className={`w-full px-4 py-3 rounded-xl border focus:outline-none text-sm text-left transition-colors ${
                   theme === 'light' 
                     ? 'bg-white text-gray-900' 
                     : 'bg-black/40 text-zinc-300'
@@ -518,7 +518,7 @@ function NewProjectModal({ onClose, onCreate }: NewProjectModalProps) {
                   onMouseEnter={() => setRegionDropdown(prev => ({ ...prev, isButtonHovered: true }))}
                   onMouseLeave={() => setRegionDropdown(prev => ({ ...prev, isButtonHovered: false }))}
                   onBlur={() => setRegionDropdown(prev => ({ ...prev, isButtonHovered: false }))}
-                  className={`w-full px-4 py-3 rounded-xl border focus:outline-none text-sm text-center transition-colors ${
+                  className={`w-full px-4 py-3 rounded-xl border focus:outline-none text-sm text-left transition-colors ${
                     theme === 'light' 
                       ? 'bg-white text-gray-900' 
                       : 'bg-black/40 text-zinc-300'
@@ -895,7 +895,7 @@ function EditProjectModal({ project, onClose, onSave }: EditProjectModalProps) {
                 onMouseEnter={() => setEstadoDropdown(prev => ({ ...prev, isButtonHovered: true }))}
                 onMouseLeave={() => setEstadoDropdown(prev => ({ ...prev, isButtonHovered: false }))}
                 onBlur={() => setEstadoDropdown(prev => ({ ...prev, isButtonHovered: false }))}
-                className={`w-full px-4 py-3 rounded-xl border focus:outline-none text-sm text-center transition-colors ${
+                className={`w-full px-4 py-3 rounded-xl border focus:outline-none text-sm text-left transition-colors ${
                   theme === 'light' 
                     ? 'bg-white text-gray-900' 
                     : 'bg-black/40 text-zinc-300'
@@ -960,7 +960,7 @@ function EditProjectModal({ project, onClose, onSave }: EditProjectModalProps) {
                 onMouseEnter={() => setCondicionesDropdown(prev => ({ ...prev, isButtonHovered: true }))}
                 onMouseLeave={() => setCondicionesDropdown(prev => ({ ...prev, isButtonHovered: false }))}
                 onBlur={() => setCondicionesDropdown(prev => ({ ...prev, isButtonHovered: false }))}
-                className={`w-full px-4 py-3 rounded-xl border focus:outline-none text-sm text-center transition-colors ${
+                className={`w-full px-4 py-3 rounded-xl border focus:outline-none text-sm text-left transition-colors ${
                   theme === 'light' 
                     ? 'bg-white text-gray-900' 
                     : 'bg-black/40 text-zinc-300'
@@ -1028,7 +1028,7 @@ function EditProjectModal({ project, onClose, onSave }: EditProjectModalProps) {
                 onMouseEnter={() => setPaisDropdown(prev => ({ ...prev, isButtonHovered: true }))}
                 onMouseLeave={() => setPaisDropdown(prev => ({ ...prev, isButtonHovered: false }))}
                 onBlur={() => setPaisDropdown(prev => ({ ...prev, isButtonHovered: false }))}
-                className={`w-full px-4 py-3 rounded-xl border focus:outline-none text-sm text-center transition-colors ${
+                className={`w-full px-4 py-3 rounded-xl border focus:outline-none text-sm text-left transition-colors ${
                   theme === 'light' 
                     ? 'bg-white text-gray-900' 
                     : 'bg-black/40 text-zinc-300'
@@ -1093,7 +1093,7 @@ function EditProjectModal({ project, onClose, onSave }: EditProjectModalProps) {
                   onMouseEnter={() => setRegionDropdown(prev => ({ ...prev, isButtonHovered: true }))}
                   onMouseLeave={() => setRegionDropdown(prev => ({ ...prev, isButtonHovered: false }))}
                   onBlur={() => setRegionDropdown(prev => ({ ...prev, isButtonHovered: false }))}
-                  className={`w-full px-4 py-3 rounded-xl border focus:outline-none text-sm text-center transition-colors ${
+                  className={`w-full px-4 py-3 rounded-xl border focus:outline-none text-sm text-left transition-colors ${
                     theme === 'light' 
                       ? 'bg-white text-gray-900' 
                       : 'bg-black/40 text-zinc-300'

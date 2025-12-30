@@ -538,7 +538,7 @@ function CondicionesSemanal({ project, onChange = () => {}, onRegisterExport }: 
                         onChange={e => handlePriceChange(role, h, (e.target as HTMLInputElement).value)}
                         placeholder={isSemanal ? '€' : ''}
                         disabled={!isSemanal && !isRefuerzo && !hasSemanalValue}
-                        className={`w-full px-2 py-1 rounded-lg border border-neutral-border focus:outline-none focus:ring-1 text-center ${
+                        className={`w-full px-2 py-1 rounded-lg border border-neutral-border focus:outline-none focus:ring-1 text-left ${
                           !isSemanal && !isRefuerzo && !hasSemanalValue
                             ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 cursor-not-allowed' 
                             : 'dark:bg-transparent'

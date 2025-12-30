@@ -464,7 +464,7 @@ function TeamRow({ row, onChange, onRemove, canEdit, allowedRoles, groupKey = 'b
             title='Cargo'
             aria-label='Cargo'
             id={`role-${row.id}`}
-            className={`w-full min-w-0 px-3 py-2 rounded-lg border focus:outline-none text-sm text-center transition-colors ${
+            className={`w-full min-w-0 px-3 py-2 rounded-lg border focus:outline-none text-sm text-left transition-colors ${
               theme === 'light' 
                 ? 'bg-white text-gray-900' 
                 : 'bg-black/40 text-zinc-300'

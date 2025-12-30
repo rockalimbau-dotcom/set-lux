@@ -592,7 +592,7 @@ function MonthReportGroup({
               onMouseEnter={() => setIsButtonHovered(true)}
               onMouseLeave={() => setIsButtonHovered(false)}
               onBlur={() => setIsButtonHovered(false)}
-              className={`px-3 py-2 rounded-lg border focus:outline-none text-sm w-full min-w-[280px] text-center transition-colors ${
+              className={`px-3 py-2 rounded-lg border focus:outline-none text-sm w-full min-w-[280px] text-left transition-colors ${
                 theme === 'light' 
                   ? 'bg-white text-gray-900' 
                   : 'bg-black/40 text-zinc-300'
@@ -654,7 +654,7 @@ function MonthReportGroup({
               type='date'
               value={dateFrom}
               onChange={e => setDateFrom(e.target.value)}
-              className='px-3 py-2 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm text-center'
+              className='px-3 py-2 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm text-left'
             />
           </div>
           <div className='flex items-center gap-2'>
@@ -663,7 +663,7 @@ function MonthReportGroup({
               type='date'
               value={dateTo}
               onChange={e => setDateTo(e.target.value)}
-              className='px-3 py-2 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm text-center'
+              className='px-3 py-2 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm text-left'
             />
           </div>
           <button

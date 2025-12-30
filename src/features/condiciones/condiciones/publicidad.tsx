@@ -502,7 +502,7 @@ function CondicionesPublicidad({
                       value={model.prices?.[role]?.[h] ?? ''}
                       onChange={e => handlePriceChange(role, h, e.target.value)}
                       placeholder='€'
-                      className='w-full px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-center'
+                      className='w-full px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-left'
                     />
                   </Td>
                 ))}
