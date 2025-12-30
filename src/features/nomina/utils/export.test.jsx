@@ -159,19 +159,19 @@ describe('nomina/utils/export', () => {
       // Check first row data
       expect(html).toContain('Gaffer — John Doe');
       expect(html).toContain('5'); // _worked
-      expect(html).toContain('250.00'); // _totalDias
+      expect(html).toContain('250€'); // _totalDias (displayMoney elimina .00)
       expect(html).toContain('2'); // _travel
-      expect(html).toContain('100.00'); // _totalTravel
+      expect(html).toContain('100€'); // _totalTravel (displayMoney elimina .00)
       expect(html).toContain('3'); // extras
-      expect(html).toContain('45.00'); // _totalExtras
+      expect(html).toContain('45€'); // _totalExtras (displayMoney elimina .00)
       expect(html).toContain('Comida x2'); // dietas pills
       expect(html).toContain('Cena x1'); // dietas pills
-      expect(html).toContain('40.00'); // _totalDietas
+      expect(html).toContain('40€'); // _totalDietas (displayMoney elimina .00)
       expect(html).toContain('1'); // transporte
-      expect(html).toContain('20.00'); // _totalTrans
+      expect(html).toContain('20€'); // _totalTrans (displayMoney elimina .00)
       expect(html).toContain('50.5'); // km
-      expect(html).toContain('25.25'); // _totalKm
-      expect(html).toContain('440.25'); // _totalBruto
+      expect(html).toContain('25.25€'); // _totalKm (mantiene decimales no .00)
+      expect(html).toContain('440.25€'); // _totalBruto (mantiene decimales no .00)
     });
 
     it('includes second row data', () => {
@@ -184,18 +184,19 @@ describe('nomina/utils/export', () => {
 
       expect(html).toContain('Eléctrico — Jane Smith');
       expect(html).toContain('4'); // _worked
-      expect(html).toContain('200.00'); // _totalDias
+      expect(html).toContain('200€'); // _totalDias (displayMoney elimina .00)
       expect(html).toContain('1'); // _travel
-      expect(html).toContain('40.00'); // _totalTravel
+      expect(html).toContain('40€'); // _totalTravel (displayMoney elimina .00)
       expect(html).toContain('2'); // extras
-      expect(html).toContain('24.00'); // _totalExtras
+      expect(html).toContain('24€'); // _totalExtras (displayMoney elimina .00)
       expect(html).toContain('Dieta completa + desayuno x1'); // dietas pills
-      expect(html).toContain('50.00'); // _totalDietas
+      expect(html).toContain('50€'); // _totalDietas (displayMoney elimina .00)
       expect(html).toContain('0'); // transporte
-      expect(html).toContain('0.00'); // _totalTrans
+      // _totalTrans es 0, displayMoney devuelve cadena vacía para valores 0
+      // No verificamos el valor ya que es 0 y se muestra vacío
       expect(html).toContain('25.0'); // km
-      expect(html).toContain('12.50'); // _totalKm
-      expect(html).toContain('326.50'); // _totalBruto
+      expect(html).toContain('12.50€'); // _totalKm (mantiene decimales no .00)
+      expect(html).toContain('326.50€'); // _totalBruto (mantiene decimales no .00)
     });
 
     it('handles empty rows array', () => {
@@ -490,7 +491,7 @@ describe('nomina/utils/export', () => {
       expect(html).toContain('2'); // _holidays for first row
       expect(html).toContain('87.5'); // _totalHolidays for first row
       expect(html).toContain('1'); // _holidays for second row
-      expect(html).toContain('35.0'); // _totalHolidays for second row
+      expect(html).toContain('35€'); // _totalHolidays for second row (displayMoney elimina .00)
     });
 
     it('should format extras correctly with pills format', () => {

@@ -69,9 +69,22 @@ describe('EquipoTab (smoke)', () => {
     );
 
     fireEvent.click(screen.getByRole('button', { name: '+ Prelight' }));
-    expect(screen.getByText('Equipo Prelight')).toBeInTheDocument();
+    // Hay múltiples elementos con "Equipo Prelight", usar getAllByText y verificar que existe
+    const prelightElements = screen.getAllByText('Equipo Prelight');
+    expect(prelightElements.length).toBeGreaterThan(0);
 
+    // Ahora hay un modal de confirmación, primero hacer clic en "Quitar grupo"
     fireEvent.click(screen.getByRole('button', { name: 'Quitar grupo' }));
-    expect(screen.queryByText('Equipo Prelight')).not.toBeInTheDocument();
+    
+    // Buscar el botón "Sí" del modal de confirmación
+    const confirmButton = screen.getByText('Sí');
+    expect(confirmButton).toBeInTheDocument();
+    
+    // Confirmar la eliminación
+    fireEvent.click(confirmButton);
+    
+    // Verificar que el grupo se eliminó (usar queryAllByText para evitar error de múltiples elementos)
+    const prelightElementsAfter = screen.queryAllByText('Equipo Prelight');
+    expect(prelightElementsAfter.length).toBe(0);
   });
 });

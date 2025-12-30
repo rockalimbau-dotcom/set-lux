@@ -92,7 +92,15 @@ describe('nomina/utils/cond', () => {
       expect(localStorageMock.getItem).toHaveBeenCalledWith(
         'cond_test-project_publicidad'
       );
-      expect(result).toEqual(mockModel);
+      // Ahora loadCondModel filtra prices para incluir solo los roles en roles
+      expect(result).toEqual({
+        roles: ['Gaffer', 'Eléctrico'],
+        prices: { 
+          'Gaffer': { 'Precio jornada': '510' },
+          'Eléctrico': { 'Precio jornada': '310' }
+        },
+        params: { kilometrajeKm: '0.5' },
+      });
     });
 
     it('uses conditions.mode when tipo is not available', () => {
@@ -161,7 +169,15 @@ describe('nomina/utils/cond', () => {
       expect(localStorageMock.getItem).toHaveBeenCalledWith(
         'cond_test-project_publicidad'
       );
-      expect(result).toEqual(mockModel);
+      // Ahora loadCondModel filtra prices para incluir solo los roles en roles
+      expect(result).toEqual({
+        roles: ['Gaffer', 'Eléctrico'],
+        prices: { 
+          'Gaffer': { 'Precio jornada': '510' },
+          'Eléctrico': { 'Precio jornada': '310' }
+        },
+        params: { gastosBolsillo: '10' },
+      });
     });
 
     it('tries multiple keys in order of priority', () => {
@@ -217,7 +233,15 @@ describe('nomina/utils/cond', () => {
       const result = loadCondModel(mockProject);
 
       expect(localStorageMock.getItem).toHaveBeenCalledTimes(4);
-      expect(result).toEqual(mockModel);
+      // Ahora loadCondModel filtra prices para incluir solo los roles en roles
+      expect(result).toEqual({
+        roles: ['Gaffer', 'Eléctrico'],
+        prices: { 
+          'Gaffer': { 'Precio jornada': '510' },
+          'Eléctrico': { 'Precio jornada': '310' }
+        },
+        params: { dietaSinPernocta: '30' },
+      });
     });
 
     it('returns empty object when no model is found', () => {

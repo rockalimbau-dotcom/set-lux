@@ -60,7 +60,15 @@ describe('WeekCard (smoke)', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Duplicar' }));
     expect(duplicateWeek).toHaveBeenCalled();
 
+    // Ahora hay un modal de confirmación, primero hacer clic en eliminar
     fireEvent.click(screen.getByTitle('Eliminar semana'));
+    
+    // Buscar el botón "Sí" del modal de confirmación
+    const confirmButton = screen.getByText('Sí');
+    expect(confirmButton).toBeInTheDocument();
+    
+    // Confirmar la eliminación
+    fireEvent.click(confirmButton);
     expect(deleteWeek).toHaveBeenCalled();
   });
 });

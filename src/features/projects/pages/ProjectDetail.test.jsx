@@ -46,9 +46,9 @@ describe('ProjectDetail (smoke)', () => {
       screen.getByText('Planificación').closest('button')
     ).toBeInTheDocument();
     expect(screen.getByText('Reportes').closest('button')).toBeInTheDocument();
-    expect(screen.getByText('Nomina').closest('button')).toBeInTheDocument();
+    expect(screen.getByText('Nómina').closest('button')).toBeInTheDocument();
     expect(
-      screen.getByText('Necesidades de Rodaje').closest('button')
+      screen.getByText('Necesidades de rodaje').closest('button')
     ).toBeInTheDocument();
     expect(screen.getByText(/Condiciones/)).toBeInTheDocument();
 

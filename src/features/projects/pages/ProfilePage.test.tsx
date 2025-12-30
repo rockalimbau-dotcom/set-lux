@@ -16,7 +16,7 @@ describe('ProfilePage', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    storage.getJSON.mockReturnValue({ name: 'Raúl', email: 'raul@test.com', role: 'gaffer' });
+    storage.getJSON.mockReturnValue({ name: 'Raúl', nombre: 'Raúl', apellido: '', email: 'raul@test.com', role: 'gaffer' });
   });
 
   it('renders header and form with loaded values', async () => {
@@ -27,25 +27,32 @@ describe('ProfilePage', () => {
     expect(screen.getByText('›')).toBeInTheDocument();
     expect(screen.getByText('Datos de usuario')).toBeInTheDocument();
 
-    const name = screen.getByPlaceholderText('Tu nombre') as HTMLInputElement;
+    const nombre = screen.getByPlaceholderText('Nombre') as HTMLInputElement;
+    const apellido = screen.getByPlaceholderText('Apellido') as HTMLInputElement;
     const email = screen.getByPlaceholderText('tucorreo@ejemplo.com') as HTMLInputElement;
-    const role = screen.getByPlaceholderText('Tu rol') as HTMLInputElement;
+    const roleButton = screen.getByText('gaffer').closest('button');
 
-    expect(name.value).toBe('Raúl');
+    expect(nombre.value).toBe('Raúl');
+    expect(apellido.value).toBe('');
     expect(email.value).toBe('raul@test.com');
-    expect(role.value).toBe('gaffer');
+    expect(roleButton).toBeInTheDocument();
   });
 
   it('saves profile and shows feedback', async () => {
     render(<MemoryRouter><ProfilePage /></MemoryRouter>);
 
-    const name = (await screen.findByPlaceholderText('Tu nombre')) as HTMLInputElement;
-    fireEvent.change(name, { target: { value: 'Nuevo Nombre' } });
+    const nombre = (await screen.findByPlaceholderText('Nombre')) as HTMLInputElement;
+    fireEvent.change(nombre, { target: { value: 'Nuevo' } });
+    
+    const apellido = screen.getByPlaceholderText('Apellido') as HTMLInputElement;
+    fireEvent.change(apellido, { target: { value: 'Nombre' } });
 
     fireEvent.click(screen.getByText('Guardar'));
 
     expect(storage.setJSON).toHaveBeenCalledWith('profile_v1', {
       name: 'Nuevo Nombre',
+      nombre: 'Nuevo',
+      apellido: 'Nombre',
       email: 'raul@test.com',
       role: 'gaffer',
     });

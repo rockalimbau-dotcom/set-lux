@@ -57,6 +57,13 @@ describe('ListRow (smoke)', () => {
     );
     const chip = screen.getByRole('button', { name: 'chip-John' });
     fireEvent.click(chip);
+    
+    // Ahora hay un modal de confirmación, buscar el botón "Sí"
+    const confirmButton = screen.getByText('Sí');
+    expect(confirmButton).toBeInTheDocument();
+    
+    // Confirmar la eliminación
+    fireEvent.click(confirmButton);
     expect(removeFromList).toHaveBeenCalledWith('w1', 0, 'crewList', 0);
   });
 });

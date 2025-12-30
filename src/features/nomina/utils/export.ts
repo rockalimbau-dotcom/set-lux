@@ -15,6 +15,35 @@ export function buildNominaMonthHTML(
   enrichedRows: any[],
   monthLabelEs: (key: string, withYear?: boolean) => string
 ) {
+  // Helper function to generate worked days summary text for export
+  const generateWorkedDaysText = (r: any): string => {
+    const parts: string[] = [];
+    
+    // Orden: Localizar, Carga, Rodaje, Descarga
+    if ((r._localizar || 0) > 0) {
+      parts.push(`Localizar x${r._localizar}`);
+    }
+    
+    if ((r._carga || 0) > 0) {
+      parts.push(`Carga x${r._carga}`);
+    }
+    
+    if ((r._rodaje || 0) > 0) {
+      parts.push(`Rodaje x${r._rodaje}`);
+    }
+    
+    if ((r._descarga || 0) > 0) {
+      parts.push(`Descarga x${r._descarga}`);
+    }
+    
+    if (parts.length === 0) {
+      return '';
+    }
+    
+    const totalWorked = r._worked || 0;
+    return `<div style="text-align:center;"><strong>${totalWorked}</strong><br/><div style="font-size:10px;line-height:1.2;">${parts.join('<br/>')}</div></div>`;
+  };
+
   // Helper function to generate dietas summary text for export
   const generateDietasText = (r: any): string => {
     const want = [

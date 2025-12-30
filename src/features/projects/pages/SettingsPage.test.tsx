@@ -16,7 +16,15 @@ describe('SettingsPage', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    storage.getJSON.mockReturnValue({ theme: 'dark', language: 'es' });
+    storage.getJSON.mockImplementation((key: string) => {
+      if (key === 'settings_v1') {
+        return { theme: 'dark' };
+      }
+      if (key === 'profile_v1') {
+        return { idioma: 'Español' };
+      }
+      return {};
+    });
   });
 
   it('renders header and loads settings', async () => {
@@ -48,10 +56,15 @@ describe('SettingsPage', () => {
 
     fireEvent.click(screen.getByText('Guardar'));
 
+    // Verificar que se guarda el tema en settings_v1
     expect(storage.setJSON).toHaveBeenCalledWith('settings_v1', {
       theme: 'light',
-      language: 'es',
     });
+    
+    // Verificar que se guarda el idioma en profile_v1
+    expect(storage.setJSON).toHaveBeenCalledWith('profile_v1', expect.objectContaining({
+      idioma: expect.any(String),
+    }));
 
     expect(screen.getByText('Configuración guardada ✓')).toBeInTheDocument();
   });

@@ -81,7 +81,7 @@ describe('MonthSection with holiday days and conditional columns', () => {
     const totalHolidaysCell = container.querySelector('td:nth-child(6)'); // 6th column should be total holidays
 
     expect(holidayDaysCell?.textContent).toBe('2');
-    expect(totalHolidaysCell?.textContent).toBe('350.00');
+    expect(totalHolidaysCell?.textContent).toBe('350€'); // displayMoney elimina .00
   });
 
   it('should include holiday total in bruto calculation', () => {
