@@ -25,9 +25,10 @@ type ListRowProps = {
   context?: string;
   removeFromList: (weekId: string, dayIdx: number, listKey: string, idx: number) => void;
   setCell: (weekId: string, dayIdx: number, fieldKey: string, value: unknown) => void;
+  readOnly?: boolean;
 };
 
-export default function ListRow({ label, listKey, notesKey, weekId, weekObj, context, removeFromList, setCell }: ListRowProps) {
+export default function ListRow({ label, listKey, notesKey, weekId, weekObj, context, removeFromList, setCell, readOnly = false }: ListRowProps) {
   return (
     <Row label={label}>
       {DAYS.map((d, i) => {
@@ -45,15 +46,17 @@ export default function ListRow({ label, listKey, notesKey, weekId, weekObj, con
                   role={(m as AnyRecord)?.role}
                   name={(m as AnyRecord)?.name}
                   context={context}
-                  onRemove={() => removeFromList(weekId, i, listKey, idx)}
+                  onRemove={() => !readOnly && removeFromList(weekId, i, listKey, idx)}
+                  readOnly={readOnly}
                 />
               ))}
             </div>
             <div className='flex justify-center'>
             <TextAreaAuto
               value={(day as AnyRecord)[notesKey] || ''}
-              onChange={(v: string) => setCell(weekId, i, notesKey, v)}
+              onChange={(v: string) => !readOnly && setCell(weekId, i, notesKey, v)}
               placeholder='Añade notas…'
+              readOnly={readOnly}
             />
             </div>
           </Td>

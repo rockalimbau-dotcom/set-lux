@@ -21,9 +21,10 @@ type FieldRowProps = {
   fieldKey: string;
   label: string;
   setCell: (weekId: string, dayIdx: number, fieldKey: string, value: unknown) => void;
+  readOnly?: boolean;
 };
 
-export default function FieldRow({ weekId, weekObj, fieldKey, label, setCell }: FieldRowProps) {
+export default function FieldRow({ weekId, weekObj, fieldKey, label, setCell, readOnly = false }: FieldRowProps) {
   return (
     <Row label={label}>
       {DAYS.map((d, i) => (
@@ -31,8 +32,9 @@ export default function FieldRow({ weekId, weekObj, fieldKey, label, setCell }: 
           <div className='flex justify-center'>
           <TextAreaAuto
             value={(weekObj?.days?.[i]?.[fieldKey] as string) || ''}
-            onChange={(val: string) => setCell(weekId, i, fieldKey, val)}
+            onChange={(val: string) => !readOnly && setCell(weekId, i, fieldKey, val)}
             placeholder='Escribe aquí…'
+            readOnly={readOnly}
           />
           </div>
         </Td>

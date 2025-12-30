@@ -11,6 +11,7 @@ interface CondicionesSemanalProps {
   project: { id?: string; nombre?: string };
   onChange?: (patch: any) => void;
   onRegisterExport?: (fn: () => void) => void;
+  readOnly?: boolean;
 }
 
 /** Plantillas por defecto */
@@ -56,7 +57,7 @@ De esta forma el gaffer y best boy serán dados de alta durante la pre producci�
 
 const defaultConvenio = `También se tendrá en cuenta el convenio “Resolución de 22 de marzo de 2024, de la Dirección General de Trabajo, por la que se registra y publica el III Convenio colectivo de ámbito estatal de la industria de producción audiovisual (técnicos).`;
 
-function CondicionesSemanal({ project, onChange = () => {}, onRegisterExport }: CondicionesSemanalProps) {
+function CondicionesSemanal({ project, onChange = () => {}, onRegisterExport, readOnly = false }: CondicionesSemanalProps) {
   const storageKey = useMemo(() => {
     const base = project?.id || project?.nombre || 'tmp';
     return `cond_${base}_semanal`;
@@ -328,57 +329,68 @@ function CondicionesSemanal({ project, onChange = () => {}, onRegisterExport }: 
                   onChange: (v: string) => setParam('jornadaComida', v),
                 },
               ]}
+              readOnly={readOnly}
             />
             <ParamInput
               label='Días jornada'
               value={p.diasJornada ?? '5'}
               onChange={(v: string) => setParam('diasJornada', v)}
+              readOnly={readOnly}
             />
             <ParamInput
               label='Días diario'
               value={p.diasDiario ?? '7'}
               onChange={(v: string) => setParam('diasDiario', v)}
+              readOnly={readOnly}
             />
             <ParamInput
               label='Semanas por mes'
               value={p.semanasMes ?? '4'}
               onChange={(v: string) => setParam('semanasMes', v)}
+              readOnly={readOnly}
             />
             <ParamInput
               label='Horas semanales'
               value={p.horasSemana ?? '45'}
               onChange={(v: string) => setParam('horasSemana', v)}
+              readOnly={readOnly}
             />
             <ParamInput
               label='Día extra/Festivo (×)'
               value={p.factorFestivo ?? '1.75'}
               onChange={(v: string) => setParam('factorFestivo', v)}
+              readOnly={readOnly}
             />
             <ParamInput
               label='Hora extra (×)'
               value={p.factorHoraExtra ?? '1.5'}
               onChange={(v: string) => setParam('factorHoraExtra', v)}
+              readOnly={readOnly}
             />
             <ParamInput
               label='Travel day (divisor)'
               value={p.divTravel ?? '2'}
               onChange={(v: string) => setParam('divTravel', v)}
+              readOnly={readOnly}
             />
 
             <ParamInput
               label='Cortesía (min)'
               value={p.cortesiaMin ?? '15'}
               onChange={(v: string) => setParam('cortesiaMin', v)}
+              readOnly={readOnly}
             />
             <ParamInput
               label='Turn Around Diario (h)'
               value={p.taDiario ?? '12'}
               onChange={(v: string) => setParam('taDiario', v)}
+              readOnly={readOnly}
             />
             <ParamInput
               label='Turn Around Fin de semana (h)'
               value={p.taFinde ?? '48'}
               onChange={(v: string) => setParam('taFinde', v)}
+              readOnly={readOnly}
             />
             <ParamInput
               label='Nocturno (inicio / fin)'
@@ -392,41 +404,49 @@ function CondicionesSemanal({ project, onChange = () => {}, onRegisterExport }: 
                   onChange: (v: string) => setParam('nocturnoFin', v),
                 },
               ]}
+              readOnly={readOnly}
             />
             <ParamInput
               label='Comida (€)'
               value={p.dietaComida ?? '14.02'}
               onChange={(v: string) => setParam('dietaComida', v)}
+              readOnly={readOnly}
             />
             <ParamInput
               label='Cena (€)'
               value={p.dietaCena ?? '16.36'}
               onChange={(v: string) => setParam('dietaCena', v)}
+              readOnly={readOnly}
             />
             <ParamInput
               label='Dieta s/ pernocta (€)'
               value={p.dietaSinPernocta ?? '30.38'}
               onChange={(v: string) => setParam('dietaSinPernocta', v)}
+              readOnly={readOnly}
             />
             <ParamInput
               label='Alojamiento + desayuno (€)'
               value={p.dietaAlojDes ?? '51.39'}
               onChange={(v: string) => setParam('dietaAlojDes', v)}
+              readOnly={readOnly}
             />
             <ParamInput
               label='Gastos de bolsillo (€)'
               value={p.gastosBolsillo ?? '8.81'}
               onChange={(v: string) => setParam('gastosBolsillo', v)}
+              readOnly={readOnly}
             />
             <ParamInput
               label='Kilometraje (€/km)'
               value={p.kilometrajeKm ?? '0.26'}
               onChange={(v: string) => setParam('kilometrajeKm', v)}
+              readOnly={readOnly}
             />
             <ParamInput
               label='Transporte (€/día)'
               value={p.transporteDia ?? '12'}
               onChange={(v: string) => setParam('transporteDia', v)}
+              readOnly={readOnly}
             />
           </div>
         )}
@@ -450,8 +470,10 @@ function CondicionesSemanal({ project, onChange = () => {}, onRegisterExport }: 
           ) : (
             <>
               <button
-                onClick={() => setShowRoleSelect(!showRoleSelect)}
-                className='px-3 py-1 text-sm bg-brand text-white rounded-lg hover:bg-brand/80 btn-add-role'
+                onClick={() => !readOnly && setShowRoleSelect(!showRoleSelect)}
+                disabled={readOnly}
+                className={`px-3 py-1 text-sm bg-brand text-white rounded-lg hover:bg-brand/80 btn-add-role ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+                title={readOnly ? 'El proyecto está cerrado' : '+ Añadir rol'}
               >
                 + Añadir rol
               </button>
@@ -499,12 +521,14 @@ function CondicionesSemanal({ project, onChange = () => {}, onRegisterExport }: 
                   <div className='flex items-center gap-1'>
                     <button
                       onClick={() => {
+                        if (readOnly) return;
                         if (confirm(`¿Eliminar el rol "${role}"?`)) {
                           removeRole(role);
                         }
                       }}
-                      className='text-gray-400 hover:text-blue-500 hover:bg-blue-100 dark:hover:text-amber-500 dark:hover:bg-amber-900/20 font-bold text-sm w-6 h-6 flex items-center justify-center rounded transition-all hover:scale-110'
-                      title='Eliminar rol'
+                      disabled={readOnly}
+                      className={`text-gray-400 hover:text-blue-500 hover:bg-blue-100 dark:hover:text-amber-500 dark:hover:bg-amber-900/20 font-bold text-sm w-6 h-6 flex items-center justify-center rounded transition-all hover:scale-110 ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      title={readOnly ? 'El proyecto está cerrado' : 'Eliminar rol'}
                     >
                       ✕
                     </button>
@@ -521,13 +545,14 @@ function CondicionesSemanal({ project, onChange = () => {}, onRegisterExport }: 
                       <input
                         type='number'
                         value={model.prices?.[role]?.[h] ?? ''}
-                        onChange={e => handlePriceChange(role, h, (e.target as HTMLInputElement).value)}
+                        onChange={e => !readOnly && handlePriceChange(role, h, (e.target as HTMLInputElement).value)}
                         placeholder={isSemanal ? '€' : ''}
                         step='0.01'
-                        disabled={!isSemanal && !isRefuerzo && !hasSemanalValue}
+                        disabled={readOnly || (!isSemanal && !isRefuerzo && !hasSemanalValue)}
+                        readOnly={readOnly}
                         className={`w-full px-2 py-1 rounded-lg border border-neutral-border focus:outline-none focus:ring-1 text-center ${
-                          !isSemanal && !isRefuerzo && !hasSemanalValue
-                            ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 cursor-not-allowed' 
+                          readOnly || (!isSemanal && !isRefuerzo && !hasSemanalValue)
+                            ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 cursor-not-allowed opacity-50' 
                             : 'dark:bg-transparent'
                         }`}
                       />
@@ -547,6 +572,7 @@ function CondicionesSemanal({ project, onChange = () => {}, onRegisterExport }: 
           value={restoreStrongTags(renderWithParams(model.legendTemplate, model.params))}
           onChange={v => setText('legendTemplate', visibleToTemplate(v, model.params))}
           className='min-h-[180px]'
+          readOnly={readOnly}
         />
       </section>
 
@@ -555,46 +581,59 @@ function CondicionesSemanal({ project, onChange = () => {}, onRegisterExport }: 
         title='Festivos'
         value={renderWithParams(model.festivosTemplate, model.params)}
         onChange={v => setText('festivosTemplate', visibleToTemplate(v, model.params))}
+        readOnly={readOnly}
       />
       <InfoCard
         title='Horarios'
         value={restoreStrongTags(renderWithParams(model.horariosTemplate, model.params))}
         onChange={v => setText('horariosTemplate', visibleToTemplate(v, model.params))}
+        readOnly={readOnly}
       />
       <InfoCard
         title='Dietas'
         value={restoreStrongTags(renderWithParams(model.dietasTemplate, model.params))}
         onChange={v => setText('dietasTemplate', visibleToTemplate(v, model.params))}
+        readOnly={readOnly}
       />
       <InfoCard
         title='Transportes'
         value={renderWithParams(model.transportesTemplate, model.params)}
         onChange={v => setText('transportesTemplate', visibleToTemplate(v, model.params))}
+        readOnly={readOnly}
       />
       <InfoCard
         title='Alojamiento'
         value={renderWithParams(model.alojamientoTemplate, model.params)}
         onChange={v => setText('alojamientoTemplate', visibleToTemplate(v, model.params))}
+        readOnly={readOnly}
       />
       <InfoCard
         title='Pre producción'
         value={renderWithParams(model.preproTemplate, model.params)}
         onChange={v => setText('preproTemplate', visibleToTemplate(v, model.params))}
+        readOnly={readOnly}
       />
       <InfoCard
         title='Convenio'
         value={renderWithParams(model.convenioTemplate, model.params)}
         onChange={v => setText('convenioTemplate', visibleToTemplate(v, model.params))}
+        readOnly={readOnly}
         rightAddon={
-          <a
-            href='https://www.boe.es/diario_boe/txt.php?id=BOE-A-2024-6846'
-            target='_blank'
-            rel='noreferrer'
-            className='text-brand hover:underline text-sm'
-            title='Abrir BOE'
-          >
-            BOE
-          </a>
+          readOnly ? (
+            <span className='text-brand text-sm opacity-50 cursor-not-allowed' title='El proyecto está cerrado'>
+              BOE
+            </span>
+          ) : (
+            <a
+              href='https://www.boe.es/diario_boe/txt.php?id=BOE-A-2024-6846'
+              target='_blank'
+              rel='noreferrer'
+              className='text-brand hover:underline text-sm'
+              title='Abrir BOE'
+            >
+              BOE
+            </a>
+          )
         }
       />
     </div>

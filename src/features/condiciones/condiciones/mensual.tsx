@@ -78,9 +78,10 @@ interface CondicionesMensualProps {
   project: AnyRecord | null | undefined;
   onChange?: (payload: AnyRecord) => void;
   onRegisterExport?: (fn: () => void) => void;
+  readOnly?: boolean;
 }
 
-function CondicionesMensual({ project, onChange = () => {}, onRegisterExport }: CondicionesMensualProps) {
+function CondicionesMensual({ project, onChange = () => {}, onRegisterExport, readOnly = false }: CondicionesMensualProps) {
   const storageKey = useMemo(() => {
     const base = (project as AnyRecord)?.id || (project as AnyRecord)?.nombre || 'tmp';
     return `cond_${base}_mensual`;
@@ -283,56 +284,67 @@ function CondicionesMensual({ project, onChange = () => {}, onRegisterExport }: 
                   onChange: (v: string) => setParam('jornadaComida', v),
                 },
               ]}
+              readOnly={readOnly}
             />
             <ParamInput
               label='Días jornada'
               value={p.diasJornada ?? '5'}
               onChange={(v: string) => setParam('diasJornada', v)}
+              readOnly={readOnly}
             />
             <ParamInput
               label='Días diario'
               value={p.diasDiario ?? '7'}
               onChange={(v: string) => setParam('diasDiario', v)}
+              readOnly={readOnly}
             />
             <ParamInput
               label='Semanas por mes'
               value={p.semanasMes ?? '4'}
               onChange={(v: string) => setParam('semanasMes', v)}
+              readOnly={readOnly}
             />
             <ParamInput
               label='Horas semanales'
               value={p.horasSemana ?? '45'}
               onChange={(v: string) => setParam('horasSemana', v)}
+              readOnly={readOnly}
             />
             <ParamInput
               label='Día extra/Festivo (×)'
               value={p.factorFestivo ?? '1.75'}
               onChange={(v: string) => setParam('factorFestivo', v)}
+              readOnly={readOnly}
             />
             <ParamInput
               label='Hora extra (×)'
               value={p.factorHoraExtra ?? '1.5'}
               onChange={(v: string) => setParam('factorHoraExtra', v)}
+              readOnly={readOnly}
             />
             <ParamInput
               label='Travel day (divisor)'
               value={p.divTravel ?? '2'}
               onChange={(v: string) => setParam('divTravel', v)}
+              readOnly={readOnly}
             />
             <ParamInput
               label='Cortesía (min)'
               value={p.cortesiaMin ?? '15'}
               onChange={(v: string) => setParam('cortesiaMin', v)}
+              readOnly={readOnly}
             />
             <ParamInput
               label='Turn Around Diario (h)'
               value={p.taDiario ?? '12'}
               onChange={(v: string) => setParam('taDiario', v)}
+              readOnly={readOnly}
             />
             <ParamInput
               label='Turn Around Fin de semana (h)'
               value={p.taFinde ?? '48'}
               onChange={(v: string) => setParam('taFinde', v)}
+              readOnly={readOnly}
             />
             <ParamInput
               label='Nocturno (inicio / fin)'
@@ -346,41 +358,49 @@ function CondicionesMensual({ project, onChange = () => {}, onRegisterExport }: 
                   onChange: (v: string) => setParam('nocturnoFin', v),
                 },
               ]}
+              readOnly={readOnly}
             />
             <ParamInput
               label='Comida (€)'
               value={p.dietaComida ?? '14.02'}
+              readOnly={readOnly}
               onChange={(v: string) => setParam('dietaComida', v)}
             />
             <ParamInput
               label='Cena (€)'
               value={p.dietaCena ?? '16.36'}
               onChange={(v: string) => setParam('dietaCena', v)}
+              readOnly={readOnly}
             />
             <ParamInput
               label='Dieta s/ pernocta (€)'
               value={p.dietaSinPernocta ?? '30.38'}
               onChange={(v: string) => setParam('dietaSinPernocta', v)}
+              readOnly={readOnly}
             />
             <ParamInput
               label='Alojamiento + desayuno (€)'
               value={p.dietaAlojDes ?? '51.39'}
               onChange={(v: string) => setParam('dietaAlojDes', v)}
+              readOnly={readOnly}
             />
             <ParamInput
               label='Gastos de bolsillo (€)'
               value={p.gastosBolsillo ?? '8.81'}
               onChange={(v: string) => setParam('gastosBolsillo', v)}
+              readOnly={readOnly}
             />
             <ParamInput
               label='Kilometraje (€/km)'
               value={p.kilometrajeKm ?? '0.26'}
               onChange={(v: string) => setParam('kilometrajeKm', v)}
+              readOnly={readOnly}
             />
             <ParamInput
               label='Transporte (€/día)'
               value={p.transporteDia ?? '12'}
               onChange={(v: string) => setParam('transporteDia', v)}
+              readOnly={readOnly}
             />
           </div>
         )}
@@ -403,8 +423,10 @@ function CondicionesMensual({ project, onChange = () => {}, onRegisterExport }: 
           ) : (
             <>
               <button
-                onClick={() => setShowRoleSelect(!showRoleSelect)}
-                className='px-3 py-1 text-sm bg-brand text-white rounded-lg hover:bg-brand/80 btn-add-role'
+                onClick={() => !readOnly && setShowRoleSelect(!showRoleSelect)}
+                disabled={readOnly}
+                className={`px-3 py-1 text-sm bg-brand text-white rounded-lg hover:bg-brand/80 btn-add-role ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+                title={readOnly ? 'El proyecto está cerrado' : '+ Añadir rol'}
               >
                 + Añadir rol
               </button>
@@ -450,12 +472,14 @@ function CondicionesMensual({ project, onChange = () => {}, onRegisterExport }: 
                   <div className='flex items-center gap-1'>
                     <button
                       onClick={() => {
+                        if (readOnly) return;
                         if (confirm(`¿Eliminar el rol "${role}"?`)) {
                           removeRole(role);
                         }
                       }}
-                      className='text-gray-400 hover:text-blue-500 hover:bg-blue-100 dark:hover:text-amber-500 dark:hover:bg-amber-900/20 font-bold text-sm w-6 h-6 flex items-center justify-center rounded transition-all hover:scale-110'
-                      title='Eliminar rol'
+                      disabled={readOnly}
+                      className={`text-gray-400 hover:text-blue-500 hover:bg-blue-100 dark:hover:text-amber-500 dark:hover:bg-amber-900/20 font-bold text-sm w-6 h-6 flex items-center justify-center rounded transition-all hover:scale-110 ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      title={readOnly ? 'El proyecto está cerrado' : 'Eliminar rol'}
                     >
                       ✕
                     </button>
@@ -467,10 +491,12 @@ function CondicionesMensual({ project, onChange = () => {}, onRegisterExport }: 
                     <input
                       type='number'
                       value={model.prices?.[role]?.[h] ?? ''}
-                      onChange={e => handleRoleChange(role, h, e.target.value)}
+                      onChange={e => !readOnly && handleRoleChange(role, h, e.target.value)}
                       placeholder='€'
                       step='0.01'
-                      className='w-full px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-center'
+                      disabled={readOnly}
+                      readOnly={readOnly}
+                      className={`w-full px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-center ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
                     />
                   </Td>
                 ))}
@@ -488,6 +514,7 @@ function CondicionesMensual({ project, onChange = () => {}, onRegisterExport }: 
             setText('legendTemplate', visibleToTemplate(v, model.params))
           }
           className='min-h-[180px]'
+          readOnly={readOnly}
         />
       </section>
 
@@ -497,6 +524,7 @@ function CondicionesMensual({ project, onChange = () => {}, onRegisterExport }: 
         onChange={v =>
           setText('festivosTemplate', visibleToTemplate(v, model.params))
         }
+        readOnly={readOnly}
       />
       <InfoCard
         title='Horarios'
@@ -504,6 +532,7 @@ function CondicionesMensual({ project, onChange = () => {}, onRegisterExport }: 
         onChange={v =>
           setText('horariosTemplate', visibleToTemplate(v, model.params))
         }
+        readOnly={readOnly}
       />
       <InfoCard
         title='Dietas'
@@ -511,6 +540,7 @@ function CondicionesMensual({ project, onChange = () => {}, onRegisterExport }: 
         onChange={v =>
           setText('dietasTemplate', visibleToTemplate(v, model.params))
         }
+        readOnly={readOnly}
       />
       <InfoCard
         title='Transportes'
@@ -518,6 +548,7 @@ function CondicionesMensual({ project, onChange = () => {}, onRegisterExport }: 
         onChange={v =>
           setText('transportesTemplate', visibleToTemplate(v, model.params))
         }
+        readOnly={readOnly}
       />
       <InfoCard
         title='Alojamiento'
@@ -525,6 +556,7 @@ function CondicionesMensual({ project, onChange = () => {}, onRegisterExport }: 
         onChange={v =>
           setText('alojamientoTemplate', visibleToTemplate(v, model.params))
         }
+        readOnly={readOnly}
       />
       <InfoCard
         title='Pre producción'
@@ -532,6 +564,7 @@ function CondicionesMensual({ project, onChange = () => {}, onRegisterExport }: 
         onChange={v =>
           setText('preproTemplate', visibleToTemplate(v, model.params))
         }
+        readOnly={readOnly}
       />
       <InfoCard
         title='Convenio'
@@ -539,16 +572,23 @@ function CondicionesMensual({ project, onChange = () => {}, onRegisterExport }: 
         onChange={v =>
           setText('convenioTemplate', visibleToTemplate(v, model.params))
         }
+        readOnly={readOnly}
         rightAddon={
-          <a
-            href='https://www.boe.es/diario_boe/txt.php?id=BOE-A-2024-6846'
-            target='_blank'
-            rel='noreferrer'
-            className='text-brand hover:underline text-sm'
-            title='Abrir BOE'
-          >
-            BOE
-          </a>
+          readOnly ? (
+            <span className='text-brand text-sm opacity-50 cursor-not-allowed' title='El proyecto está cerrado'>
+              BOE
+            </span>
+          ) : (
+            <a
+              href='https://www.boe.es/diario_boe/txt.php?id=BOE-A-2024-6846'
+              target='_blank'
+              rel='noreferrer'
+              className='text-brand hover:underline text-sm'
+              title='Abrir BOE'
+            >
+              BOE
+            </a>
+          )
         }
       />
     </div>

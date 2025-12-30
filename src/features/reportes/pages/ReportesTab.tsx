@@ -13,6 +13,7 @@ type Project = { id?: string; nombre?: string };
 type ReportesTabProps = { 
   project?: Project; 
   mode?: 'semanal' | 'mensual' | 'publicidad';
+  readOnly?: boolean;
 };
 
 function pad2(n: number) {
@@ -84,7 +85,7 @@ function weekToPersonas(week: AnyRecord) {
   return out;
 }
 
-export default function ReportesTab({ project, mode = 'semanal' }: ReportesTabProps) {
+export default function ReportesTab({ project, mode = 'semanal', readOnly = false }: ReportesTabProps) {
   const navigate = useNavigate();
   
   // Al entrar en Reportes, asegurar que la página está arriba del todo
@@ -150,17 +151,21 @@ export default function ReportesTab({ project, mode = 'semanal' }: ReportesTabPr
         <p className='text-xl max-w-2xl mb-4' style={{color: 'var(--text)', opacity: 0.8}}>
           Añade semanas en{' '}
           <button
-            onClick={() => navigate(planificacionPath)}
-            className='underline font-semibold hover:opacity-80 transition-opacity'
+            onClick={() => !readOnly && navigate(planificacionPath)}
+            disabled={readOnly}
+            className={`underline font-semibold hover:opacity-80 transition-opacity ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
             style={{color: 'var(--brand)'}}
+            title={readOnly ? 'El proyecto está cerrado' : 'Ir a Planificación'}
           >
             Planificación
           </button>
           {' '}y equipo en{' '}
           <button
-            onClick={() => navigate(equipoPath)}
-            className='underline font-semibold hover:opacity-80 transition-opacity'
+            onClick={() => !readOnly && navigate(equipoPath)}
+            disabled={readOnly}
+            className={`underline font-semibold hover:opacity-80 transition-opacity ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
             style={{color: 'var(--brand)'}}
+            title={readOnly ? 'El proyecto está cerrado' : 'Ir a Equipo'}
           >
             Equipo
           </button>
@@ -180,9 +185,11 @@ export default function ReportesTab({ project, mode = 'semanal' }: ReportesTabPr
         <p className='text-xl max-w-2xl mb-4' style={{color: 'var(--text)', opacity: 0.8}}>
           Añade semanas en{' '}
           <button
-            onClick={() => navigate(planificacionPath)}
-            className='underline font-semibold hover:opacity-80 transition-opacity'
+            onClick={() => !readOnly && navigate(planificacionPath)}
+            disabled={readOnly}
+            className={`underline font-semibold hover:opacity-80 transition-opacity ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
             style={{color: 'var(--brand)'}}
+            title={readOnly ? 'El proyecto está cerrado' : 'Ir a Planificación'}
           >
             Planificación
           </button>
@@ -204,9 +211,11 @@ export default function ReportesTab({ project, mode = 'semanal' }: ReportesTabPr
         <p className='text-xl max-w-2xl mb-4' style={{color: 'var(--text)', opacity: 0.8}}>
           Rellena el equipo en{' '}
           <button
-            onClick={() => navigate(equipoPath)}
-            className='underline font-semibold hover:opacity-80 transition-opacity'
+            onClick={() => !readOnly && navigate(equipoPath)}
+            disabled={readOnly}
+            className={`underline font-semibold hover:opacity-80 transition-opacity ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
             style={{color: 'var(--brand)'}}
+            title={readOnly ? 'El proyecto está cerrado' : 'Ir a Equipo'}
           >
             Equipo
           </button>
@@ -261,6 +270,7 @@ export default function ReportesTab({ project, mode = 'semanal' }: ReportesTabPr
               weekToSemanasISO={weekToSemanasISO}
               weekToPersonas={weekToPersonas}
               allMonthKeys={allMonthKeys}
+              readOnly={readOnly}
             />
           );
         })
@@ -293,6 +303,7 @@ export default function ReportesTab({ project, mode = 'semanal' }: ReportesTabPr
               personas={weekToPersonas(week)}
               mode={mode}
               horasExtraTipo={horasExtraTipoPublicidad}
+              readOnly={readOnly}
               planTimesByDate={(iso: string) => {
                 const idx = weekToSemanasISO(week).indexOf(iso);
                 if (idx >= 0) {
@@ -321,6 +332,7 @@ function MonthReportGroup({
   weekToSemanasISO,
   weekToPersonas,
   allMonthKeys,
+  readOnly = false,
 }: {
   monthKey: string;
   monthName: string;
@@ -332,6 +344,7 @@ function MonthReportGroup({
   weekToSemanasISO: (week: AnyRecord) => string[];
   weekToPersonas: (week: AnyRecord) => AnyRecord[];
   allMonthKeys: string[];
+  readOnly?: boolean;
 }) {
   // Calcular rango de fechas por defecto (primera y última fecha del mes)
   const defaultDateRange = useMemo(() => {
@@ -588,15 +601,17 @@ function MonthReportGroup({
           <div className='flex items-center gap-2 mr-6 relative' ref={dropdownRef}>
             <button
               type='button'
-              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              onMouseEnter={() => setIsButtonHovered(true)}
+              onClick={() => !readOnly && setIsDropdownOpen(!isDropdownOpen)}
+              disabled={readOnly}
+              onMouseEnter={() => !readOnly && setIsButtonHovered(true)}
               onMouseLeave={() => setIsButtonHovered(false)}
               onBlur={() => setIsButtonHovered(false)}
               className={`px-3 py-2 rounded-lg border focus:outline-none text-sm w-full min-w-[280px] text-left transition-colors ${
                 theme === 'light' 
                   ? 'bg-white text-gray-900' 
                   : 'bg-black/40 text-zinc-300'
-              }`}
+              } ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+              title={readOnly ? 'El proyecto está cerrado' : 'Seleccionar tipo de horas extra'}
               style={{
                 borderWidth: isButtonHovered ? '1.5px' : '1px',
                 borderStyle: 'solid',
@@ -613,7 +628,7 @@ function MonthReportGroup({
             >
               {horasExtraTipo}
             </button>
-            {isDropdownOpen && (
+            {isDropdownOpen && !readOnly && (
               <div className={`absolute top-full left-0 mt-1 w-full min-w-[280px] border border-neutral-border rounded-lg shadow-lg z-50 overflow-y-auto max-h-60 ${
                 theme === 'light' ? 'bg-white' : 'bg-neutral-panel'
               }`}>
@@ -622,10 +637,12 @@ function MonthReportGroup({
                     key={opcion}
                     type='button'
                     onClick={() => {
+                      if (readOnly) return;
                       setHorasExtraTipo(opcion);
                       setIsDropdownOpen(false);
                       setHoveredOption(null);
                     }}
+                    disabled={readOnly}
                     onMouseEnter={() => setHoveredOption(opcion)}
                     onMouseLeave={() => setHoveredOption(null)}
                     className={`w-full text-left px-3 py-2 text-sm transition-colors ${
@@ -653,8 +670,11 @@ function MonthReportGroup({
             <input
               type='date'
               value={dateFrom}
-              onChange={e => setDateFrom(e.target.value)}
-              className='px-3 py-2 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm text-left'
+              onChange={e => !readOnly && setDateFrom(e.target.value)}
+              disabled={readOnly}
+              readOnly={readOnly}
+              className={`px-3 py-2 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm text-left ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+              title={readOnly ? 'El proyecto está cerrado' : 'Fecha desde'}
             />
           </div>
           <div className='flex items-center gap-2'>
@@ -662,8 +682,11 @@ function MonthReportGroup({
             <input
               type='date'
               value={dateTo}
-              onChange={e => setDateTo(e.target.value)}
-              className='px-3 py-2 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm text-left'
+              onChange={e => !readOnly && setDateTo(e.target.value)}
+              disabled={readOnly}
+              readOnly={readOnly}
+              className={`px-3 py-2 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm text-left ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+              title={readOnly ? 'El proyecto está cerrado' : 'Fecha hasta'}
             />
           </div>
           <button
@@ -687,6 +710,7 @@ function MonthReportGroup({
           personas={weekToPersonas(week)}
           mode={mode}
           horasExtraTipo={horasExtraTipo}
+          readOnly={readOnly}
           planTimesByDate={(iso: string) => {
             const idx = weekToSemanasISO(week).indexOf(iso);
             if (idx >= 0) {

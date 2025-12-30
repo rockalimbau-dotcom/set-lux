@@ -43,6 +43,7 @@ type WeekCardProps = {
   btnExportStyle?: React.CSSProperties;
   teamList: AnyRecord[];
   project?: AnyRecord;
+  readOnly?: boolean;
 };
 
 const pad2 = (n: number) => String(n).padStart(2, '0');
@@ -82,6 +83,7 @@ type JornadaDropdownProps = {
   setDayField: (scope: 'pre' | 'pro', weekId: string, dayIdx: number, patch: AnyRecord) => void;
   theme: 'dark' | 'light';
   focusColor: string;
+  readOnly?: boolean;
 };
 
 function JornadaDropdown({
@@ -95,6 +97,7 @@ function JornadaDropdown({
   setDayField,
   theme,
   focusColor,
+  readOnly = false,
 }: JornadaDropdownProps) {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const jornadaOptions = ['Rodaje', 'Carga', 'Descarga', 'Localizar', 'Travel Day', 'Rodaje Festivo', 'Fin', 'Descanso'];
@@ -120,11 +123,14 @@ function JornadaDropdown({
       <div className='w-full relative' ref={dropdownRef}>
         <button
           type='button'
-          onClick={() => setDropdownState(dropdownKey, { isOpen: !dropdownState.isOpen })}
-          onMouseEnter={() => setDropdownState(dropdownKey, { isButtonHovered: true })}
+          onClick={() => !readOnly && setDropdownState(dropdownKey, { isOpen: !dropdownState.isOpen })}
+          onMouseEnter={() => !readOnly && setDropdownState(dropdownKey, { isButtonHovered: true })}
           onMouseLeave={() => setDropdownState(dropdownKey, { isButtonHovered: false })}
           onBlur={() => setDropdownState(dropdownKey, { isButtonHovered: false })}
+          disabled={readOnly}
           className={`w-full px-2 py-1 rounded-lg border focus:outline-none text-sm text-left transition-colors ${
+            readOnly ? 'opacity-50 cursor-not-allowed' : ''
+          } ${
             theme === 'light' 
               ? 'bg-white text-gray-900' 
               : 'bg-black/40 text-zinc-300'
@@ -159,6 +165,7 @@ function JornadaDropdown({
                 key={opt}
                 type='button'
                 onClick={() => {
+                  if (readOnly) return;
                   const update: AnyRecord = { tipo: opt };
                   // Si cambiamos de Descanso/Fin a un día de trabajo, limpiar localización
                   if (wasRestDay && isNowWorkDay) {
@@ -167,6 +174,7 @@ function JornadaDropdown({
                   setDayField(scope, weekId, dayIndex, update);
                   setDropdownState(dropdownKey, { isOpen: false, hoveredOption: null });
                 }}
+                disabled={readOnly}
                 onMouseEnter={() => setDropdownState(dropdownKey, { hoveredOption: opt })}
                 onMouseLeave={() => setDropdownState(dropdownKey, { hoveredOption: null })}
                 className={`w-full text-left px-3 py-2 text-sm transition-colors ${
@@ -207,6 +215,7 @@ type AddMemberDropdownProps = {
   options: AnyRecord[];
   theme: 'dark' | 'light';
   focusColor: string;
+  readOnly?: boolean;
 };
 
 function AddMemberDropdown({
@@ -221,6 +230,7 @@ function AddMemberDropdown({
   options,
   theme,
   focusColor,
+  readOnly = false,
 }: AddMemberDropdownProps) {
   // Verificar primero si debemos renderizar (optimización)
   if (day.tipo === 'Descanso' || day.tipo === 'Fin') {
@@ -249,11 +259,14 @@ function AddMemberDropdown({
     <div className='no-pdf w-full relative' ref={dropdownRef}>
       <button
         type='button'
-        onClick={() => setDropdownState(dropdownKey, { isOpen: !dropdownState.isOpen })}
-        onMouseEnter={() => setDropdownState(dropdownKey, { isButtonHovered: true })}
+        onClick={() => !readOnly && setDropdownState(dropdownKey, { isOpen: !dropdownState.isOpen })}
+        onMouseEnter={() => !readOnly && setDropdownState(dropdownKey, { isButtonHovered: true })}
         onMouseLeave={() => setDropdownState(dropdownKey, { isButtonHovered: false })}
         onBlur={() => setDropdownState(dropdownKey, { isButtonHovered: false })}
+        disabled={readOnly}
         className={`w-full px-2 py-1 rounded-lg border focus:outline-none text-sm text-left transition-colors ${
+          readOnly ? 'opacity-50 cursor-not-allowed' : ''
+        } ${
           theme === 'light' 
             ? 'bg-white text-gray-900' 
             : 'bg-black/40 text-zinc-300'
@@ -283,6 +296,7 @@ function AddMemberDropdown({
               key={`${p.role}-${p.name}-${ii}`}
               type='button'
               onClick={() => {
+                if (readOnly) return;
                 const [role, name] = `${p.role}::${p.name}`.split('::');
                 addMemberTo(scope, weekId, dayIndex, 'team', {
                   role,
@@ -290,6 +304,7 @@ function AddMemberDropdown({
                 });
                 setDropdownState(dropdownKey, { isOpen: false, hoveredOption: null });
               }}
+              disabled={readOnly}
               onMouseEnter={() => setDropdownState(dropdownKey, { hoveredOption: `${p.role}::${p.name}` })}
               onMouseLeave={() => setDropdownState(dropdownKey, { hoveredOption: null })}
               className={`w-full text-left px-3 py-2 text-sm transition-colors ${
@@ -328,6 +343,7 @@ type AddPrelightDropdownProps = {
   options: AnyRecord[];
   theme: 'dark' | 'light';
   focusColor: string;
+  readOnly?: boolean;
 };
 
 function AddPrelightDropdown({
@@ -342,6 +358,7 @@ function AddPrelightDropdown({
   options,
   theme,
   focusColor,
+  readOnly = false,
 }: AddPrelightDropdownProps) {
   // Verificar primero si debemos renderizar (optimización)
   if (day.tipo === 'Descanso' || day.tipo === 'Fin') {
@@ -370,15 +387,16 @@ function AddPrelightDropdown({
     <div className='w-full relative' ref={dropdownRef}>
       <button
         type='button'
-        onClick={() => setDropdownState(dropdownKey, { isOpen: !dropdownState.isOpen })}
-        onMouseEnter={() => setDropdownState(dropdownKey, { isButtonHovered: true })}
+        onClick={() => !readOnly && setDropdownState(dropdownKey, { isOpen: !dropdownState.isOpen })}
+        disabled={readOnly}
+        onMouseEnter={() => !readOnly && setDropdownState(dropdownKey, { isButtonHovered: true })}
         onMouseLeave={() => setDropdownState(dropdownKey, { isButtonHovered: false })}
         onBlur={() => setDropdownState(dropdownKey, { isButtonHovered: false })}
         className={`w-full px-2 py-1 rounded-lg border focus:outline-none text-sm text-left transition-colors ${
           theme === 'light' 
             ? 'bg-white text-gray-900' 
             : 'bg-black/40 text-zinc-300'
-        }`}
+        } ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
         style={{
           borderWidth: dropdownState.isButtonHovered ? '1.5px' : '1px',
           borderStyle: 'solid',
@@ -392,10 +410,11 @@ function AddPrelightDropdown({
           backgroundPosition: 'right 0.5rem center',
           paddingRight: '2rem',
         }}
+        title={readOnly ? 'El proyecto está cerrado' : '+ Añadir'}
       >
         + Añadir
       </button>
-      {dropdownState.isOpen && (
+      {dropdownState.isOpen && !readOnly && (
         <div className={`absolute top-full left-0 mt-1 w-full border border-neutral-border rounded-lg shadow-lg z-50 overflow-y-auto max-h-60 ${
           theme === 'light' ? 'bg-white' : 'bg-neutral-panel'
         }`}>
@@ -410,6 +429,7 @@ function AddPrelightDropdown({
                 key={`${p.role}-${p.name}-${ii}`}
                 type='button'
                 onClick={() => {
+                  if (readOnly) return;
                   const [role, name, source] = optionValue.split('::');
                   addMemberTo(scope, weekId, dayIndex, 'prelight', {
                     role,
@@ -418,13 +438,14 @@ function AddPrelightDropdown({
                   });
                   setDropdownState(dropdownKey, { isOpen: false, hoveredOption: null });
                 }}
+                disabled={readOnly}
                 onMouseEnter={() => setDropdownState(dropdownKey, { hoveredOption: optionValue })}
                 onMouseLeave={() => setDropdownState(dropdownKey, { hoveredOption: null })}
                 className={`w-full text-left px-3 py-2 text-sm transition-colors ${
                   theme === 'light' 
                     ? 'text-gray-900' 
                     : 'text-zinc-300'
-                }`}
+                } ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
                 style={{
                   backgroundColor: dropdownState.hoveredOption === optionValue 
                     ? (theme === 'light' ? '#A0D3F2' : focusColor)
@@ -457,6 +478,7 @@ type AddPickupDropdownProps = {
   options: AnyRecord[];
   theme: 'dark' | 'light';
   focusColor: string;
+  readOnly?: boolean;
 };
 
 function AddPickupDropdown({
@@ -471,6 +493,7 @@ function AddPickupDropdown({
   options,
   theme,
   focusColor,
+  readOnly = false,
 }: AddPickupDropdownProps) {
   // Verificar primero si debemos renderizar (optimización)
   if (day.tipo === 'Descanso' || day.tipo === 'Fin') {
@@ -499,15 +522,16 @@ function AddPickupDropdown({
     <div className='w-full relative' ref={dropdownRef}>
       <button
         type='button'
-        onClick={() => setDropdownState(dropdownKey, { isOpen: !dropdownState.isOpen })}
-        onMouseEnter={() => setDropdownState(dropdownKey, { isButtonHovered: true })}
+        onClick={() => !readOnly && setDropdownState(dropdownKey, { isOpen: !dropdownState.isOpen })}
+        disabled={readOnly}
+        onMouseEnter={() => !readOnly && setDropdownState(dropdownKey, { isButtonHovered: true })}
         onMouseLeave={() => setDropdownState(dropdownKey, { isButtonHovered: false })}
         onBlur={() => setDropdownState(dropdownKey, { isButtonHovered: false })}
         className={`w-full px-2 py-1 rounded-lg border focus:outline-none text-sm text-left transition-colors ${
           theme === 'light' 
             ? 'bg-white text-gray-900' 
             : 'bg-black/40 text-zinc-300'
-        }`}
+        } ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
         style={{
           borderWidth: dropdownState.isButtonHovered ? '1.5px' : '1px',
           borderStyle: 'solid',
@@ -521,10 +545,11 @@ function AddPickupDropdown({
           backgroundPosition: 'right 0.5rem center',
           paddingRight: '2rem',
         }}
+        title={readOnly ? 'El proyecto está cerrado' : '+ Añadir'}
       >
         + Añadir
       </button>
-      {dropdownState.isOpen && (
+      {dropdownState.isOpen && !readOnly && (
         <div className={`absolute top-full left-0 mt-1 w-full border border-neutral-border rounded-lg shadow-lg z-50 overflow-y-auto max-h-60 ${
           theme === 'light' ? 'bg-white' : 'bg-neutral-panel'
         }`}>
@@ -539,6 +564,7 @@ function AddPickupDropdown({
                 key={`${p.role}-${p.name}-${ii}`}
                 type='button'
                 onClick={() => {
+                  if (readOnly) return;
                   const [role, name, source] = optionValue.split('::');
                   addMemberTo(scope, weekId, dayIndex, 'pickup', {
                     role,
@@ -547,6 +573,7 @@ function AddPickupDropdown({
                   });
                   setDropdownState(dropdownKey, { isOpen: false, hoveredOption: null });
                 }}
+                disabled={readOnly}
                 onMouseEnter={() => setDropdownState(dropdownKey, { hoveredOption: optionValue })}
                 onMouseLeave={() => setDropdownState(dropdownKey, { hoveredOption: null })}
                 className={`w-full text-left px-3 py-2 text-sm transition-colors ${
@@ -592,6 +619,7 @@ function WeekCard({
   btnExportStyle,
   teamList,
   project,
+  readOnly = false,
 }: WeekCardProps) {
   // Detectar el tema actual
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
@@ -647,7 +675,10 @@ function WeekCard({
 
   const weekStart = useMemo(() => parseYYYYMMDD(week.startDate as string), [week.startDate]);
   const datesRow = useMemo(() => DAYS.map((_, i) => formatDDMMYYYY(addDays(weekStart, i))), [weekStart]);
-  const onChangeMonday = useCallback((e: React.ChangeEvent<HTMLInputElement>) => setWeekStart(scope, week.id as string, e.target.value), [scope, week.id, setWeekStart]);
+  const onChangeMonday = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    if (readOnly) return;
+    setWeekStart(scope, week.id as string, e.target.value);
+  }, [scope, week.id, setWeekStart, readOnly]);
 
   const [open, setOpen] = useLocalStorage<boolean>(`wk_open_${week.id}`, true);
   const [preOpen, setPreOpen] = useLocalStorage<boolean>(
@@ -736,9 +767,10 @@ function WeekCard({
           <Button
             variant='duplicate'
             size='sm'
-            className='no-pdf'
-            onClick={() => duplicateWeek(scope, week.id as string)}
-            title='Duplicar semana'
+            className={`no-pdf ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+            onClick={() => !readOnly && duplicateWeek(scope, week.id as string)}
+            disabled={readOnly}
+            title={readOnly ? 'El proyecto está cerrado' : 'Duplicar semana'}
             type='button'
           >
             Duplicar
@@ -746,9 +778,10 @@ function WeekCard({
           <Button
             variant='danger'
             size='sm'
-            className='no-pdf'
-            onClick={() => deleteWeek(scope, week.id as string)}
-            title='Eliminar semana'
+            className={`no-pdf ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+            onClick={() => !readOnly && deleteWeek(scope, week.id as string)}
+            disabled={readOnly}
+            title={readOnly ? 'El proyecto está cerrado' : 'Eliminar semana'}
             type='button'
           >
             🗑️
@@ -777,8 +810,9 @@ function WeekCard({
                         type='date'
                         value={week.startDate}
                         onChange={onChangeMonday}
-                          className='w-full px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-left'
-                        title='Cambiar lunes'
+                        disabled={readOnly}
+                        className={`w-full px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-left ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        title={readOnly ? 'El proyecto está cerrado' : 'Cambiar lunes'}
                       />
                     ) : (
                       datesRow[i]
@@ -806,6 +840,7 @@ function WeekCard({
                       setDayField={setDayField}
                       theme={theme}
                       focusColor={focusColor}
+                      readOnly={readOnly}
                     />
                   );
                 })}
@@ -819,23 +854,25 @@ function WeekCard({
                         type='time'
                         value={day.start || ''}
                         onChange={e =>
-                          setDayField(scope, week.id as string, i, {
+                          !readOnly && setDayField(scope, week.id as string, i, {
                             start: e.target.value,
                           })
                         }
-                        className='flex-1 px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-left'
-                        disabled={day.tipo === 'Descanso' || day.tipo === 'Fin'}
-                        title='Inicio'
+                        className={`flex-1 px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-left ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        disabled={readOnly || day.tipo === 'Descanso' || day.tipo === 'Fin'}
+                        readOnly={readOnly}
+                        title={readOnly ? 'El proyecto está cerrado' : 'Inicio'}
                       />
                       <input
                         type='time'
                         value={day.end || ''}
                         onChange={e =>
-                          setDayField(scope, week.id as string, i, { end: e.target.value })
+                          !readOnly && setDayField(scope, week.id as string, i, { end: e.target.value })
                         }
-                        className='flex-1 px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-left'
-                        disabled={day.tipo === 'Descanso' || day.tipo === 'Fin'}
-                        title='Fin'
+                        className={`flex-1 px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-left ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        disabled={readOnly || day.tipo === 'Descanso' || day.tipo === 'Fin'}
+                        readOnly={readOnly}
+                        title={readOnly ? 'El proyecto está cerrado' : 'Fin'}
                       />
                     </div>
                   </Td>
@@ -849,10 +886,12 @@ function WeekCard({
                       type='time'
                       value={day.cut || ''}
                       onChange={e =>
-                        setDayField(scope, week.id as string, i, { cut: e.target.value })
+                        !readOnly && setDayField(scope, week.id as string, i, { cut: e.target.value })
                       }
-                      className='w-full px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-left'
-                      disabled={day.tipo === 'Descanso' || day.tipo === 'Fin'}
+                      className={`w-full px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-left ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      disabled={readOnly || day.tipo === 'Descanso' || day.tipo === 'Fin'}
+                      readOnly={readOnly}
+                      title={readOnly ? 'El proyecto está cerrado' : 'Corte cámara'}
                     />
                   </Td>
                 ))}
@@ -875,7 +914,7 @@ function WeekCard({
                         setDayField(scope, week.id as string, i, { loc: e.target.value })
                       }
                       className='w-full px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-left'
-                      disabled={day.tipo === 'Descanso' || day.tipo === 'Fin'}
+                      disabled={readOnly || day.tipo === 'Descanso' || day.tipo === 'Fin'}
                     />
                   </Td>
                 ))}
@@ -908,11 +947,12 @@ function WeekCard({
                             <Button
                               variant='remove'
                               size='sm'
-                              className='no-pdf'
+                              className={`no-pdf ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
                               onClick={() =>
-                                removeMemberFrom(scope, week.id as string, i, 'team', idx)
+                                !readOnly && removeMemberFrom(scope, week.id as string, i, 'team', idx)
                               }
-                              title='Quitar'
+                              disabled={readOnly}
+                              title={readOnly ? 'El proyecto está cerrado' : 'Quitar'}
                             >
                               ×
                             </Button>
@@ -930,6 +970,7 @@ function WeekCard({
                           options={options}
                           theme={theme}
                           focusColor={focusColor}
+                          readOnly={readOnly}
                         />
                       </div>
                     </Td>
@@ -943,6 +984,7 @@ function WeekCard({
                     <ToggleIconButton
                       isOpen={preOpen}
                       onClick={() => setPreOpen(v => !v)}
+                      disabled={readOnly}
                     />
                     Prelight
                   </span>
@@ -964,25 +1006,27 @@ function WeekCard({
                               type='time'
                               value={day.prelightStart || ''}
                               onChange={e =>
-                                setDayField(scope, week.id as string, i, {
+                                !readOnly && setDayField(scope, week.id as string, i, {
                                   prelightStart: e.target.value,
                                 })
                               }
-                              className='px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm text-left'
-                              disabled={day.tipo === 'Descanso' || day.tipo === 'Fin'}
-                              title='Inicio prelight'
+                              className={`px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm text-left ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+                              disabled={readOnly || day.tipo === 'Descanso' || day.tipo === 'Fin'}
+                              readOnly={readOnly}
+                              title={readOnly ? 'El proyecto está cerrado' : 'Inicio prelight'}
                             />
                             <input
                               type='time'
                               value={day.prelightEnd || ''}
                               onChange={e =>
-                                setDayField(scope, week.id as string, i, {
+                                !readOnly && setDayField(scope, week.id as string, i, {
                                   prelightEnd: e.target.value,
                                 })
                               }
-                              className='px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm text-left'
-                              disabled={day.tipo === 'Descanso' || day.tipo === 'Fin'}
-                              title='Fin prelight'
+                              className={`px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm text-left ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+                              disabled={readOnly || day.tipo === 'Descanso' || day.tipo === 'Fin'}
+                              readOnly={readOnly}
+                              title={readOnly ? 'El proyecto está cerrado' : 'Fin prelight'}
                             />
                           </div>
                           <div className='flex flex-wrap gap-2 justify-center'>
@@ -1000,7 +1044,7 @@ function WeekCard({
                                   variant='remove'
                                   size='sm'
                                   onClick={() =>
-                                    removeMemberFrom(
+                                    !readOnly && removeMemberFrom(
                                       scope,
                                       week.id as string,
                                       i,
@@ -1008,7 +1052,9 @@ function WeekCard({
                                       idx
                                     )
                                   }
-                                  title='Quitar'
+                                  disabled={readOnly}
+                                  title={readOnly ? 'El proyecto está cerrado' : 'Quitar'}
+                                  className={readOnly ? 'opacity-50 cursor-not-allowed' : ''}
                                 >
                                   ×
                                 </Button>
@@ -1026,6 +1072,7 @@ function WeekCard({
                               options={options}
                               theme={theme}
                               focusColor={focusColor}
+                              readOnly={readOnly}
                             />
                           </div>
                         </div>
@@ -1041,6 +1088,7 @@ function WeekCard({
                     <ToggleIconButton
                       isOpen={pickOpen}
                       onClick={() => setPickOpen(v => !v)}
+                      disabled={readOnly}
                     />
                     Recogida
                   </span>
@@ -1062,25 +1110,27 @@ function WeekCard({
                               type='time'
                               value={day.pickupStart || ''}
                               onChange={e =>
-                                setDayField(scope, week.id as string, i, {
+                                !readOnly && setDayField(scope, week.id as string, i, {
                                   pickupStart: e.target.value,
                                 })
                               }
-                              className='px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm text-left'
-                              disabled={day.tipo === 'Descanso' || day.tipo === 'Fin'}
-                              title='Inicio recogida'
+                              className={`px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm text-left ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+                              disabled={readOnly || day.tipo === 'Descanso' || day.tipo === 'Fin'}
+                              readOnly={readOnly}
+                              title={readOnly ? 'El proyecto está cerrado' : 'Inicio recogida'}
                             />
                             <input
                               type='time'
                               value={day.pickupEnd || ''}
                               onChange={e =>
-                                setDayField(scope, week.id as string, i, {
+                                !readOnly && setDayField(scope, week.id as string, i, {
                                   pickupEnd: e.target.value,
                                 })
                               }
-                              className='px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm text-left'
-                              disabled={day.tipo === 'Descanso' || day.tipo === 'Fin'}
-                              title='Fin recogida'
+                              className={`px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm text-left ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+                              disabled={readOnly || day.tipo === 'Descanso' || day.tipo === 'Fin'}
+                              readOnly={readOnly}
+                              title={readOnly ? 'El proyecto está cerrado' : 'Fin recogida'}
                             />
                           </div>
                           <div className='flex flex-wrap gap-2 justify-center'>
@@ -1098,7 +1148,7 @@ function WeekCard({
                                   variant='remove'
                                   size='sm'
                                   onClick={() =>
-                                    removeMemberFrom(
+                                    !readOnly && removeMemberFrom(
                                       scope,
                                       week.id as string,
                                       i,
@@ -1106,7 +1156,9 @@ function WeekCard({
                                       idx
                                     )
                                   }
-                                  title='Quitar'
+                                  disabled={readOnly}
+                                  title={readOnly ? 'El proyecto está cerrado' : 'Quitar'}
+                                  className={readOnly ? 'opacity-50 cursor-not-allowed' : ''}
                                 >
                                   ×
                                 </Button>
@@ -1124,6 +1176,7 @@ function WeekCard({
                               options={options}
                               theme={theme}
                               focusColor={focusColor}
+                              readOnly={readOnly}
                             />
                           </div>
                         </div>
@@ -1140,11 +1193,14 @@ function WeekCard({
                       type='text'
                       value={day.issue || ''}
                       onChange={e =>
-                        setDayField(scope, week.id as string, i, {
+                        !readOnly && setDayField(scope, week.id as string, i, {
                           issue: e.target.value,
                         })
                       }
-                      className='w-full px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-left'
+                      className={`w-full px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-left ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      disabled={readOnly}
+                      readOnly={readOnly}
+                      title={readOnly ? 'El proyecto está cerrado' : 'Incidencias'}
                     />
                   </Td>
                 ))}

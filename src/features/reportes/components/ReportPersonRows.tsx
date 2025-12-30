@@ -29,6 +29,7 @@ type Props = {
   parseDietas: (raw: string) => { items: Set<string>; ticket: number | null };
   formatDietas: (items: Set<string>, ticket: number | null) => string;
   horasExtraTipo?: string;
+  readOnly?: boolean;
 };
 
 function ReportPersonRows({
@@ -47,6 +48,7 @@ function ReportPersonRows({
   parseDietas,
   formatDietas,
   horasExtraTipo = 'Hora Extra - Normal',
+  readOnly = false,
 }: Props) {
   if (!Array.isArray(list)) return null;
 
@@ -250,10 +252,11 @@ function ReportPersonRows({
                 <div className='flex items-center gap-2'>
                   <button
                     onClick={() =>
-                      setCollapsed(c => ({ ...c, [pKey]: !c[pKey] }))
+                      !readOnly && setCollapsed(c => ({ ...c, [pKey]: !c[pKey] }))
                     }
-                    className='w-6 h-6 rounded-lg border border-neutral-border flex items-center justify-center text-sm hover:border-accent'
-                    title={collapsed[pKey] ? 'Desplegar' : 'Contraer'}
+                    disabled={readOnly}
+                    className={`w-6 h-6 rounded-lg border border-neutral-border flex items-center justify-center text-sm hover:border-accent ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    title={readOnly ? 'El proyecto está cerrado' : (collapsed[pKey] ? 'Desplegar' : 'Contraer')}
                     aria-expanded={!collapsed[pKey]}
                     aria-controls={`person-${pKey}-rows`}
                     type='button'
@@ -340,15 +343,17 @@ function ReportPersonRows({
                             <div className='w-full relative' ref={dropdownRef}>
                               <button
                                 type='button'
-                                onClick={() => setDropdownState(dropdownKey, { isOpen: !dropdownState.isOpen })}
-                                onMouseEnter={() => setDropdownState(dropdownKey, { isButtonHovered: true })}
+                                onClick={() => !readOnly && setDropdownState(dropdownKey, { isOpen: !dropdownState.isOpen })}
+                                disabled={readOnly}
+                                onMouseEnter={() => !readOnly && setDropdownState(dropdownKey, { isButtonHovered: true })}
                                 onMouseLeave={() => setDropdownState(dropdownKey, { isButtonHovered: false })}
                                 onBlur={() => setDropdownState(dropdownKey, { isButtonHovered: false })}
                                 className={`w-full px-2 py-1 rounded-lg border focus:outline-none text-sm text-left transition-colors ${
                                   theme === 'light' 
                                     ? 'bg-white text-gray-900' 
                                     : 'bg-black/40 text-zinc-300'
-                                }`}
+                                } ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                title={readOnly ? 'El proyecto está cerrado' : 'Seleccionar dieta'}
                                 style={{
                                   borderWidth: dropdownState.isButtonHovered ? '1.5px' : '1px',
                                   borderStyle: 'solid',
@@ -365,7 +370,7 @@ function ReportPersonRows({
                               >
                                 &nbsp;
                               </button>
-                              {dropdownState.isOpen && (
+                              {dropdownState.isOpen && !readOnly && (
                                 <div className={`absolute top-full left-0 mt-1 w-full border border-neutral-border rounded-lg shadow-lg z-50 overflow-y-auto max-h-60 ${
                                   theme === 'light' ? 'bg-white' : 'bg-neutral-panel'
                                 }`}>
@@ -374,6 +379,7 @@ function ReportPersonRows({
                                       key={opt as string}
                                       type='button'
                                       onClick={() => {
+                                        if (readOnly) return;
                                 const items = new Set(parsed.items);
                                         items.add(opt as string);
                                 const newStr = formatDietas(
@@ -383,6 +389,7 @@ function ReportPersonRows({
                                 setCell(pKey, concepto, fecha, newStr);
                                         setDropdownState(dropdownKey, { isOpen: false, hoveredOption: null });
                               }}
+                                      disabled={readOnly}
                                       onMouseEnter={() => setDropdownState(dropdownKey, { hoveredOption: opt as string })}
                                       onMouseLeave={() => setDropdownState(dropdownKey, { hoveredOption: null })}
                                       className={`w-full text-left px-3 py-2 text-sm transition-colors ${
@@ -420,8 +427,9 @@ function ReportPersonRows({
                                     </span>
                                     <button
                                       type='button'
-                                      className='text-zinc-400 hover:text-red-500 text-xs'
+                                      className={`text-zinc-400 hover:text-red-500 text-xs ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
                                       onClick={() => {
+                                        if (readOnly) return;
                                         const items = new Set(parsed.items);
                                         items.delete(it);
                                         const newStr = formatDietas(
@@ -432,7 +440,8 @@ function ReportPersonRows({
                                         );
                                         setCell(pKey, concepto, fecha, newStr);
                                       }}
-                                      title='Quitar'
+                                      disabled={readOnly}
+                                      title={readOnly ? 'El proyecto está cerrado' : 'Quitar'}
                                     >
                                       ×
                                     </button>
@@ -452,9 +461,10 @@ function ReportPersonRows({
                                     min='0'
                                     step='0.01'
                                     placeholder='€'
-                                    className='w-24 px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm'
+                                    className={`w-24 px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
                                     value={parsed.ticket ?? ''}
                                     onChange={e => {
+                                      if (readOnly) return;
                                       const n =
                                         (e.target as HTMLInputElement).value === ''
                                           ? null
@@ -465,18 +475,22 @@ function ReportPersonRows({
                                       );
                                       setCell(pKey, concepto, fecha, newStr);
                                     }}
-                                    title='Importe Ticket'
+                                    disabled={readOnly}
+                                    readOnly={readOnly}
+                                    title={readOnly ? 'El proyecto está cerrado' : 'Importe Ticket'}
                                   />
                                   <button
                                     type='button'
-                                    className='text-zinc-400 hover:text-red-500 text-xs'
+                                    className={`text-zinc-400 hover:text-red-500 text-xs ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
                                     onClick={() => {
+                                      if (readOnly) return;
                                       const items = new Set(parsed.items);
                                       items.delete('Ticket');
                                       const newStr = formatDietas(items, null);
                                       setCell(pKey, concepto, fecha, newStr);
                                     }}
-                                    title='Quitar Ticket'
+                                    disabled={readOnly}
+                                    title={readOnly ? 'El proyecto está cerrado' : 'Quitar Ticket'}
                                   >
                                     ×
                                   </button>
@@ -519,16 +533,17 @@ function ReportPersonRows({
                           <div className='w-full relative flex justify-center' ref={dropdownRef}>
                             <button
                               type='button'
-                              onClick={() => !off && setDropdownState(dropdownKey, { isOpen: !dropdownState.isOpen })}
-                              onMouseEnter={() => !off && setDropdownState(dropdownKey, { isButtonHovered: true })}
+                              onClick={() => !off && !readOnly && setDropdownState(dropdownKey, { isOpen: !dropdownState.isOpen })}
+                              onMouseEnter={() => !off && !readOnly && setDropdownState(dropdownKey, { isButtonHovered: true })}
                               onMouseLeave={() => setDropdownState(dropdownKey, { isButtonHovered: false })}
                               onBlur={() => setDropdownState(dropdownKey, { isButtonHovered: false })}
-                            disabled={off}
+                            disabled={off || readOnly}
                               className={`w-full px-2 py-1 rounded-lg border focus:outline-none text-sm text-left transition-colors ${
                                 theme === 'light' 
                                   ? 'bg-white text-gray-900' 
                                   : 'bg-black/40 text-zinc-300'
-                              } ${off ? 'opacity-50 cursor-not-allowed' : ''}`}
+                              } ${off || readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+                              title={readOnly ? 'El proyecto está cerrado' : ''}
                               style={{
                                 borderWidth: dropdownState.isButtonHovered ? '1.5px' : '1px',
                                 borderStyle: 'solid',
@@ -545,7 +560,7 @@ function ReportPersonRows({
                             >
                               {val || '\u00A0'}
                             </button>
-                            {dropdownState.isOpen && !off && (
+                            {dropdownState.isOpen && !off && !readOnly && (
                               <div className={`absolute top-full left-0 mt-1 w-full border border-neutral-border rounded-lg shadow-lg z-50 overflow-y-auto max-h-60 ${
                                 theme === 'light' ? 'bg-white' : 'bg-neutral-panel'
                               }`}>
@@ -554,9 +569,11 @@ function ReportPersonRows({
                                     key={opt}
                                     type='button'
                                     onClick={() => {
+                                      if (readOnly) return;
                                       setCell(pKey, concepto, fecha, opt);
                                       setDropdownState(dropdownKey, { isOpen: false, hoveredOption: null });
                                     }}
+                                    disabled={readOnly}
                                     onMouseEnter={() => setDropdownState(dropdownKey, { hoveredOption: opt })}
                                     onMouseLeave={() => setDropdownState(dropdownKey, { hoveredOption: null })}
                                     className={`w-full text-left px-3 py-2 text-sm transition-colors ${
@@ -612,12 +629,13 @@ function ReportPersonRows({
                       <Td key={`${pKey}_${concepto}_${fecha}`} className={`text-center ${cellClasses}`} align='center'>
                         <input
                           {...numericProps}
-                          className='w-full px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm text-left'
+                          className={`w-full px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm text-left ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
                           value={val}
                           onChange={e =>
-                            setCell(pKey, concepto, fecha, (e.target as HTMLInputElement).value)
+                            !readOnly && setCell(pKey, concepto, fecha, (e.target as HTMLInputElement).value)
                           }
-                          disabled={off}
+                          disabled={off || readOnly}
+                          readOnly={readOnly}
                         />
                       </Td>
                     );

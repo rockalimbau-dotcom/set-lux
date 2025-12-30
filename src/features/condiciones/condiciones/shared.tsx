@@ -247,9 +247,10 @@ interface TextAreaAutoProps {
   value: string;
   onChange?: (val: string) => void;
   className?: string;
+  readOnly?: boolean;
 }
 
-export function TextAreaAuto({ value, onChange, className = '' }: TextAreaAutoProps) {
+export function TextAreaAuto({ value, onChange, className = '', readOnly = false }: TextAreaAutoProps) {
   const [v, setV] = useState<string>(value || '');
   const [isEditing, setIsEditing] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -273,19 +274,23 @@ export function TextAreaAuto({ value, onChange, className = '' }: TextAreaAutoPr
         ref={textareaRef}
         value={v}
         onChange={e => {
+          if (readOnly) return;
           setV(e.target.value);
           onChange && onChange(e.target.value);
         }}
         onBlur={() => {
-          setIsEditing(false);
+          if (!readOnly) setIsEditing(false);
         }}
         onFocus={() => {
-          setIsEditing(true);
+          if (!readOnly) setIsEditing(true);
         }}
-        className={`w-full leading-relaxed whitespace-pre-wrap px-3 py-2 rounded-xl bg-neutral-surface border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm ${className}`}
+        disabled={readOnly}
+        readOnly={readOnly}
+        className={`w-full leading-relaxed whitespace-pre-wrap px-3 py-2 rounded-xl bg-neutral-surface border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm transition-colors ${readOnly ? 'opacity-50 cursor-not-allowed' : 'hover:border-brand/50'} ${className}`}
         style={{ height: 'auto', overflow: 'hidden', resize: 'none' }}
         rows={1}
         onInput={e => {
+          if (readOnly) return;
           const t = e.target as HTMLTextAreaElement;
           t.style.height = 'auto';
           t.style.height = t.scrollHeight + 'px';
@@ -305,10 +310,10 @@ export function TextAreaAuto({ value, onChange, className = '' }: TextAreaAutoPr
   return (
     <div
       ref={displayRef}
-      onClick={() => setIsEditing(true)}
-      onBlur={() => setIsEditing(false)}
+      onClick={() => !readOnly && setIsEditing(true)}
+      onBlur={() => !readOnly && setIsEditing(false)}
       dangerouslySetInnerHTML={{ __html: htmlWithBreaks }}
-      className={`w-full leading-relaxed px-3 py-2 rounded-xl bg-neutral-surface border border-neutral-border cursor-text text-sm ${className}`}
+      className={`w-full leading-relaxed px-3 py-2 rounded-xl bg-neutral-surface border border-neutral-border text-sm transition-colors ${readOnly ? 'cursor-not-allowed opacity-50' : 'cursor-text hover:border-brand/50'} ${className}`}
       style={{ minHeight: '56px', whiteSpace: 'pre-wrap' }}
     />
   );
@@ -319,11 +324,12 @@ interface InfoCardProps {
   value: string;
   onChange?: (val: string) => void;
   rightAddon?: React.ReactNode;
+  readOnly?: boolean;
 }
 
-export function InfoCard({ title, value, onChange, rightAddon = null }: InfoCardProps) {
+export function InfoCard({ title, value, onChange, rightAddon = null, readOnly = false }: InfoCardProps) {
   return (
-    <section className='rounded-2xl border border-neutral-border bg-neutral-panel/90 p-4'>
+    <section className={`rounded-2xl border border-neutral-border bg-neutral-panel/90 p-4 transition-colors ${readOnly ? '' : 'hover:border-brand/50'}`}>
       <div className='flex items-center justify-between mb-2'>
         <h4 className='text-brand font-semibold'>{title}</h4>
         {rightAddon}
@@ -332,6 +338,7 @@ export function InfoCard({ title, value, onChange, rightAddon = null }: InfoCard
         value={value}
         onChange={onChange}
         className='min-h-[140px]'
+        readOnly={readOnly}
       />
     </section>
   );
@@ -349,9 +356,10 @@ interface ParamInputProps {
   suffix?: string;
   duo?: [DuoField, DuoField];
   type?: 'number' | 'time' | 'text';
+  readOnly?: boolean;
 }
 
-export function ParamInput({ label, value, onChange, suffix, duo, type }: ParamInputProps) {
+export function ParamInput({ label, value, onChange, suffix, duo, type, readOnly = false }: ParamInputProps) {
   // Determinar el tipo de input: si es nocturno usa 'time', si no se especifica usa 'number' por defecto
   const inputType = type || (label.toLowerCase().includes('nocturno') ? 'time' : 'number');
   
@@ -362,17 +370,21 @@ export function ParamInput({ label, value, onChange, suffix, duo, type }: ParamI
         <div className='flex items-center gap-2'>
           <input
             type={inputType}
-            className='w-full px-3 py-2 rounded-lg dark:bg-transparent border border-neutral-border focus:outline-none focus:ring-1 text-sm text-right'
+            className={`w-full px-3 py-2 rounded-lg dark:bg-transparent border border-neutral-border focus:outline-none focus:ring-1 text-sm text-right ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
             value={duo[0].value}
-            onChange={e => duo[0].onChange(e.target.value)}
+            onChange={e => !readOnly && duo[0].onChange(e.target.value)}
+            disabled={readOnly}
+            readOnly={readOnly}
             placeholder=''
           />
           <span className='text-zinc-400'>+</span>
           <input
             type={inputType}
-            className='w-full px-3 py-2 rounded-lg dark:bg-transparent border border-neutral-border focus:outline-none focus:ring-1 text-sm text-right'
+            className={`w-full px-3 py-2 rounded-lg dark:bg-transparent border border-neutral-border focus:outline-none focus:ring-1 text-sm text-right ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
             value={duo[1].value}
-            onChange={e => duo[1].onChange(e.target.value)}
+            onChange={e => !readOnly && duo[1].onChange(e.target.value)}
+            disabled={readOnly}
+            readOnly={readOnly}
             placeholder=''
           />
           {suffix && <span className='text-zinc-400 text-sm'>{suffix}</span>}
@@ -387,9 +399,11 @@ export function ParamInput({ label, value, onChange, suffix, duo, type }: ParamI
       <div className='flex items-center gap-2'>
         <input
           type={inputType}
-          className='w-full px-3 py-2 rounded-lg dark:bg-transparent border border-neutral-border focus:outline-none focus:ring-1 text-sm text-right'
+          className={`w-full px-3 py-2 rounded-lg dark:bg-transparent border border-neutral-border focus:outline-none focus:ring-1 text-sm text-right ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
           value={value || ''}
-          onChange={e => onChange && onChange(e.target.value)}
+          onChange={e => !readOnly && onChange && onChange(e.target.value)}
+          disabled={readOnly}
+          readOnly={readOnly}
           placeholder=''
         />
         {suffix && <span className='text-zinc-400 text-sm'>{suffix}</span>}

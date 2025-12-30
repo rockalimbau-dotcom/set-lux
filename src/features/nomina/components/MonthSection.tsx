@@ -90,6 +90,7 @@ interface MonthSectionProps {
   monthLabelEs: (key: string, withYear?: boolean) => string;
   ROLE_COLORS: Record<string, { bg: string; fg: string }>;
   roleLabelFromCode: (code: string) => string;
+  readOnly?: boolean;
 }
 
 function MonthSection({
@@ -114,6 +115,7 @@ function MonthSection({
   monthLabelEs,
   ROLE_COLORS,
   roleLabelFromCode,
+  readOnly = false,
 }: MonthSectionProps) {
   // Helper function to display empty string for zero values
   const displayValue = (value: number | undefined | null, decimals: number = 0): string => {
@@ -738,9 +740,10 @@ function MonthSection({
     <section className='rounded-2xl border border-neutral-border bg-neutral-panel/90'>
       <div className='flex items-center gap-2 px-5 py-4'>
         <button
-          onClick={() => setOpen(v => !v)}
-          className='w-6 h-6 rounded-lg border border-neutral-border flex items-center justify-center text-sm hover:border-[#F59E0B]'
-          title={open ? 'Contraer' : 'Desplegar'}
+          onClick={() => !readOnly && setOpen(v => !v)}
+          disabled={readOnly}
+          className={`w-6 h-6 rounded-lg border border-neutral-border flex items-center justify-center text-sm hover:border-[#F59E0B] ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+          title={readOnly ? 'El proyecto está cerrado' : (open ? 'Contraer' : 'Desplegar')}
           type='button'
         >
           {open ? '−' : '+'}
@@ -759,12 +762,16 @@ function MonthSection({
                   max='31'
                   value={priceDays}
                   onChange={e => {
+                    if (readOnly) return;
                     const val = parseInt(e.target.value, 10);
                     if (val >= 28 && val <= 31) {
                       setPriceDays(val);
                     }
                   }}
-                  className='w-12 px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-xs text-left'
+                  disabled={readOnly}
+                  readOnly={readOnly}
+                  className={`w-12 px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-xs text-left ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  title={readOnly ? 'El proyecto está cerrado' : 'Precio a X días'}
                 />
                 <label className='text-xs text-zinc-400 whitespace-nowrap'>días</label>
               </div>
@@ -775,6 +782,7 @@ function MonthSection({
                 type='date'
                 value={dateFrom}
                 onChange={e => {
+                  if (readOnly) return;
                   const newValue = e.target.value;
                   setDateFrom(newValue);
                   // Sincronizar con reportes: actualizar la clave de reportes y disparar evento
@@ -785,7 +793,10 @@ function MonthSection({
                     })
                   );
                 }}
-                className='px-3 py-2 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm text-left'
+                disabled={readOnly}
+                readOnly={readOnly}
+                className={`px-3 py-2 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm text-left ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+                title={readOnly ? 'El proyecto está cerrado' : 'Fecha desde'}
               />
             </div>
             <div className='flex items-center gap-2'>
@@ -794,6 +805,7 @@ function MonthSection({
                 type='date'
                 value={dateTo}
                 onChange={e => {
+                  if (readOnly) return;
                   const newValue = e.target.value;
                   setDateTo(newValue);
                   // Sincronizar con reportes: actualizar la clave de reportes y disparar evento
@@ -804,7 +816,10 @@ function MonthSection({
                     })
                   );
                 }}
-                className='px-3 py-2 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm text-left'
+                disabled={readOnly}
+                readOnly={readOnly}
+                className={`px-3 py-2 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm text-left ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+                title={readOnly ? 'El proyecto está cerrado' : 'Fecha hasta'}
               />
             </div>
           </div>
@@ -836,6 +851,7 @@ function MonthSection({
                         return isRowSelected(pKey);
                       })}
                       onChange={e => {
+                        if (readOnly) return;
                         if (e.target.checked) {
                           // Seleccionar todas
                           const allKeys = enriched.map(r => `${r.role}__${r.name}`);
@@ -845,6 +861,7 @@ function MonthSection({
                           setSelectedRowsArray([]);
                         }
                       }}
+                      disabled={readOnly}
                       onClick={e => {
                         // Prevenir el comportamiento por defecto y manejar manualmente
                         e.stopPropagation();
@@ -901,9 +918,10 @@ function MonthSection({
                         <input
                           type='checkbox'
                           checked={isSelected}
-                          onChange={() => toggleRowSelection(pKey)}
-                          title={isSelected ? 'Deseleccionar para exportación' : 'Seleccionar para exportación'}
-                          className='accent-blue-500 dark:accent-[#f59e0b] cursor-pointer'
+                          onChange={() => !readOnly && toggleRowSelection(pKey)}
+                          disabled={readOnly}
+                          title={readOnly ? 'El proyecto está cerrado' : (isSelected ? 'Deseleccionar para exportación' : 'Seleccionar para exportación')}
+                          className={`accent-blue-500 dark:accent-[#f59e0b] ${readOnly ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                         />
                       </div>
                     </Td>
@@ -1019,14 +1037,20 @@ function MonthSection({
                         <input
                           type='checkbox'
                           checked={!!rc.ok}
-                          onChange={e => setRcv(pKey, { ok: e.target.checked })}
+                          onChange={e => !readOnly && setRcv(pKey, { ok: e.target.checked })}
+                          disabled={readOnly}
+                          className={readOnly ? 'opacity-50 cursor-not-allowed' : ''}
+                          title={readOnly ? 'El proyecto está cerrado' : 'Marcar como recibida'}
                         />
                         <input
                           type='text'
                           placeholder='Anota mes o incidencia…'
                           value={rc.note || ''}
-                          onChange={e => setRcv(pKey, { note: e.target.value })}
-                          className='px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-xs'
+                          onChange={e => !readOnly && setRcv(pKey, { note: e.target.value })}
+                          disabled={readOnly}
+                          readOnly={readOnly}
+                          className={`px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-xs ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+                          title={readOnly ? 'El proyecto está cerrado' : 'Anota mes o incidencia'}
                         />
                       </div>
                     </Td>

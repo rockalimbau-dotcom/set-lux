@@ -7,6 +7,7 @@ import ReportesTab from '@features/reportes/pages/ReportesTab.jsx';
 import LogoIcon from '@shared/components/LogoIcon';
 import { useLocalStorage } from '@shared/hooks/useLocalStorage';
 import { useEffect, useMemo, useState } from 'react';
+import React from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { syncAllWeeks } from '@features/planificacion/utils/sync';
 import { storage } from '@shared/services/localStorage.service';
@@ -58,6 +59,96 @@ export interface ProjectDetailProps {
 }
 
 export type ProjectTab = 'equipo' | 'planificacion' | 'reportes' | 'nomina' | 'necesidades' | 'condiciones';
+
+/** Modal de confirmación para cambiar estado del proyecto */
+interface StatusConfirmModalProps {
+  projectName: string;
+  isClosing: boolean; // true si se está cerrando, false si se está activando
+  onClose: () => void;
+  onConfirm: () => void;
+}
+
+function StatusConfirmModal({ projectName, isClosing, onClose, onConfirm }: StatusConfirmModalProps) {
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+    if (typeof document !== 'undefined') {
+      return (document.documentElement.getAttribute('data-theme') || 'light') as 'dark' | 'light';
+    }
+    return 'light';
+  });
+
+  useEffect(() => {
+    const updateTheme = () => {
+      if (typeof document !== 'undefined') {
+        const currentTheme = (document.documentElement.getAttribute('data-theme') || 'light') as 'dark' | 'light';
+        setTheme(currentTheme);
+      }
+    };
+
+    const observer = new MutationObserver(updateTheme);
+    if (typeof document !== 'undefined') {
+      observer.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['data-theme'],
+      });
+    }
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
+  const isLight = theme === 'light';
+
+  return (
+    <div className='fixed inset-0 bg-black/60 grid place-items-center p-4 z-50'>
+      <div className='w-full max-w-md rounded-2xl border border-neutral-border bg-neutral-panel p-6'>
+        <h3 className='text-lg font-semibold mb-4' style={{color: isLight ? '#0476D9' : '#F27405'}}>
+          {isClosing ? 'Confirmar cierre' : 'Confirmar activación'}
+        </h3>
+        
+        <p 
+          className='text-sm mb-6' 
+          style={{color: isLight ? '#111827' : '#d1d5db'}}
+          dangerouslySetInnerHTML={{
+            __html: isClosing 
+              ? `¿Estás seguro de cerrar el proyecto <strong>${projectName}</strong>?`
+              : `¿Estás seguro que quieres volver a activar el proyecto <strong>${projectName}</strong>?`
+          }}
+        />
+
+        <div className='flex justify-center gap-3'>
+          <button
+            onClick={onClose}
+            className='px-3 py-2 rounded-lg border transition text-sm font-medium hover:border-[var(--hover-border)]'
+            style={{
+              borderColor: 'var(--border)',
+              backgroundColor: isLight ? '#ffffff' : 'rgba(0,0,0,0.2)',
+              color: isLight ? '#111827' : '#d1d5db'
+            }}
+            type='button'
+          >
+            No
+          </button>
+          <button
+            onClick={() => {
+              onConfirm();
+              onClose();
+            }}
+            className='px-3 py-2 rounded-lg border transition text-sm font-medium hover:border-[var(--hover-border)]'
+            style={{
+              borderColor: isLight ? '#F27405' : '#F27405',
+              color: isLight ? '#F27405' : '#F27405',
+              backgroundColor: isLight ? '#ffffff' : 'rgba(0,0,0,0.2)'
+            }}
+            type='button'
+          >
+            Sí
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 /**
  * ProjectDetail
@@ -192,6 +283,7 @@ export default function ProjectDetail({
   }, [proj?.team, proj?.id, proj?.nombre, loaded]);
 
   const [activeTab, setActiveTab] = useState<ProjectTab | null>(initialTab as ProjectTab ?? null);
+  const [showStatusModal, setShowStatusModal] = useState<{ isClosing: boolean } | null>(null);
 
   // Ruta -> pestaña (al entrar directamente por URL o al refrescar)
   useEffect(() => {
@@ -334,14 +426,8 @@ export default function ProjectDetail({
 
             <span
               onClick={() => {
-                const nextEstado: ProjectStatus = isActive ? 'Cerrado' : 'Activo';
-                setProj(p => {
-                  const updated = { ...p, estado: nextEstado };
-                  try {
-                    onUpdateProject?.(updated);
-                  } catch {}
-                  return updated;
-                });
+                // Mostrar modal de confirmación
+                setShowStatusModal({ isClosing: isActive });
               }}
               className={`px-3 py-2 rounded-lg text-sm font-medium border cursor-pointer`}
               style={{backgroundColor: estadoBg, borderColor: estadoBg, color: '#ffffff'}}
@@ -404,6 +490,7 @@ export default function ProjectDetail({
         {activeTab !== null && (
          <div
            className='phase-content -mt-1 rounded-2xl border border-neutral-border bg-neutral-panel/90 p-5'
+           data-readonly={!isActive ? 'true' : 'false'}
            style={{
              borderColor: (document.documentElement.getAttribute('data-theme')||'dark')==='light' ? 'rgba(229,231,235,0.6)' : 'var(--border)'
            }}
@@ -418,6 +505,7 @@ export default function ProjectDetail({
               pickupTeam={proj?.team?.pickup || []}
               reinforcements={proj?.team?.reinforcements || []}
               teamList={teamList}
+              readOnly={!isActive}
             />
           )}
 
@@ -429,31 +517,36 @@ export default function ProjectDetail({
               }}
               initialTeam={proj?.team}
               onChange={(model: ProjectTeam) => {
+                // Si el proyecto está cerrado, no permitir cambios
+                if (!isActive) return;
                 // Actualiza proyecto + persiste (en ambas claves)
                 setProj(p => {
                   const next = { ...p, team: model };
                   return next;
                 });
               }}
-              allowEditOverride={true}
+              allowEditOverride={isActive}
+              readOnly={!isActive}
               storageKey={`team_${proj?.id || proj?.nombre}`} // persistencia por proyecto dentro de EquipoTab
               projectMode={condTipo}
             />
           )}
 
-          {activeTab === 'reportes' && <ReportesTab project={proj} mode={condTipo} />}
+          {activeTab === 'reportes' && <ReportesTab project={proj} mode={condTipo} readOnly={!isActive} />}
 
           {activeTab === 'nomina' && (
-            <NominaTab project={proj} mode={condTipo} />
+            <NominaTab project={proj} mode={condTipo} readOnly={!isActive} />
           )}
 
-          {activeTab === 'necesidades' && <NecesidadesTab project={proj} />}
+          {activeTab === 'necesidades' && <NecesidadesTab project={proj} readOnly={!isActive} />}
 
           {activeTab === 'condiciones' && (
             <CondicionesTab
               project={proj}
               mode={condTipo}
               onChange={(patch: any) => {
+                // Si el proyecto está cerrado, no permitir cambios
+                if (!isActive) return;
                 // Solo actualizar si hay cambios reales
                 if (!patch) return;
                 
@@ -472,12 +565,32 @@ export default function ProjectDetail({
                   return next;
                 });
               }}
+              readOnly={!isActive}
             />
           )}
         </div>
       )}
         </div>
       </div>
+
+      {/* Modal confirmar cambio de estado */}
+      {showStatusModal && (
+        <StatusConfirmModal
+          projectName={proj?.nombre || 'este proyecto'}
+          isClosing={showStatusModal.isClosing}
+          onClose={() => setShowStatusModal(null)}
+          onConfirm={() => {
+            const nextEstado: ProjectStatus = showStatusModal.isClosing ? 'Cerrado' : 'Activo';
+            setProj(p => {
+              const updated = { ...p, estado: nextEstado };
+              try {
+                onUpdateProject?.(updated);
+              } catch {}
+              return updated;
+            });
+          }}
+        />
+      )}
     </div>
   );
 }

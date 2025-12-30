@@ -11,6 +11,7 @@ type AccordionProps = {
   children: React.ReactNode;
   btnExportCls?: string;
   btnExportStyle?: React.CSSProperties;
+  readOnly?: boolean;
 };
 
 export default function Accordion({
@@ -23,6 +24,7 @@ export default function Accordion({
   children,
   btnExportCls,
   btnExportStyle,
+  readOnly = false,
 }: AccordionProps) {
   return (
     <section className='rounded-2xl border border-neutral-border bg-neutral-panel/90'>
@@ -46,8 +48,9 @@ export default function Accordion({
           </button>
           <button
             onClick={onAdd}
-            className='px-3 py-2 rounded-lg border text-sm border-neutral-border hover:border-[#F59E0B]'
-            title='+ Semana'
+            disabled={readOnly}
+            className={`px-3 py-2 rounded-lg border text-sm border-neutral-border hover:border-[#F59E0B] ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+            title={readOnly ? 'El proyecto está cerrado' : '+ Semana'}
           >
             + Semana
           </button>

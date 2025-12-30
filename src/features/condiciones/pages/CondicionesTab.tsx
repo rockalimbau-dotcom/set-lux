@@ -9,9 +9,10 @@ type CondicionesTabProps = {
   project?: AnyRecord;
   mode?: string;
   onChange?: (model: AnyRecord) => void;
+  readOnly?: boolean;
 };
 
-export default function CondicionesTab({ project, mode, onChange = () => {} }: CondicionesTabProps) {
+export default function CondicionesTab({ project, mode, onChange = () => {}, readOnly = false }: CondicionesTabProps) {
   const effectiveMode = useMemo(() => {
     const v = (mode || (project as AnyRecord)?.conditions?.tipo || 'semanal')
       .toString()
@@ -52,6 +53,7 @@ export default function CondicionesTab({ project, mode, onChange = () => {} }: C
           project={project}
           onChange={m => onChange({ semanal: m, tipo: 'semanal' })}
           onRegisterExport={fn => setDoExport(() => fn)}
+          readOnly={readOnly}
         />
       )}
 
@@ -60,6 +62,7 @@ export default function CondicionesTab({ project, mode, onChange = () => {} }: C
           project={project}
           onChange={m => onChange({ mensual: m, tipo: 'mensual' })}
           onRegisterExport={fn => setDoExport(() => fn)}
+          readOnly={readOnly}
         />
       )}
 
@@ -68,6 +71,7 @@ export default function CondicionesTab({ project, mode, onChange = () => {} }: C
           project={project}
           onChange={m => onChange({ publicidad: m, tipo: 'publicidad' })}
           onRegisterExport={fn => setDoExport(() => fn)}
+          readOnly={readOnly}
         />
       )}
     </div>

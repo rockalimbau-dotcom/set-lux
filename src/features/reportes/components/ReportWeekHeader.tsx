@@ -9,6 +9,7 @@ type Props = {
   btnExportCls?: string;
   btnExportStyle?: React.CSSProperties;
   contentId?: string;
+  readOnly?: boolean;
 };
 
 export default function ReportWeekHeader({
@@ -20,13 +21,15 @@ export default function ReportWeekHeader({
   btnExportCls,
   btnExportStyle,
   contentId,
+  readOnly = false,
 }: Props) {
   return (
     <div className='flex items-center gap-2 px-5 py-4'>
       <button
         onClick={onToggle}
-        className='w-6 h-6 rounded-lg border border-neutral-border flex items-center justify-center text-sm hover:border-accent'
-        title={open ? 'Contraer' : 'Desplegar'}
+        disabled={readOnly}
+        className={`w-6 h-6 rounded-lg border border-neutral-border flex items-center justify-center text-sm hover:border-accent ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+        title={readOnly ? 'El proyecto está cerrado' : (open ? 'Contraer' : 'Desplegar')}
         aria-label='Alternar semana'
         aria-expanded={open}
         aria-controls={contentId}

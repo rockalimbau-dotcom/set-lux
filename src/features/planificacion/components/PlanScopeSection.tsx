@@ -50,6 +50,7 @@ type PlanScopeSectionProps = {
   containerId: string;
   weeksOnlyId: string;
   project?: AnyRecord;
+  readOnly?: boolean;
 };
 
 function PlanScopeSection(props: PlanScopeSectionProps) {
@@ -81,6 +82,7 @@ function PlanScopeSection(props: PlanScopeSectionProps) {
     containerId,
     weeksOnlyId,
     project,
+    readOnly = false,
   } = props;
 
   const weekCards = useMemo(() => weeks.map(w => (
@@ -104,8 +106,9 @@ function PlanScopeSection(props: PlanScopeSectionProps) {
       btnExportCls={btnExportCls}
       btnExportStyle={btnExportStyle}
       project={project}
+      readOnly={readOnly}
     />
-  )), [weeks, scope, duplicateWeek, deleteWeek, setWeekStart, setDayField, addMemberTo, removeMemberFrom, teamList, baseTeam, prelightTeam, pickupTeam, reinforcements, onExportWeek, onExportWeekPDF, btnExportCls, btnExportStyle, project]);
+  )), [weeks, scope, duplicateWeek, deleteWeek, setWeekStart, setDayField, addMemberTo, removeMemberFrom, teamList, baseTeam, prelightTeam, pickupTeam, reinforcements, onExportWeek, onExportWeekPDF, btnExportCls, btnExportStyle, project, readOnly]);
 
   return (
     <Accordion
@@ -117,6 +120,7 @@ function PlanScopeSection(props: PlanScopeSectionProps) {
       onExportPDF={onExportPDF}
       btnExportCls={btnExportCls}
       btnExportStyle={btnExportStyle}
+      readOnly={readOnly}
     >
       {weeks.length === 0 ? (
         <EmptyHint text={emptyText} />

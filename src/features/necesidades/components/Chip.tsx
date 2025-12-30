@@ -6,9 +6,10 @@ type ChipProps = {
   name?: string;
   onRemove?: () => void;
   context?: 'prelight' | 'pickup' | string;
+  readOnly?: boolean;
 };
 
-export default function Chip({ role, name, onRemove, context }: ChipProps) {
+export default function Chip({ role, name, onRemove, context, readOnly = false }: ChipProps) {
   const base = String(role || '').toUpperCase();
   const col = (ROLE_COLORS && (ROLE_COLORS as any)[base]) || { bg: '#444', fg: '#fff' };
   const roleLabels: Record<string, string> = {
@@ -33,13 +34,15 @@ export default function Chip({ role, name, onRemove, context }: ChipProps) {
         {label || '—'}
       </span>
       <span className='text-xs text-zinc-200'>{name || '—'}</span>
-      <button
-        onClick={onRemove}
-        className='text-zinc-400 hover:text-red-500 text-xs'
-        title='Quitar'
-      >
-        ×
-      </button>
+      {!readOnly && (
+        <button
+          onClick={onRemove}
+          className='text-zinc-400 hover:text-red-500 text-xs'
+          title='Quitar'
+        >
+          ×
+        </button>
+      )}
     </span>
   );
 }

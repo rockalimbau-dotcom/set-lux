@@ -32,9 +32,10 @@ interface ProjectLike {
 
 interface NominaSemanalProps {
   project: ProjectLike;
+  readOnly?: boolean;
 }
 
-export default function NominaSemanal({ project }: NominaSemanalProps) {
+export default function NominaSemanal({ project, readOnly = false }: NominaSemanalProps) {
   const navigate = useNavigate();
   
   // Asegurar que el proyecto tenga el modo correcto para semanal
@@ -460,6 +461,7 @@ export default function NominaSemanal({ project }: NominaSemanalProps) {
             monthLabelEs={monthLabelEs}
             ROLE_COLORS={ROLE_COLORS as any}
             roleLabelFromCode={roleLabelFromCode}
+            readOnly={readOnly}
           />
         );
       })}

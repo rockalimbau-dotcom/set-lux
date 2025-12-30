@@ -32,6 +32,7 @@ type PlanificacionTabProps = {
   pickupTeam?: TeamMember[];
   reinforcements?: TeamMember[];
   teamList?: TeamMember[];
+  readOnly?: boolean;
 };
 
 export default function PlanificacionTab({
@@ -41,6 +42,7 @@ export default function PlanificacionTab({
   pickupTeam = [],
   reinforcements = [],
   teamList = [],
+  readOnly = false,
 }: PlanificacionTabProps) {
   const openHtmlInNewTab = (title: string, innerHtml: string) => {
     const w = typeof window !== 'undefined' ? window.open('', '_blank') : null;
@@ -226,6 +228,7 @@ export default function PlanificacionTab({
   ]);
 
   const addPreWeek = async () => {
+    if (readOnly) return;
     const next = addPreWeekAction(
       preWeeks as any,
       baseRoster,
@@ -242,6 +245,7 @@ export default function PlanificacionTab({
   };
 
   const addProWeek = async () => {
+    if (readOnly) return;
     const next = addProWeekAction(
       preWeeks as any,
       proWeeks as any,
@@ -259,6 +263,7 @@ export default function PlanificacionTab({
   };
 
   const duplicateWeek = (scope: 'pre' | 'pro', weekId: string) => {
+    if (readOnly) return;
     if (scope === 'pre') {
       const next = duplicateWeekAction(
         preWeeks as any,
@@ -274,6 +279,7 @@ export default function PlanificacionTab({
   };
 
   const deleteWeek = (scope: 'pre' | 'pro', weekId: string) => {
+    if (readOnly) return;
     if (scope === 'pre') {
       setPreWeeks(prev => prev.filter((w: AnyRecord) => w.id !== weekId));
     } else {
@@ -282,6 +288,7 @@ export default function PlanificacionTab({
   };
 
   const setWeekStart = (_scope: 'pre' | 'pro', weekId: string, newDateStr: string) => {
+    if (readOnly) return;
     const raw = parseYYYYMMDD(newDateStr);
     const toMon = (date: Date) => {
       const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
@@ -310,6 +317,7 @@ export default function PlanificacionTab({
     dayIdx: number,
     patch: AnyRecord
   ) => {
+    if (readOnly) return;
     const apply = (list: AnyRecord[]) =>
       list.map(w => {
         if (w.id !== weekId) return w;
@@ -381,6 +389,7 @@ export default function PlanificacionTab({
     listKey: 'team' | 'prelight' | 'pickup',
     member: AnyRecord
   ) => {
+    if (readOnly) return;
     const apply = (list: AnyRecord[]) =>
       list.map(w => {
         if (w.id !== weekId) return w;
@@ -428,6 +437,7 @@ export default function PlanificacionTab({
     listKey: 'team' | 'prelight' | 'pickup',
     idxInList: number
   ) => {
+    if (readOnly) return;
     const apply = (list: AnyRecord[]) =>
       list.map(w => {
         if (w.id !== weekId) return w;
@@ -579,6 +589,7 @@ export default function PlanificacionTab({
         containerId='pre-block'
         weeksOnlyId='pre-weeks-only'
         project={project}
+        readOnly={readOnly}
       />
 
       <PlanScopeSection
@@ -609,6 +620,7 @@ export default function PlanificacionTab({
         containerId='pro-block'
         weeksOnlyId='pro-weeks-only'
         project={project}
+        readOnly={readOnly}
       />
     </div>
   );

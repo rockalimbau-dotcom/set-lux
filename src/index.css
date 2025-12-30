@@ -558,3 +558,93 @@ button.btn-duplicate,
   border-color: var(--phase-accent) !important;
   box-shadow: 0 0 0 0.5px var(--phase-accent) inset;
 }
+
+/* Deshabilitar hover en elementos disabled o readonly globalmente */
+input[disabled]:hover,
+textarea[disabled]:hover,
+select[disabled]:hover,
+button[disabled]:hover,
+input[readonly]:hover,
+textarea[readonly]:hover {
+  border-color: inherit !important;
+  box-shadow: none !important;
+  background-color: inherit !important;
+  color: inherit !important;
+  cursor: not-allowed !important;
+}
+
+input[disabled]:focus,
+textarea[disabled]:focus,
+select[disabled]:focus,
+button[disabled]:focus,
+input[readonly]:focus,
+textarea[readonly]:focus {
+  border-color: inherit !important;
+  box-shadow: none !important;
+  outline: none !important;
+  cursor: not-allowed !important;
+}
+
+/* Hover en InfoCard (solo cuando NO está en readOnly) */
+.phase-content section.rounded-2xl.border:hover:not([data-readonly='true']) {
+  border-color: var(--brand) !important;
+}
+
+/* Hover en TextAreaAuto textarea (solo cuando NO está en readOnly) */
+.phase-content textarea.rounded-xl:not([disabled]):not([readonly]):hover {
+  border-color: var(--brand) !important;
+}
+
+/* Hover en TextAreaAuto div (solo cuando NO está en readOnly) */
+.phase-content div.rounded-xl[class*='leading-relaxed']:not([data-readonly='true']):hover {
+  border-color: var(--brand) !important;
+}
+
+/* Deshabilitar cambio de background en inputs de parámetros (ParamInput) - solo border hover */
+.phase-content label input[type='number']:hover,
+.phase-content label input[type='time']:hover,
+.phase-content label input[type='text']:hover {
+  background-color: inherit !important;
+  background: inherit !important;
+  background-image: inherit !important;
+}
+
+/* Más específico para inputs dentro de labels (ParamInput) - prevenir cualquier cambio de background */
+.phase-content label.space-y-1 input:hover,
+.phase-content label.space-y-1 input:focus,
+.phase-content label input[type='number']:hover,
+.phase-content label input[type='number']:focus,
+.phase-content label input[type='time']:hover,
+.phase-content label input[type='time']:focus,
+.phase-content label input[type='text']:hover,
+.phase-content label input[type='text']:focus {
+  background-color: transparent !important;
+  background: transparent !important;
+  background-image: none !important;
+}
+
+[data-theme='dark'] .phase-content label input:hover,
+[data-theme='dark'] .phase-content label input:focus,
+[data-theme='dark'] .phase-content label input[type='number']:hover,
+[data-theme='dark'] .phase-content label input[type='number']:focus,
+[data-theme='dark'] .phase-content label input[type='time']:hover,
+[data-theme='dark'] .phase-content label input[type='time']:focus,
+[data-theme='dark'] .phase-content label input[type='text']:hover,
+[data-theme='dark'] .phase-content label input[type='text']:focus {
+  background-color: transparent !important;
+  background: transparent !important;
+  background-image: none !important;
+}
+
+[data-theme='light'] .phase-content label input:hover,
+[data-theme='light'] .phase-content label input:focus,
+[data-theme='light'] .phase-content label input[type='number']:hover,
+[data-theme='light'] .phase-content label input[type='number']:focus,
+[data-theme='light'] .phase-content label input[type='time']:hover,
+[data-theme='light'] .phase-content label input[type='time']:focus,
+[data-theme='light'] .phase-content label input[type='text']:hover,
+[data-theme='light'] .phase-content label input[type='text']:focus {
+  background-color: transparent !important;
+  background: transparent !important;
+  background-image: none !important;
+}

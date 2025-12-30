@@ -34,9 +34,10 @@ const formatDDMM = (date: Date) => `${pad2(date.getDate())}/${pad2(date.getMonth
 
 type NecesidadesTabProps = {
   project?: AnyRecord;
+  readOnly?: boolean;
 };
 
-export default function NecesidadesTab({ project }: NecesidadesTabProps) {
+export default function NecesidadesTab({ project, readOnly = false }: NecesidadesTabProps) {
   const navigate = useNavigate();
   
   // Add error boundary state
@@ -361,6 +362,7 @@ export default function NecesidadesTab({ project }: NecesidadesTabProps) {
   }, [planKey, syncFromPlanRaw]);
 
   const setCell = (weekId: string, dayIdx: number, fieldKey: string, value: unknown) => {
+    if (readOnly) return;
     // Si se está cambiando localización, sincronizar con planificación
     if (fieldKey === 'loc') {
       try {
@@ -395,6 +397,7 @@ export default function NecesidadesTab({ project }: NecesidadesTabProps) {
   };
 
   const removeFromList = (weekId: string, dayIdx: number, listKey: string, idx: number) => {
+    if (readOnly) return;
     setNeeds((prev: AnyRecord) => {
       const w: AnyRecord = prev[weekId];
       if (!w) return prev;
@@ -439,6 +442,7 @@ export default function NecesidadesTab({ project }: NecesidadesTabProps) {
   };
 
   const setWeekOpen = (weekId: string, isOpen: boolean) => {
+    if (readOnly) return;
     try {
       setNeeds((prev: AnyRecord) => {
         const w: AnyRecord = prev[weekId] || {};
@@ -534,12 +538,15 @@ export default function NecesidadesTab({ project }: NecesidadesTabProps) {
             Crea semanas en{' '}
             <button
               onClick={() => {
+                if (readOnly) return;
                 const projectId = (project as AnyRecord)?.id || (project as AnyRecord)?.nombre;
                 const planificacionPath = projectId ? `/project/${projectId}/planificacion` : '/projects';
                 navigate(planificacionPath);
               }}
-              className='underline font-semibold hover:opacity-80 transition-opacity'
+              disabled={readOnly}
+              className={`underline font-semibold hover:opacity-80 transition-opacity ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
               style={{color: 'var(--brand)'}}
+              title={readOnly ? 'El proyecto está cerrado' : 'Ir a Planificación'}
             >
               Planificación
             </button>
@@ -559,9 +566,10 @@ export default function NecesidadesTab({ project }: NecesidadesTabProps) {
               <div className='flex items-center justify-between gap-3 px-5 py-4'>
                 <div className='flex items-center gap-3'>
                   <button
-                    onClick={() => setWeekOpen(wid, !(wk as AnyRecord).open)}
-                    className='w-8 h-8 rounded-lg border border-neutral-border hover:border-[#F59E0B]'
-                    title={(wk as AnyRecord).open ? 'Cerrar' : 'Abrir'}
+                    onClick={() => !readOnly && setWeekOpen(wid, !(wk as AnyRecord).open)}
+                    disabled={readOnly}
+                    className={`w-8 h-8 rounded-lg border border-neutral-border hover:border-[#F59E0B] ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    title={readOnly ? 'El proyecto está cerrado' : ((wk as AnyRecord).open ? 'Cerrar' : 'Abrir')}
                   >
                     {(wk as AnyRecord).open ? '−' : '+'}
                   </button>
@@ -604,6 +612,7 @@ export default function NecesidadesTab({ project }: NecesidadesTabProps) {
                         fieldKey='loc'
                         label='Localización'
                         setCell={setCell}
+                        readOnly={readOnly}
                       />
                       <FieldRow
                         weekId={wid}
@@ -611,6 +620,7 @@ export default function NecesidadesTab({ project }: NecesidadesTabProps) {
                         fieldKey='seq'
                         label='Secuencias'
                         setCell={setCell}
+                        readOnly={readOnly}
                       />
                       <ListRow
                         label='Equipo técnico'
@@ -620,6 +630,7 @@ export default function NecesidadesTab({ project }: NecesidadesTabProps) {
                         weekObj={wk}
                         removeFromList={removeFromList}
                         setCell={setCell}
+                        readOnly={readOnly}
                       />
                       <FieldRow
                         weekId={wid}
@@ -627,6 +638,7 @@ export default function NecesidadesTab({ project }: NecesidadesTabProps) {
                         fieldKey='needLoc'
                         label='Necesidades localizaciones'
                         setCell={setCell}
+                        readOnly={readOnly}
                       />
                       <FieldRow
                         weekId={wid}
@@ -634,6 +646,7 @@ export default function NecesidadesTab({ project }: NecesidadesTabProps) {
                         fieldKey='needProd'
                         label='Necesidades producción'
                         setCell={setCell}
+                        readOnly={readOnly}
                       />
                       <FieldRow
                         weekId={wid}
@@ -641,6 +654,7 @@ export default function NecesidadesTab({ project }: NecesidadesTabProps) {
                         fieldKey='needLight'
                         label='Necesidades luz'
                         setCell={setCell}
+                        readOnly={readOnly}
                       />
                       <FieldRow
                         weekId={wid}
@@ -648,6 +662,7 @@ export default function NecesidadesTab({ project }: NecesidadesTabProps) {
                         fieldKey='extraMat'
                         label='Material extra'
                         setCell={setCell}
+                        readOnly={readOnly}
                       />
                       <FieldRow
                         weekId={wid}
@@ -655,6 +670,7 @@ export default function NecesidadesTab({ project }: NecesidadesTabProps) {
                         fieldKey='precall'
                         label='Precall'
                         setCell={setCell}
+                        readOnly={readOnly}
                       />
                       <ListRow
                         label='Equipo Prelight'
@@ -665,6 +681,7 @@ export default function NecesidadesTab({ project }: NecesidadesTabProps) {
                         context='prelight'
                         removeFromList={removeFromList}
                         setCell={setCell}
+                        readOnly={readOnly}
                       />
                       <ListRow
                         label='Equipo Recogida'
@@ -675,6 +692,7 @@ export default function NecesidadesTab({ project }: NecesidadesTabProps) {
                         context='pickup'
                         removeFromList={removeFromList}
                         setCell={setCell}
+                        readOnly={readOnly}
                       />
                       <FieldRow
                         weekId={wid}
@@ -682,6 +700,7 @@ export default function NecesidadesTab({ project }: NecesidadesTabProps) {
                         fieldKey='obs'
                         label='Observaciones'
                         setCell={setCell}
+                        readOnly={readOnly}
                       />
                     </tbody>
                   </table>

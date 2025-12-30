@@ -7,9 +7,10 @@ type AnyRecord = Record<string, any>;
 interface NominaTabProps extends AnyRecord {
   project?: any;
   mode?: 'semanal' | 'mensual' | 'publicidad';
+  readOnly?: boolean;
 }
 
-export default function NominaTab({ project, mode, ...props }: NominaTabProps) {
+export default function NominaTab({ project, mode, readOnly = false, ...props }: NominaTabProps) {
   // Debug para ver qué está recibiendo
   if ((import.meta as any).env.DEV) {
     console.debug('[NOMINA.TAB] mode:', mode, 'project.conditions?.tipo:', project?.conditions?.tipo);
@@ -18,15 +19,15 @@ export default function NominaTab({ project, mode, ...props }: NominaTabProps) {
   
   // Usar el componente específico según el modo
   if (mode === 'publicidad') {
-    return <NominaPublicidad project={project} {...props} />;
+    return <NominaPublicidad project={project} readOnly={readOnly} {...props} />;
   }
   
   if (mode === 'semanal') {
-    return <NominaSemanal project={project} {...props} />;
+    return <NominaSemanal project={project} readOnly={readOnly} {...props} />;
   }
   
   // Por defecto, usar NominaMensual para mensual
-  return <NominaMensual project={project} {...props} />;
+  return <NominaMensual project={project} readOnly={readOnly} {...props} />;
 }
 
 

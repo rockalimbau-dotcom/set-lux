@@ -65,10 +65,12 @@ function CondicionesPublicidad({
   project,
   onChange = () => {},
   onRegisterExport,
+  readOnly = false,
 }: { 
   project: AnyRecord | null | undefined; 
   onChange?: (p: AnyRecord) => void;
   onRegisterExport?: (fn: () => void) => void;
+  readOnly?: boolean;
 }) {
   const storageKey = useMemo(() => {
     const base = (project as AnyRecord)?.id || (project as AnyRecord)?.nombre || 'tmp';
@@ -332,36 +334,43 @@ function CondicionesPublicidad({
                   onChange: (v: string) => setParam('jornadaComida', v),
                 },
               ]}
+              readOnly={readOnly}
             />
             <ParamInput
               label='Día extra/Festivo (×)'
               value={p.factorFestivo ?? '1.75'}
               onChange={(v: string) => setParam('factorFestivo', v)}
+              readOnly={readOnly}
             />
             <ParamInput
               label='Hora extra festivas/nocturnas (×)'
               value={p.factorHoraExtraFestiva ?? '1.5'}
               onChange={(v: string) => setParam('factorHoraExtraFestiva', v)}
+              readOnly={readOnly}
             />
             <ParamInput
               label='Cortesía (min)'
               value={p.cortesiaMin ?? '15'}
               onChange={(v: string) => setParam('cortesiaMin', v)}
+              readOnly={readOnly}
             />
             <ParamInput
               label='Turn Around Diario (h)'
               value={p.taDiario ?? '10'}
               onChange={(v: string) => setParam('taDiario', v)}
+              readOnly={readOnly}
             />
             <ParamInput
               label='Turn Around Fin de semana (h)'
               value={p.taFinde ?? '48'}
               onChange={(v: string) => setParam('taFinde', v)}
+              readOnly={readOnly}
             />
             <ParamInput
               label='Nocturnidad complemento (€)'
               value={p.nocturnidadComplemento ?? '50'}
               onChange={(v: string) => setParam('nocturnidadComplemento', v)}
+              readOnly={readOnly}
             />
             <ParamInput
               label='Nocturno (inicio / fin)'
@@ -375,14 +384,17 @@ function CondicionesPublicidad({
                   onChange: (v: string) => setParam('nocturnoFin', v),
                 },
               ]}
+              readOnly={readOnly}
             />
             <ParamInput
               label='Desayuno (€)'
               value={p.dietaDesayuno ?? '10'}
               onChange={(v: string) => setParam('dietaDesayuno', v)}
+              readOnly={readOnly}
             />
             <ParamInput
               label='Comida (€)'
+              readOnly={readOnly}
               value={p.dietaComida ?? '20'}
               onChange={(v: string) => setParam('dietaComida', v)}
             />
@@ -390,31 +402,37 @@ function CondicionesPublicidad({
               label='Cena (€)'
               value={p.dietaCena ?? '30'}
               onChange={(v: string) => setParam('dietaCena', v)}
+              readOnly={readOnly}
             />
             <ParamInput
               label='Dieta s/ pernocta (€)'
               value={p.dietaSinPernocta ?? '50'}
               onChange={(v: string) => setParam('dietaSinPernocta', v)}
+              readOnly={readOnly}
             />
             <ParamInput
               label='Alojamiento + desayuno (€)'
               value={p.dietaAlojDes ?? '70'}
               onChange={(v: string) => setParam('dietaAlojDes', v)}
+              readOnly={readOnly}
             />
             <ParamInput
               label='Gastos de bolsillo (€)'
               value={p.gastosBolsillo ?? '10'}
               onChange={(v: string) => setParam('gastosBolsillo', v)}
+              readOnly={readOnly}
             />
             <ParamInput
               label='Kilometraje (€/km)'
               value={p.kilometrajeKm ?? '0.40'}
               onChange={(v: string) => setParam('kilometrajeKm', v)}
+              readOnly={readOnly}
             />
             <ParamInput
               label='Transporte (€/día)'
               value={p.transporteDia ?? '12'}
               onChange={(v: string) => setParam('transporteDia', v)}
+              readOnly={readOnly}
             />
           </div>
         )}
@@ -435,8 +453,10 @@ function CondicionesPublicidad({
           ) : (
             <>
               <button
-                onClick={() => setShowRoleSelect(!showRoleSelect)}
-                className='px-3 py-1 text-sm bg-brand text-white rounded-lg hover:bg-brand/80 btn-add-role'
+                onClick={() => !readOnly && setShowRoleSelect(!showRoleSelect)}
+                disabled={readOnly}
+                className={`px-3 py-1 text-sm bg-brand text-white rounded-lg hover:bg-brand/80 btn-add-role ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+                title={readOnly ? 'El proyecto está cerrado' : '+ Añadir rol'}
               >
                 + Añadir rol
               </button>
@@ -483,12 +503,14 @@ function CondicionesPublicidad({
                   <div className='flex items-center gap-1'>
                     <button
                       onClick={() => {
+                        if (readOnly) return;
                         if (confirm(`¿Eliminar el rol "${role}"?`)) {
                           removeRole(role);
                         }
                       }}
-                      className='text-gray-400 hover:text-blue-500 hover:bg-blue-100 dark:hover:text-amber-500 dark:hover:bg-amber-900/20 font-bold text-sm w-6 h-6 flex items-center justify-center rounded transition-all hover:scale-110'
-                      title='Eliminar rol'
+                      disabled={readOnly}
+                      className={`text-gray-400 hover:text-blue-500 hover:bg-blue-100 dark:hover:text-amber-500 dark:hover:bg-amber-900/20 font-bold text-sm w-6 h-6 flex items-center justify-center rounded transition-all hover:scale-110 ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      title={readOnly ? 'El proyecto está cerrado' : 'Eliminar rol'}
                     >
                       ✕
                     </button>
@@ -500,10 +522,12 @@ function CondicionesPublicidad({
                     <input
                       type='number'
                       value={model.prices?.[role]?.[h] ?? ''}
-                      onChange={e => handlePriceChange(role, h, e.target.value)}
+                      onChange={e => !readOnly && handlePriceChange(role, h, e.target.value)}
                       placeholder='€'
                       step='0.01'
-                      className='w-full px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-center'
+                      disabled={readOnly}
+                      readOnly={readOnly}
+                      className={`w-full px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-center ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
                     />
                   </Td>
                 ))}
@@ -530,6 +554,7 @@ function CondicionesPublicidad({
         onChange={v =>
           setText('festivosTemplate', visibleToTemplate(v, model.params))
         }
+        readOnly={readOnly}
       />
       <InfoCard
         title='Horarios'
@@ -537,6 +562,7 @@ function CondicionesPublicidad({
         onChange={v =>
           setText('horariosTemplate', visibleToTemplate(v, model.params))
         }
+        readOnly={readOnly}
       />
       <InfoCard
         title='Dietas'
@@ -544,6 +570,7 @@ function CondicionesPublicidad({
         onChange={v =>
           setText('dietasTemplate', visibleToTemplate(v, model.params))
         }
+        readOnly={readOnly}
       />
       <InfoCard
         title='Transportes'
@@ -551,6 +578,7 @@ function CondicionesPublicidad({
         onChange={v =>
           setText('transportesTemplate', visibleToTemplate(v, model.params))
         }
+        readOnly={readOnly}
       />
       <InfoCard
         title='Alojamiento'
@@ -558,6 +586,7 @@ function CondicionesPublicidad({
         onChange={v =>
           setText('alojamientoTemplate', visibleToTemplate(v, model.params))
         }
+        readOnly={readOnly}
       />
       <InfoCard
         title='Convenio'
@@ -565,16 +594,23 @@ function CondicionesPublicidad({
         onChange={v =>
           setText('convenioTemplate', visibleToTemplate(v, model.params))
         }
+        readOnly={readOnly}
         rightAddon={
-          <a
-            href='https://www.boe.es/diario_boe/txt.php?id=BOE-A-2024-6846'
-            target='_blank'
-            rel='noreferrer'
-            className='text-brand hover:underline text-sm'
-            title='Abrir BOE'
-          >
-            BOE
-          </a>
+          readOnly ? (
+            <span className='text-brand text-sm opacity-50 cursor-not-allowed' title='El proyecto está cerrado'>
+              BOE
+            </span>
+          ) : (
+            <a
+              href='https://www.boe.es/diario_boe/txt.php?id=BOE-A-2024-6846'
+              target='_blank'
+              rel='noreferrer'
+              className='text-brand hover:underline text-sm'
+              title='Abrir BOE'
+            >
+              BOE
+            </a>
+          )
         }
       />
     </div>

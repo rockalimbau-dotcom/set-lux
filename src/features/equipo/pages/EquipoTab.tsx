@@ -189,9 +189,10 @@ function EquipoTab({
         <div className='flex items-center gap-2'>
           {!groupsEnabled.prelight && (
             <button
-              onClick={() => enableGroup('prelight')}
-              className='px-3 py-2 rounded-lg border text-xs border-neutral-border hover:border-accent'
-              title='Añadir Equipo Prelight'
+              onClick={() => canEdit && enableGroup('prelight')}
+              disabled={!canEdit}
+              className={`px-3 py-2 rounded-lg border text-xs border-neutral-border hover:border-accent ${!canEdit ? 'opacity-50 cursor-not-allowed' : ''}`}
+              title={!canEdit ? 'El proyecto está cerrado' : 'Añadir Equipo Prelight'}
               aria-label='+ Prelight'
               type='button'
             >
@@ -200,9 +201,10 @@ function EquipoTab({
           )}
           {!groupsEnabled.pickup && (
             <button
-              onClick={() => enableGroup('pickup')}
-              className='px-3 py-2 rounded-lg border text-xs border-neutral-border hover:border-accent'
-              title='Añadir Equipo Recogida'
+              onClick={() => canEdit && enableGroup('pickup')}
+              disabled={!canEdit}
+              className={`px-3 py-2 rounded-lg border text-xs border-neutral-border hover:border-accent ${!canEdit ? 'opacity-50 cursor-not-allowed' : ''}`}
+              title={!canEdit ? 'El proyecto está cerrado' : 'Añadir Equipo Recogida'}
               aria-label='+ Recogida'
               type='button'
             >
@@ -302,15 +304,21 @@ function TeamGroup({
   groupKey = 'base',
 }: AnyRecord) {
   const addRow = () => {
+    if (!canEdit) return;
     const seq = nextSeq();
     setRows([
       ...rows,
       { id: safeId(), role: allowedRoles[0]?.code || 'E', name: '', seq },
     ]);
   };
-  const updateRow = (id: string, patch: AnyRecord) =>
+  const updateRow = (id: string, patch: AnyRecord) => {
+    if (!canEdit) return;
     setRows(rows.map((r: AnyRecord) => (r.id === id ? { ...r, ...patch } : r)));
-  const removeRow = (id: string) => setRows(rows.filter((r: AnyRecord) => r.id !== id));
+  };
+  const removeRow = (id: string) => {
+    if (!canEdit) return;
+    setRows(rows.filter((r: AnyRecord) => r.id !== id));
+  };
 
   const shownRoles = displayRolesForGroup(allowedRoles, groupKey);
 
@@ -330,9 +338,11 @@ function TeamGroup({
         <div className='flex items-center gap-2'>
           {removable && (
             <button
-              onClick={onRemoveGroup}
-              className='px-3 py-2 rounded-lg border text-xs border-neutral-border hover:border-red-500'
+              onClick={() => canEdit && onRemoveGroup()}
+              disabled={!canEdit}
+              className={`px-3 py-2 rounded-lg border text-xs border-neutral-border hover:border-red-500 ${!canEdit ? 'opacity-50 cursor-not-allowed' : ''}`}
               aria-label={'Quitar grupo'}
+              title={!canEdit ? 'El proyecto está cerrado' : 'Quitar grupo'}
               type='button'
             >
               Quitar grupo
@@ -340,8 +350,10 @@ function TeamGroup({
           )}
           <button
             onClick={addRow}
-            className='px-3 py-2 rounded-lg border text-xs border-neutral-border hover:border-accent'
+            disabled={!canEdit}
+            className={`px-3 py-2 rounded-lg border text-xs border-neutral-border hover:border-accent ${!canEdit ? 'opacity-50 cursor-not-allowed' : ''}`}
             aria-label={`Añadir miembro a ${title}`}
+            title={!canEdit ? 'El proyecto está cerrado' : `Añadir miembro a ${title}`}
             type='button'
           >
             + Añadir
@@ -535,9 +547,10 @@ function TeamRow({ row, onChange, onRemove, canEdit, allowedRoles, groupKey = 'b
         </div>
         <div className='sm:w-10 flex sm:justify-end'>
           <button
-            onClick={() => onRemove(row.id)}
-            className='px-2 py-1 rounded-lg border text-xs border-neutral-border hover:border-red-500'
-            title='Eliminar fila'
+            onClick={() => canEdit && onRemove(row.id)}
+            disabled={!canEdit}
+            className={`px-2 py-1 rounded-lg border text-xs border-neutral-border hover:border-red-500 ${!canEdit ? 'opacity-50 cursor-not-allowed' : ''}`}
+            title={!canEdit ? 'El proyecto está cerrado' : 'Eliminar fila'}
             aria-label={`Eliminar fila ${row.name || ''}`}
             type='button'
           >

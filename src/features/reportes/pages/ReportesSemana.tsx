@@ -54,6 +54,7 @@ type Props = {
   personas?: AnyRecord[];
   mode?: 'semanal' | 'mensual' | 'publicidad';
   horasExtraTipo?: string;
+  readOnly?: boolean;
   onExportWeekHTML?: () => void;
   onExportWeekPDF?: () => void;
 };
@@ -65,6 +66,7 @@ export default function ReportesSemana({
   personas = [],
   mode = 'semanal',
   horasExtraTipo = 'Hora Extra - Normal',
+  readOnly = false,
   onExportWeekHTML,
   onExportWeekPDF,
 }: Props) {
@@ -396,12 +398,13 @@ export default function ReportesSemana({
       <ReportWeekHeader
         open={open}
         title={title}
-        onToggle={() => setOpen(v => !v)}
+        onToggle={() => !readOnly && setOpen(v => !v)}
         onExportHTML={handleExportHTML}
         onExportPDF={handleExportPDF}
         btnExportCls={btnExportCls}
         btnExportStyle={btnExportStyle}
         contentId={contentId}
+        readOnly={readOnly}
       />
 
       {open && (
@@ -441,6 +444,7 @@ export default function ReportesSemana({
                     parseDietas={parseDietas}
                     formatDietas={formatDietas}
                     horasExtraTipo={horasExtraTipo}
+                    readOnly={readOnly}
                   />
                 );
 

@@ -32,9 +32,10 @@ interface ProjectLike {
 
 interface NominaPublicidadProps {
   project: ProjectLike;
+  readOnly?: boolean;
 }
 
-export default function NominaPublicidad({ project }: NominaPublicidadProps) {
+export default function NominaPublicidad({ project, readOnly = false }: NominaPublicidadProps) {
   const navigate = useNavigate();
   
   // Asegurar que el proyecto tenga el modo correcto para publicidad
@@ -462,6 +463,7 @@ export default function NominaPublicidad({ project }: NominaPublicidadProps) {
             monthLabelEs={monthLabelEs}
             ROLE_COLORS={ROLE_COLORS as any}
             roleLabelFromCode={roleLabelFromCode}
+            readOnly={readOnly}
           />
         );
       })}

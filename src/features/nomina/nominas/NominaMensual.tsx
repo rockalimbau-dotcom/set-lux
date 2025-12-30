@@ -32,9 +32,10 @@ interface ProjectLike {
 
 interface NominaMensualProps {
   project: ProjectLike;
+  readOnly?: boolean;
 }
 
-export default function NominaMensual({ project }: NominaMensualProps) {
+export default function NominaMensual({ project, readOnly = false }: NominaMensualProps) {
   const navigate = useNavigate();
   
   // Asegurar que el proyecto tenga el modo correcto para mensual
@@ -460,6 +461,7 @@ export default function NominaMensual({ project }: NominaMensualProps) {
             monthLabelEs={monthLabelEs}
             ROLE_COLORS={ROLE_COLORS as any}
             roleLabelFromCode={roleLabelFromCode}
+            readOnly={readOnly}
           />
         );
       })}
