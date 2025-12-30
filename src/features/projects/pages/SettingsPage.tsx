@@ -100,7 +100,7 @@ export default function SettingsPage() {
                   style={{color: colors.titleMain}}
                 >
                   SetLux
-                </button> <span className='text-gray-300 mx-2' style={{color: isLight ? '#374151' : '#d1d5db'}}>›</span> <span className='text-gray-300' style={{color: isLight ? '#374151' : '#d1d5db'}}>Configuración</span>
+                </button> <span className='mx-2' style={{color: colors.titleMain}}>›</span> <span style={{color: colors.titleMain}}>Configuración</span>
               </h1>
             </div>
           </div>

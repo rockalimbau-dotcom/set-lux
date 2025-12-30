@@ -1466,7 +1466,7 @@ function ProjectsScreen({
             <div className='flex items-center gap-6'>
               <LogoIcon size={80} />
               <h1 className='text-3xl font-bold' style={{color: 'var(--text)'}}>
-                SetLux <span className='text-gray-300 mx-2' style={{color: (document.documentElement.getAttribute('data-theme')||'dark')==='light' ? '#374151' : '#d1d5db'}}>›</span> <span className='text-gray-300' style={{color: (document.documentElement.getAttribute('data-theme')||'dark')==='light' ? '#374151' : '#d1d5db'}}>Proyectos</span>
+                SetLux <span className='mx-2' style={{color: 'var(--text)'}}>›</span> <span style={{color: 'var(--text)'}}>Proyectos</span>
               </h1>
             </div>
 

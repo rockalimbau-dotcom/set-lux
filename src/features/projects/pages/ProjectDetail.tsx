@@ -261,19 +261,27 @@ export default function ProjectDetail({
                   style={{color: 'var(--text)'}}
                 >
                   Proyectos
-                </button> <span className='text-gray-300 mx-2' style={{color: (document.documentElement.getAttribute('data-theme')||'dark')==='light' ? '#374151' : '#d1d5db'}}>›</span> {activePhaseLabel ? (
+                </button>
+                <span className='mx-2' style={{color: 'var(--text)'}}>›</span>
+                {activePhaseLabel ? (
                   <button 
                     onClick={() => navigate(`/project/${proj?.id}`)}
-                    className='hover:underline transition-all text-gray-300'
-                    style={{color: (document.documentElement.getAttribute('data-theme')||'dark')==='light' ? '#374151' : '#d1d5db'}}
+                    className='hover:underline transition-all'
+                    style={{color: 'var(--text)'}}
                   >
                     {proj?.nombre}
                   </button>
                 ) : (
-                  <span className='text-gray-300' style={{color: (document.documentElement.getAttribute('data-theme')||'dark')==='light' ? '#374151' : '#d1d5db'}}>
+                  <span style={{color: 'var(--text)'}}>
                     {proj?.nombre}
                   </span>
-                )}{activePhaseLabel ? ` › ${activePhaseLabel}` : ''}
+                )}
+                {activePhaseLabel && (
+                  <>
+                    <span className='mx-2' style={{color: 'var(--text)'}}>›</span>
+                    <span style={{color: 'var(--text)'}}>{activePhaseLabel}</span>
+                  </>
+                )}
               </h1>
             </div>
 

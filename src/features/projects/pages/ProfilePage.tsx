@@ -69,7 +69,7 @@ export default function ProfilePage() {
                   style={{color: 'var(--text)'}}
                 >
                   SetLux
-                </button> <span className='text-gray-300 mx-2' style={{color: isLight ? '#374151' : '#d1d5db'}}>›</span> <span className='text-gray-300' style={{color: isLight ? '#374151' : '#d1d5db'}}>Perfil</span>
+                </button> <span className='mx-2' style={{color: 'var(--text)'}}>›</span> <span style={{color: 'var(--text)'}}>Perfil</span>
               </h1>
             </div>
           </div>
