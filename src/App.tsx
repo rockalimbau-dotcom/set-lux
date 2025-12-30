@@ -23,7 +23,8 @@ interface LoginState {
 interface RegisterState {
   nombre: string;
   apellido: string;
-  puesto: string;
+  rol: string;
+  idioma: string;
   email: string;
   pass: string;
   pass2: string;
@@ -38,7 +39,8 @@ function AppInner() {
   const [reg, setReg] = useState<RegisterState>({
     nombre: '',
     apellido: '',
-    puesto: (ROLES[0] && (typeof ROLES[0] === 'string' ? ROLES[0] : (ROLES[0] as any).label)) || '',
+    rol: (ROLES[0] && (typeof ROLES[0] === 'string' ? ROLES[0] : (ROLES[0] as any).label)) || '',
+    idioma: 'Español',
     email: '',
     pass: '',
     pass2: '',
@@ -48,11 +50,19 @@ function AppInner() {
   const [projects, setProjects] = useLocalStorage<UIProject[]>('projects_v1', []);
   const [activeProject, setActiveProject] = useState<UIProject | null>(null);
   
-  // Estados para el dropdown de puesto
-  const [puestoDropdownOpen, setPuestoDropdownOpen] = useState(false);
-  const [isPuestoButtonHovered, setIsPuestoButtonHovered] = useState(false);
-  const [hoveredPuestoOption, setHoveredPuestoOption] = useState<string | null>(null);
-  const puestoDropdownRef = useRef<HTMLDivElement>(null);
+  // Estados para el dropdown de rol
+  const [rolDropdownOpen, setRolDropdownOpen] = useState(false);
+  const [isRolButtonHovered, setIsRolButtonHovered] = useState(false);
+  const [hoveredRolOption, setHoveredRolOption] = useState<string | null>(null);
+  const rolDropdownRef = useRef<HTMLDivElement>(null);
+  
+  // Estados para el dropdown de idioma
+  const [idiomaDropdownOpen, setIdiomaDropdownOpen] = useState(false);
+  const [isIdiomaButtonHovered, setIsIdiomaButtonHovered] = useState(false);
+  const [hoveredIdiomaOption, setHoveredIdiomaOption] = useState<string | null>(null);
+  const idiomaDropdownRef = useRef<HTMLDivElement>(null);
+  
+  const idiomaOptions = ['Español', 'Catalán', 'Inglés'];
   
   // Estados para el hover de los inputs
   const [isLoginUserHovered, setIsLoginUserHovered] = useState(false);
@@ -94,22 +104,25 @@ function AppInner() {
   
   const focusColor = theme === 'light' ? '#0476D9' : '#F27405';
   
-  // Cerrar dropdown al hacer clic fuera
+  // Cerrar dropdowns al hacer clic fuera
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (puestoDropdownRef.current && !puestoDropdownRef.current.contains(event.target as Node)) {
-        setPuestoDropdownOpen(false);
+      if (rolDropdownRef.current && !rolDropdownRef.current.contains(event.target as Node)) {
+        setRolDropdownOpen(false);
+      }
+      if (idiomaDropdownRef.current && !idiomaDropdownRef.current.contains(event.target as Node)) {
+        setIdiomaDropdownOpen(false);
       }
     };
 
-    if (puestoDropdownOpen) {
+    if (rolDropdownOpen || idiomaDropdownOpen) {
       document.addEventListener('mousedown', handleClickOutside);
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [puestoDropdownOpen]);
+  }, [rolDropdownOpen, idiomaDropdownOpen]);
 
   const navigate = useNavigate();
   const [themeLabel, setThemeLabel] = useState<string>(() => {
@@ -124,7 +137,6 @@ function AppInner() {
   useEffect(() => {
     try {
       const saved = (typeof localStorage !== 'undefined' && localStorage.getItem('theme')) || '';
-      const prefersLight = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
       const initial = saved === 'light' || saved === 'dark' ? saved : 'light';
       const root = document.documentElement;
       root.setAttribute('data-theme', initial);
@@ -173,8 +185,11 @@ function AppInner() {
       const fullName = `${nombre} ${apellido}`.trim();
       storage.setJSON('profile_v1', {
         name: fullName,
+        nombre: nombre,
+        apellido: apellido,
         email: reg.email,
-        role: reg.puesto,
+        role: reg.rol,
+        idioma: reg.idioma,
       });
 
       setSuccess('Registro completado con éxito ✅');
@@ -185,7 +200,8 @@ function AppInner() {
         setReg({
           nombre: '',
           apellido: '',
-          puesto: (ROLES[0] && (typeof ROLES[0] === 'string' ? ROLES[0] : (ROLES[0] as any).label)) || '',
+          rol: (ROLES[0] && (typeof ROLES[0] === 'string' ? ROLES[0] : (ROLES[0] as any).label)) || '',
+          idioma: 'Español',
           email: '',
           pass: '',
           pass2: '',
@@ -425,26 +441,26 @@ function AppInner() {
 
                       <div className='space-y-2'>
                         <label className='block text-sm font-medium' style={{color: 'var(--text)'}}>
-                          Puesto
+                          Rol
                         </label>
-                        <div className='relative' ref={puestoDropdownRef}>
+                        <div className='relative' ref={rolDropdownRef}>
                           <button
                             type='button'
-                            onClick={() => setPuestoDropdownOpen(!puestoDropdownOpen)}
-                            onMouseEnter={() => setIsPuestoButtonHovered(true)}
-                            onMouseLeave={() => setIsPuestoButtonHovered(false)}
-                            onBlur={() => setIsPuestoButtonHovered(false)}
+                            onClick={() => setRolDropdownOpen(!rolDropdownOpen)}
+                            onMouseEnter={() => setIsRolButtonHovered(true)}
+                            onMouseLeave={() => setIsRolButtonHovered(false)}
+                            onBlur={() => setIsRolButtonHovered(false)}
                             className={`w-full px-3 py-2 rounded-lg border focus:outline-none text-sm text-left transition-colors ${
                               theme === 'light' 
                                 ? 'bg-white text-gray-900' 
                                 : 'bg-black/40 text-zinc-300'
                             }`}
                             style={{
-                              borderWidth: isPuestoButtonHovered ? '1.5px' : '1px',
+                              borderWidth: isRolButtonHovered ? '1.5px' : '1px',
                               borderStyle: 'solid',
-                              borderColor: isPuestoButtonHovered && theme === 'light' 
+                              borderColor: isRolButtonHovered && theme === 'light' 
                                 ? '#0476D9' 
-                                : (isPuestoButtonHovered && theme === 'dark'
+                                : (isRolButtonHovered && theme === 'dark'
                                   ? '#fff'
                                   : 'var(--border)'),
                               backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='${theme === 'light' ? '%23111827' : '%23ffffff'}' d='M6 9L1 4h10z'/%3E%3C/svg%3E")`,
@@ -453,9 +469,9 @@ function AppInner() {
                               paddingRight: '2rem',
                             }}
                           >
-                            {reg.puesto || '\u00A0'}
+                            {reg.rol || '\u00A0'}
                           </button>
-                          {puestoDropdownOpen && (
+                          {rolDropdownOpen && (
                             <div className={`absolute top-full left-0 mt-1 w-full border border-neutral-border rounded-lg shadow-lg z-50 overflow-y-auto max-h-60 ${
                               theme === 'light' ? 'bg-white' : 'bg-neutral-panel'
                             }`}>
@@ -464,22 +480,91 @@ function AppInner() {
                                   key={opt}
                                   type='button'
                                   onClick={() => {
-                                    setReg(r => ({ ...r, puesto: opt }));
-                                    setPuestoDropdownOpen(false);
-                                    setHoveredPuestoOption(null);
+                                    setReg(r => ({ ...r, rol: opt }));
+                                    setRolDropdownOpen(false);
+                                    setHoveredRolOption(null);
                                   }}
-                                  onMouseEnter={() => setHoveredPuestoOption(opt)}
-                                  onMouseLeave={() => setHoveredPuestoOption(null)}
+                                  onMouseEnter={() => setHoveredRolOption(opt)}
+                                  onMouseLeave={() => setHoveredRolOption(null)}
                                   className={`w-full text-left px-3 py-2 text-sm transition-colors ${
                                     theme === 'light' 
                                       ? 'text-gray-900' 
                                       : 'text-zinc-300'
                                   }`}
                                   style={{
-                                    backgroundColor: hoveredPuestoOption === opt 
+                                    backgroundColor: hoveredRolOption === opt 
                                       ? (theme === 'light' ? '#A0D3F2' : focusColor)
                                       : 'transparent',
-                                    color: hoveredPuestoOption === opt 
+                                    color: hoveredRolOption === opt 
+                                      ? (theme === 'light' ? '#111827' : 'white')
+                                      : 'inherit',
+                                  }}
+                                >
+                                  {opt}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className='space-y-2'>
+                        <label className='block text-sm font-medium' style={{color: 'var(--text)'}}>
+                          Idioma
+                        </label>
+                        <div className='relative' ref={idiomaDropdownRef}>
+                          <button
+                            type='button'
+                            onClick={() => setIdiomaDropdownOpen(!idiomaDropdownOpen)}
+                            onMouseEnter={() => setIsIdiomaButtonHovered(true)}
+                            onMouseLeave={() => setIsIdiomaButtonHovered(false)}
+                            onBlur={() => setIsIdiomaButtonHovered(false)}
+                            className={`w-full px-3 py-2 rounded-lg border focus:outline-none text-sm text-left transition-colors ${
+                              theme === 'light' 
+                                ? 'bg-white text-gray-900' 
+                                : 'bg-black/40 text-zinc-300'
+                            }`}
+                            style={{
+                              borderWidth: isIdiomaButtonHovered ? '1.5px' : '1px',
+                              borderStyle: 'solid',
+                              borderColor: isIdiomaButtonHovered && theme === 'light' 
+                                ? '#0476D9' 
+                                : (isIdiomaButtonHovered && theme === 'dark'
+                                  ? '#fff'
+                                  : 'var(--border)'),
+                              backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='${theme === 'light' ? '%23111827' : '%23ffffff'}' d='M6 9L1 4h10z'/%3E%3C/svg%3E")`,
+                              backgroundRepeat: 'no-repeat',
+                              backgroundPosition: 'right 0.5rem center',
+                              paddingRight: '2rem',
+                            }}
+                          >
+                            {reg.idioma || '\u00A0'}
+                          </button>
+                          {idiomaDropdownOpen && (
+                            <div className={`absolute top-full left-0 mt-1 w-full border border-neutral-border rounded-lg shadow-lg z-50 overflow-y-auto max-h-60 ${
+                              theme === 'light' ? 'bg-white' : 'bg-neutral-panel'
+                            }`}>
+                              {idiomaOptions.map(opt => (
+                                <button
+                                  key={opt}
+                                  type='button'
+                                  onClick={() => {
+                                    setReg(r => ({ ...r, idioma: opt }));
+                                    setIdiomaDropdownOpen(false);
+                                    setHoveredIdiomaOption(null);
+                                  }}
+                                  onMouseEnter={() => setHoveredIdiomaOption(opt)}
+                                  onMouseLeave={() => setHoveredIdiomaOption(null)}
+                                  className={`w-full text-left px-3 py-2 text-sm transition-colors ${
+                                    theme === 'light' 
+                                      ? 'text-gray-900' 
+                                      : 'text-zinc-300'
+                                  }`}
+                                  style={{
+                                    backgroundColor: hoveredIdiomaOption === opt 
+                                      ? (theme === 'light' ? '#A0D3F2' : focusColor)
+                                      : 'transparent',
+                                    color: hoveredIdiomaOption === opt 
                                       ? (theme === 'light' ? '#111827' : 'white')
                                       : 'inherit',
                                   }}

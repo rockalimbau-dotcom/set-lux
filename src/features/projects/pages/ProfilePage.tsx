@@ -6,7 +6,8 @@ import { ROLES } from '@shared/constants/roles';
 
 export default function ProfilePage() {
   const navigate = useNavigate();
-  const [name, setName] = useState('');
+  const [nombre, setNombre] = useState('');
+  const [apellido, setApellido] = useState('');
   const [email, setEmail] = useState('');
   const [role, setRole] = useState('');
   const [saved, setSaved] = useState(false);
@@ -19,7 +20,24 @@ export default function ProfilePage() {
 
   useEffect(() => {
     const data = storage.getJSON<any>('profile_v1') || {};
-    setName(data.name || '');
+    // Si hay nombre y apellido separados, usarlos; si no, intentar separar el name
+    if (data.nombre && data.apellido) {
+      setNombre(data.nombre || '');
+      setApellido(data.apellido || '');
+    } else if (data.name) {
+      // Intentar separar el nombre completo
+      const parts = data.name.trim().split(/\s+/);
+      if (parts.length >= 2) {
+        setNombre(parts[0] || '');
+        setApellido(parts.slice(1).join(' ') || '');
+      } else {
+        setNombre(parts[0] || '');
+        setApellido('');
+      }
+    } else {
+      setNombre('');
+      setApellido('');
+    }
     setEmail(data.email || '');
     setRole(data.role || '');
   }, []);
@@ -41,7 +59,14 @@ export default function ProfilePage() {
   }, []);
 
   const save = () => {
-    storage.setJSON('profile_v1', { name, email, role });
+    const fullName = `${nombre} ${apellido}`.trim();
+    storage.setJSON('profile_v1', { 
+      name: fullName,
+      nombre: nombre,
+      apellido: apellido,
+      email, 
+      role
+    });
     setSaved(true);
     setTimeout(() => setSaved(false), 1200);
   };
@@ -81,16 +106,28 @@ export default function ProfilePage() {
           <h3 className='text-xl font-semibold mb-6' style={{color: isLight ? '#0468BF' : '#F27405'}}>Datos de usuario</h3>
 
         <div className='space-y-6'>
-          <label className='block space-y-2'>
-            <span className='text-sm font-medium' style={{color: isLight ? '#6b7280' : '#d1d5db'}}>Nombre</span>
-            <input
-              className='w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-1 transition-colors'
-              style={{backgroundColor: isLight ? '#ffffff' : 'rgba(0,0,0,0.4)', color: 'var(--text)', borderColor: 'var(--border)', boxShadow: '0 0 0 1px transparent'}}
-              value={name}
-              onChange={e => setName(e.target.value)}
-              placeholder='Tu nombre'
-            />
-          </label>
+          <div className='grid grid-cols-2 gap-4'>
+            <label className='block space-y-2'>
+              <span className='text-sm font-medium' style={{color: isLight ? '#6b7280' : '#d1d5db'}}>Nombre</span>
+              <input
+                className='w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-1 transition-colors'
+                style={{backgroundColor: isLight ? '#ffffff' : 'rgba(0,0,0,0.4)', color: 'var(--text)', borderColor: 'var(--border)', boxShadow: '0 0 0 1px transparent'}}
+                value={nombre}
+                onChange={e => setNombre(e.target.value)}
+                placeholder='Nombre'
+              />
+            </label>
+            <label className='block space-y-2'>
+              <span className='text-sm font-medium' style={{color: isLight ? '#6b7280' : '#d1d5db'}}>Apellido</span>
+              <input
+                className='w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-1 transition-colors'
+                style={{backgroundColor: isLight ? '#ffffff' : 'rgba(0,0,0,0.4)', color: 'var(--text)', borderColor: 'var(--border)', boxShadow: '0 0 0 1px transparent'}}
+                value={apellido}
+                onChange={e => setApellido(e.target.value)}
+                placeholder='Apellido'
+              />
+            </label>
+          </div>
 
           <label className='block space-y-2'>
             <span className='text-sm font-medium' style={{color: isLight ? '#6b7280' : '#d1d5db'}}>Email</span>

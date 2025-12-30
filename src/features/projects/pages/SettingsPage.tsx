@@ -7,15 +7,17 @@ export default function SettingsPage() {
   const navigate = useNavigate();
   
   const [theme, setTheme] = useState<'dark' | 'light'>('light');
-  const [language, setLanguage] = useState<'es' | 'en'>('es');
+  const [idioma, setIdioma] = useState<string>('Español');
   const [saved, setSaved] = useState(false);
 
   // Estados para los dropdowns
   const [themeDropdown, setThemeDropdown] = useState({ isOpen: false, isButtonHovered: false, hoveredOption: null as string | null });
-  const [languageDropdown, setLanguageDropdown] = useState({ isOpen: false, isButtonHovered: false, hoveredOption: null as string | null });
+  const [idiomaDropdown, setIdiomaDropdown] = useState({ isOpen: false, isButtonHovered: false, hoveredOption: null as string | null });
+  
+  const idiomaOptions = ['Español', 'Catalán', 'Inglés'];
 
   const themeRef = useRef<HTMLDivElement>(null);
-  const languageRef = useRef<HTMLDivElement>(null);
+  const idiomaRef = useRef<HTMLDivElement>(null);
 
   // Cerrar dropdowns al hacer clic fuera
   useEffect(() => {
@@ -23,8 +25,8 @@ export default function SettingsPage() {
       if (themeRef.current && !themeRef.current.contains(event.target as Node)) {
         setThemeDropdown(prev => ({ ...prev, isOpen: false }));
       }
-      if (languageRef.current && !languageRef.current.contains(event.target as Node)) {
-        setLanguageDropdown(prev => ({ ...prev, isOpen: false }));
+      if (idiomaRef.current && !idiomaRef.current.contains(event.target as Node)) {
+        setIdiomaDropdown(prev => ({ ...prev, isOpen: false }));
       }
     };
 
@@ -40,7 +42,6 @@ export default function SettingsPage() {
 
   // Obtener labels para mostrar
   const themeLabel = theme === 'dark' ? 'Oscuro' : 'Claro';
-  const languageLabel = language === 'es' ? 'Español' : 'Inglés';
 
   useEffect(() => {
     const s = storage.getJSON<any>('settings_v1') || {};
@@ -48,7 +49,10 @@ export default function SettingsPage() {
     const localTheme = typeof localStorage !== 'undefined' && localStorage.getItem('theme');
     const themeFromSettings = s.theme || localTheme || 'light';
     setTheme(themeFromSettings as 'dark' | 'light');
-    setLanguage(s.language || 'es');
+    
+    // Cargar idioma desde profile_v1 (donde se guarda desde el registro)
+    const profile = storage.getJSON<any>('profile_v1') || {};
+    setIdioma(profile.idioma || 'Español');
   }, []);
 
   // Apply live preview to body when theme changes (local preview only)
@@ -63,7 +67,10 @@ export default function SettingsPage() {
 
 
   const save = () => {
-    storage.setJSON('settings_v1', { theme, language });
+    storage.setJSON('settings_v1', { theme });
+    // Guardar idioma en profile_v1 para mantener consistencia
+    const profile = storage.getJSON<any>('profile_v1') || {};
+    storage.setJSON('profile_v1', { ...profile, idioma });
     setSaved(true);
     setTimeout(() => setSaved(false), 1200);
   };
@@ -183,24 +190,24 @@ export default function SettingsPage() {
 
             <label className='block space-y-2'>
               <span className='text-sm font-medium' style={{color: colors.mutedText}}>Idioma</span>
-              <div className='relative w-full' ref={languageRef}>
+              <div className='relative w-full' ref={idiomaRef}>
                 <button
                   type='button'
-                  onClick={() => setLanguageDropdown(prev => ({ ...prev, isOpen: !prev.isOpen }))}
-                  onMouseEnter={() => setLanguageDropdown(prev => ({ ...prev, isButtonHovered: true }))}
-                  onMouseLeave={() => setLanguageDropdown(prev => ({ ...prev, isButtonHovered: false }))}
-                  onBlur={() => setLanguageDropdown(prev => ({ ...prev, isButtonHovered: false }))}
+                  onClick={() => setIdiomaDropdown(prev => ({ ...prev, isOpen: !prev.isOpen }))}
+                  onMouseEnter={() => setIdiomaDropdown(prev => ({ ...prev, isButtonHovered: true }))}
+                  onMouseLeave={() => setIdiomaDropdown(prev => ({ ...prev, isButtonHovered: false }))}
+                  onBlur={() => setIdiomaDropdown(prev => ({ ...prev, isButtonHovered: false }))}
                   className={`w-full px-4 py-3 rounded-xl border focus:outline-none text-sm text-left transition-colors ${
                     currentTheme === 'light' 
                       ? 'bg-white text-gray-900' 
                       : 'bg-black/40 text-zinc-300'
                   }`}
                   style={{
-                    borderWidth: languageDropdown.isButtonHovered ? '1.5px' : '1px',
+                    borderWidth: idiomaDropdown.isButtonHovered ? '1.5px' : '1px',
                     borderStyle: 'solid',
-                    borderColor: languageDropdown.isButtonHovered && currentTheme === 'light' 
+                    borderColor: idiomaDropdown.isButtonHovered && currentTheme === 'light' 
                       ? '#0476D9' 
-                      : (languageDropdown.isButtonHovered && currentTheme === 'dark'
+                      : (idiomaDropdown.isButtonHovered && currentTheme === 'dark'
                         ? '#fff'
                         : colors.inputBorder),
                     backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='${currentTheme === 'light' ? '%23111827' : '%23ffffff'}' d='M6 9L1 4h10z'/%3E%3C/svg%3E")`,
@@ -209,40 +216,37 @@ export default function SettingsPage() {
                     paddingRight: '2.5rem',
                   }}
                 >
-                  {languageLabel}
+                  {idioma || '\u00A0'}
                 </button>
-                {languageDropdown.isOpen && (
+                {idiomaDropdown.isOpen && (
                   <div className={`absolute top-full left-0 mt-1 w-full border border-neutral-border rounded-lg shadow-lg z-50 overflow-y-auto max-h-60 ${
                     currentTheme === 'light' ? 'bg-white' : 'bg-neutral-panel'
                   }`}>
-                    {[
-                      { value: 'es', label: 'Español' },
-                      { value: 'en', label: 'Inglés' }
-                    ].map(opcion => (
+                    {idiomaOptions.map(opcion => (
                       <button
-                        key={opcion.value}
+                        key={opcion}
                         type='button'
                         onClick={() => {
-                          setLanguage(opcion.value as 'es' | 'en');
-                          setLanguageDropdown({ isOpen: false, isButtonHovered: false, hoveredOption: null });
+                          setIdioma(opcion);
+                          setIdiomaDropdown({ isOpen: false, isButtonHovered: false, hoveredOption: null });
                         }}
-                        onMouseEnter={() => setLanguageDropdown(prev => ({ ...prev, hoveredOption: opcion.value }))}
-                        onMouseLeave={() => setLanguageDropdown(prev => ({ ...prev, hoveredOption: null }))}
+                        onMouseEnter={() => setIdiomaDropdown(prev => ({ ...prev, hoveredOption: opcion }))}
+                        onMouseLeave={() => setIdiomaDropdown(prev => ({ ...prev, hoveredOption: null }))}
                         className={`w-full text-left px-4 py-2 text-sm transition-colors ${
                           currentTheme === 'light' 
                             ? 'text-gray-900' 
                             : 'text-zinc-300'
                         }`}
                         style={{
-                          backgroundColor: languageDropdown.hoveredOption === opcion.value 
+                          backgroundColor: idiomaDropdown.hoveredOption === opcion 
                             ? (currentTheme === 'light' ? '#A0D3F2' : focusColor)
                             : 'transparent',
-                          color: languageDropdown.hoveredOption === opcion.value 
+                          color: idiomaDropdown.hoveredOption === opcion 
                             ? (currentTheme === 'light' ? '#111827' : 'white')
                             : 'inherit',
                         }}
                       >
-                        {opcion.label}
+                        {opcion}
                       </button>
                     ))}
                   </div>
