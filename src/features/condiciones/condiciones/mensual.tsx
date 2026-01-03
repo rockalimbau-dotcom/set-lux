@@ -130,6 +130,34 @@ const getDefaultPrepro = () => i18n.t('conditions.defaultPreProduction');
 
 const getDefaultConvenio = () => i18n.t('conditions.defaultAgreement');
 
+// Función helper para normalizar texto para comparación
+const normalizeText = (text: string): string => {
+  if (!text) return '';
+  return text.trim().replace(/\s+/g, ' ').replace(/\n+/g, '\n');
+};
+
+// Función para obtener todos los textos por defecto de todos los idiomas
+const getAllDefaultTexts = (key: string): string[] => {
+  const languages = ['es', 'en', 'ca'];
+  return languages.map(lang => {
+    try {
+      // Usar i18n.t con el parámetro lng para obtener el texto en el idioma específico
+      const text = i18n.t(key, { lng: lang });
+      return normalizeText(text);
+    } catch {
+      return '';
+    }
+  });
+};
+
+// Función para verificar si un texto es un texto por defecto de cualquier idioma
+const isDefaultText = (currentText: string, translationKey: string): boolean => {
+  if (!currentText || currentText.trim() === '') return true;
+  const normalizedCurrent = normalizeText(currentText);
+  const allDefaults = getAllDefaultTexts(translationKey);
+  return allDefaults.some(defaultText => normalizedCurrent === defaultText);
+};
+
 function parseNum(input: unknown): number {
   if (input == null) return NaN;
   let s = String(input)
@@ -237,37 +265,82 @@ function CondicionesMensual({ project, onChange = () => {}, onRegisterExport, re
         const newDefaultPrepro = getDefaultPrepro();
         const newDefaultConvenio = getDefaultConvenio();
         
-        // Actualizar solo si están vacíos o si contienen variables (textos por defecto)
-        const isEmptyOrDefault = (template: any) => {
-          const str = String(template || '');
-          if (!str || str.trim() === '') return true;
-          // Si el template contiene las variables típicas de los textos por defecto, probablemente es un texto por defecto
-          return str.includes('{{') && str.includes('}}');
+        // Renderizar el template actual y los defaults con los mismos parámetros para comparar
+        const params = m.params || {};
+        const currentLegendRendered = renderWithParams(m.legendTemplate || '', params);
+        const currentHorariosRendered = renderWithParams(m.horariosTemplate || '', params);
+        const currentDietasRendered = renderWithParams(m.dietasTemplate || '', params);
+        const currentTransportesRendered = renderWithParams(m.transportesTemplate || '', params);
+        const currentAlojamientoRendered = renderWithParams(m.alojamientoTemplate || '', params);
+        const currentPreproRendered = renderWithParams(m.preproTemplate || '', params);
+        const currentConvenioRendered = renderWithParams(m.convenioTemplate || '', params);
+        
+        // Comparar el texto renderizado con los defaults renderizados de todos los idiomas
+        // También comparar el template original (con variables) para mayor precisión
+        const languages = ['es', 'en', 'ca'];
+        const isRenderedDefault = (currentRendered: string, currentTemplate: string, key: string): boolean => {
+          if (!currentRendered || currentRendered.trim() === '') return true;
+          if (!currentTemplate || currentTemplate.trim() === '') return true;
+          
+          // Primero verificar si el template contiene las variables típicas de los defaults
+          const hasDefaultVariables = currentTemplate.includes('{{') && currentTemplate.includes('}}');
+          
+          // Normalizar textos para comparación
+          const normalizedCurrent = normalizeText(currentRendered);
+          
+          // Comparar con los defaults de todos los idiomas
+          const matchesAnyDefault = languages.some(lang => {
+            try {
+              const defaultText = i18n.t(key, { lng: lang });
+              const defaultRendered = renderWithParams(defaultText, params);
+              const normalizedDefault = normalizeText(defaultRendered);
+              
+              // Comparación exacta normalizada
+              if (normalizedCurrent === normalizedDefault) return true;
+              
+              // También comparar el template original si tiene variables
+              if (hasDefaultVariables) {
+                const normalizedTemplate = normalizeText(currentTemplate);
+                const normalizedDefaultTemplate = normalizeText(defaultText);
+                // Comparar sin tener en cuenta los valores de las variables, solo la estructura
+                const templateStructure = normalizedTemplate.replace(/\{\{[^}]+\}\}/g, '{{VAR}}');
+                const defaultStructure = normalizedDefaultTemplate.replace(/\{\{[^}]+\}\}/g, '{{VAR}}');
+                if (templateStructure === defaultStructure) return true;
+              }
+              
+              return false;
+            } catch {
+              return false;
+            }
+          });
+          
+          return matchesAnyDefault;
         };
         
-        if (isEmptyOrDefault(m.legendTemplate)) {
+        // Actualizar si coinciden con algún default renderizado
+        if (isRenderedDefault(currentLegendRendered, m.legendTemplate || '', 'conditions.defaultLegendMonthly')) {
           updated.legendTemplate = newDefaultLegend;
         }
         // Actualizar festivos con el nuevo texto traducido
-        if (isEmptyOrDefault(m.festivosTemplate)) {
+        if (!m.festivosTemplate || m.festivosTemplate.trim() === '' || m.festivosTemplate.includes('{{')) {
           updated.festivosTemplate = globalDynamicFestivosText;
         }
-        if (isEmptyOrDefault(m.horariosTemplate)) {
+        if (isRenderedDefault(currentHorariosRendered, m.horariosTemplate || '', 'conditions.defaultSchedules')) {
           updated.horariosTemplate = newDefaultHorarios;
         }
-        if (isEmptyOrDefault(m.dietasTemplate)) {
+        if (isRenderedDefault(currentDietasRendered, m.dietasTemplate || '', 'conditions.defaultPerDiems')) {
           updated.dietasTemplate = newDefaultDietas;
         }
-        if (isEmptyOrDefault(m.transportesTemplate)) {
+        if (isRenderedDefault(currentTransportesRendered, m.transportesTemplate || '', 'conditions.defaultTransportation')) {
           updated.transportesTemplate = newDefaultTransportes;
         }
-        if (isEmptyOrDefault(m.alojamientoTemplate)) {
+        if (isRenderedDefault(currentAlojamientoRendered, m.alojamientoTemplate || '', 'conditions.defaultAccommodation')) {
           updated.alojamientoTemplate = newDefaultAlojamiento;
         }
-        if (isEmptyOrDefault(m.preproTemplate)) {
+        if (isRenderedDefault(currentPreproRendered, m.preproTemplate || '', 'conditions.defaultPreProduction')) {
           updated.preproTemplate = newDefaultPrepro;
         }
-        if (isEmptyOrDefault(m.convenioTemplate)) {
+        if (isRenderedDefault(currentConvenioRendered, m.convenioTemplate || '', 'conditions.defaultAgreement')) {
           updated.convenioTemplate = newDefaultConvenio;
         }
         
@@ -301,6 +374,61 @@ function CondicionesMensual({ project, onChange = () => {}, onRegisterExport, re
 
 
   const setText = (key: string, value: string) => setModel((m: AnyRecord) => ({ ...m, [key]: value }));
+
+  // Función helper para detectar si un template está modificado
+  const isTemplateModified = useMemo(() => {
+    return (template: string, translationKey: string): boolean => {
+      if (!template || template.trim() === '') return false;
+      
+      const normalizeText = (text: string): string => {
+        if (!text) return '';
+        return text.trim().replace(/\s+/g, ' ').replace(/\n+/g, '\n');
+      };
+      
+      const languages = ['es', 'en', 'ca'];
+      const normalizedTemplate = normalizeText(template);
+      
+      // Primero comparar el template directamente
+      const templateMatchesDirectly = languages.some(lang => {
+        try {
+          const defaultText = i18n.t(translationKey, { lng: lang });
+          const normalizedDefault = normalizeText(defaultText);
+          
+          if (normalizedTemplate === normalizedDefault) return true;
+          
+          if (template.includes('{{') && template.includes('}}')) {
+            const templateStructure = normalizedTemplate.replace(/\{\{[^}]+\}\}/g, '{{VAR}}');
+            const defaultStructure = normalizedDefault.replace(/\{\{[^}]+\}\}/g, '{{VAR}}');
+            if (templateStructure === defaultStructure) return true;
+          }
+          
+          return false;
+        } catch {
+          return false;
+        }
+      });
+      
+      if (templateMatchesDirectly) return false;
+      
+      // Si no coincide directamente, comparar los renderizados
+      const currentRendered = renderWithParams(template, model.params);
+      const normalizedCurrent = normalizeText(currentRendered);
+      
+      const matchesAnyDefault = languages.some(lang => {
+        try {
+          const defaultText = i18n.t(translationKey, { lng: lang });
+          const defaultRendered = renderWithParams(defaultText, model.params);
+          const normalizedDefault = normalizeText(defaultRendered);
+          return normalizedCurrent === normalizedDefault;
+        } catch {
+          return false;
+        }
+      });
+      
+      return !matchesAnyDefault;
+    };
+  }, [i18n, model.params]);
+
   const setParam = (key: string, value: string) =>
     setModel((m: AnyRecord) => ({ ...m, params: { ...(m.params || {}), [key]: value } }));
 
@@ -684,7 +812,9 @@ function CondicionesMensual({ project, onChange = () => {}, onRegisterExport, re
       </section>
 
       <section className='rounded-2xl border border-neutral-border bg-neutral-panel/90 p-4'>
-        <h4 className='text-brand font-semibold mb-2'>{t('conditions.calculationLegend')}</h4>
+        <div className='flex items-center justify-between mb-2'>
+          <h4 className='text-brand font-semibold'>{t('conditions.calculationLegend')}</h4>
+        </div>
         <TextAreaAuto
           value={restoreStrongTags(renderWithParams(model.legendTemplate, model.params))}
           onChange={v =>
@@ -702,6 +832,10 @@ function CondicionesMensual({ project, onChange = () => {}, onRegisterExport, re
           setText('festivosTemplate', visibleToTemplate(v, model.params))
         }
         readOnly={readOnly}
+        template={model.festivosTemplate}
+        params={model.params}
+        translationKey='conditions.defaultHolidays'
+        onRestore={() => setText('festivosTemplate', globalDynamicFestivosText)}
       />
       <InfoCard
         title={t('conditions.schedules')}
@@ -710,6 +844,10 @@ function CondicionesMensual({ project, onChange = () => {}, onRegisterExport, re
           setText('horariosTemplate', visibleToTemplate(v, model.params))
         }
         readOnly={readOnly}
+        template={model.horariosTemplate}
+        params={model.params}
+        translationKey='conditions.defaultSchedules'
+        onRestore={() => setText('horariosTemplate', getDefaultHorarios())}
       />
       <InfoCard
         title={t('conditions.perDiems')}
@@ -718,6 +856,10 @@ function CondicionesMensual({ project, onChange = () => {}, onRegisterExport, re
           setText('dietasTemplate', visibleToTemplate(v, model.params))
         }
         readOnly={readOnly}
+        template={model.dietasTemplate}
+        params={model.params}
+        translationKey='conditions.defaultPerDiems'
+        onRestore={() => setText('dietasTemplate', getDefaultDietas())}
       />
       <InfoCard
         title={t('conditions.transportation')}
@@ -726,6 +868,10 @@ function CondicionesMensual({ project, onChange = () => {}, onRegisterExport, re
           setText('transportesTemplate', visibleToTemplate(v, model.params))
         }
         readOnly={readOnly}
+        template={model.transportesTemplate}
+        params={model.params}
+        translationKey='conditions.defaultTransportation'
+        onRestore={() => setText('transportesTemplate', getDefaultTransportes())}
       />
       <InfoCard
         title={t('conditions.accommodation')}
@@ -734,6 +880,10 @@ function CondicionesMensual({ project, onChange = () => {}, onRegisterExport, re
           setText('alojamientoTemplate', visibleToTemplate(v, model.params))
         }
         readOnly={readOnly}
+        template={model.alojamientoTemplate}
+        params={model.params}
+        translationKey='conditions.defaultAccommodation'
+        onRestore={() => setText('alojamientoTemplate', getDefaultAlojamiento())}
       />
       <InfoCard
         title={t('conditions.preProduction')}
@@ -742,6 +892,10 @@ function CondicionesMensual({ project, onChange = () => {}, onRegisterExport, re
           setText('preproTemplate', visibleToTemplate(v, model.params))
         }
         readOnly={readOnly}
+        template={model.preproTemplate}
+        params={model.params}
+        translationKey='conditions.defaultPreProduction'
+        onRestore={() => setText('preproTemplate', getDefaultPrepro())}
       />
       <InfoCard
         title={t('conditions.agreement')}
@@ -750,6 +904,10 @@ function CondicionesMensual({ project, onChange = () => {}, onRegisterExport, re
           setText('convenioTemplate', visibleToTemplate(v, model.params))
         }
         readOnly={readOnly}
+        template={model.convenioTemplate}
+        params={model.params}
+        translationKey='conditions.defaultAgreement'
+        onRestore={() => setText('convenioTemplate', getDefaultConvenio())}
         rightAddon={
           readOnly ? (
             <span className='text-brand text-sm opacity-50 cursor-not-allowed' title='El proyecto está cerrado'>

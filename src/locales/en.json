@@ -199,7 +199,11 @@
     "defaultAccommodation": "In case of having to stay overnight outside the worker's usual residence, the production company must provide a hotel (minimum 3 stars) with individual room and relevant per diems and pocket expenses.",
     "defaultPreProduction": "The project's gaffer will be entitled to a minimum of 1 work day per week of filming.\nThe project's best boy will be entitled to a minimum of 1 work day for every two weeks of filming.\nIn this way, the gaffer and best boy will be registered during the project's pre-production to work on tasks prior to the start of filming (technical locations, material lists, calendars, etc).",
     "defaultAgreement": "The agreement \"Resolution of March 22, 2024, of the General Directorate of Labor, which registers and publishes the III State Collective Agreement of the audiovisual production industry (technicians)\" will also be taken into account.",
-    "defaultHolidays": "Work day and hours on holidays will have a 75% increase. (Holidays {{year}}: {{festivos}})"
+    "defaultHolidays": "Work day and hours on holidays will have a 75% increase. (Holidays {{year}}: {{festivos}})",
+    "restoreDefault": "Restore default text",
+    "translateText": "Translate text to current language",
+    "translationError": "Error translating text. Check your DeepL API key in the console.",
+    "translationApiKeyMissing": "To enable translation, create a .env file in the project root with: VITE_DEEPL_API_KEY=your_api_key\n\nGet your free API key at: https://www.deepl.com/pro-api"
   },
   "payroll": {
     "title": "Payroll",

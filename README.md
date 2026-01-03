@@ -60,6 +60,21 @@ Convenciones clave por módulos:
   - Texto destacado: `text-accent`
   - Superficie neutra: `bg-neutral-surface`
 
+## Configuración de APIs
+
+### DeepL API (Traducción automática)
+Para habilitar la traducción automática de textos en los textareas de condiciones:
+
+1. Obtén tu API key gratuita en: https://www.deepl.com/pro-api
+2. Plan gratuito: 500,000 caracteres/mes
+3. Crea un archivo `.env` en la raíz del proyecto:
+   ```
+   VITE_DEEPL_API_KEY=tu_api_key_aqui
+   ```
+4. Reinicia el servidor de desarrollo
+
+**Nota:** Si no se configura la API key, la funcionalidad de traducción estará deshabilitada y el botón de traducir no aparecerá.
+
 ## Scripts
 - `npm run dev` – servidor de desarrollo (Vite)
 - `npm run build` – build producción

@@ -199,7 +199,11 @@
     "defaultAccommodation": "En cas d'haver de pernoctar fora del domicili habitual del treballador, la productora haurà de facilitar un hotel (mínim 3 estrelles) amb habitació individual i les dietes i despeses de butxaca pertinents.",
     "defaultPreProduction": "El gaffer del projecte tindrà dret a un mínim d'1 dia de treball per setmana de rodatge.\nEl best boy del projecte tindrà dret a un mínim d'1 dia de treball per cada dues setmanes de rodatge.\nD'aquesta forma el gaffer i best boy seran donats d'alta durant la pre producció del projecte per treballar en les tasques prèvies a l'inici del rodatge (localitzacions tècniques, llistes de material, calendaris, etc).",
     "defaultAgreement": "També es tindrà en compte el conveni \"Resolució de 22 de març de 2024, de la Direcció General de Treball, per la qual es registra i publica el III Conveni col·lectiu d'àmbit estatal de la indústria de producció audiovisual (tècnics)\".",
-    "defaultHolidays": "La jornada i hores en dies festius tindran un increment del 75%. (Festius {{year}}: {{festivos}})"
+    "defaultHolidays": "La jornada i hores en dies festius tindran un increment del 75%. (Festius {{year}}: {{festivos}})",
+    "restoreDefault": "Restaurar text per defecte",
+    "translateText": "Traduir text a l'idioma actual",
+    "translationError": "Error en traduir el text. Verifica la teva API key de DeepL a la consola.",
+    "translationApiKeyMissing": "Per habilitar la traducció, crea un fitxer .env a l'arrel del projecte amb: VITE_DEEPL_API_KEY=la_teva_api_key\n\nObtén la teva API key gratuïta a: https://www.deepl.com/pro-api"
   },
   "payroll": {
     "title": "Nòmina",

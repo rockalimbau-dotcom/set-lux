@@ -88,7 +88,7 @@ export default function ProfilePage() {
           {/* Header limpio */}
           <div className='flex items-center justify-between mb-8'>
             <div className='flex items-center gap-6'>
-              <LogoIcon size={80} />
+              <LogoIcon size={80} onClick={() => navigate('/projects')} />
               <h1 className='text-3xl font-bold' style={{color: 'var(--text)'}}>
                 <button 
                   onClick={() => navigate('/projects')}

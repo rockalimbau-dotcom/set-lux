@@ -199,7 +199,11 @@
     "defaultAccommodation": "En caso de tener que pernoctar fuera del domicilio habitual del trabajador, la productora deberá facilitar un hotel (mínimo 3 estrellas) con habitación individual y las dietas y gastos de bolsillo pertinentes.",
     "defaultPreProduction": "El gaffer del proyecto tendrá derecho a un mínimo de 1 día de trabajo por semana de rodaje.\nEl best boy del proyecto tendrá derecho a un mínimo de 1 día de trabajo por cada dos semanas de rodaje.\nDe esta forma el gaffer y best boy serán dados de alta durante la pre producción del proyecto para trabajar en las tareas previas al inicio del rodaje (localizaciones técnicas, listas de material, calendarios, etc).",
     "defaultAgreement": "También se tendrá en cuenta el convenio \"Resolución de 22 de marzo de 2024, de la Dirección General de Trabajo, por la que se registra y publica el III Convenio colectivo de ámbito estatal de la industria de producción audiovisual (técnicos).",
-    "defaultHolidays": "La jornada y horas en días festivos tendrán un incremento del 75%. (Festivos {{year}}: {{festivos}})"
+    "defaultHolidays": "La jornada y horas en días festivos tendrán un incremento del 75%. (Festivos {{year}}: {{festivos}})",
+    "restoreDefault": "Restaurar texto por defecto",
+    "translateText": "Traducir texto al idioma actual",
+    "translationError": "Error al traducir el texto. Verifica tu API key de DeepL en la consola.",
+    "translationApiKeyMissing": "Para habilitar la traducción, crea un archivo .env en la raíz del proyecto con: VITE_DEEPL_API_KEY=tu_api_key\n\nObtén tu API key gratuita en: https://www.deepl.com/pro-api"
   },
   "payroll": {
     "title": "Nómina",
