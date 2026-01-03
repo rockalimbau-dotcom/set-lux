@@ -1,6 +1,6 @@
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
-import i18n from '@i18n';
+import i18n from '../../../i18n/config';
 
 const pad2 = (n: number): string => String(n).padStart(2, '0');
 const parseYYYYMMDD = (s: string): Date => {
@@ -348,7 +348,7 @@ export function buildNecesidadesHTML(
         </div>
         
         <div class="footer">
-          <span>${i18n.t('needs.generatedAutomaticallyBy')}</span>
+          <span>${i18n.t('footer.generatedBy')}</span>
           <span class="setlux-logo">
             <span class="set">Set</span><span class="lux">Lux</span>
           </span>
@@ -641,7 +641,7 @@ export function buildNecesidadesHTMLForPDF(
         </div>
         
         <div class="footer">
-          <span>${i18n.t('needs.generatedAutomaticallyBy')}</span>
+          <span>${i18n.t('footer.generatedBy')}</span>
           <span class="setlux-logo">
             <span class="set">Set</span><span class="lux">Lux</span>
           </span>
@@ -666,8 +666,8 @@ export async function exportToPDF(
     tempContainer.style.position = 'absolute';
     tempContainer.style.left = '-9999px';
     tempContainer.style.top = '0';
-    tempContainer.style.width = '297mm';
-    tempContainer.style.height = '210mm';
+      tempContainer.style.width = '1123px'; // A4 landscape width at 96 DPI
+      tempContainer.style.height = '794px'; // A4 landscape height at 96 DPI
     tempContainer.style.overflow = 'hidden';
     document.body.appendChild(tempContainer);
 
@@ -720,7 +720,21 @@ export async function exportToPDF(
     });
 
     pdf.addImage(imgData, 'PNG', 0, 0, 297, 210);
-    pdf.save(`Necesidades_${weekLabel.replace(/\s+/g, '_')}.pdf`);
+    
+    // Generate translated filename
+    const currentLang = i18n?.language || 'es';
+    let needsLabel = 'NecesidadesRodaje';
+    if (i18n?.store?.data?.[currentLang]?.translation?.needs?.shootingNeeds) {
+      const shootingNeeds = i18n.store.data[currentLang].translation.needs.shootingNeeds;
+      needsLabel = shootingNeeds.replace(/\s+/g, '');
+    } else {
+      if (currentLang === 'en') needsLabel = 'ShootingNeeds';
+      else if (currentLang === 'ca') needsLabel = 'NecessitatsRodatge';
+    }
+    const translatedWeekLabel = translateWeekLabel(weekLabel);
+    const weekPart = translatedWeekLabel.replace(/\s+/g, '');
+    const projectName = project?.nombre || i18n.t('needs.project');
+    pdf.save(`${needsLabel}_${weekPart}_${projectName.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`);
   } catch (error) {
     console.error('Error generating PDF:', error);
     throw error;
@@ -789,7 +803,8 @@ export async function exportAllToPDF(
       tempContainer.style.position = 'absolute';
       tempContainer.style.left = '-9999px';
       tempContainer.style.top = '0';
-      tempContainer.style.width = '1123px'; // 297mm at 96 DPI
+      tempContainer.style.width = '1123px'; // A4 landscape width at 96 DPI
+      tempContainer.style.height = '794px'; // A4 landscape height at 96 DPI
       document.body.appendChild(tempContainer);
 
       // Wait for fonts and images to load
@@ -841,7 +856,25 @@ export async function exportAllToPDF(
     
     // Generate filename
     const projectName = project?.nombre || i18n.t('needs.project');
-    const filename = `Necesidades_${projectName.replace(/[^a-zA-Z0-9]/g, '_')}_Todas.pdf`;
+    const currentLang = i18n?.language || 'es';
+    let needsLabel = 'NecesidadesRodaje';
+    if (i18n?.store?.data?.[currentLang]?.translation?.needs?.shootingNeeds) {
+      const shootingNeeds = i18n.store.data[currentLang].translation.needs.shootingNeeds;
+      needsLabel = shootingNeeds.replace(/\s+/g, '');
+    } else {
+      if (currentLang === 'en') needsLabel = 'ShootingNeeds';
+      else if (currentLang === 'ca') needsLabel = 'NecessitatsRodatge';
+    }
+    let completeLabel = 'Completo';
+    // Manual fallback for "Completo" (masculine) vs "Completa" (feminine)
+    if (currentLang === 'en') {
+      completeLabel = 'Complete';
+    } else if (currentLang === 'ca') {
+      completeLabel = 'Complet';
+    } else {
+      completeLabel = 'Completo'; // Spanish masculine
+    }
+    const filename = `${needsLabel}_${completeLabel}_${projectName.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
     
     pdf.save(filename);
     console.log(`✅ Necesidades PDF All: ${weekEntries.length} pages saved as ${filename}`);

@@ -1,6 +1,49 @@
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { renderWithParams, restoreStrongTags } from '../condiciones/shared';
+import i18n from '../../../i18n/config';
+import { generateDynamicFestivosText } from '@shared/constants/festivos';
+
+// Función helper para traducir headers de precios
+function translateHeader(header: string): string {
+  const headerMap: Record<string, string> = {
+    'Precio mensual': i18n.t('conditions.priceMonthly'),
+    'Precio semanal': i18n.t('conditions.priceWeekly'),
+    'Precio diario': i18n.t('conditions.priceDaily'),
+    'Precio jornada': i18n.t('conditions.priceWorkDay'),
+    'Precio refuerzo': i18n.t('conditions.priceReinforcement'),
+    'Precio Día extra/Festivo': i18n.t('conditions.priceExtraDayHoliday'),
+    'Travel day': i18n.t('conditions.travelDay'),
+    'Horas extras': i18n.t('conditions.extraHours'),
+    'Localización técnica': i18n.t('conditions.technicalLocation'),
+    'Carga/descarga': i18n.t('conditions.loadingUnloading'),
+  };
+  return headerMap[header] || header;
+}
+
+// Función helper para traducir nombres de roles
+function translateRoleName(roleName: string): string {
+  // Mapeo de nombres de roles en español a códigos
+  const roleNameToCode: Record<string, string> = {
+    'Gaffer': 'G',
+    'Best boy': 'BB',
+    'Eléctrico': 'E',
+    'Auxiliar': 'AUX',
+    'Meritorio': 'M',
+    'Técnico de mesa': 'TM',
+    'Finger boy': 'FB',
+    'Refuerzo': 'REF',
+  };
+  
+  const roleCode = roleNameToCode[roleName];
+  if (roleCode) {
+    const translationKey = `team.roles.${roleCode}`;
+    const translated = i18n.t(translationKey);
+    // Si la traducción existe (no es la clave misma), devolverla; si no, devolver el nombre original
+    return translated !== translationKey ? translated : roleName;
+  }
+  return roleName;
+}
 
 // Función para construir HTML para PDF de condiciones
 export function buildCondicionesHTMLForPDF(
@@ -17,7 +60,7 @@ export function buildCondicionesHTMLForPDF(
     );
 
   // Título genérico para todas las condiciones
-  const headerTitle = 'Condiciones Departamento Iluminación';
+  const headerTitle = i18n.t('conditions.departmentTitle');
 
   // Filtrar roles que tengan al menos un precio no vacío
   const rolesConPrecios = PRICE_ROLES.filter(role => {
@@ -31,15 +74,15 @@ export function buildCondicionesHTMLForPDF(
     <table>
       <thead>
         <tr>
-          <th>Ro l/ Precio</th>
-          ${PRICE_HEADERS.map(h => `<th>${esc(h)}</th>`).join('')}
+          <th>${i18n.t('conditions.rolePrice')}</th>
+          ${PRICE_HEADERS.map(h => `<th>${esc(translateHeader(h))}</th>`).join('')}
         </tr>
       </thead>
       <tbody>
         ${rolesConPrecios.map(
           role => `
           <tr>
-            <td style="font-weight:600;">${esc(role)}</td>
+            <td style="font-weight:600;">${esc(translateRoleName(role))}</td>
             ${PRICE_HEADERS.map(
               h => `<td>${esc(model.prices?.[role]?.[h] ?? '')}</td>`
             ).join('')}
@@ -50,14 +93,14 @@ export function buildCondicionesHTMLForPDF(
     </table>`;
 
   const blocks = [
-    ['Leyenda cálculos', renderWithParams(model.legendTemplate, model.params)],
-    ['Festivos', renderWithParams(model.festivosTemplate, model.params)],
-    ['Horarios', renderWithParams(model.horariosTemplate, model.params)],
-    ['Dietas', renderWithParams(model.dietasTemplate, model.params)],
-    ['Transportes', renderWithParams(model.transportesTemplate, model.params)],
-    ['Alojamiento', renderWithParams(model.alojamientoTemplate, model.params)],
-    ['Pre producción', renderWithParams(model.preproTemplate, model.params)],
-    ['Convenio', renderWithParams(model.convenioTemplate, model.params)],
+    [i18n.t('conditions.legend'), renderWithParams(model.legendTemplate, model.params)],
+    [i18n.t('conditions.holidays'), renderWithParams(model.festivosTemplate, model.params)],
+    [i18n.t('conditions.schedules'), renderWithParams(model.horariosTemplate, model.params)],
+    [i18n.t('conditions.perDiems'), renderWithParams(model.dietasTemplate, model.params)],
+    [i18n.t('conditions.transportation'), renderWithParams(model.transportesTemplate, model.params)],
+    [i18n.t('conditions.accommodation'), renderWithParams(model.alojamientoTemplate, model.params)],
+    [i18n.t('conditions.preProduction'), renderWithParams(model.preproTemplate, model.params)],
+    [i18n.t('conditions.agreement'), renderWithParams(model.convenioTemplate, model.params)],
   ]
     .map(
       ([title, txt]) => `
@@ -251,11 +294,11 @@ export function buildCondicionesHTMLForPDF(
     <div class="content">
       <div class="info-panel">
         <div class="info-item">
-          <div class="info-label">Producción</div>
+          <div class="info-label">${i18n.t('common.productionLabel')}</div>
           <div class="info-value">${esc(project?.produccion || '—')}</div>
         </div>
         <div class="info-item">
-          <div class="info-label">Proyecto</div>
+          <div class="info-label">${i18n.t('common.project')}</div>
           <div class="info-value">${esc(project?.nombre || 'Proyecto')}</div>
         </div>
       </div>
@@ -265,7 +308,7 @@ export function buildCondicionesHTMLForPDF(
       ${blocks}
     </div>
     <div class="footer">
-      <span>Generado automáticamente por</span>
+      <span>${i18n.t('footer.generatedBy')}</span>
       <span class="setlux-logo">
         <span class="set">Set</span><span class="lux">Lux</span>
       </span>
@@ -294,7 +337,7 @@ function buildCondicionesPageHTMLForPDF(
     );
 
   // Título genérico para todas las condiciones
-  const headerTitle = 'Condiciones Departamento Iluminación';
+  const headerTitle = i18n.t('conditions.departmentTitle');
 
   // Filtrar roles que tengan al menos un precio no vacío
   const rolesConPrecios = PRICE_ROLES.filter(role => {
@@ -308,15 +351,15 @@ function buildCondicionesPageHTMLForPDF(
     <table>
       <thead>
         <tr>
-          <th>Ro l/ Precio</th>
-          ${PRICE_HEADERS.map(h => `<th>${esc(h)}</th>`).join('')}
+          <th>${i18n.t('conditions.rolePrice')}</th>
+          ${PRICE_HEADERS.map(h => `<th>${esc(translateHeader(h))}</th>`).join('')}
         </tr>
       </thead>
       <tbody>
         ${rolesConPrecios.map(
           role => `
           <tr>
-            <td style="font-weight:600;">${esc(role)}</td>
+            <td style="font-weight:600;">${esc(translateRoleName(role))}</td>
             ${PRICE_HEADERS.map(
               h => `<td>${esc(model.prices?.[role]?.[h] ?? '')}</td>`
             ).join('')}
@@ -521,11 +564,11 @@ function buildCondicionesPageHTMLForPDF(
       ${includeHeader ? `
       <div class="info-panel">
         <div class="info-item">
-          <div class="info-label">Producción</div>
+          <div class="info-label">${i18n.t('common.productionLabel')}</div>
           <div class="info-value">${esc(project?.produccion || '—')}</div>
         </div>
         <div class="info-item">
-          <div class="info-label">Proyecto</div>
+          <div class="info-label">${i18n.t('common.project')}</div>
           <div class="info-value">${esc(project?.nombre || 'Proyecto')}</div>
         </div>
       </div>
@@ -535,7 +578,7 @@ function buildCondicionesPageHTMLForPDF(
       ${blocks}
     </div>
     <div class="footer">
-      <span>Generado automáticamente por</span>
+      <span>${i18n.t('footer.generatedBy')}</span>
       <span class="setlux-logo">
         <span class="set">Set</span><span class="lux">Lux</span>
       </span>
@@ -562,16 +605,33 @@ export async function exportCondicionesToPDF(
       format: 'a4'
     });
 
+    // Obtener textos traducidos actuales para asegurar que estén en el idioma correcto del PDF
+    // Estos textos siempre se mostrarán en el idioma actual, independientemente de lo que esté guardado
+    const getDefaultAlojamiento = () => i18n.t('conditions.defaultAccommodation');
+    const getDefaultPrepro = () => i18n.t('conditions.defaultPreProduction');
+    const getDefaultConvenio = () => i18n.t('conditions.defaultAgreement');
+    
+    // Generar festivos dinámicos en el idioma actual
+    const currentFestivosText = await generateDynamicFestivosText();
+    
+    // Para el PDF, siempre usar los textos traducidos actuales para estos campos
+    // Esto asegura que el PDF siempre esté en el idioma seleccionado
+    // Si el usuario ha personalizado estos textos, se usarán los traducidos actuales en el PDF
+    const festivosText = currentFestivosText;
+    const alojamientoText = getDefaultAlojamiento();
+    const preproText = getDefaultPrepro();
+    const convenioText = getDefaultConvenio();
+
     // Calcular paginación con ajuste dinámico (igual que reportes)
     const blocks = [
-      ['Leyenda cálculos', restoreStrongTags(renderWithParams(model.legendTemplate, model.params))],
-      ['Festivos', renderWithParams(model.festivosTemplate, model.params)],
-      ['Horarios', restoreStrongTags(renderWithParams(model.horariosTemplate, model.params))],
-      ['Dietas', restoreStrongTags(renderWithParams(model.dietasTemplate, model.params))],
-      ['Transportes', renderWithParams(model.transportesTemplate, model.params)],
-      ['Alojamiento', renderWithParams(model.alojamientoTemplate, model.params)],
-      ['Pre producción', renderWithParams(model.preproTemplate, model.params)],
-      ['Convenio', renderWithParams(model.convenioTemplate, model.params)],
+      [i18n.t('conditions.legend'), restoreStrongTags(renderWithParams(model.legendTemplate, model.params))],
+      [i18n.t('conditions.holidays'), renderWithParams(festivosText, model.params)],
+      [i18n.t('conditions.schedules'), restoreStrongTags(renderWithParams(model.horariosTemplate, model.params))],
+      [i18n.t('conditions.perDiems'), restoreStrongTags(renderWithParams(model.dietasTemplate, model.params))],
+      [i18n.t('conditions.transportation'), renderWithParams(model.transportesTemplate, model.params)],
+      [i18n.t('conditions.accommodation'), renderWithParams(alojamientoText, model.params)],
+      [i18n.t('conditions.preProduction'), renderWithParams(preproText, model.params)],
+      [i18n.t('conditions.agreement'), renderWithParams(convenioText, model.params)],
     ].filter(([_, content]) => content.trim()); // Solo bloques con contenido
 
     const totalBlocks = blocks.length;
@@ -752,7 +812,81 @@ export async function exportCondicionesToPDF(
     }
 
     const projectName = project?.nombre || 'Proyecto';
-    const fileName = `Condiciones_${which}_${projectName.replace(/\s+/g, '_')}.pdf`;
+    
+    // Helper para obtener traducción usando i18n.store
+    const getTranslation = (key: string, fallback: string): string => {
+      try {
+        const currentLang = (i18n && i18n.language) ? i18n.language : 'es';
+        
+        // Intentar obtener la traducción desde i18n.store
+        if (i18n?.store?.data && i18n.store.data[currentLang]?.translation) {
+          const translations = i18n.store.data[currentLang].translation;
+          
+          // Obtener el valor anidado
+          const keys = key.split('.');
+          let value: any = translations;
+          for (const k of keys) {
+            if (value && typeof value === 'object' && k in value) {
+              value = value[k];
+            } else {
+              break;
+            }
+          }
+          
+          if (typeof value === 'string' && value.trim() !== '') {
+            return value;
+          }
+        }
+        
+        // Fallback: usar i18n.t() directamente
+        const translated = i18n.t(key);
+        if (translated && translated !== key) {
+          return translated;
+        }
+        
+        return fallback;
+      } catch (error) {
+        console.warn('Error in getTranslation:', error, 'key:', key);
+        return fallback;
+      }
+    };
+    
+    // Traducir el tipo de condiciones
+    let whichTranslated: string;
+    if (which === 'semanal') {
+      whichTranslated = getTranslation('common.weekly', 'semanal').toLowerCase();
+    } else if (which === 'mensual') {
+      whichTranslated = getTranslation('common.monthly', 'mensual').toLowerCase();
+    } else if (which === 'publicidad') {
+      whichTranslated = getTranslation('common.advertising', 'publicidad').toLowerCase();
+    } else {
+      whichTranslated = which;
+    }
+    
+    // Traducir "Condiciones" - acceder directamente al store
+    let conditionsLabel = 'Condiciones';
+    try {
+      const currentLang = i18n?.language || 'es';
+      
+      // Acceder directamente al store usando la estructura correcta
+      if (i18n?.store?.data?.[currentLang]?.translation?.common?.conditions) {
+        conditionsLabel = i18n.store.data[currentLang].translation.common.conditions;
+      } else if (i18n?.store?.data?.[currentLang]?.common?.conditions) {
+        // Intentar estructura alternativa
+        conditionsLabel = i18n.store.data[currentLang].common.conditions;
+      } else {
+        // Fallback manual basado en el idioma
+        if (currentLang === 'en') {
+          conditionsLabel = 'Conditions';
+        } else if (currentLang === 'ca') {
+          conditionsLabel = 'Condicions';
+        }
+      }
+    } catch (error) {
+      console.warn('Error getting conditions label:', error);
+    }
+    
+    const fileName = `${conditionsLabel}_${whichTranslated}_${projectName.replace(/\s+/g, '_')}.pdf`;
     pdf.save(fileName);
   } catch (error) {
     console.error('Error generating condiciones PDF:', error);

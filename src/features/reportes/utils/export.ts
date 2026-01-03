@@ -1,6 +1,7 @@
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { parseDietas } from './text';
+import i18n from '../../../i18n/config';
 
 interface Project {
   nombre?: string;
@@ -42,6 +43,100 @@ export function buildReportWeekHTML({
       /[&<>]/g,
       (c: string) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c] || c
     );
+
+  // Helper to get translation from store - same method as condiciones PDF
+  const getTranslation = (key: string, fallback: string): string => {
+    try {
+      const currentLang = i18n?.language || 'es';
+      
+      // For specific keys, use direct access like in condiciones PDF
+      if (key === 'reports.reports') {
+        if (i18n?.store?.data?.[currentLang]?.translation?.reports?.reports) {
+          return i18n.store.data[currentLang].translation.reports.reports;
+        }
+        // Fallback manual
+        if (currentLang === 'en') return 'Reports';
+        if (currentLang === 'ca') return 'Informes';
+        return 'Reportes';
+      }
+      
+      // Access store directly for other keys
+      if (i18n?.store?.data?.[currentLang]?.translation) {
+        const translations = i18n.store.data[currentLang].translation;
+        const keys = key.split('.');
+        let value: any = translations;
+        for (const k of keys) {
+          if (value && typeof value === 'object' && k in value) {
+            value = value[k];
+          } else {
+            break;
+          }
+        }
+        if (typeof value === 'string' && value.trim() !== '') {
+          return value;
+        }
+      }
+      
+      // Fallback: try i18n.t() directly
+      const translated = i18n.t(key);
+      if (translated && translated !== key && translated.trim() !== '') {
+        return translated;
+      }
+      
+      return fallback;
+    } catch (error) {
+      // Final fallback for reports.reports
+      if (key === 'reports.reports') {
+        const currentLang = i18n?.language || 'es';
+        if (currentLang === 'en') return 'Reports';
+        if (currentLang === 'ca') return 'Informes';
+        return 'Reportes';
+      }
+      return fallback;
+    }
+  };
+
+  // Helper function to translate concept names
+  const translateConcept = (concepto: string): string => {
+    const conceptMap: Record<string, string> = {
+      'Horas extra': getTranslation('reports.concepts.extraHours', 'Horas extra'),
+      'Turn Around': getTranslation('reports.concepts.turnAround', 'Turn Around'),
+      'Nocturnidad': getTranslation('reports.concepts.nightShift', 'Nocturnidad'),
+      'Penalty lunch': getTranslation('reports.concepts.penaltyLunch', 'Penalty lunch'),
+      'Dietas': getTranslation('reports.concepts.diets', 'Dietas'),
+      'Kilometraje': getTranslation('reports.concepts.mileage', 'Kilometraje'),
+      'Transporte': getTranslation('reports.concepts.transportation', 'Transporte'),
+    };
+    return conceptMap[concepto] || concepto;
+  };
+
+  // Helper function to translate diet item names
+  const translateDietItem = (item: string): string => {
+    const itemMap: Record<string, string> = {
+      'Comida': getTranslation('reports.dietOptions.lunch', 'Comida'),
+      'Cena': getTranslation('reports.dietOptions.dinner', 'Cena'),
+      'Desayuno': getTranslation('reports.dietOptions.breakfast', 'Desayuno'),
+      'Dieta sin pernoctar': getTranslation('reports.dietOptions.dietNoOvernight', 'Dieta sin pernoctar'),
+      'Dieta completa + desayuno': getTranslation('reports.dietOptions.dietFullBreakfast', 'Dieta completa + desayuno'),
+      'Gastos de bolsillo': getTranslation('reports.dietOptions.pocketExpenses', 'Gastos de bolsillo'),
+      'Ticket': getTranslation('reports.dietOptions.ticket', 'Ticket'),
+    };
+    return itemMap[item] || item;
+  };
+
+  // Helper function to translate day names
+  const translateDayName = (dayName: string): string => {
+    const dayMap: Record<string, string> = {
+      'Lunes': getTranslation('reports.dayNames.monday', 'Lunes'),
+      'Martes': getTranslation('reports.dayNames.tuesday', 'Martes'),
+      'Miércoles': getTranslation('reports.dayNames.wednesday', 'Miércoles'),
+      'Jueves': getTranslation('reports.dayNames.thursday', 'Jueves'),
+      'Viernes': getTranslation('reports.dayNames.friday', 'Viernes'),
+      'Sábado': getTranslation('reports.dayNames.saturday', 'Sábado'),
+      'Domingo': getTranslation('reports.dayNames.sunday', 'Domingo'),
+    };
+    return dayMap[dayName] || dayName;
+  };
 
   // Helper function to calculate total for a concept
   const calculateTotalForExport = (
@@ -266,16 +361,16 @@ export function buildReportWeekHTML({
           .map(
             (iso, i) => `
           <th style="border:1px solid #999;padding:6px;text-align:left;background:#1e40af;color:#fff;">
-            ${esc(dayNameFromISO(iso, i))}<br/>${esc(toDisplayDate(iso))}
+            ${esc(translateDayName(dayNameFromISO(iso, i)))}<br/>${esc(toDisplayDate(iso))}
           </th>`
           )
           .join('')}
-        <th style="border:1px solid #999;padding:6px;text-align:left;background:#1e40af;color:#fff;font-weight:bold;">Total</th>
+        <th style="border:1px solid #999;padding:6px;text-align:left;background:#1e40af;color:#fff;font-weight:bold;">${esc(getTranslation('reports.total', 'Total'))}</th>
       </tr>`;
 
   const headHorario = `
       <tr>
-        <th style="border:1px solid #999;padding:6px;text-align:left;background:#1e40af;color:#fff;">Horario</th>
+        <th style="border:1px solid #999;padding:6px;text-align:left;background:#1e40af;color:#fff;">${esc(getTranslation('planning.schedule', 'Horario'))}</th>
         ${safeSemanaWithData
           .map(
             iso =>
@@ -284,7 +379,7 @@ export function buildReportWeekHTML({
               )}</th>`
           )
           .join('')}
-        <th style="border:1px solid #999;padding:6px;text-align:left;background:#1e40af;color:#fff;">Semana</th>
+        <th style="border:1px solid #999;padding:6px;text-align:left;background:#1e40af;color:#fff;">${esc(getTranslation('reports.week', 'Semana'))}</th>
       </tr>`;
 
 
@@ -407,13 +502,36 @@ export function buildReportWeekHTML({
                 }
                 return `
         <tr>
-          <td style="border:1px solid #999;padding:6px;">${esc(c)}</td>
+          <td style="border:1px solid #999;padding:6px;">${esc(translateConcept(c))}</td>
           ${safeSemanaWithData
             .map(
               iso =>
-                `<td style="border:1px solid #999;padding:6px;">${esc(
-                  finalData?.[pk]?.[c]?.[iso] ?? ''
-                )}</td>`
+                (() => {
+                  let cellValue = finalData?.[pk]?.[c]?.[iso] ?? '';
+                  // For SI/NO concepts (Nocturnidad, Penalty lunch, Transporte), show "1" instead of "SI" or "Sí"
+                  if ((c === 'Nocturnidad' || c === 'Penalty lunch' || c === 'Transporte') && cellValue) {
+                    const trimmedValue = cellValue.toString().trim().toLowerCase();
+                    if (trimmedValue === 'sí' || trimmedValue === 'si') {
+                      cellValue = '1';
+                    }
+                  }
+                  // Translate diet items if concept is Dietas
+                  if (c === 'Dietas' && cellValue && cellValue.toString().trim() !== '') {
+                    try {
+                      const parsed = parseDietas(cellValue);
+                      const translatedItems = parsed.items.size > 0 
+                        ? Array.from(parsed.items).map(item => translateDietItem(item))
+                        : [];
+                      cellValue = translatedItems.join(' + ');
+                      if (parsed.ticket !== null) {
+                        cellValue += (translatedItems.length > 0 ? ' + ' : '') + `Ticket(${parsed.ticket})`;
+                      }
+                    } catch (e) {
+                      // If parsing fails, use original value
+                    }
+                  }
+                  return `<td style="border:1px solid #999;padding:6px;">${esc(cellValue)}</td>`;
+                })()
             )
             .join('')}
           <td style="border:1px solid #999;padding:6px;text-align:left;font-weight:bold;">${esc(totalDisplay)}</td>
@@ -430,7 +548,7 @@ export function buildReportWeekHTML({
 <html>
 <head>
   <meta charset="utf-8">
-  <title>${esc(project?.nombre || 'Proyecto')} – ${esc(title || 'Semana')}</title>
+  <title>${esc(project?.nombre || getTranslation('common.project', 'Proyecto'))} – ${esc(title || getTranslation('reports.week', 'Semana'))}</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -495,20 +613,20 @@ export function buildReportWeekHTML({
 <body>
   <div class="container">
     <div class="header">
-      <h1>Reportes - ${title?.includes('-') ? 'Preproducción' : title?.match(/\d+/) ? 'Producción' : 'Semana'}</h1>
+      <h1>${esc(getTranslation('reports.reports', 'Reportes'))} - ${title?.includes('-') ? esc(getTranslation('planning.preproduction', 'Preproducción')) : title?.match(/\d+/) ? esc(getTranslation('planning.production', 'Producción')) : esc(getTranslation('reports.week', 'Semana'))}</h1>
     </div>
     <div class="content">
       <div class="info-panel">
         <div class="info-item">
-          <div class="info-label">Producción</div>
+          <div class="info-label">${esc(getTranslation('common.productionLabel', 'Producción'))}</div>
           <div class="info-value">${esc(project?.produccion || '—')}</div>
         </div>
         <div class="info-item">
-          <div class="info-label">Proyecto</div>
-          <div class="info-value">${esc(project?.nombre || 'Proyecto')}</div>
+          <div class="info-label">${esc(getTranslation('common.project', 'Proyecto'))}</div>
+          <div class="info-value">${esc(project?.nombre || getTranslation('common.project', 'Proyecto'))}</div>
         </div>
       </div>
-      <div class="week-title">${esc(title || 'Semana')}</div>
+      <div class="week-title">${esc(title || getTranslation('reports.week', 'Semana'))}</div>
       <div class="table-container">
         <table>
           <thead>
@@ -522,7 +640,7 @@ export function buildReportWeekHTML({
       </div>
     </div>
     <div class="footer">
-      <span>Generado automáticamente por</span>
+      <span>${esc(getTranslation('footer.generatedBy', 'Generado automáticamente por'))}</span>
       <span class="setlux-logo">
         <span class="set">Set</span><span class="lux">Lux</span>
       </span>
@@ -550,6 +668,100 @@ export function buildReportWeekHTMLForPDF({
       /[&<>]/g,
       (c: string) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c] || c
     );
+
+  // Helper to get translation from store - same method as condiciones PDF
+  const getTranslation = (key: string, fallback: string): string => {
+    try {
+      const currentLang = i18n?.language || 'es';
+      
+      // For specific keys, use direct access like in condiciones PDF
+      if (key === 'reports.reports') {
+        if (i18n?.store?.data?.[currentLang]?.translation?.reports?.reports) {
+          return i18n.store.data[currentLang].translation.reports.reports;
+        }
+        // Fallback manual
+        if (currentLang === 'en') return 'Reports';
+        if (currentLang === 'ca') return 'Informes';
+        return 'Reportes';
+      }
+      
+      // Access store directly for other keys
+      if (i18n?.store?.data?.[currentLang]?.translation) {
+        const translations = i18n.store.data[currentLang].translation;
+        const keys = key.split('.');
+        let value: any = translations;
+        for (const k of keys) {
+          if (value && typeof value === 'object' && k in value) {
+            value = value[k];
+          } else {
+            break;
+          }
+        }
+        if (typeof value === 'string' && value.trim() !== '') {
+          return value;
+        }
+      }
+      
+      // Fallback: try i18n.t() directly
+      const translated = i18n.t(key);
+      if (translated && translated !== key && translated.trim() !== '') {
+        return translated;
+      }
+      
+      return fallback;
+    } catch (error) {
+      // Final fallback for reports.reports
+      if (key === 'reports.reports') {
+        const currentLang = i18n?.language || 'es';
+        if (currentLang === 'en') return 'Reports';
+        if (currentLang === 'ca') return 'Informes';
+        return 'Reportes';
+      }
+      return fallback;
+    }
+  };
+
+  // Helper function to translate concept names
+  const translateConcept = (concepto: string): string => {
+    const conceptMap: Record<string, string> = {
+      'Horas extra': getTranslation('reports.concepts.extraHours', 'Horas extra'),
+      'Turn Around': getTranslation('reports.concepts.turnAround', 'Turn Around'),
+      'Nocturnidad': getTranslation('reports.concepts.nightShift', 'Nocturnidad'),
+      'Penalty lunch': getTranslation('reports.concepts.penaltyLunch', 'Penalty lunch'),
+      'Dietas': getTranslation('reports.concepts.diets', 'Dietas'),
+      'Kilometraje': getTranslation('reports.concepts.mileage', 'Kilometraje'),
+      'Transporte': getTranslation('reports.concepts.transportation', 'Transporte'),
+    };
+    return conceptMap[concepto] || concepto;
+  };
+
+  // Helper function to translate diet item names
+  const translateDietItem = (item: string): string => {
+    const itemMap: Record<string, string> = {
+      'Comida': getTranslation('reports.dietOptions.lunch', 'Comida'),
+      'Cena': getTranslation('reports.dietOptions.dinner', 'Cena'),
+      'Desayuno': getTranslation('reports.dietOptions.breakfast', 'Desayuno'),
+      'Dieta sin pernoctar': getTranslation('reports.dietOptions.dietNoOvernight', 'Dieta sin pernoctar'),
+      'Dieta completa + desayuno': getTranslation('reports.dietOptions.dietFullBreakfast', 'Dieta completa + desayuno'),
+      'Gastos de bolsillo': getTranslation('reports.dietOptions.pocketExpenses', 'Gastos de bolsillo'),
+      'Ticket': getTranslation('reports.dietOptions.ticket', 'Ticket'),
+    };
+    return itemMap[item] || item;
+  };
+
+  // Helper function to translate day names
+  const translateDayName = (dayName: string): string => {
+    const dayMap: Record<string, string> = {
+      'Lunes': getTranslation('reports.dayNames.monday', 'Lunes'),
+      'Martes': getTranslation('reports.dayNames.tuesday', 'Martes'),
+      'Miércoles': getTranslation('reports.dayNames.wednesday', 'Miércoles'),
+      'Jueves': getTranslation('reports.dayNames.thursday', 'Jueves'),
+      'Viernes': getTranslation('reports.dayNames.friday', 'Viernes'),
+      'Sábado': getTranslation('reports.dayNames.saturday', 'Sábado'),
+      'Domingo': getTranslation('reports.dayNames.sunday', 'Domingo'),
+    };
+    return dayMap[dayName] || dayName;
+  };
 
   // Helper function to calculate total for a concept
   const calculateTotalForExport = (
@@ -837,16 +1049,16 @@ export function buildReportWeekHTMLForPDF({
           .map(
             (iso, i) => `
           <th style="border:1px solid #999;padding:6px;text-align:left;background:#1e40af;color:#fff;">
-            ${esc(dayNameFromISO(iso, i))}<br/>${esc(toDisplayDate(iso))}
+            ${esc(translateDayName(dayNameFromISO(iso, i)))}<br/>${esc(toDisplayDate(iso))}
           </th>`
           )
           .join('')}
-        <th style="border:1px solid #999;padding:6px;text-align:left;background:#1e40af;color:#fff;font-weight:bold;">Total</th>
+        <th style="border:1px solid #999;padding:6px;text-align:left;background:#1e40af;color:#fff;font-weight:bold;">${esc(getTranslation('reports.total', 'Total'))}</th>
       </tr>`;
 
   const headHorario = `
       <tr>
-        <th style="border:1px solid #999;padding:6px;text-align:left;background:#1e40af;color:#fff;">Horario</th>
+        <th style="border:1px solid #999;padding:6px;text-align:left;background:#1e40af;color:#fff;">${esc(getTranslation('planning.schedule', 'Horario'))}</th>
         ${safeSemanaWithData
           .map(
             iso =>
@@ -855,7 +1067,7 @@ export function buildReportWeekHTMLForPDF({
               )}</th>`
           )
           .join('')}
-        <th style="border:1px solid #999;padding:6px;text-align:left;background:#1e40af;color:#fff;">Semana</th>
+        <th style="border:1px solid #999;padding:6px;text-align:left;background:#1e40af;color:#fff;">${esc(getTranslation('reports.week', 'Semana'))}</th>
       </tr>`;
 
   // Filtrar conceptos que tengan datos significativos (no 0, vacíos, o solo espacios)
@@ -936,7 +1148,7 @@ export function buildReportWeekHTMLForPDF({
               const breakdown = (total as { breakdown: Map<string, number> }).breakdown;
               if (breakdown.size > 0) {
                 totalDisplay = Array.from(breakdown.entries())
-                  .map(([item, count]) => `x${count} ${item}`)
+                  .map(([item, count]) => `x${count} ${translateDietItem(item)}`)
                   .join(', ');
               }
             } else if (typeof total === 'number') {
@@ -946,13 +1158,36 @@ export function buildReportWeekHTMLForPDF({
             }
             return `
         <tr>
-          <td style="border:1px solid #999;padding:6px;">${esc(c)}</td>
+          <td style="border:1px solid #999;padding:6px;">${esc(translateConcept(c))}</td>
           ${safeSemanaWithData
             .map(
               iso =>
-                `<td style="border:1px solid #999;padding:6px;">${esc(
-                  finalData?.[pk]?.[c]?.[iso] ?? ''
-                )}</td>`
+                (() => {
+                  let cellValue = finalData?.[pk]?.[c]?.[iso] ?? '';
+                  // For SI/NO concepts (Nocturnidad, Penalty lunch, Transporte), show "1" instead of "SI" or "Sí"
+                  if ((c === 'Nocturnidad' || c === 'Penalty lunch' || c === 'Transporte') && cellValue) {
+                    const trimmedValue = cellValue.toString().trim().toLowerCase();
+                    if (trimmedValue === 'sí' || trimmedValue === 'si') {
+                      cellValue = '1';
+                    }
+                  }
+                  // Translate diet items if concept is Dietas
+                  if (c === 'Dietas' && cellValue && cellValue.toString().trim() !== '') {
+                    try {
+                      const parsed = parseDietas(cellValue);
+                      const translatedItems = parsed.items.size > 0 
+                        ? Array.from(parsed.items).map(item => translateDietItem(item))
+                        : [];
+                      cellValue = translatedItems.join(' + ');
+                      if (parsed.ticket !== null) {
+                        cellValue += (translatedItems.length > 0 ? ' + ' : '') + `Ticket(${parsed.ticket})`;
+                      }
+                    } catch (e) {
+                      // If parsing fails, use original value
+                    }
+                  }
+                  return `<td style="border:1px solid #999;padding:6px;">${esc(cellValue)}</td>`;
+                })()
             )
             .join('')}
           <td style="border:1px solid #999;padding:6px;text-align:left;font-weight:bold;">${esc(totalDisplay)}</td>
@@ -984,7 +1219,7 @@ export function buildReportWeekHTMLForPDF({
     const baseTitle = `
       <tr>
         <td colspan="${safeSemanaWithData.length + 2}" style="border:1px solid #999;padding:8px;font-weight:700;background:#fff3e0;color:#e65100;text-align:center;">
-          EQUIPO BASE
+          ${getTranslation('payroll.teamBase', 'EQUIPO BASE')}
         </td>
       </tr>`;
     bodyParts.push(baseTitle);
@@ -1009,7 +1244,7 @@ export function buildReportWeekHTMLForPDF({
     const preTitle = `
       <tr>
         <td colspan="${safeSemanaWithData.length + 2}" style="border:1px solid #999;padding:8px;font-weight:700;background:#e3f2fd;color:#1565c0;text-align:center;">
-          EQUIPO PRELIGHT
+          ${getTranslation('payroll.teamPrelight', 'EQUIPO PRELIGHT')}
         </td>
       </tr>`;
     bodyParts.push(preTitle);
@@ -1034,7 +1269,7 @@ export function buildReportWeekHTMLForPDF({
     const pickTitle = `
       <tr>
         <td colspan="${safeSemanaWithData.length + 2}" style="border:1px solid #999;padding:8px;font-weight:700;background:#e3f2fd;color:#1565c0;text-align:center;">
-          EQUIPO RECOGIDA
+          ${getTranslation('payroll.teamPickup', 'EQUIPO RECOGIDA')}
         </td>
       </tr>`;
     bodyParts.push(pickTitle);
@@ -1047,7 +1282,7 @@ export function buildReportWeekHTMLForPDF({
 <html>
 <head>
   <meta charset="utf-8">
-  <title>${esc(project?.nombre || 'Proyecto')} – ${esc(title || 'Semana')}</title>
+  <title>${esc(project?.nombre || getTranslation('common.project', 'Proyecto'))} – ${esc(title || getTranslation('reports.week', 'Semana'))}</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -1124,20 +1359,20 @@ export function buildReportWeekHTMLForPDF({
 <body>
   <div class="container-pdf">
     <div class="header">
-      <h1>Reportes - ${title?.includes('-') ? 'Preproducción' : title?.match(/\d+/) ? 'Producción' : 'Semana'}</h1>
+      <h1>${esc(getTranslation('reports.reports', 'Reportes'))} - ${title?.includes('-') ? esc(getTranslation('planning.preproduction', 'Preproducción')) : title?.match(/\d+/) ? esc(getTranslation('planning.production', 'Producción')) : esc(getTranslation('reports.week', 'Semana'))}</h1>
     </div>
     <div class="content">
       <div class="info-panel">
         <div class="info-item">
-          <div class="info-label">Producción</div>
+          <div class="info-label">${esc(getTranslation('common.productionLabel', 'Producción'))}</div>
           <div class="info-value">${esc(project?.produccion || '—')}</div>
         </div>
         <div class="info-item">
-          <div class="info-label">Proyecto</div>
-          <div class="info-value">${esc(project?.nombre || 'Proyecto')}</div>
+          <div class="info-label">${esc(getTranslation('common.project', 'Proyecto'))}</div>
+          <div class="info-value">${esc(project?.nombre || getTranslation('common.project', 'Proyecto'))}</div>
         </div>
       </div>
-      <div class="week-title">${esc(title || 'Semana')}</div>
+      <div class="week-title">${esc(title || getTranslation('reports.week', 'Semana'))}</div>
       <div class="table-container">
         <table>
           <thead>
@@ -1151,7 +1386,7 @@ export function buildReportWeekHTMLForPDF({
       </div>
     </div>
     <div class="footer">
-      <span>Generado automáticamente por</span>
+      <span>${esc(getTranslation('footer.generatedBy', 'Generado automáticamente por'))}</span>
       <span class="setlux-logo">
         <span class="set">Set</span><span class="lux">Lux</span>
       </span>
@@ -1373,9 +1608,50 @@ export async function exportReportWeekToPDF(params: BuildPdfParams) {
     }
     
     // Generate filename
-    const projectName = project?.nombre || 'Proyecto';
-    const weekName = title || 'Semana';
-    const fname = filename || `Reporte_${projectName.replace(/[^a-zA-Z0-9]/g, '_')}_${weekName.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
+    // Helper to get translation for filename
+    const getFilenameTranslation = (key: string, fallback: string): string => {
+      const currentLang = i18n?.language || 'es';
+      if (i18n?.store?.data?.[currentLang]?.translation) {
+        const translations = i18n.store.data[currentLang].translation;
+        const keys = key.split('.');
+        let value: any = translations;
+        for (const k of keys) {
+          if (value && typeof value === 'object' && k in value) {
+            value = value[k];
+          } else {
+            break;
+          }
+        }
+        if (typeof value === 'string' && value.trim() !== '') {
+          return value;
+        }
+      }
+      return fallback;
+    };
+    
+    const projectName = project?.nombre || getFilenameTranslation('common.project', 'Proyecto');
+    // Use direct translation for "Reportes" with fallback
+    const currentLang = i18n?.language || 'es';
+    let reportLabel = 'Reportes';
+    if (i18n?.store?.data?.[currentLang]?.translation?.reports?.reports) {
+      reportLabel = i18n.store.data[currentLang].translation.reports.reports;
+    } else {
+      if (currentLang === 'en') reportLabel = 'Reports';
+      else if (currentLang === 'ca') reportLabel = 'Informes';
+    }
+    
+    // Extract week number from title (e.g., "Semana 1", "Week 1", "Setmana 1")
+    let weekNumber = '';
+    if (title) {
+      const weekMatch = title.match(/(?:Semana|Week|Setmana)\s*(-?\d+)/i);
+      if (weekMatch) {
+        weekNumber = weekMatch[1];
+      }
+    }
+    const weekLabel = getFilenameTranslation('reports.week', 'Semana');
+    const weekPart = weekNumber ? `${weekLabel}${weekNumber}` : (title || weekLabel);
+    
+    const fname = filename || `${reportLabel}_${weekPart.replace(/[^a-zA-Z0-9]/g, '_')}_${projectName.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
     
     // Save PDF
     pdf.save(fname);
@@ -1453,12 +1729,58 @@ export async function exportReportRangeToPDF(params: ExportReportRangeParams) {
       }
     };
 
+    // Helper to get translation from store
+    const getTranslation = (key: string, fallback: string): string => {
+      try {
+        const currentLang = i18n?.language || 'es';
+        if (i18n?.store?.data?.[currentLang]?.translation) {
+          const translations = i18n.store.data[currentLang].translation;
+          const keys = key.split('.');
+          let value: any = translations;
+          for (const k of keys) {
+            if (value && typeof value === 'object' && k in value) {
+              value = value[k];
+            } else {
+              break;
+            }
+          }
+          if (typeof value === 'string' && value.trim() !== '') {
+            return value;
+          }
+        }
+        const translated = i18n.t(key);
+        if (translated && translated !== key && translated.trim() !== '') {
+          return translated;
+        }
+        return fallback;
+      } catch (error) {
+        return fallback;
+      }
+    };
+
+    // Helper to translate jornada type
+    const translateJornadaType = (tipo: string): string => {
+      if (!tipo) return '';
+      const typeMap: Record<string, string> = {
+        'Rodaje': getTranslation('planning.shooting', 'Rodaje'),
+        'Carga': getTranslation('planning.loading', 'Carga'),
+        'Descarga': getTranslation('planning.unloading', 'Descarga'),
+        'Localizar': getTranslation('planning.location', 'Localizar'),
+        'Travel Day': getTranslation('planning.travelDay', 'Travel Day'),
+        'Rodaje Festivo': getTranslation('planning.holidayShooting', 'Rodaje Festivo'),
+        'Fin': getTranslation('planning.end', 'Fin'),
+        'Descanso': getTranslation('planning.rest', 'Descanso'),
+      };
+      return typeMap[tipo] || tipo;
+    };
+
     const horarioTexto = (iso: string) => {
       const { day } = findWeekAndDay(iso);
-      if (!day) return 'Añadelo en Planificación';
-      if ((day.tipo || '') === 'Descanso') return 'DESCANSO';
-      const etiqueta = day.tipo && day.tipo !== 'Rodaje' && day.tipo !== 'Rodaje Festivo' ? `${day.tipo}: ` : '';
-      if (!day.start || !day.end) return `${etiqueta}Añadelo en Planificación`;
+      const addInPlanning = getTranslation('reports.addInPlanning', 'Añadelo en Planificación');
+      if (!day) return addInPlanning;
+      if ((day.tipo || '') === 'Descanso') return getTranslation('planning.rest', 'DESCANSO');
+      const etiqueta = day.tipo && day.tipo !== 'Rodaje' && day.tipo !== 'Rodaje Festivo' ? `${translateJornadaType(day.tipo)}: ` : '';
+      if (!day.start || !day.end) return `${etiqueta}${addInPlanning}`;
       return `${etiqueta}${day.start}–${day.end}`;
     };
 
@@ -1493,10 +1815,11 @@ export async function exportReportRangeToPDF(params: ExportReportRangeParams) {
       if (weekDaysInRange.length === 0) continue;
 
       // Filtrar días que no sean DESCANSO o que tengan datos (igual que en la vista)
+      const restLabel = getTranslation('planning.rest', 'DESCANSO');
       const filteredWeekDays = weekDaysInRange.filter(iso => {
         const dayLabel = horarioTexto(iso);
         // Si es DESCANSO y es sábado o domingo
-        if (dayLabel === 'DESCANSO' && isWeekend(iso)) {
+        if (dayLabel === restLabel && isWeekend(iso)) {
           // Verificar si tiene prelight o recogidas
           const hasPrelight = horarioPrelightFn(iso) !== '—';
           const hasPickup = horarioPickupFn(iso) !== '—';
@@ -1582,8 +1905,24 @@ export async function exportReportRangeToPDF(params: ExportReportRangeParams) {
         });
       });
 
+      // Helper to translate week label
+      const translateWeekLabel = (label: string): string => {
+        if (!label) return getTranslation('reports.week', 'Semana');
+        const match = label.match(/^(Semana|Week|Setmana)\s*(-?\d+)$/i);
+        if (match) {
+          const number = match[2];
+          if (number.startsWith('-')) {
+            return getTranslation('planning.weekFormatNegative', `Semana -${number.substring(1)}`).replace('{{number}}', number.substring(1));
+          } else {
+            return getTranslation('planning.weekFormat', `Semana ${number}`).replace('{{number}}', number);
+          }
+        }
+        return label;
+      };
+
       // Título para esta semana
-      const weekTitle = week.label as string || `Semana ${weekIndex + 1}`;
+      const weekLabel = week.label as string || `Semana ${weekIndex + 1}`;
+      const weekTitle = translateWeekLabel(weekLabel);
 
       // Ordenar claves de personas por jerarquía de roles (igual que en buildReportWeekHTMLForPDF)
       const rolePriorityForReportsPDF = (role: string = ''): number => {
@@ -1774,8 +2113,57 @@ export async function exportReportRangeToPDF(params: ExportReportRangeParams) {
     }
 
     // Guardar PDF final
-    const projectName = project?.nombre || 'Proyecto';
-    const fname = `Reporte_${projectName.replace(/[^a-zA-Z0-9]/g, '_')}_${title.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
+    // Helper to get translation for filename
+    const getFilenameTranslation = (key: string, fallback: string): string => {
+      const currentLang = i18n?.language || 'es';
+      if (i18n?.store?.data?.[currentLang]?.translation) {
+        const translations = i18n.store.data[currentLang].translation;
+        const keys = key.split('.');
+        let value: any = translations;
+        for (const k of keys) {
+          if (value && typeof value === 'object' && k in value) {
+            value = value[k];
+          } else {
+            break;
+          }
+        }
+        if (typeof value === 'string' && value.trim() !== '') {
+          return value;
+        }
+      }
+      return fallback;
+    };
+    
+    const projectName = project?.nombre || getFilenameTranslation('common.project', 'Proyecto');
+    // Use direct translation for "Reportes" with fallback
+    const currentLang = i18n?.language || 'es';
+    let reportLabel = 'Reportes';
+    if (i18n?.store?.data?.[currentLang]?.translation?.reports?.reports) {
+      reportLabel = i18n.store.data[currentLang].translation.reports.reports;
+    } else {
+      if (currentLang === 'en') reportLabel = 'Reports';
+      else if (currentLang === 'ca') reportLabel = 'Informes';
+    }
+    
+    // Extract month from first date in safeSemana (only the month name, no "Mes" prefix)
+    let monthPart = '';
+    if (safeSemana && safeSemana.length > 0) {
+      try {
+        const firstDate = safeSemana[0];
+        const [year, month, day] = firstDate.split('-').map(Number);
+        const dateObj = new Date(year, month - 1, day);
+        const monthName = dateObj.toLocaleDateString(currentLang, { month: 'long' });
+        const monthCapitalized = monthName.charAt(0).toUpperCase() + monthName.slice(1);
+        monthPart = monthCapitalized.replace(/[^a-zA-Z0-9]/g, '');
+      } catch (e) {
+        // If extraction fails, use title
+        monthPart = title.replace(/[^a-zA-Z0-9]/g, '_');
+      }
+    } else {
+      monthPart = title.replace(/[^a-zA-Z0-9]/g, '_');
+    }
+    
+    const fname = `${reportLabel}_${monthPart}_${projectName.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
     pdf.save(fname);
 
     return true;

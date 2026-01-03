@@ -13,6 +13,9 @@ export default defineConfig({
       '@i18n': path.resolve(__dirname, 'src/i18n'),
     },
   },
+  optimizeDeps: {
+    include: ['react-i18next', 'i18next', 'i18next-browser-languagedetector'],
+  },
   test: {
     globals: true,
     environment: 'jsdom',

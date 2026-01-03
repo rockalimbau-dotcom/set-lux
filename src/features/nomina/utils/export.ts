@@ -1,7 +1,7 @@
 // Utils to build exportable HTML for Nómina
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
-import i18n from '@i18n';
+import i18n from '../../../i18n/config';
 
 function esc(value: unknown): string {
   return String(value ?? '').replace(
@@ -235,7 +235,7 @@ export function buildNominaMonthHTML(
 <html>
 <head>
   <meta charset="utf-8">
-  <title>${esc(project?.nombre || 'Proyecto')} – ${i18n.t('payroll.payrollTitle')} ${esc(monthLabelEs(monthKey, true))}</title>
+  <title>${esc(project?.nombre || i18n.t('common.project'))} – ${i18n.t('payroll.payrollTitle')} ${esc(monthLabelEs(monthKey, true))}</title>
   <style>
     @page { size: A4 landscape; margin: 12mm; }
     @media print { body { margin: 0; } }
@@ -434,11 +434,11 @@ export function buildNominaMonthHTML(
     <div class="content">
       <div class="info-panel">
         <div class="info-item">
-          <div class="info-label">Producción</div>
+          <div class="info-label">${i18n.t('common.productionLabel')}</div>
           <div class="info-value">${esc(project?.produccion || '—')}</div>
         </div>
         <div class="info-item">
-          <div class="info-label">Proyecto</div>
+          <div class="info-label">${i18n.t('common.project')}</div>
           <div class="info-value">${esc(project?.nombre || '—')}</div>
         </div>
       </div>
@@ -814,7 +814,7 @@ export function buildNominaMonthHTMLForPDF(
 <html>
 <head>
   <meta charset="utf-8">
-  <title>${esc(project?.nombre || 'Proyecto')} – ${i18n.t('payroll.payrollTitle')} ${esc(monthLabelEs(monthKey, true))}</title>
+  <title>${esc(project?.nombre || i18n.t('common.project'))} – ${i18n.t('payroll.payrollTitle')} ${esc(monthLabelEs(monthKey, true))}</title>
   <style>
     * {
       margin: 0;
@@ -832,7 +832,7 @@ export function buildNominaMonthHTMLForPDF(
       font-size: 11px; /* moderate base font */
     }
     
-    .container {
+    .container-pdf {
       /* Fixed size to match html2canvas capture (A4 landscape @96dpi) */
       width: 1123px;
       height: 794px;
@@ -986,6 +986,11 @@ export function buildNominaMonthHTMLForPDF(
       gap: 2px;
       flex-shrink: 0;
       width: 100%;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: white;
     }
     
     .setlux-logo {
@@ -1000,10 +1005,30 @@ export function buildNominaMonthHTMLForPDF(
     .setlux-logo .lux {
       color: #3b82f6;
     }
+    
+    /* Ensure footer visibility in PDF */
+    @media print {
+      .footer { 
+        position: fixed !important; 
+        bottom: 0 !important; 
+        left: 0 !important; 
+        right: 0 !important; 
+        width: 100% !important; 
+        background: white !important; 
+        z-index: 9999 !important; 
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        color: #64748b !important;
+        font-size: 6px !important;
+        padding: 6px 0 !important;
+        border-top: 1px solid #e2e8f0 !important;
+      }
+    }
   </style>
 </head>
 <body>
-  <div class="container">
+  <div class="container-pdf">
     <div class="header">
       <h1>${i18n.t('payroll.title')} - ${esc(monthLabelEs(monthKey, true))}</h1>
     </div>
@@ -1011,7 +1036,7 @@ export function buildNominaMonthHTMLForPDF(
     <div class="content">
       <div class="info-panel">
         <div class="info-item">
-          <div class="info-label">${i18n.t('common.production')}</div>
+          <div class="info-label">${i18n.t('common.productionLabel')}</div>
           <div class="info-value">${esc(project?.produccion || '—')}</div>
         </div>
         <div class="info-item">
@@ -1209,6 +1234,19 @@ export async function exportToPDF(
         backgroundColor: '#ffffff',
         width: 1123, // 297mm at 96 DPI
         height: 794, // 210mm at 96 DPI
+        onclone: (clonedDoc) => {
+          // Ensure footer is visible in cloned document
+          const footer = clonedDoc.querySelector('.footer') as HTMLElement;
+          if (footer) {
+            footer.style.position = 'relative';
+            footer.style.display = 'flex';
+            footer.style.visibility = 'visible';
+            footer.style.opacity = '1';
+            console.log('🔧 Footer styles applied in cloned document');
+          } else {
+            console.log('❌ Footer not found in cloned document');
+          }
+        }
       });
       
       // Remove temporary container
@@ -1229,9 +1267,32 @@ export async function exportToPDF(
     console.log(`✅ PDF generation complete with ${totalPages} pages`);
     
     // Generate filename
-    const projectName = project?.nombre || 'Proyecto';
-    const monthName = monthLabelEs(monthKey, true);
-    const filename = `Nomina_${projectName.replace(/[^a-zA-Z0-9]/g, '_')}_${monthName.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
+    const projectName = project?.nombre || i18n.t('common.project');
+    // Get translated "Nómina" label
+    const currentLang = i18n?.language || 'es';
+    let nominaLabel = 'Nómina';
+    if (i18n?.store?.data?.[currentLang]?.translation?.payroll?.payrollTitle) {
+      nominaLabel = i18n.store.data[currentLang].translation.payroll.payrollTitle;
+    } else {
+      if (currentLang === 'en') nominaLabel = 'Payroll';
+      else if (currentLang === 'ca') nominaLabel = 'Nòmina';
+    }
+    
+    // Extract month name from monthKey (format: "2025-01")
+    let monthPart = '';
+    try {
+      const [year, month] = monthKey.split('-').map(Number);
+      const dateObj = new Date(year, month - 1, 1);
+      const monthName = dateObj.toLocaleDateString(currentLang, { month: 'long' });
+      const monthCapitalized = monthName.charAt(0).toUpperCase() + monthName.slice(1);
+      monthPart = monthCapitalized.replace(/[^a-zA-Z0-9]/g, '');
+    } catch (e) {
+      // If extraction fails, use monthLabelEs
+      const monthName = monthLabelEs(monthKey, true);
+      monthPart = monthName.replace(/[^a-zA-Z0-9]/g, '');
+    }
+    
+    const filename = `${nominaLabel}_${monthPart}_${projectName.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
     
     // Save PDF
     pdf.save(filename);

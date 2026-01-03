@@ -1,5 +1,5 @@
 import { toYYYYMMDD, parseYYYYMMDD, addDays } from '../../../shared/utils/date';
-import i18n from '@i18n';
+import i18n from '../../../i18n/config';
 
 import { relabelWeekByCalendar } from './calendar';
 import { createWeek } from './weeks';

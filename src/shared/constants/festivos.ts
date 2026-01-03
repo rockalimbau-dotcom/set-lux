@@ -1,5 +1,5 @@
 import { fetchHolidays, readLocationFromSettings } from '@shared/services/holidays.service';
-import i18n from '@i18n';
+import i18n from '../../i18n/config';
 
 /**
  * Festivos de Cataluña 2025 (fallback estático)

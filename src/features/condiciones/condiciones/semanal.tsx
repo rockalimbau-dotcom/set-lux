@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { Th, Td } from '@shared/components';
 import { useLocalStorage } from '@shared/hooks/useLocalStorage';
 import { useTranslation } from 'react-i18next';
-import i18n from '@i18n';
+import i18n from '../../../i18n/config';
 
 import { PRICE_HEADERS, PRICE_ROLES } from './shared.constants';
 import { extractFestivosDatesForPlan, renderWithParams, visibleToTemplate, loadJSON, TextAreaAuto, InfoCard, ParamInput, restoreStrongTags } from './shared';
