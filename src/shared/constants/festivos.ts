@@ -1,4 +1,5 @@
 import { fetchHolidays, readLocationFromSettings } from '@shared/services/holidays.service';
+import i18n from '@i18n';
 
 /**
  * Festivos de Cataluña 2025 (fallback estático)
@@ -49,7 +50,7 @@ export function generateFestivosText(festivos: string[]): string {
     .join(', ');
   
   const year = festivos[0]?.split('-')[0] || new Date().getFullYear();
-  return `La jornada y horas en días festivos tendrán un incremento del 75%. (Festivos ${year}: ${festivosFormatted})`;
+  return i18n.t('conditions.defaultHolidays', { year, festivos: festivosFormatted });
 }
 
 /**

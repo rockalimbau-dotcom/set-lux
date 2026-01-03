@@ -1,4 +1,5 @@
 // JSX runtime import not needed due to jsx: react-jsx
+import { useTranslation } from 'react-i18next';
 
 interface WorkedDaysSummaryProps {
   carga: number;
@@ -8,23 +9,24 @@ interface WorkedDaysSummaryProps {
 }
 
 export default function WorkedDaysSummary({ carga, descarga, localizar, rodaje }: WorkedDaysSummaryProps) {
+  const { t } = useTranslation();
   const parts: string[] = [];
   
   // Orden: Localizar, Carga, Rodaje, Descarga
   if (localizar > 0) {
-    parts.push(`Localizar x${localizar}`);
+    parts.push(`${t('payroll.dayTypes.location')} x${localizar}`);
   }
   
   if (carga > 0) {
-    parts.push(`Carga x${carga}`);
+    parts.push(`${t('payroll.dayTypes.loading')} x${carga}`);
   }
   
   if (rodaje > 0) {
-    parts.push(`Rodaje x${rodaje}`);
+    parts.push(`${t('payroll.dayTypes.shooting')} x${rodaje}`);
   }
   
   if (descarga > 0) {
-    parts.push(`Descarga x${descarga}`);
+    parts.push(`${t('payroll.dayTypes.unloading')} x${descarga}`);
   }
   
   // Si no hay ningún tipo de día, no mostrar nada

@@ -10,6 +10,7 @@ export default defineConfig({
       '@shared': path.resolve(__dirname, 'src/shared'),
       '@features': path.resolve(__dirname, 'src/features'),
       '@app': path.resolve(__dirname, 'src/app'),
+      '@i18n': path.resolve(__dirname, 'src/i18n'),
     },
   },
   test: {

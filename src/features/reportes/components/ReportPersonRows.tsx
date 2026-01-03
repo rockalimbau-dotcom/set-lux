@@ -4,6 +4,7 @@ import { Td } from '@shared/components';
 import { ROLE_COLORS } from '../../../shared/constants/roles';
 import { personaKey as buildPersonaKey } from '../utils/model';
 import { extractNumericValue, formatHorasExtraDecimal } from '../utils/runtime';
+import { useTranslation } from 'react-i18next';
 
 // Lightweight type aliases
 type AnyRecord = Record<string, any>;
@@ -44,6 +45,22 @@ const DietasCell: React.FC<DietasCellProps> = ({
   dietasOptions,
   setCell,
 }) => {
+  const { t } = useTranslation();
+  
+  // Helper function to translate diet item names
+  const translateDietItem = (item: string): string => {
+    const itemMap: Record<string, string> = {
+      'Comida': t('reports.dietOptions.lunch'),
+      'Cena': t('reports.dietOptions.dinner'),
+      'Desayuno': t('reports.dietOptions.breakfast'),
+      'Dieta sin pernoctar': t('reports.dietOptions.dietNoOvernight'),
+      'Dieta completa + desayuno': t('reports.dietOptions.dietFullBreakfast'),
+      'Gastos de bolsillo': t('reports.dietOptions.pocketExpenses'),
+      'Ticket': t('reports.dietOptions.ticket'),
+    };
+    return itemMap[item] || item;
+  };
+  
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [itemToRemove, setItemToRemove] = useState<string | null>(null);
   const [modalTheme, setModalTheme] = useState<'dark' | 'light'>(() => {
@@ -135,7 +152,7 @@ const DietasCell: React.FC<DietasCellProps> = ({
                 ? 'bg-white text-gray-900' 
                 : 'bg-black/40 text-zinc-300'
             } ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
-            title={readOnly ? 'El proyecto está cerrado' : 'Seleccionar dieta'}
+            title={readOnly ? t('conditions.projectClosed') : t('reports.selectDiet')}
             style={{
               borderWidth: dropdownState.isButtonHovered ? '1.5px' : '1px',
               borderStyle: 'solid',
@@ -205,7 +222,7 @@ const DietasCell: React.FC<DietasCellProps> = ({
                 title={it}
               >
                 <span className='text-xs text-zinc-200'>
-                  {it}
+                  {translateDietItem(it)}
                 </span>
                 <button
                   type='button'
@@ -215,7 +232,7 @@ const DietasCell: React.FC<DietasCellProps> = ({
                     setItemToRemove(it);
                   }}
                   disabled={readOnly}
-                  title={readOnly ? 'El proyecto está cerrado' : 'Quitar'}
+                  title={readOnly ? t('conditions.projectClosed') : t('reports.remove')}
                 >
                   ×
                 </button>
@@ -225,10 +242,10 @@ const DietasCell: React.FC<DietasCellProps> = ({
           {parsed.items.has('Ticket') && (
             <span
               className='inline-flex items-center gap-2 px-2 py-1 rounded-lg border border-neutral-border bg-black/40'
-              title='Ticket'
+              title={t('reports.dietOptions.ticket')}
             >
               <span className='text-xs text-zinc-200'>
-                Ticket
+                {t('reports.dietOptions.ticket')}
               </span>
               <input
                 type='number'
@@ -251,7 +268,7 @@ const DietasCell: React.FC<DietasCellProps> = ({
                 }}
                 disabled={readOnly}
                 readOnly={readOnly}
-                title={readOnly ? 'El proyecto está cerrado' : 'Importe Ticket'}
+                title={readOnly ? t('conditions.projectClosed') : t('reports.ticketAmount')}
               />
               <button
                 type='button'
@@ -261,7 +278,7 @@ const DietasCell: React.FC<DietasCellProps> = ({
                   setItemToRemove('Ticket');
                 }}
                 disabled={readOnly}
-                title={readOnly ? 'El proyecto está cerrado' : 'Quitar Ticket'}
+                title={readOnly ? t('conditions.projectClosed') : t('reports.removeTicket')}
               >
                 ×
               </button>
@@ -304,7 +321,7 @@ const DietasCell: React.FC<DietasCellProps> = ({
                 }}
                 type='button'
               >
-                No
+                {t('common.no')}
               </button>
               <button
                 onClick={() => {
@@ -355,12 +372,14 @@ const SiNoCell: React.FC<SiNoCellProps> = ({
   off,
   setCell,
 }) => {
+  const { t } = useTranslation();
   // Determinar si el checkbox está checked basándose en si el valor es "Sí", "SI" o "SÍ"
   const isChecked = val && (val.toString().trim().toLowerCase() === 'sí' || val.toString().trim().toLowerCase() === 'si');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (readOnly || off) return;
-    // Si está checked, poner "Sí", si no, poner vacío
+    // Si está checked, poner "Sí" (traducido), si no, poner vacío
+    // Guardamos en español para compatibilidad con el backend, pero mostramos traducido
     setCell(pKey, concepto, fecha, e.target.checked ? 'Sí' : '');
   };
 
@@ -373,7 +392,7 @@ const SiNoCell: React.FC<SiNoCellProps> = ({
           onChange={handleChange}
           disabled={off || readOnly}
           className={`accent-blue-500 dark:accent-[#f59e0b] ${off || readOnly ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-          title={readOnly ? 'El proyecto está cerrado' : (off ? 'No trabaja este día' : (isChecked ? 'Desmarcar' : 'Marcar'))}
+          title={readOnly ? t('conditions.projectClosed') : (off ? t('reports.notWorkingThisDay') : (isChecked ? t('reports.uncheck') : t('reports.check')))}
         />
       </div>
     </Td>
@@ -423,7 +442,36 @@ function ReportPersonRows({
   horasExtraTipo = 'Hora Extra - Normal',
   readOnly = false,
 }: Props) {
+  const { t } = useTranslation();
   if (!Array.isArray(list)) return null;
+
+  // Helper function to translate concept names
+  const translateConcept = (concepto: string): string => {
+    const conceptMap: Record<string, string> = {
+      'Horas extra': t('reports.concepts.extraHours'),
+      'Turn Around': t('reports.concepts.turnAround'),
+      'Nocturnidad': t('reports.concepts.nightShift'),
+      'Penalty lunch': t('reports.concepts.penaltyLunch'),
+      'Dietas': t('reports.concepts.diets'),
+      'Kilometraje': t('reports.concepts.mileage'),
+      'Transporte': t('reports.concepts.transportation'),
+    };
+    return conceptMap[concepto] || concepto;
+  };
+
+  // Helper function to translate diet item names
+  const translateDietItem = (item: string): string => {
+    const itemMap: Record<string, string> = {
+      'Comida': t('reports.dietOptions.lunch'),
+      'Cena': t('reports.dietOptions.dinner'),
+      'Desayuno': t('reports.dietOptions.breakfast'),
+      'Dieta sin pernoctar': t('reports.dietOptions.dietNoOvernight'),
+      'Dieta completa + desayuno': t('reports.dietOptions.dietFullBreakfast'),
+      'Gastos de bolsillo': t('reports.dietOptions.pocketExpenses'),
+      'Ticket': t('reports.dietOptions.ticket'),
+    };
+    return itemMap[item] || item;
+  };
 
   // Detectar el tema actual para el estilo de los selectores
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
@@ -629,7 +677,7 @@ function ReportPersonRows({
                     }
                     disabled={readOnly}
                     className={`w-6 h-6 rounded-lg border border-neutral-border flex items-center justify-center text-sm hover:border-accent ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
-                    title={readOnly ? 'El proyecto está cerrado' : (collapsed[pKey] ? 'Desplegar' : 'Contraer')}
+                    title={readOnly ? t('conditions.projectClosed') : (collapsed[pKey] ? t('reports.expand') : t('reports.collapse'))}
                     aria-expanded={!collapsed[pKey]}
                     aria-controls={`person-${pKey}-rows`}
                     type='button'
@@ -673,7 +721,7 @@ function ReportPersonRows({
               CONCEPTS.map(concepto => (
                 <tr key={`${pKey}_${block || 'base'}_${concepto}`} id={`person-${pKey}-rows`}>
                   <Td className='whitespace-nowrap align-middle'>
-                    <div className='text-xs text-zinc-300'>{concepto}</div>
+                    <div className='text-xs text-zinc-300'>{translateConcept(concepto)}</div>
                   </Td>
 
                   {semana.map(fecha => {
@@ -791,7 +839,7 @@ function ReportPersonRows({
                                 className='inline-flex items-center gap-1 px-2 py-1 rounded-lg border border-neutral-border bg-black/40 text-xs'
                               >
                                 <span className='text-zinc-400'>x{count}</span>
-                                <span className='text-zinc-200'>{item}</span>
+                                <span className='text-zinc-200'>{translateDietItem(item)}</span>
                               </span>
                             ))}
                           </div>

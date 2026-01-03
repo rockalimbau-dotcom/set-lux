@@ -1,5 +1,6 @@
 import { Td, Row } from '@shared/components';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import Chip from './Chip';
 import TextAreaAuto from './TextAreaAuto';
@@ -12,6 +13,7 @@ interface ConfirmModalProps {
 }
 
 function ConfirmModal({ title, message, onClose, onConfirm }: ConfirmModalProps) {
+  const { t } = useTranslation();
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
     if (typeof document !== 'undefined') {
       return (document.documentElement.getAttribute('data-theme') || 'light') as 'dark' | 'light';
@@ -78,7 +80,7 @@ function ConfirmModal({ title, message, onClose, onConfirm }: ConfirmModalProps)
             }}
             type='button'
           >
-            No
+            {t('needs.no')}
           </button>
           <button
             onClick={() => {
@@ -93,7 +95,7 @@ function ConfirmModal({ title, message, onClose, onConfirm }: ConfirmModalProps)
             }}
             type='button'
           >
-            Sí
+            {t('needs.yes')}
           </button>
         </div>
       </div>
@@ -103,15 +105,7 @@ function ConfirmModal({ title, message, onClose, onConfirm }: ConfirmModalProps)
 
 type AnyRecord = Record<string, any>;
 
-const DAYS = [
-  { idx: 0, key: 'mon', name: 'Lunes' },
-  { idx: 1, key: 'tue', name: 'Martes' },
-  { idx: 2, key: 'wed', name: 'Miércoles' },
-  { idx: 3, key: 'thu', name: 'Jueves' },
-  { idx: 4, key: 'fri', name: 'Viernes' },
-  { idx: 5, key: 'sat', name: 'Sábado' },
-  { idx: 6, key: 'sun', name: 'Domingo' },
-];
+// DAYS will be created inside the component to use translations
 
 type ListRowProps = {
   label: string;
@@ -126,6 +120,7 @@ type ListRowProps = {
 };
 
 export default function ListRow({ label, listKey, notesKey, weekId, weekObj, context, removeFromList, setCell, readOnly = false }: ListRowProps) {
+  const { t } = useTranslation();
   const [memberToRemove, setMemberToRemove] = useState<{
     weekId: string;
     dayIdx: number;
@@ -133,6 +128,16 @@ export default function ListRow({ label, listKey, notesKey, weekId, weekObj, con
     idx: number;
     memberName: string;
   } | null>(null);
+
+  const DAYS = useMemo(() => [
+    { idx: 0, key: 'mon', name: t('reports.dayNames.monday') },
+    { idx: 1, key: 'tue', name: t('reports.dayNames.tuesday') },
+    { idx: 2, key: 'wed', name: t('reports.dayNames.wednesday') },
+    { idx: 3, key: 'thu', name: t('reports.dayNames.thursday') },
+    { idx: 4, key: 'fri', name: t('reports.dayNames.friday') },
+    { idx: 5, key: 'sat', name: t('reports.dayNames.saturday') },
+    { idx: 6, key: 'sun', name: t('reports.dayNames.sunday') },
+  ], [t]);
 
   return (
     <>
@@ -159,7 +164,7 @@ export default function ListRow({ label, listKey, notesKey, weekId, weekObj, con
                         dayIdx: i,
                         listKey,
                         idx,
-                        memberName: (m as AnyRecord)?.name || 'este miembro'
+                        memberName: (m as AnyRecord)?.name || t('team.thisMember')
                       });
                     }}
                     readOnly={readOnly}
@@ -170,7 +175,7 @@ export default function ListRow({ label, listKey, notesKey, weekId, weekObj, con
             <TextAreaAuto
               value={(day as AnyRecord)[notesKey] || ''}
               onChange={(v: string) => !readOnly && setCell(weekId, i, notesKey, v)}
-              placeholder='Añade notas…'
+              placeholder={t('needs.addNotes')}
               readOnly={readOnly}
             />
             </div>
@@ -180,8 +185,8 @@ export default function ListRow({ label, listKey, notesKey, weekId, weekObj, con
     </Row>
     {memberToRemove && (
       <ConfirmModal
-        title='Confirmar eliminación'
-        message={`¿Estás seguro de eliminar a <strong>${memberToRemove.memberName}</strong>?`}
+        title={t('needs.confirmDeletion')}
+        message={t('needs.confirmDeleteMember', { name: memberToRemove.memberName })}
         onClose={() => setMemberToRemove(null)}
         onConfirm={() => {
           removeFromList(

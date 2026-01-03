@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import ToggleIconButton from '../../../shared/components/ToggleIconButton';
 
 type AccordionProps = {
@@ -26,6 +27,10 @@ export default function Accordion({
   btnExportStyle,
   readOnly = false,
 }: AccordionProps) {
+  const { t } = useTranslation();
+  const isPreproduction = title === t('planning.preproduction') || title === 'Preproducción';
+  const isProduction = title === t('planning.production') || title === 'Producción';
+  
   return (
     <section className='rounded-2xl border border-neutral-border bg-neutral-panel/90'>
       <div className='flex items-center justify-between px-5 py-4 gap-3'>
@@ -42,17 +47,17 @@ export default function Accordion({
             className={btnExportCls}
             style={{...btnExportStyle, background: '#f59e0b'}}
             onClick={onExportPDF}
-            title='Exportar sección (PDF)'
+            title={t('planning.exportSectionPDF')}
           >
-            {title === 'Preproducción' ? 'PDF Pre' : title === 'Producción' ? 'PDF Pro' : 'PDF'}
+            {isPreproduction ? t('planning.pdfPre') : isProduction ? t('planning.pdfPro') : t('planning.pdf')}
           </button>
           <button
             onClick={onAdd}
             disabled={readOnly}
             className={`px-3 py-2 rounded-lg border text-sm border-neutral-border hover:border-[#F59E0B] ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
-            title={readOnly ? 'El proyecto está cerrado' : '+ Semana'}
+            title={readOnly ? t('conditions.projectClosed') : t('planning.addWeek')}
           >
-            + Semana
+            {t('planning.addWeek')}
           </button>
         </div>
       </div>

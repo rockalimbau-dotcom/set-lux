@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { storage } from '@shared/services/localStorage.service';
 import MonthSection from '../components/MonthSection.jsx';
 import { ROLE_COLORS, roleLabelFromCode } from '@shared/constants/roles';
@@ -37,6 +38,7 @@ interface NominaSemanalProps {
 
 export default function NominaSemanal({ project, readOnly = false }: NominaSemanalProps) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   
   // Asegurar que el proyecto tenga el modo correcto para semanal
   const projectWithMode = {
@@ -109,26 +111,26 @@ export default function NominaSemanal({ project, readOnly = false }: NominaSeman
     return (
       <div className='flex flex-col items-center justify-center py-16 px-8 text-center'>
         <h2 className='text-3xl font-bold mb-4' style={{color: 'var(--text)'}}>
-          Configura el proyecto
+          {t('payroll.configureProject')}
         </h2>
         <p className='text-xl max-w-2xl mb-4' style={{color: 'var(--text)', opacity: 0.8}}>
-          Añade semanas en{' '}
+          {t('payroll.addWeeksInPlanningAndTeam')}{' '}
           <button
             onClick={() => navigate(planificacionPath)}
             className='underline font-semibold hover:opacity-80 transition-opacity'
             style={{color: 'var(--brand)'}}
           >
-            Planificación
+            {t('payroll.planning')}
           </button>
-          {' '}y equipo en{' '}
+          {' '}{t('payroll.andTeamIn')}{' '}
           <button
             onClick={() => navigate(equipoPath)}
             className='underline font-semibold hover:opacity-80 transition-opacity'
             style={{color: 'var(--brand)'}}
           >
-            Equipo
+            {t('navigation.team')}
           </button>
-          {' '}para calcular la nómina.
+          {' '}{t('payroll.toCalculatePayroll')}
         </p>
       </div>
     );
@@ -139,18 +141,18 @@ export default function NominaSemanal({ project, readOnly = false }: NominaSeman
     return (
       <div className='flex flex-col items-center justify-center py-16 px-8 text-center'>
         <h2 className='text-3xl font-bold mb-4' style={{color: 'var(--text)'}}>
-          No hay semanas en Planificación
+          {t('payroll.noWeeksInPlanning')}
         </h2>
         <p className='text-xl max-w-2xl mb-4' style={{color: 'var(--text)', opacity: 0.8}}>
-          Añade semanas en{' '}
+          {t('payroll.addWeeksInPlanningForPayroll')}{' '}
           <button
             onClick={() => navigate(planificacionPath)}
             className='underline font-semibold hover:opacity-80 transition-opacity'
             style={{color: 'var(--brand)'}}
           >
-            Planificación
+            {t('payroll.planning')}
           </button>
-          {' '}para que aparezcan aquí la nómina.
+          {' '}{t('payroll.toAppearHerePayroll')}
         </p>
       </div>
     );
@@ -167,18 +169,18 @@ export default function NominaSemanal({ project, readOnly = false }: NominaSeman
     return (
       <div className='flex flex-col items-center justify-center py-16 px-8 text-center'>
         <h2 className='text-3xl font-bold mb-4' style={{color: 'var(--text)'}}>
-          Falta añadir el equipo
+          {t('payroll.missingTeam')}
         </h2>
         <p className='text-xl max-w-2xl mb-4' style={{color: 'var(--text)', opacity: 0.8}}>
-          Rellena el equipo en{' '}
+          {t('payroll.fillTeamIn')}{' '}
           <button
             onClick={() => navigate(equipoPath)}
             className='underline font-semibold hover:opacity-80 transition-opacity'
             style={{color: 'var(--brand)'}}
           >
-            Equipo
+            {t('navigation.team')}
           </button>
-          {' '}para calcular la nómina.
+          {' '}{t('payroll.toCalculatePayrollTeam')}
         </p>
       </div>
     );
@@ -189,18 +191,18 @@ export default function NominaSemanal({ project, readOnly = false }: NominaSeman
     return (
       <div className='flex flex-col items-center justify-center py-16 px-8 text-center'>
         <h2 className='text-3xl font-bold mb-4' style={{color: 'var(--text)'}}>
-          Asigna personas a las semanas
+          {t('payroll.assignPeopleToWeeks')}
         </h2>
         <p className='text-xl max-w-2xl mb-4' style={{color: 'var(--text)', opacity: 0.8}}>
-          Tienes {allWeeks.length} semana{allWeeks.length !== 1 ? 's' : ''} en{' '}
+          {t('payroll.weeksWithoutTeam', { count: allWeeks.length, plural: allWeeks.length !== 1 ? 's' : '' })}{' '}
           <button
             onClick={() => navigate(planificacionPath)}
             className='underline font-semibold hover:opacity-80 transition-opacity'
             style={{color: 'var(--brand)'}}
           >
-            Planificación
+            {t('payroll.planning')}
           </button>
-          {' '}pero no tienen personas asignadas a los días. Asigna el equipo a los días de las semanas para calcular la nómina.
+          {' '}{t('payroll.butNoPeopleAssigned')}
         </p>
       </div>
     );

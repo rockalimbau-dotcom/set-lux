@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { ROLE_COLORS } from '../../../shared/constants/roles';
 
 type ChipProps = {
@@ -10,6 +11,7 @@ type ChipProps = {
 };
 
 export default function Chip({ role, name, onRemove, context, readOnly = false }: ChipProps) {
+  const { t } = useTranslation();
   const base = String(role || '').toUpperCase();
   const col = (ROLE_COLORS && (ROLE_COLORS as any)[base]) || { bg: '#444', fg: '#fff' };
   const roleLabels: Record<string, string> = {
@@ -38,7 +40,7 @@ export default function Chip({ role, name, onRemove, context, readOnly = false }
         <button
           onClick={onRemove}
           className='text-zinc-400 hover:text-red-500 text-xs'
-          title='Quitar'
+          title={t('needs.remove')}
         >
           ×
         </button>

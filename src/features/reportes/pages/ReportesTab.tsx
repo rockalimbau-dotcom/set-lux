@@ -2,6 +2,8 @@ import { useLocalStorage } from '@shared/hooks/useLocalStorage';
 import React, { useMemo, useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { storage } from '@shared/services/localStorage.service';
+import { useTranslation } from 'react-i18next';
+import i18n from 'i18next';
 
 import ReportesSemana from './ReportesSemana.tsx';
 import { exportReportRangeToPDF } from '../utils/export';
@@ -86,7 +88,25 @@ function weekToPersonas(week: AnyRecord) {
 }
 
 export default function ReportesTab({ project, mode = 'semanal', readOnly = false }: ReportesTabProps) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
+  
+  // Helper function to translate week label (same as in WeekCard)
+  const translateWeekLabel = (label: string): string => {
+    if (!label) return '';
+    // Match patterns like "Semana 1", "Semana -1", "Week 1", "Setmana 1", etc.
+    const match = label.match(/^(Semana|Week|Setmana)\s*(-?\d+)$/i);
+    if (match) {
+      const number = match[2];
+      if (number.startsWith('-')) {
+        return t('planning.weekFormatNegative', { number: number.substring(1) });
+      } else {
+        return t('planning.weekFormat', { number });
+      }
+    }
+    // If it doesn't match the pattern, return as is (might be custom label)
+    return label;
+  };
   
   // Al entrar en Reportes, asegurar que la página está arriba del todo
   useEffect(() => {
@@ -146,30 +166,30 @@ export default function ReportesTab({ project, mode = 'semanal', readOnly = fals
     return (
       <div className='flex flex-col items-center justify-center py-16 px-8 text-center'>
         <h2 className='text-3xl font-bold mb-4' style={{color: 'var(--text)'}}>
-          Configura el proyecto
+          {t('reports.configureProject')}
         </h2>
         <p className='text-xl max-w-2xl mb-4' style={{color: 'var(--text)', opacity: 0.8}}>
-          Añade semanas en{' '}
+          {t('reports.addWeeksIn')}{' '}
           <button
             onClick={() => !readOnly && navigate(planificacionPath)}
             disabled={readOnly}
             className={`underline font-semibold hover:opacity-80 transition-opacity ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
             style={{color: 'var(--brand)'}}
-            title={readOnly ? 'El proyecto está cerrado' : 'Ir a Planificación'}
+            title={readOnly ? t('conditions.projectClosed') : t('reports.goToPlanning')}
           >
-            Planificación
+            {t('navigation.planning')}
           </button>
-          {' '}y equipo en{' '}
+          {' '}{t('reports.andTeamIn')}{' '}
           <button
             onClick={() => !readOnly && navigate(equipoPath)}
             disabled={readOnly}
             className={`underline font-semibold hover:opacity-80 transition-opacity ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
             style={{color: 'var(--brand)'}}
-            title={readOnly ? 'El proyecto está cerrado' : 'Ir a Equipo'}
+            title={readOnly ? t('conditions.projectClosed') : t('reports.goToTeam')}
           >
-            Equipo
+            {t('navigation.team')}
           </button>
-          {' '}para generar los reportes.
+          {' '}{t('reports.toGenerateReports')}
         </p>
       </div>
     );
@@ -180,20 +200,20 @@ export default function ReportesTab({ project, mode = 'semanal', readOnly = fals
     return (
       <div className='flex flex-col items-center justify-center py-16 px-8 text-center'>
         <h2 className='text-3xl font-bold mb-4' style={{color: 'var(--text)'}}>
-          No hay semanas en Planificación
+          {t('reports.noWeeksInPlanning')}
         </h2>
         <p className='text-xl max-w-2xl mb-4' style={{color: 'var(--text)', opacity: 0.8}}>
-          Añade semanas en{' '}
+          {t('reports.addWeeksToAppear')}{' '}
           <button
             onClick={() => !readOnly && navigate(planificacionPath)}
             disabled={readOnly}
             className={`underline font-semibold hover:opacity-80 transition-opacity ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
             style={{color: 'var(--brand)'}}
-            title={readOnly ? 'El proyecto está cerrado' : 'Ir a Planificación'}
+            title={readOnly ? t('conditions.projectClosed') : t('reports.goToPlanning')}
           >
-            Planificación
+            {t('navigation.planning')}
           </button>
-          {' '}para que aparezcan aquí los reportes.
+          {' '}{t('reports.toAppearHere')}
         </p>
       </div>
     );
@@ -206,20 +226,20 @@ export default function ReportesTab({ project, mode = 'semanal', readOnly = fals
     return (
       <div className='flex flex-col items-center justify-center py-16 px-8 text-center'>
         <h2 className='text-3xl font-bold mb-4' style={{color: 'var(--text)'}}>
-          Falta añadir el equipo
+          {t('reports.missingTeam')}
         </h2>
         <p className='text-xl max-w-2xl mb-4' style={{color: 'var(--text)', opacity: 0.8}}>
-          Rellena el equipo en{' '}
+          {t('reports.fillTeamIn')}{' '}
           <button
             onClick={() => !readOnly && navigate(equipoPath)}
             disabled={readOnly}
             className={`underline font-semibold hover:opacity-80 transition-opacity ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
             style={{color: 'var(--brand)'}}
-            title={readOnly ? 'El proyecto está cerrado' : 'Ir a Equipo'}
+            title={readOnly ? t('conditions.projectClosed') : t('reports.goToTeam')}
           >
-            Equipo
+            {t('navigation.team')}
           </button>
-          {' '}para poder generar los reportes.
+          {' '}{t('reports.toGenerateReports')}
         </p>
       </div>
     );
@@ -253,9 +273,16 @@ export default function ReportesTab({ project, mode = 'semanal', readOnly = fals
         // Mostrar agrupado por mes con botón PDF y campos de fecha
         Array.from(weeksByMonth.entries()).map(([monthKey, weeks]) => {
           const [year, month] = monthKey.split('-').map(Number);
-          const monthNameFull = new Date(year, month - 1, 1).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
+          // Obtener el locale según el idioma actual
+          const localeMap: Record<string, string> = {
+            'es': 'es-ES',
+            'en': 'en-US',
+            'ca': 'ca-ES',
+          };
+          const locale = localeMap[i18n.language] || 'es-ES';
+          const monthNameFull = new Date(year, month - 1, 1).toLocaleDateString(locale, { month: 'long', year: 'numeric' });
           // Solo el mes con primera letra mayúscula
-          const monthName = new Date(year, month - 1, 1).toLocaleDateString('es-ES', { month: 'long' });
+          const monthName = new Date(year, month - 1, 1).toLocaleDateString(locale, { month: 'long' });
           const monthNameCapitalized = monthName.charAt(0).toUpperCase() + monthName.slice(1);
           return (
             <MonthReportGroup
@@ -284,9 +311,9 @@ export default function ReportesTab({ project, mode = 'semanal', readOnly = fals
           }, [project?.id, project?.nombre, mode]);
           
           const horasExtraOpcionesPublicidad = [
-            'Hora Extra - Normal',
-            'Hora Extra - Minutaje desde corte',
-            'Hora Extra - Minutaje + Cortesía',
+            t('reports.extraHoursNormal'),
+            t('reports.extraHoursMinutageFromCut'),
+            t('reports.extraHoursMinutageCourtesy'),
           ] as const;
           
           const [horasExtraTipoPublicidad] = useLocalStorage<string>(
@@ -294,15 +321,46 @@ export default function ReportesTab({ project, mode = 'semanal', readOnly = fals
             horasExtraOpcionesPublicidad[0]
           );
           
+          // Helper para traducir el valor guardado si está en español (modo publicidad)
+          const translateStoredExtraHoursTypePublicidad = (stored: string): string => {
+            const translations: Record<string, Record<string, string>> = {
+              'Hora Extra - Normal': {
+                'es': 'Hora Extra - Normal',
+                'en': t('reports.extraHoursNormal'),
+                'ca': t('reports.extraHoursNormal'),
+              },
+              'Hora Extra - Minutaje desde corte': {
+                'es': 'Hora Extra - Minutaje desde corte',
+                'en': t('reports.extraHoursMinutageFromCut'),
+                'ca': t('reports.extraHoursMinutageFromCut'),
+              },
+              'Hora Extra - Minutaje + Cortesía': {
+                'es': 'Hora Extra - Minutaje + Cortesía',
+                'en': t('reports.extraHoursMinutageCourtesy'),
+                'ca': t('reports.extraHoursMinutageCourtesy'),
+              },
+            };
+            if (translations[stored] && translations[stored][i18n.language]) {
+              return translations[stored][i18n.language];
+            }
+            // Si ya está traducido, devolverlo tal cual
+            if (horasExtraOpcionesPublicidad.includes(stored as any)) {
+              return stored;
+            }
+            return stored;
+          };
+          
+          const displayedHorasExtraTipoPublicidad = translateStoredExtraHoursTypePublicidad(horasExtraTipoPublicidad);
+          
           return weeksWithPeople.map(week => (
             <ReportesSemana
               key={week.id as string}
               project={project as AnyRecord}
-              title={week.label as string}
+              title={translateWeekLabel(week.label as string)}
               semana={weekToSemanasISO(week)}
               personas={weekToPersonas(week)}
               mode={mode}
-              horasExtraTipo={horasExtraTipoPublicidad}
+              horasExtraTipo={displayedHorasExtraTipoPublicidad}
               readOnly={readOnly}
               planTimesByDate={(iso: string) => {
                 const idx = weekToSemanasISO(week).indexOf(iso);
@@ -346,6 +404,25 @@ function MonthReportGroup({
   allMonthKeys: string[];
   readOnly?: boolean;
 }) {
+  const { t } = useTranslation();
+  
+  // Helper function to translate week label (same as in ReportesTab)
+  const translateWeekLabel = (label: string): string => {
+    if (!label) return '';
+    // Match patterns like "Semana 1", "Semana -1", "Week 1", "Setmana 1", etc.
+    const match = label.match(/^(Semana|Week|Setmana)\s*(-?\d+)$/i);
+    if (match) {
+      const number = match[2];
+      if (number.startsWith('-')) {
+        return t('planning.weekFormatNegative', { number: number.substring(1) });
+      } else {
+        return t('planning.weekFormat', { number });
+      }
+    }
+    // If it doesn't match the pattern, return as is (might be custom label)
+    return label;
+  };
+  
   // Calcular rango de fechas por defecto (primera y última fecha del mes)
   const defaultDateRange = useMemo(() => {
     if (weeks.length === 0) return { from: '', to: '' };
@@ -448,7 +525,7 @@ function MonthReportGroup({
 
   const handleExportPDF = async () => {
     if (!dateFrom || !dateTo) {
-      alert('Por favor, selecciona las fechas de inicio y fin');
+      alert(t('reports.pleaseSelectDates'));
       return;
     }
 
@@ -464,7 +541,7 @@ function MonthReportGroup({
     });
 
     if (weeksInRange.length === 0) {
-      alert('No hay semanas con días en el rango seleccionado');
+      alert(t('reports.noWeeksInRange'));
       return;
     }
 
@@ -483,7 +560,7 @@ function MonthReportGroup({
     allDaysInRange.sort();
 
     if (allDaysInRange.length === 0) {
-      alert('No hay días en el rango seleccionado');
+      alert(t('reports.noDaysInRange'));
       return;
     }
 
@@ -507,7 +584,7 @@ function MonthReportGroup({
     // Exportar PDF con el rango de fechas usando todas las semanas encontradas
     await exportReportRangeToPDF({
       project,
-      title: `Del ${formatDateForTitle(dateFrom)} al ${formatDateForTitle(dateTo)}`,
+      title: t('reports.fromDateToDate', { from: formatDateForTitle(dateFrom), to: formatDateForTitle(dateTo) }),
       safeSemana: allDaysInRange,
       personas: Array.from(allPersonas.values()),
       mode,
@@ -524,15 +601,46 @@ function MonthReportGroup({
   }, [project?.id, project?.nombre, mode, monthKey]);
 
   const horasExtraOpciones = [
-    'Hora Extra - Normal',
-    'Hora Extra - Minutaje desde corte',
-    'Hora Extra - Minutaje + Cortesía',
+    t('reports.extraHoursNormal'),
+    t('reports.extraHoursMinutageFromCut'),
+    t('reports.extraHoursMinutageCourtesy'),
   ] as const;
 
   const [horasExtraTipo, setHorasExtraTipo] = useLocalStorage<string>(
     horasExtraKey,
     horasExtraOpciones[0]
   );
+  
+  // Helper para traducir el valor guardado si está en español
+  const translateStoredExtraHoursType = (stored: string): string => {
+    const translations: Record<string, Record<string, string>> = {
+      'Hora Extra - Normal': {
+        'es': 'Hora Extra - Normal',
+        'en': t('reports.extraHoursNormal'),
+        'ca': t('reports.extraHoursNormal'),
+      },
+      'Hora Extra - Minutaje desde corte': {
+        'es': 'Hora Extra - Minutaje desde corte',
+        'en': t('reports.extraHoursMinutageFromCut'),
+        'ca': t('reports.extraHoursMinutageFromCut'),
+      },
+      'Hora Extra - Minutaje + Cortesía': {
+        'es': 'Hora Extra - Minutaje + Cortesía',
+        'en': t('reports.extraHoursMinutageCourtesy'),
+        'ca': t('reports.extraHoursMinutageCourtesy'),
+      },
+    };
+    if (translations[stored] && translations[stored][i18n.language]) {
+      return translations[stored][i18n.language];
+    }
+    // Si ya está traducido, devolverlo tal cual
+    if (horasExtraOpciones.includes(stored as any)) {
+      return stored;
+    }
+    return stored;
+  };
+  
+  const displayedHorasExtraTipo = translateStoredExtraHoursType(horasExtraTipo);
 
   // Detectar el tema actual para el color del selector
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
@@ -611,7 +719,7 @@ function MonthReportGroup({
                   ? 'bg-white text-gray-900' 
                   : 'bg-black/40 text-zinc-300'
               } ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
-              title={readOnly ? 'El proyecto está cerrado' : 'Seleccionar tipo de horas extra'}
+              title={readOnly ? t('conditions.projectClosed') : t('reports.selectExtraHoursType')}
               style={{
                 borderWidth: isButtonHovered ? '1.5px' : '1px',
                 borderStyle: 'solid',
@@ -626,7 +734,7 @@ function MonthReportGroup({
                 paddingRight: '2.5rem',
               }}
             >
-              {horasExtraTipo}
+              {displayedHorasExtraTipo}
             </button>
             {isDropdownOpen && !readOnly && (
               <div className={`absolute top-full left-0 mt-1 w-full min-w-[280px] border border-neutral-border rounded-lg shadow-lg z-50 overflow-y-auto max-h-60 ${
@@ -666,7 +774,7 @@ function MonthReportGroup({
             )}
           </div>
           <div className='flex items-center gap-2'>
-            <label className='text-sm text-zinc-300 whitespace-nowrap'>Desde:</label>
+            <label className='text-sm text-zinc-300 whitespace-nowrap'>{t('reports.from')}</label>
             <input
               type='date'
               value={dateFrom}
@@ -674,11 +782,11 @@ function MonthReportGroup({
               disabled={readOnly}
               readOnly={readOnly}
               className={`px-3 py-2 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm text-left ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
-              title={readOnly ? 'El proyecto está cerrado' : 'Fecha desde'}
+              title={readOnly ? t('conditions.projectClosed') : t('reports.from')}
             />
           </div>
           <div className='flex items-center gap-2'>
-            <label className='text-sm text-zinc-300 whitespace-nowrap'>Hasta:</label>
+            <label className='text-sm text-zinc-300 whitespace-nowrap'>{t('reports.to')}</label>
             <input
               type='date'
               value={dateTo}
@@ -686,14 +794,14 @@ function MonthReportGroup({
               disabled={readOnly}
               readOnly={readOnly}
               className={`px-3 py-2 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm text-left ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
-              title={readOnly ? 'El proyecto está cerrado' : 'Fecha hasta'}
+              title={readOnly ? t('conditions.projectClosed') : t('reports.to')}
             />
           </div>
           <button
             onClick={handleExportPDF}
             className='px-3 py-2 rounded-lg text-sm font-semibold btn-pdf'
             style={{ border: '1px solid rgba(255,255,255,0.08)' }}
-            title='Exportar mes (PDF)'
+            title={t('reports.exportMonthPDF')}
           >
             PDF
           </button>
@@ -705,11 +813,11 @@ function MonthReportGroup({
         <ReportesSemana
           key={week.id as string}
           project={project as AnyRecord}
-          title={week.label as string}
+          title={translateWeekLabel(week.label as string)}
           semana={weekToSemanasISO(week)}
           personas={weekToPersonas(week)}
           mode={mode}
-          horasExtraTipo={horasExtraTipo}
+          horasExtraTipo={displayedHorasExtraTipo}
           readOnly={readOnly}
           planTimesByDate={(iso: string) => {
             const idx = weekToSemanasISO(week).indexOf(iso);

@@ -1,6 +1,7 @@
 // Utils to build exportable HTML for Nómina
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import i18n from '@i18n';
 
 function esc(value: unknown): string {
   return String(value ?? '').replace(
@@ -21,19 +22,19 @@ export function buildNominaMonthHTML(
     
     // Orden: Localizar, Carga, Rodaje, Descarga
     if ((r._localizar || 0) > 0) {
-      parts.push(`Localizar x${r._localizar}`);
+      parts.push(`${i18n.t('payroll.dayTypes.location')} x${r._localizar}`);
     }
     
     if ((r._carga || 0) > 0) {
-      parts.push(`Carga x${r._carga}`);
+      parts.push(`${i18n.t('payroll.dayTypes.loading')} x${r._carga}`);
     }
     
     if ((r._rodaje || 0) > 0) {
-      parts.push(`Rodaje x${r._rodaje}`);
+      parts.push(`${i18n.t('payroll.dayTypes.shooting')} x${r._rodaje}`);
     }
     
     if ((r._descarga || 0) > 0) {
-      parts.push(`Descarga x${r._descarga}`);
+      parts.push(`${i18n.t('payroll.dayTypes.unloading')} x${r._descarga}`);
     }
     
     if (parts.length === 0) {
@@ -46,6 +47,19 @@ export function buildNominaMonthHTML(
 
   // Helper function to generate dietas summary text for export
   const generateDietasText = (r: any): string => {
+    const translateDietItem = (item: string): string => {
+      const itemMap: Record<string, string> = {
+        'Comida': i18n.t('payroll.dietOptions.lunch'),
+        'Cena': i18n.t('payroll.dietOptions.dinner'),
+        'Desayuno': i18n.t('payroll.dietOptions.breakfast'),
+        'Dieta sin pernoctar': i18n.t('payroll.dietOptions.dietNoOvernight'),
+        'Dieta completa + desayuno': i18n.t('payroll.dietOptions.dietFullBreakfast'),
+        'Gastos de bolsillo': i18n.t('payroll.dietOptions.pocketExpenses'),
+        'Ticket': i18n.t('payroll.dietOptions.ticket'),
+      };
+      return itemMap[item] || item;
+    };
+    
     const want = [
       'Comida',
       'Cena',
@@ -60,13 +74,13 @@ export function buildNominaMonthHTML(
     for (const label of want) {
       if (label === 'Ticket') {
         if (r.ticketTotal > 0) {
-          parts.push(`Ticket €${r.ticketTotal.toFixed(2)}`);
+          parts.push(`${translateDietItem('Ticket')} €${r.ticketTotal.toFixed(2)}`);
           totalDietas += 1; // Contar ticket como 1 dieta
         }
       } else {
         const cnt = r.dietasCount?.get(label) || 0;
         if (cnt > 0) {
-          parts.push(`${label} x${cnt}`);
+          parts.push(`${translateDietItem(label)} x${cnt}`);
           totalDietas += cnt;
         }
       }
@@ -85,19 +99,19 @@ export function buildNominaMonthHTML(
     const parts: string[] = [];
     
     if ((r.horasExtra || 0) > 0) {
-      parts.push(`<div>Hora extra x${r.horasExtra}</div>`);
+      parts.push(`<div>${i18n.t('payroll.concepts.extraHours')} x${r.horasExtra}</div>`);
     }
     
     if ((r.turnAround || 0) > 0) {
-      parts.push(`<div>Turn Around x${r.turnAround}</div>`);
+      parts.push(`<div>${i18n.t('payroll.concepts.turnAround')} x${r.turnAround}</div>`);
     }
     
     if ((r.nocturnidad || 0) > 0) {
-      parts.push(`<div class="nocturnidad">Nocturnidad x${r.nocturnidad}</div>`);
+      parts.push(`<div class="nocturnidad">${i18n.t('payroll.concepts.nightShift')} x${r.nocturnidad}</div>`);
     }
     
     if ((r.penaltyLunch || 0) > 0) {
-      parts.push(`<div>Penalty lunch x${r.penaltyLunch}</div>`);
+      parts.push(`<div>${i18n.t('payroll.concepts.penaltyLunch')} x${r.penaltyLunch}</div>`);
     }
     
     if (parts.length === 0 || totalExtras === 0) {
@@ -133,42 +147,42 @@ export function buildNominaMonthHTML(
   };
 
       const headerCells = [
-        '<th style="text-align:center !important;vertical-align:middle !important;">Persona</th>',
-        '<th style="text-align:center !important;vertical-align:middle !important;">Días trabajados</th>',
-        '<th style="text-align:center !important;vertical-align:middle !important;">Total días</th>',
+        `<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.person')}</th>`,
+        `<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.workedDays')}</th>`,
+        `<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.totalDays')}</th>`,
       ];
 
   if (columnVisibility.holidays) {
-    headerCells.push('<th style="text-align:center !important;vertical-align:middle !important;">Días festivos</th>');
-    headerCells.push('<th style="text-align:center !important;vertical-align:middle !important;">Total días festivos</th>');
+    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.holidayDays')}</th>`);
+    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.totalHolidayDays')}</th>`);
   }
 
   if (columnVisibility.travel) {
-    headerCells.push('<th style="text-align:center !important;vertical-align:middle !important;">Días Travel Day</th>');
-    headerCells.push('<th style="text-align:center !important;vertical-align:middle !important;">Total travel days</th>');
+    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.travelDays')}</th>`);
+    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.totalTravelDays')}</th>`);
   }
 
   if (columnVisibility.extras) {
-    headerCells.push('<th style="text-align:center !important;vertical-align:middle !important;">Horas extras</th>');
-    headerCells.push('<th style="text-align:center !important;vertical-align:middle !important;">Total horas extra</th>');
+    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.extraHours')}</th>`);
+    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.totalExtraHours')}</th>`);
   }
 
   if (columnVisibility.dietas) {
-    headerCells.push('<th style="text-align:center !important;vertical-align:middle !important;">Dietas</th>');
-    headerCells.push('<th style="text-align:center !important;vertical-align:middle !important;">Total dietas</th>');
+    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.dietas')}</th>`);
+    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.totalDietas')}</th>`);
   }
 
   if (columnVisibility.transporte) {
-    headerCells.push('<th style="text-align:center !important;vertical-align:middle !important;">Transportes</th>');
-    headerCells.push('<th style="text-align:center !important;vertical-align:middle !important;">Total transportes</th>');
+    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.transportes')}</th>`);
+    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.totalTransportes')}</th>`);
   }
 
   if (columnVisibility.km) {
-    headerCells.push('<th style="text-align:center !important;vertical-align:middle !important;">Kilometraje</th>');
-    headerCells.push('<th style="text-align:center !important;vertical-align:middle !important;">Total kilometraje</th>');
+    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.kilometraje')}</th>`);
+    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.totalKilometraje')}</th>`);
   }
 
-  headerCells.push('<th style="text-align:center !important;vertical-align:middle !important;">TOTAL BRUTO</th>');
+  headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.totalBruto')}</th>`);
 
   const head = `<tr>${headerCells.join('')}</tr>`;
 
@@ -221,7 +235,7 @@ export function buildNominaMonthHTML(
 <html>
 <head>
   <meta charset="utf-8">
-  <title>${esc(project?.nombre || 'Proyecto')} – Nómina ${esc(monthLabelEs(monthKey, true))}</title>
+  <title>${esc(project?.nombre || 'Proyecto')} – ${i18n.t('payroll.payrollTitle')} ${esc(monthLabelEs(monthKey, true))}</title>
   <style>
     @page { size: A4 landscape; margin: 12mm; }
     @media print { body { margin: 0; } }
@@ -414,7 +428,7 @@ export function buildNominaMonthHTML(
 <body>
   <div class="container">
     <div class="header">
-      <h1>Nómina - ${esc(monthLabelEs(monthKey, true))}</h1>
+      <h1>${i18n.t('payroll.title')} - ${esc(monthLabelEs(monthKey, true))}</h1>
     </div>
     
     <div class="content">
@@ -438,7 +452,7 @@ export function buildNominaMonthHTML(
     </div>
     
     <div class="footer">
-      <span>Generado automáticamente por</span>
+      <span>${i18n.t('footer.generatedAutomaticallyBy')}</span>
       <span class="setlux-logo">
         <span class="set">Set</span><span class="lux">Lux</span>
       </span>
@@ -465,19 +479,19 @@ export function buildNominaMonthHTMLForPDF(
     
     // Orden: Localizar, Carga, Rodaje, Descarga
     if ((r._localizar || 0) > 0) {
-      parts.push(`Localizar x${r._localizar}`);
+      parts.push(`${i18n.t('payroll.dayTypes.location')} x${r._localizar}`);
     }
     
     if ((r._carga || 0) > 0) {
-      parts.push(`Carga x${r._carga}`);
+      parts.push(`${i18n.t('payroll.dayTypes.loading')} x${r._carga}`);
     }
     
     if ((r._rodaje || 0) > 0) {
-      parts.push(`Rodaje x${r._rodaje}`);
+      parts.push(`${i18n.t('payroll.dayTypes.shooting')} x${r._rodaje}`);
     }
     
     if ((r._descarga || 0) > 0) {
-      parts.push(`Descarga x${r._descarga}`);
+      parts.push(`${i18n.t('payroll.dayTypes.unloading')} x${r._descarga}`);
     }
     
     if (parts.length === 0) {
@@ -490,6 +504,19 @@ export function buildNominaMonthHTMLForPDF(
 
   // Helper function to generate dietas summary text for export
   const generateDietasText = (r: any): string => {
+    const translateDietItem = (item: string): string => {
+      const itemMap: Record<string, string> = {
+        'Comida': i18n.t('payroll.dietOptions.lunch'),
+        'Cena': i18n.t('payroll.dietOptions.dinner'),
+        'Desayuno': i18n.t('payroll.dietOptions.breakfast'),
+        'Dieta sin pernoctar': i18n.t('payroll.dietOptions.dietNoOvernight'),
+        'Dieta completa + desayuno': i18n.t('payroll.dietOptions.dietFullBreakfast'),
+        'Gastos de bolsillo': i18n.t('payroll.dietOptions.pocketExpenses'),
+        'Ticket': i18n.t('payroll.dietOptions.ticket'),
+      };
+      return itemMap[item] || item;
+    };
+    
     const want = [
       'Comida',
       'Cena',
@@ -504,13 +531,13 @@ export function buildNominaMonthHTMLForPDF(
     for (const label of want) {
       if (label === 'Ticket') {
         if (r.ticketTotal > 0) {
-          parts.push(`Ticket €${r.ticketTotal.toFixed(2)}`);
+          parts.push(`${translateDietItem('Ticket')} €${r.ticketTotal.toFixed(2)}`);
           totalDietas += 1; // Contar ticket como 1 dieta
         }
       } else {
         const cnt = r.dietasCount?.get(label) || 0;
         if (cnt > 0) {
-          parts.push(`${label} x${cnt}`);
+          parts.push(`${translateDietItem(label)} x${cnt}`);
           totalDietas += cnt;
         }
       }
@@ -529,19 +556,19 @@ export function buildNominaMonthHTMLForPDF(
     const parts: string[] = [];
     
     if ((r.horasExtra || 0) > 0) {
-      parts.push(`<div>Hora extra x${r.horasExtra}</div>`);
+      parts.push(`<div>${i18n.t('payroll.concepts.extraHours')} x${r.horasExtra}</div>`);
     }
     
     if ((r.turnAround || 0) > 0) {
-      parts.push(`<div>Turn Around x${r.turnAround}</div>`);
+      parts.push(`<div>${i18n.t('payroll.concepts.turnAround')} x${r.turnAround}</div>`);
     }
     
     if ((r.nocturnidad || 0) > 0) {
-      parts.push(`<div class="nocturnidad">Nocturnidad x${r.nocturnidad}</div>`);
+      parts.push(`<div class="nocturnidad">${i18n.t('payroll.concepts.nightShift')} x${r.nocturnidad}</div>`);
     }
     
     if ((r.penaltyLunch || 0) > 0) {
-      parts.push(`<div>Penalty lunch x${r.penaltyLunch}</div>`);
+      parts.push(`<div>${i18n.t('payroll.concepts.penaltyLunch')} x${r.penaltyLunch}</div>`);
     }
     
     if (parts.length === 0 || totalExtras === 0) {
@@ -578,42 +605,42 @@ export function buildNominaMonthHTMLForPDF(
 
   // Build header cells
   const headerCells = [
-    '<th style="text-align:center !important;vertical-align:middle !important;">Persona</th>',
-    '<th style="text-align:center !important;vertical-align:middle !important;">Días trabajados</th>',
-    '<th style="text-align:center !important;vertical-align:middle !important;">Total días</th>',
+    `<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.person')}</th>`,
+    `<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.workedDays')}</th>`,
+    `<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.totalDays')}</th>`,
   ];
 
   if (columnVisibility.holidays) {
-    headerCells.push('<th style="text-align:center !important;vertical-align:middle !important;">Días festivos</th>');
-    headerCells.push('<th style="text-align:center !important;vertical-align:middle !important;">Total días festivos</th>');
+    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.holidayDays')}</th>`);
+    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.totalHolidayDays')}</th>`);
   }
 
   if (columnVisibility.travel) {
-    headerCells.push('<th style="text-align:center !important;vertical-align:middle !important;">Días Travel Day</th>');
-    headerCells.push('<th style="text-align:center !important;vertical-align:middle !important;">Total travel days</th>');
+    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.travelDays')}</th>`);
+    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.totalTravelDays')}</th>`);
   }
 
   if (columnVisibility.extras) {
-    headerCells.push('<th style="text-align:center !important;vertical-align:middle !important;">Horas extras</th>');
-    headerCells.push('<th style="text-align:center !important;vertical-align:middle !important;">Total horas extra</th>');
+    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.extraHours')}</th>`);
+    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.totalExtraHours')}</th>`);
   }
 
   if (columnVisibility.dietas) {
-    headerCells.push('<th style="text-align:center !important;vertical-align:middle !important;">Dietas</th>');
-    headerCells.push('<th style="text-align:center !important;vertical-align:middle !important;">Total dietas</th>');
+    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.dietas')}</th>`);
+    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.totalDietas')}</th>`);
   }
 
   if (columnVisibility.transporte) {
-    headerCells.push('<th style="text-align:center !important;vertical-align:middle !important;">Transportes</th>');
-    headerCells.push('<th style="text-align:center !important;vertical-align:middle !important;">Total transportes</th>');
+    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.transportes')}</th>`);
+    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.totalTransportes')}</th>`);
   }
 
   if (columnVisibility.km) {
-    headerCells.push('<th style="text-align:center !important;vertical-align:middle !important;">Kilometraje</th>');
-    headerCells.push('<th style="text-align:center !important;vertical-align:middle !important;">Total kilometraje</th>');
+    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.kilometraje')}</th>`);
+    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.totalKilometraje')}</th>`);
   }
 
-  headerCells.push('<th style="text-align:center !important;vertical-align:middle !important;">TOTAL BRUTO</th>');
+  headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.totalBruto')}</th>`);
   const head = `<tr>${headerCells.join('')}</tr>`;
 
   // Función para determinar el bloque basándose en el rol
@@ -750,7 +777,7 @@ export function buildNominaMonthHTMLForPDF(
     const baseTitle = `
       <tr>
         <td colspan="${numColumns}" style="border:1px solid #999;padding:12px 8px;font-weight:700;background:#fff3e0;color:#e65100;text-align:center !important;vertical-align:middle !important;height:40px;line-height:1.2;display:table-cell;">
-          EQUIPO BASE
+          ${i18n.t('payroll.teamBase')}
         </td>
       </tr>`;
     bodyParts.push(baseTitle);
@@ -762,7 +789,7 @@ export function buildNominaMonthHTMLForPDF(
     const preTitle = `
       <tr>
         <td colspan="${numColumns}" style="border:1px solid #999;padding:12px 8px;font-weight:700;background:#e3f2fd;color:#1565c0;text-align:center !important;vertical-align:middle !important;height:40px;line-height:1.2;display:table-cell;">
-          EQUIPO PRELIGHT
+          ${i18n.t('payroll.teamPrelight')}
         </td>
       </tr>`;
     bodyParts.push(preTitle);
@@ -774,7 +801,7 @@ export function buildNominaMonthHTMLForPDF(
     const pickTitle = `
       <tr>
         <td colspan="${numColumns}" style="border:1px solid #999;padding:12px 8px;font-weight:700;background:#e3f2fd;color:#1565c0;text-align:center !important;vertical-align:middle !important;height:40px;line-height:1.2;display:table-cell;">
-          EQUIPO RECOGIDA
+          ${i18n.t('payroll.teamPickup')}
         </td>
       </tr>`;
     bodyParts.push(pickTitle);
@@ -787,7 +814,7 @@ export function buildNominaMonthHTMLForPDF(
 <html>
 <head>
   <meta charset="utf-8">
-  <title>${esc(project?.nombre || 'Proyecto')} – Nómina ${esc(monthLabelEs(monthKey, true))}</title>
+  <title>${esc(project?.nombre || 'Proyecto')} – ${i18n.t('payroll.payrollTitle')} ${esc(monthLabelEs(monthKey, true))}</title>
   <style>
     * {
       margin: 0;
@@ -978,18 +1005,18 @@ export function buildNominaMonthHTMLForPDF(
 <body>
   <div class="container">
     <div class="header">
-      <h1>Nómina - ${esc(monthLabelEs(monthKey, true))}</h1>
+      <h1>${i18n.t('payroll.title')} - ${esc(monthLabelEs(monthKey, true))}</h1>
     </div>
     
     <div class="content">
       <div class="info-panel">
         <div class="info-item">
-          <div class="info-label">Producción</div>
+          <div class="info-label">${i18n.t('common.production')}</div>
           <div class="info-value">${esc(project?.produccion || '—')}</div>
         </div>
         <div class="info-item">
-          <div class="info-label">Proyecto</div>
-          <div class="info-value">${esc(project?.nombre || 'Proyecto')}</div>
+          <div class="info-label">${i18n.t('common.project')}</div>
+          <div class="info-value">${esc(project?.nombre || i18n.t('common.project'))}</div>
         </div>
       </div>
       
@@ -1002,7 +1029,7 @@ export function buildNominaMonthHTMLForPDF(
     </div>
     
     <div class="footer">
-      <span>Generado por</span>
+      <span>${i18n.t('footer.generatedBy')}</span>
       <span class="setlux-logo">
         <span class="set">Set</span><span class="lux">Lux</span>
       </span>

@@ -7,6 +7,9 @@ import { Footer } from '@shared/components/Footer.tsx';
 import { ROLES } from '@shared/constants/roles';
 import { useLocalStorage } from '@shared/hooks/useLocalStorage';
 import { storage } from '@shared/services/localStorage.service';
+import { changeLanguage } from '@i18n/config';
+import { useTranslation } from 'react-i18next';
+import i18n from '@i18n/config';
 import React, { useCallback, useEffect, useMemo, useState, useRef } from 'react';
 import { BrowserRouter, useNavigate, Routes, Route } from 'react-router-dom';
 
@@ -33,6 +36,7 @@ interface RegisterState {
 import type { Project as UIProject } from '@features/projects/pages/ProjectsScreen.tsx';
 
 function AppInner() {
+  const { t } = useTranslation();
   const { mode, setMode, userName, setUserName } = useAuth();
   // ——— estado principal
   const [login, setLogin] = useState<LoginState>({ user: '', pass: '' });
@@ -63,6 +67,14 @@ function AppInner() {
   const idiomaDropdownRef = useRef<HTMLDivElement>(null);
   
   const idiomaOptions = ['Español', 'Catalán', 'Inglés'];
+  
+  // Función helper para obtener el nombre traducido del idioma
+  const getLanguageName = (value: string): string => {
+    if (value === 'Español') return t('settings.spanish');
+    if (value === 'Catalán') return t('settings.catalan');
+    if (value === 'Inglés') return t('settings.english');
+    return value;
+  };
   
   // Estados para el hover de los inputs
   const [isLoginUserHovered, setIsLoginUserHovered] = useState(false);
@@ -125,22 +137,37 @@ function AppInner() {
   }, [rolDropdownOpen, idiomaDropdownOpen]);
 
   const navigate = useNavigate();
-  const [themeLabel, setThemeLabel] = useState<string>(() => {
-    if (typeof document !== 'undefined') {
-      const curr = document.documentElement.getAttribute('data-theme') || 'light';
-      return curr === 'light' ? 'Daylight' : 'Darklight';
-    }
-    return 'Daylight';
-  });
+  const [themeLabel, setThemeLabel] = useState<string>('');
+  const [currentTheme, setCurrentTheme] = useState<'light' | 'dark'>('light');
+  
+  // Actualizar themeLabel cuando cambie el tema o el idioma
+  useEffect(() => {
+    const updateThemeLabel = () => {
+      const curr = currentTheme;
+      setThemeLabel(curr === 'light' ? i18n.t('auth.daylight') : i18n.t('auth.darklight'));
+    };
+    updateThemeLabel();
+    
+    // Escuchar cambios de idioma
+    const handleLanguageChange = () => {
+      updateThemeLabel();
+    };
+    i18n.on('languageChanged', handleLanguageChange);
+    
+    return () => {
+      i18n.off('languageChanged', handleLanguageChange);
+    };
+  }, [currentTheme]);
 
   // Inicializar tema desde localStorage o preferencia del sistema
   useEffect(() => {
     try {
       const saved = (typeof localStorage !== 'undefined' && localStorage.getItem('theme')) || '';
-      const initial = saved === 'light' || saved === 'dark' ? saved : 'light';
+      const initial = (saved === 'light' || saved === 'dark' ? saved : 'light') as 'light' | 'dark';
+      setCurrentTheme(initial);
       const root = document.documentElement;
       root.setAttribute('data-theme', initial);
-      setThemeLabel(initial === 'light' ? 'Daylight' : 'Darklight');
+      setThemeLabel(initial === 'light' ? i18n.t('auth.daylight') : i18n.t('auth.darklight'));
       const body = document.body as any;
       body.style.backgroundColor = 'var(--bg)';
       body.style.color = 'var(--text)';
@@ -173,11 +200,11 @@ function AppInner() {
 
       const { nombre, apellido, email, pass, pass2 } = reg;
       if (!nombre || !apellido || !email || !pass || !pass2) {
-        setError('Por favor, completa todos los campos.');
+        setError(t('auth.registerError'));
         return;
       }
       if (pass !== pass2) {
-        setError('Las contraseñas no coinciden.');
+        setError(t('auth.passwordMismatch'));
         return;
       }
 
@@ -192,7 +219,7 @@ function AppInner() {
         idioma: reg.idioma,
       });
 
-      setSuccess('Registro completado con éxito ✅');
+      setSuccess(t('auth.registerSuccess'));
       setTimeout(() => {
         setMode('login');
         setLogin(f => ({ ...f, user: reg.email }));
@@ -258,8 +285,9 @@ function AppInner() {
                       const root = document.documentElement;
                       const curr = root.getAttribute('data-theme') || 'dark';
                       next = curr === 'light' ? 'dark' : 'light';
+                      setCurrentTheme(next as 'light' | 'dark');
                       root.setAttribute('data-theme', next);
-                      setThemeLabel(next === 'light' ? 'Daylight' : 'Darklight');
+                      setThemeLabel(next === 'light' ? i18n.t('auth.daylight') : i18n.t('auth.darklight'));
                       const body = document.body as any;
                       body.style.backgroundColor = 'var(--bg)';
                       body.style.color = 'var(--text)';
@@ -298,7 +326,7 @@ function AppInner() {
                   <form className='space-y-6' onSubmit={handleLoginSubmit}>
                     <div className='space-y-2'>
                       <label className='block text-sm font-medium' style={{color: 'var(--text)'}}>
-                        Usuario
+                        {t('auth.user')}
                       </label>
                       <Input
                         type='text'
@@ -309,7 +337,7 @@ function AppInner() {
                         onMouseEnter={() => setIsLoginUserHovered(true)}
                         onMouseLeave={() => setIsLoginUserHovered(false)}
                         onBlur={() => setIsLoginUserHovered(false)}
-                        placeholder='Introduce tu usuario o email'
+                        placeholder={t('auth.userPlaceholder')}
                         style={{
                           borderWidth: isLoginUserHovered ? '1.5px' : '1px',
                           borderStyle: 'solid',
@@ -324,7 +352,7 @@ function AppInner() {
 
                     <div className='space-y-2'>
                       <label className='block text-sm font-medium' style={{color: 'var(--text)'}}>
-                        Contraseña
+                        {t('auth.password')}
                       </label>
                       <Input
                         type='password'
@@ -335,7 +363,7 @@ function AppInner() {
                         onMouseEnter={() => setIsLoginPassHovered(true)}
                         onMouseLeave={() => setIsLoginPassHovered(false)}
                         onBlur={() => setIsLoginPassHovered(false)}
-                        placeholder='Introduce tu contraseña'
+                        placeholder={t('auth.passwordPlaceholder')}
                         style={{
                           borderWidth: isLoginPassHovered ? '1.5px' : '1px',
                           borderStyle: 'solid',
@@ -355,7 +383,7 @@ function AppInner() {
                       className='w-full'
                       style={{backgroundColor: 'var(--brand)', borderColor: 'var(--brand)'}}
                     >
-                      Iniciar sesión
+                      {t('auth.login')}
                     </Button>
 
                     <div className='text-center'>
@@ -365,9 +393,9 @@ function AppInner() {
                         className='text-sm transition-colors'
                         style={{color: '#f97316'}}
                       >
-                        ¿No tienes cuenta?{' '}
+                        {t('auth.noAccount')}{' '}
                         <span className='font-medium hover:underline'>
-                          Regístrate
+                          {t('auth.registerLink')}
                         </span>
                       </button>
                     </div>
@@ -382,14 +410,14 @@ function AppInner() {
                       className='mb-6 btn-back-register'
                       style={{color: 'var(--accent)'}}
                     >
-                      ← Volver
+                      {t('auth.back')}
                     </Button>
 
                     <form className='space-y-5' onSubmit={handleRegisterSubmit}>
                       <div className='grid grid-cols-2 gap-4'>
                         <div className='space-y-2'>
                           <label className='block text-sm font-medium' style={{color: 'var(--text)'}}>
-                            Nombre
+                            {t('auth.firstName')}
                           </label>
                           <Input
                             type='text'
@@ -400,7 +428,7 @@ function AppInner() {
                             onMouseEnter={() => setIsRegNombreHovered(true)}
                             onMouseLeave={() => setIsRegNombreHovered(false)}
                             onBlur={() => setIsRegNombreHovered(false)}
-                            placeholder='Nombre'
+                            placeholder={t('auth.firstNamePlaceholder')}
                             style={{
                               borderWidth: isRegNombreHovered ? '1.5px' : '1px',
                               borderStyle: 'solid',
@@ -414,7 +442,7 @@ function AppInner() {
                         </div>
                         <div className='space-y-2'>
                           <label className='block text-sm font-medium' style={{color: 'var(--text)'}}>
-                            Apellido
+                            {t('auth.lastName')}
                           </label>
                           <Input
                             type='text'
@@ -425,7 +453,7 @@ function AppInner() {
                             onMouseEnter={() => setIsRegApellidoHovered(true)}
                             onMouseLeave={() => setIsRegApellidoHovered(false)}
                             onBlur={() => setIsRegApellidoHovered(false)}
-                            placeholder='Apellido'
+                            placeholder={t('auth.lastNamePlaceholder')}
                             style={{
                               borderWidth: isRegApellidoHovered ? '1.5px' : '1px',
                               borderStyle: 'solid',
@@ -441,7 +469,7 @@ function AppInner() {
 
                       <div className='space-y-2'>
                         <label className='block text-sm font-medium' style={{color: 'var(--text)'}}>
-                          Rol
+                          {t('auth.role')}
                         </label>
                         <div className='relative' ref={rolDropdownRef}>
                           <button
@@ -510,7 +538,7 @@ function AppInner() {
 
                       <div className='space-y-2'>
                         <label className='block text-sm font-medium' style={{color: 'var(--text)'}}>
-                          Idioma
+                          {t('auth.language')}
                         </label>
                         <div className='relative' ref={idiomaDropdownRef}>
                           <button
@@ -538,7 +566,7 @@ function AppInner() {
                               paddingRight: '2rem',
                             }}
                           >
-                            {reg.idioma || '\u00A0'}
+                            {getLanguageName(reg.idioma) || '\u00A0'}
                           </button>
                           {idiomaDropdownOpen && (
                             <div className={`absolute top-full left-0 mt-1 w-full border border-neutral-border rounded-lg shadow-lg z-50 overflow-y-auto max-h-60 ${
@@ -550,6 +578,8 @@ function AppInner() {
                                   type='button'
                                   onClick={() => {
                                     setReg(r => ({ ...r, idioma: opt }));
+                                    // Cambiar el idioma de la aplicación inmediatamente
+                                    changeLanguage(opt);
                                     setIdiomaDropdownOpen(false);
                                     setHoveredIdiomaOption(null);
                                   }}
@@ -569,7 +599,7 @@ function AppInner() {
                                       : 'inherit',
                                   }}
                                 >
-                                  {opt}
+                                  {getLanguageName(opt)}
                                 </button>
                               ))}
                             </div>
@@ -579,7 +609,7 @@ function AppInner() {
 
                       <div className='space-y-2'>
                         <label className='block text-sm font-medium' style={{color: 'var(--text)'}}>
-                          Email
+                          {t('auth.email')}
                         </label>
                         <Input
                           type='email'
@@ -590,7 +620,7 @@ function AppInner() {
                           onMouseEnter={() => setIsRegEmailHovered(true)}
                           onMouseLeave={() => setIsRegEmailHovered(false)}
                           onBlur={() => setIsRegEmailHovered(false)}
-                          placeholder='tucorreo@ejemplo.com'
+                          placeholder={t('auth.emailPlaceholder')}
                           style={{
                             borderWidth: isRegEmailHovered ? '1.5px' : '1px',
                             borderStyle: 'solid',
@@ -606,7 +636,7 @@ function AppInner() {
                       <div className='grid grid-cols-2 gap-4'>
                       <div className='space-y-2'>
                         <label className='block text-sm font-medium' style={{color: 'var(--text)'}}>
-                          Contraseña
+                          {t('auth.password')}
                         </label>
                           <Input
                             type='password'
@@ -617,7 +647,7 @@ function AppInner() {
                             onMouseEnter={() => setIsRegPassHovered(true)}
                             onMouseLeave={() => setIsRegPassHovered(false)}
                             onBlur={() => setIsRegPassHovered(false)}
-                            placeholder='********'
+                            placeholder={t('auth.passwordPlaceholderRegister')}
                             style={{
                               borderWidth: isRegPassHovered ? '1.5px' : '1px',
                               borderStyle: 'solid',
@@ -631,7 +661,7 @@ function AppInner() {
                         </div>
                         <div className='space-y-2'>
                           <label className='block text-sm font-medium' style={{color: 'var(--text)'}}>
-                            Repite contraseña
+                            {t('auth.repeatPassword')}
                           </label>
                           <Input
                             type='password'
@@ -642,7 +672,7 @@ function AppInner() {
                             onMouseEnter={() => setIsRegPass2Hovered(true)}
                             onMouseLeave={() => setIsRegPass2Hovered(false)}
                             onBlur={() => setIsRegPass2Hovered(false)}
-                            placeholder='********'
+                            placeholder={t('auth.passwordPlaceholderRegister')}
                             style={{
                               borderWidth: isRegPass2Hovered ? '1.5px' : '1px',
                               borderStyle: 'solid',
@@ -674,7 +704,7 @@ function AppInner() {
                         className='w-full'
                       style={{backgroundColor: 'var(--brand)', borderColor: 'var(--brand)'}}
                       >
-                        Registrarse
+                        {t('auth.register')}
                       </Button>
                     </form>
                   </>

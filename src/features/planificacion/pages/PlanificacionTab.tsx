@@ -3,6 +3,7 @@ import { useLocalStorage } from '@shared/hooks/useLocalStorage';
 import { parseYYYYMMDD, addDays } from '@shared/utils/date';
 // Removed unused imports
 import React, { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import PlanScopeSection from '../components/PlanScopeSection';
 import { relabelWeekByCalendar, relabelWeekByCalendarDynamic } from '../utils/calendar';
@@ -44,6 +45,7 @@ export default function PlanificacionTab({
   teamList = [],
   readOnly = false,
 }: PlanificacionTabProps) {
+  const { t } = useTranslation();
   const openHtmlInNewTab = (title: string, innerHtml: string) => {
     const w = typeof window !== 'undefined' ? window.open('', '_blank') : null;
     if (!w) return;
@@ -269,11 +271,11 @@ export default function PlanificacionTab({
         preWeeks as any,
         weekId,
         -1,
-        (n: number) => `Semana -${n}`
+        (n: number) => t('planning.weekFormatNegative', { number: n })
       ).sort((a: AnyRecord, b: AnyRecord) => parseYYYYMMDD(a.startDate).getTime() - parseYYYYMMDD(b.startDate).getTime());
       setPreWeeks(next as any);
     } else {
-      const next = duplicateWeekAction(proWeeks as any, weekId, 1, (n: number) => `Semana ${n}`);
+      const next = duplicateWeekAction(proWeeks as any, weekId, 1, (n: number) => t('planning.weekFormat', { number: n }));
       setProWeeks(next as any);
     }
   };
@@ -352,7 +354,7 @@ export default function PlanificacionTab({
             next.start = '';
             next.end = '';
             next.cut = '';
-            next.loc = 'DESCANSO';
+            next.loc = t('planning.restLocation');
             next.prelightStart = '';
             next.prelightEnd = '';
             next.pickupStart = '';
@@ -366,7 +368,7 @@ export default function PlanificacionTab({
             next.start = '';
             next.end = '';
             next.cut = '';
-            next.loc = 'FIN DEL RODAJE';
+            next.loc = t('planning.endLocation');
             next.prelightStart = '';
             next.prelightEnd = '';
             next.pickupStart = '';
@@ -555,14 +557,14 @@ export default function PlanificacionTab({
           className={btnExportCls}
           style={btnExportStyle}
           onClick={() => exportScopePDF('all')}
-          title='Exportar toda la planificación (PDF)'
+          title={t('planning.exportAllPDF')}
         >
-          PDF Entero
+          {t('planning.pdfFull')}
         </button>
       </div>
 
       <PlanScopeSection
-        title='Preproducción'
+        title={t('planning.preproduction')}
         open={openPre}
         onToggle={() => setOpenPre(v => !v)}
         onAdd={addPreWeek}
@@ -585,7 +587,7 @@ export default function PlanificacionTab({
         reinforcements={refsRoster}
         onExportWeek={exportWeek as any}
         onExportWeekPDF={exportWeekPDF as any}
-        emptyText='No hay semanas de preproducción'
+        emptyText={t('planning.noPreproductionWeeks')}
         containerId='pre-block'
         weeksOnlyId='pre-weeks-only'
         project={project}
@@ -593,7 +595,7 @@ export default function PlanificacionTab({
       />
 
       <PlanScopeSection
-        title='Producción'
+        title={t('planning.production')}
         open={openPro}
         onToggle={() => setOpenPro(v => !v)}
         onAdd={addProWeek}
@@ -616,7 +618,7 @@ export default function PlanificacionTab({
         reinforcements={refsRoster}
         onExportWeek={exportWeek as any}
         onExportWeekPDF={exportWeekPDF as any}
-        emptyText='No hay semanas de producción'
+        emptyText={t('planning.noProductionWeeks')}
         containerId='pro-block'
         weeksOnlyId='pro-weeks-only'
         project={project}

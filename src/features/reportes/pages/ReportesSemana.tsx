@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import ReportBlockScheduleRow from '../components/ReportBlockScheduleRow';
 import ReportPersonRows from '../components/ReportPersonRows';
@@ -22,8 +23,6 @@ import {
   buildPeoplePre,
   buildPeoplePick,
   collectRefNamesForBlock,
-  horarioPrelightFactory,
-  horarioPickupFactory,
 } from '../utils/derive';
 import { buildReportWeekHTML, exportReportWeekToPDF } from '../utils/export';
 import { personaKey, personaRole, personaName } from '../utils/model';
@@ -70,14 +69,23 @@ export default function ReportesSemana({
   onExportWeekHTML,
   onExportWeekPDF,
 }: Props) {
+  const { t } = useTranslation();
   console.log('[REPORTES.DEBUG] ReportesSemana initialized with mode:', mode, 'project:', project?.id, 'title:', title);
   
   const safeSemana =
     Array.isArray(semana) && semana.length === 7 ? semana : defaultWeek();
   const providedPersonas = Array.isArray(personas) ? personas : [];
 
-  // Seleccionar opciones de dietas según el modo
-  const dietasOpciones = mode === 'publicidad' ? DIETAS_OPCIONES_PUBLICIDAD : DIETAS_OPCIONES;
+  // Seleccionar opciones de dietas según el modo (traducidas)
+  const dietasOpciones = useMemo(() => {
+    const baseOptions = mode === 'publicidad' ? DIETAS_OPCIONES_PUBLICIDAD : DIETAS_OPCIONES;
+    const translations = mode === 'publicidad' ? t('reports.dietOptionsAdvertising', { returnObjects: true }) : t('reports.dietOptions', { returnObjects: true });
+    return baseOptions.map((opt, idx) => {
+      if (idx === 0) return opt; // Empty string
+      const key = Object.keys(translations as Record<string, string>)[idx];
+      return (translations as Record<string, string>)[key] || opt;
+    });
+  }, [mode, t]);
   console.log('[REPORTES.DEBUG] dietasOpciones selected:', dietasOpciones);
 
   const storageKey = useMemo(() => {
@@ -117,16 +125,47 @@ export default function ReportesSemana({
 
   const horarioTexto = (iso: string) => {
     const { day } = findWeekAndDay(iso);
-    if (!day) return 'Añadelo en Planificación';
-    if ((day.tipo || '') === 'Descanso') return 'DESCANSO';
+    if (!day) return t('reports.addInPlanning');
+    if ((day.tipo || '') === 'Descanso') return t('reports.rest');
+    
+    // Helper para traducir tipos de jornada
+    const translateJornadaType = (tipo: string): string => {
+      const typeMap: Record<string, string> = {
+        'Rodaje': t('planning.shooting'),
+        'Carga': t('planning.loading'),
+        'Descarga': t('planning.unloading'),
+        'Localizar': t('planning.location'),
+        'Travel Day': t('planning.travelDay'),
+        'Rodaje Festivo': t('planning.holidayShooting'),
+        'Fin': t('planning.end'),
+        'Descanso': t('planning.rest'),
+      };
+      return typeMap[tipo] || tipo;
+    };
+    
     // Para "Rodaje Festivo", no mostrar el prefijo, solo el horario o "Añadelo en Planificación"
-    const etiqueta = day.tipo && day.tipo !== 'Rodaje' && day.tipo !== 'Rodaje Festivo' ? `${day.tipo}: ` : '';
-    if (!day.start || !day.end) return `${etiqueta}Añadelo en Planificación`;
+    const etiqueta = day.tipo && day.tipo !== 'Rodaje' && day.tipo !== 'Rodaje Festivo' 
+      ? `${translateJornadaType(day.tipo)}: ` 
+      : '';
+    if (!day.start || !day.end) return `${etiqueta}${t('reports.addInPlanning')}`;
     return `${etiqueta}${day.start}–${day.end}`;
   };
 
-  const horarioPrelight = horarioPrelightFactory(findWeekAndDay);
-  const horarioPickup = horarioPickupFactory(findWeekAndDay);
+  // Funciones de horario para prelight y pickup con traducción
+  const horarioPrelight = (iso: string) => {
+    const { day } = findWeekAndDay(iso);
+    if (!day || day.tipo === 'Descanso') return '—';
+    if (!day.prelightStart || !day.prelightEnd)
+      return t('reports.addInPlanning');
+    return `${day.prelightStart}–${day.prelightEnd}`;
+  };
+  
+  const horarioPickup = (iso: string) => {
+    const { day } = findWeekAndDay(iso);
+    if (!day || day.tipo === 'Descanso') return '—';
+    if (!day.pickupStart || !day.pickupEnd) return t('reports.addInPlanning');
+    return `${day.pickupStart}–${day.pickupEnd}`;
+  };
 
   // Helper function to check if a date is Saturday (6) or Sunday (0)
   const isWeekend = (iso: string): boolean => {
@@ -414,12 +453,24 @@ export default function ReportesSemana({
           tabIndex={-1}
           className='px-5 pb-5 overflow-x-auto'
           role='region'
-          aria-label='Contenido de la semana'
+          aria-label={t('reports.weekContent')}
         >
           <table className='min-w-[920px] w-full border-collapse text-sm'>
             <ReportTableHead
               semana={[...filteredSemana]}
-              dayNameFromISO={(iso: string, i: number) => dayNameFromISO(iso, i, [...DAY_NAMES] as any) as any}
+              dayNameFromISO={(iso: string, i: number) => {
+                const dayIndex = dayNameFromISO(iso, i, [...DAY_NAMES] as any);
+                const dayMap: Record<string, string> = {
+                  'Lunes': t('reports.dayNames.monday'),
+                  'Martes': t('reports.dayNames.tuesday'),
+                  'Miércoles': t('reports.dayNames.wednesday'),
+                  'Jueves': t('reports.dayNames.thursday'),
+                  'Viernes': t('reports.dayNames.friday'),
+                  'Sábado': t('reports.dayNames.saturday'),
+                  'Domingo': t('reports.dayNames.sunday'),
+                };
+                return dayMap[dayIndex] || dayIndex;
+              }}
               DAY_NAMES={[...DAY_NAMES] as any}
               toDisplayDate={toDisplayDate}
               horarioTexto={horarioTexto}
@@ -454,7 +505,7 @@ export default function ReportesSemana({
 
                     {peoplePre.length > 0 && (
                       <ReportBlockScheduleRow
-                        label='Horario Prelight'
+                        label={t('reports.prelightSchedule')}
                         semana={[...filteredSemana]}
                         valueForISO={horarioPrelight}
                       />
@@ -463,7 +514,7 @@ export default function ReportesSemana({
 
                     {peoplePick.length > 0 && (
                       <ReportBlockScheduleRow
-                        label='Horario Recogida'
+                        label={t('reports.pickupSchedule')}
                         semana={[...filteredSemana]}
                         valueForISO={horarioPickup}
                       />

@@ -3,6 +3,8 @@ import { Th, Td } from '@shared/components';
 import { useLocalStorage } from '@shared/hooks/useLocalStorage';
 import { useCallback, useEffect, useMemo, useState, useRef, memo } from 'react';
 import { createPortal } from 'react-dom';
+import { useTranslation } from 'react-i18next';
+import i18n from '@i18n';
 
 import { renderWithParams, visibleToTemplate, loadJSON, TextAreaAuto, InfoCard, ParamInput, restoreStrongTags } from './shared';
 import { storage } from '@shared/services/localStorage.service';
@@ -16,6 +18,7 @@ interface DeleteRoleConfirmModalProps {
 }
 
 function DeleteRoleConfirmModal({ roleName, onClose, onConfirm }: DeleteRoleConfirmModalProps) {
+  const { t } = useTranslation();
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
     if (typeof document !== 'undefined') {
       return (document.documentElement.getAttribute('data-theme') || 'light') as 'dark' | 'light';
@@ -55,14 +58,14 @@ function DeleteRoleConfirmModal({ roleName, onClose, onConfirm }: DeleteRoleConf
         }}
       >
         <h3 className='text-lg font-semibold mb-4' style={{color: isLight ? '#0476D9' : '#F27405'}}>
-          Confirmar eliminación
+          {t('conditions.confirmDeleteRole')}
         </h3>
         
         <p 
           className='text-sm mb-6' 
           style={{color: isLight ? '#111827' : '#d1d5db'}}
           dangerouslySetInnerHTML={{
-            __html: `¿Estás seguro de eliminar el rol <strong>${roleName}</strong>?`
+            __html: t('conditions.confirmDeleteRoleMessage', { roleName })
           }}
         />
 
@@ -77,7 +80,7 @@ function DeleteRoleConfirmModal({ roleName, onClose, onConfirm }: DeleteRoleConf
             }}
             type='button'
           >
-            No
+            {t('common.no')}
           </button>
           <button
             onClick={() => {
@@ -92,7 +95,7 @@ function DeleteRoleConfirmModal({ roleName, onClose, onConfirm }: DeleteRoleConf
             }}
             type='button'
           >
-            Sí
+            {t('common.yes')}
           </button>
         </div>
       </div>
@@ -102,12 +105,7 @@ function DeleteRoleConfirmModal({ roleName, onClose, onConfirm }: DeleteRoleConf
 
 type AnyRecord = Record<string, any>;
 
-const defaultLegendPubli = `<strong>Precio jornada:</strong> Importe base por jornada.
-<strong>Precio día extra/festivo:</strong> Equivale al precio de jornada multiplicado por {{FACTOR_FESTIVO}}. Horas extras festivas equivale al precio de jornada multiplicado por {{FACTOR_HORA_EXTRA_FESTIVA}}.
-<strong>Localización técnica:</strong> Importe por día de trabajo en localizaciones técnicas previas al rodaje. Si la localización técnica es mayor de 5h + 1h, se contará como jornada completa.
-<strong>Carga/descarga:</strong> Importe por jornada de carga y descarga de material. Esto equivale a 3 horas extras.
-<strong>Travel day:</strong> Equivale al precio de jornada.
-<strong>Horas extras:</strong> Se considera hora extra a partir de {{CORTESIA_MIN}} minutos después del fin de la jornada pactada. A partir de la segunda hora extra no habrá cortesía de {{CORTESIA_MIN}}′. Las horas extras son voluntarias y deberán comunicarse antes del final de la jornada pactada.`;
+const getDefaultLegendPubli = () => i18n.t('conditions.defaultLegendAdvertising');
 
 // Variable global para festivos dinámicos
 let globalDynamicFestivosText = DEFAULT_FESTIVOS_TEXT;
@@ -120,20 +118,11 @@ const updateDynamicFestivos = async () => {
     globalDynamicFestivosText = DEFAULT_FESTIVOS_TEXT;
   }
 };
-const defaultHorarios = `<strong>Turn around:</strong> El descanso entre jornadas será de {{TA_DIARIO}}h entre días laborables y de {{TA_FINDE}}h los fines de semana. Todas las horas que no se descansen serán consideradas horas extras.
-<strong>Nocturnidad:</strong> Se considerará jornada nocturna cuando el inicio o final de la jornada sea entre las {{NOCTURNO_INI}} y las {{NOCTURNO_FIN}}. Se bonificará con un complemento salarial equivalente a {{NOCTURNIDAD_COMPLEMENTO}}€. Aparte, tambien las horas nocturnas se bonificarán con un factor {{FACTOR_HORA_EXTRA_FESTIVA}} a las horas extras.`;
-const defaultDietas = `Se ingresarán en nómina (importe libre de impuestos) las siguientes cantidades cuando no se disponga de manutención en el rodaje así como cuando se trabaje fuera del centro de actividades habitual. Se incrementará en un 50% fuera del territorio nacional. También se efectuará un anticipo de éstas.
-<strong>Desayuno:</strong> {{DIETA_DESAYUNO}}€
-<strong>Comida:</strong> {{DIETA_COMIDA}}€
-<strong>Cena:</strong> {{DIETA_CENA}}€
-<strong>Dieta completa sin pernocta:</strong> {{DIETA_SIN_PERNOCTA}} €
-<strong>Dieta completa y desayuno:</strong> {{DIETA_ALOJ_DES}}€
-<strong>Gastos de bolsillo:</strong> {{GASTOS_BOLSILLO}}€`;
-const defaultTransportes = `Cuando por necesidades de rodaje, el trabajador se desplace fuera del centro habitual de trabajo, se abonará la cantidad de {{KM_EURO}}€/km más los peajes y gastos de estacionamiento pertinentes.
-En caso de transportar a miembros del equipo se bonificará también con la cantidad de {{TRANSPORTE_DIA}}€/día extra.`;
-const defaultAlojamiento = `En caso de tener que pernoctar fuera del domicilio habitual del trabajador, la productora deberá facilitar un hotel (mínimo 3 estrellas) con habitación individual y las dietas y gastos de bolsillo pertinentes.`;
-
-const defaultConvenio = `También se tendrá en cuenta el convenio “Resolución de 22 de marzo de 2024, de la Dirección General de Trabajo, por la que se registra y publica el III Convenio colectivo de ámbito estatal de la industria de producción audiovisual (técnicos).`;
+const getDefaultHorarios = () => i18n.t('conditions.defaultSchedulesAdvertising');
+const getDefaultDietas = () => i18n.t('conditions.defaultPerDiemsAdvertising');
+const getDefaultTransportes = () => i18n.t('conditions.defaultTransportation');
+const getDefaultAlojamiento = () => i18n.t('conditions.defaultAccommodation');
+const getDefaultConvenio = () => i18n.t('conditions.defaultAgreement');
 
 const PRICE_HEADERS_PUBLI = [
   'Precio jornada',
@@ -164,6 +153,45 @@ function CondicionesPublicidad({
   onRegisterExport?: (fn: () => void) => void;
   readOnly?: boolean;
 }) {
+  const { t, i18n } = useTranslation();
+  
+  // Función helper para traducir headers de precios
+  const translateHeader = (header: string): string => {
+    const headerMap: Record<string, string> = {
+      'Precio jornada': t('conditions.priceWorkDay'),
+      'Precio Día extra/Festivo': t('conditions.priceExtraDayHoliday'),
+      'Travel day': t('conditions.travelDay'),
+      'Localización técnica': t('conditions.technicalLocation'),
+      'Carga/descarga': t('conditions.loadingUnloading'),
+      'Horas extras': t('conditions.extraHours'),
+    };
+    return headerMap[header] || header;
+  };
+
+  // Función helper para traducir nombres de roles
+  const translateRoleName = (roleName: string): string => {
+    // Mapeo de nombres de roles en español a códigos
+    const roleNameToCode: Record<string, string> = {
+      'Gaffer': 'G',
+      'Best boy': 'BB',
+      'Eléctrico': 'E',
+      'Auxiliar': 'AUX',
+      'Meritorio': 'M',
+      'Técnico de mesa': 'TM',
+      'Finger boy': 'FB',
+      'Refuerzo': 'REF',
+    };
+    
+    const roleCode = roleNameToCode[roleName];
+    if (roleCode) {
+      const translationKey = `team.roles.${roleCode}`;
+      const translated = t(translationKey);
+      // Si la traducción existe (no es la clave misma), devolverla; si no, devolver el nombre original
+      return translated !== translationKey ? translated : roleName;
+    }
+    return roleName;
+  };
+  
   const storageKey = useMemo(() => {
     const base = (project as AnyRecord)?.id || (project as AnyRecord)?.nombre || 'tmp';
     return `cond_${base}_publicidad`;
@@ -179,6 +207,65 @@ function CondicionesPublicidad({
   const [model, setModel] = useLocalStorage<AnyRecord>(storageKey, () =>
     loadOrSeedPublicidad(storageKey)
   );
+
+  // Actualizar textos por defecto cuando cambia el idioma
+  useEffect(() => {
+    const handleLanguageChange = async () => {
+      // Actualizar festivos dinámicos con el nuevo idioma
+      await updateDynamicFestivos();
+      
+      setModel((m: AnyRecord) => {
+        if (!m) return m;
+        const updated = { ...m };
+        
+        // Obtener los textos por defecto actuales en el nuevo idioma
+        const newDefaultLegend = getDefaultLegendPubli();
+        const newDefaultHorarios = getDefaultHorarios();
+        const newDefaultDietas = getDefaultDietas();
+        const newDefaultTransportes = getDefaultTransportes();
+        const newDefaultAlojamiento = getDefaultAlojamiento();
+        const newDefaultConvenio = getDefaultConvenio();
+        
+        // Actualizar solo si están vacíos o si contienen variables (textos por defecto)
+        const isEmptyOrDefault = (template: any) => {
+          const str = String(template || '');
+          if (!str || str.trim() === '') return true;
+          // Si el template contiene las variables típicas de los textos por defecto, probablemente es un texto por defecto
+          return str.includes('{{') && str.includes('}}');
+        };
+        
+        if (isEmptyOrDefault(m.legendTemplate)) {
+          updated.legendTemplate = newDefaultLegend;
+        }
+        // Actualizar festivos con el nuevo texto traducido
+        if (isEmptyOrDefault(m.festivosTemplate)) {
+          updated.festivosTemplate = globalDynamicFestivosText;
+        }
+        if (isEmptyOrDefault(m.horariosTemplate)) {
+          updated.horariosTemplate = newDefaultHorarios;
+        }
+        if (isEmptyOrDefault(m.dietasTemplate)) {
+          updated.dietasTemplate = newDefaultDietas;
+        }
+        if (isEmptyOrDefault(m.transportesTemplate)) {
+          updated.transportesTemplate = newDefaultTransportes;
+        }
+        if (isEmptyOrDefault(m.alojamientoTemplate)) {
+          updated.alojamientoTemplate = newDefaultAlojamiento;
+        }
+        if (isEmptyOrDefault(m.convenioTemplate)) {
+          updated.convenioTemplate = newDefaultConvenio;
+        }
+        
+        return updated;
+      });
+    };
+
+    i18n.on('languageChanged', handleLanguageChange);
+    return () => {
+      i18n.off('languageChanged', handleLanguageChange);
+    };
+  }, [i18n, setModel]);
   const [showRoleSelect, setShowRoleSelect] = useState(false);
   const [roleToDelete, setRoleToDelete] = useState<string | null>(null);
 
@@ -388,8 +475,8 @@ function CondicionesPublicidad({
           <button
             onClick={() => setShowParams(v => !v)}
             className='w-6 h-6 rounded-lg border border-neutral-border flex items-center justify-center text-sm hover:border-accent'
-            title={showParams ? 'Contraer' : 'Desplegar'}
-            aria-label='Alternar parámetros'
+            title={showParams ? t('conditions.collapse') : t('conditions.expand')}
+            aria-label={t('conditions.calculationParameters')}
             aria-expanded={showParams}
             aria-controls='publicidad-params'
             type='button'
@@ -397,13 +484,11 @@ function CondicionesPublicidad({
             {showParams ? '−' : '+'}
           </button>
           <h4 className='text-brand font-semibold m-0'>
-            Parámetros de cálculo
+            {t('conditions.calculationParameters')}
           </h4>
         </div>
 
-        <div className='text-xs text-zinc-400 mb-3'>
-          Los importes se calculan a partir de <strong>Precio jornada</strong>.
-        </div>
+        <div className='text-xs text-zinc-400 mb-3' dangerouslySetInnerHTML={{ __html: t('conditions.amountsCalculatedFrom') }} />
 
         {showParams && (
           <div
@@ -411,11 +496,11 @@ function CondicionesPublicidad({
             ref={paramsRef}
             tabIndex={-1}
             role='region'
-            aria-label='Parámetros de publicidad'
+            aria-label={t('conditions.parametersAdvertising')}
             className='grid grid-cols-1 sm:grid-cols-3 gap-3'
           >
             <ParamInput
-              label='Jornada laboral'
+              label={t('conditions.workDay')}
               suffix='h'
               duo={[
                 {
@@ -430,43 +515,43 @@ function CondicionesPublicidad({
               readOnly={readOnly}
             />
             <ParamInput
-              label='Día extra/Festivo (×)'
+              label={t('conditions.extraDayHoliday')}
               value={p.factorFestivo ?? '1.75'}
               onChange={(v: string) => setParam('factorFestivo', v)}
               readOnly={readOnly}
             />
             <ParamInput
-              label='Hora extra festivas/nocturnas (×)'
+              label={t('conditions.extraHourHolidayNight')}
               value={p.factorHoraExtraFestiva ?? '1.5'}
               onChange={(v: string) => setParam('factorHoraExtraFestiva', v)}
               readOnly={readOnly}
             />
             <ParamInput
-              label='Cortesía (min)'
+              label={t('conditions.courtesyMinutes')}
               value={p.cortesiaMin ?? '15'}
               onChange={(v: string) => setParam('cortesiaMin', v)}
               readOnly={readOnly}
             />
             <ParamInput
-              label='Turn Around Diario (h)'
+              label={t('conditions.turnAroundDaily')}
               value={p.taDiario ?? '10'}
               onChange={(v: string) => setParam('taDiario', v)}
               readOnly={readOnly}
             />
             <ParamInput
-              label='Turn Around Fin de semana (h)'
+              label={t('conditions.turnAroundWeekend')}
               value={p.taFinde ?? '48'}
               onChange={(v: string) => setParam('taFinde', v)}
               readOnly={readOnly}
             />
             <ParamInput
-              label='Nocturnidad complemento (€)'
+              label={t('conditions.nightShiftComplement')}
               value={p.nocturnidadComplemento ?? '50'}
               onChange={(v: string) => setParam('nocturnidadComplemento', v)}
               readOnly={readOnly}
             />
             <ParamInput
-              label='Nocturno (inicio / fin)'
+              label={t('conditions.nightShift')}
               duo={[
                 {
                   value: p.nocturnoIni ?? '02:00',
@@ -480,49 +565,49 @@ function CondicionesPublicidad({
               readOnly={readOnly}
             />
             <ParamInput
-              label='Desayuno (€)'
+              label={t('conditions.breakfast')}
               value={p.dietaDesayuno ?? '10'}
               onChange={(v: string) => setParam('dietaDesayuno', v)}
               readOnly={readOnly}
             />
             <ParamInput
-              label='Comida (€)'
+              label={t('conditions.lunch')}
               readOnly={readOnly}
               value={p.dietaComida ?? '20'}
               onChange={(v: string) => setParam('dietaComida', v)}
             />
             <ParamInput
-              label='Cena (€)'
+              label={t('conditions.dinner')}
               value={p.dietaCena ?? '30'}
               onChange={(v: string) => setParam('dietaCena', v)}
               readOnly={readOnly}
             />
             <ParamInput
-              label='Dieta s/ pernocta (€)'
+              label={t('conditions.perDiemNoOvernight')}
               value={p.dietaSinPernocta ?? '50'}
               onChange={(v: string) => setParam('dietaSinPernocta', v)}
               readOnly={readOnly}
             />
             <ParamInput
-              label='Alojamiento + desayuno (€)'
+              label={t('conditions.accommodationBreakfast')}
               value={p.dietaAlojDes ?? '70'}
               onChange={(v: string) => setParam('dietaAlojDes', v)}
               readOnly={readOnly}
             />
             <ParamInput
-              label='Gastos de bolsillo (€)'
+              label={t('conditions.pocketExpenses')}
               value={p.gastosBolsillo ?? '10'}
               onChange={(v: string) => setParam('gastosBolsillo', v)}
               readOnly={readOnly}
             />
             <ParamInput
-              label='Kilometraje (€/km)'
+              label={t('conditions.kilometers')}
               value={p.kilometrajeKm ?? '0.40'}
               onChange={(v: string) => setParam('kilometrajeKm', v)}
               readOnly={readOnly}
             />
             <ParamInput
-              label='Transporte (€/día)'
+              label={t('conditions.transportPerDay')}
               value={p.transporteDia ?? '12'}
               onChange={(v: string) => setParam('transporteDia', v)}
               readOnly={readOnly}
@@ -532,16 +617,14 @@ function CondicionesPublicidad({
       </section>
 
       <div className='text-xs text-zinc-400 mb-4 flex items-center justify-between'>
-        <span>
-          Los precios base están preestablecidos. <strong>Precio Día extra/Festivo</strong> y <strong>Travel day</strong> se calculan automáticamente desde el precio jornada. El resto son manuales.
-        </span>
+        <span dangerouslySetInnerHTML={{ __html: t('conditions.pricesBaseDescription') }} />
         <div className='relative'>
           {PRICE_ROLES_PUBLI.filter(r => !roles.includes(r)).length === 0 ? (
             <button
               disabled
               className='px-3 py-1 text-sm bg-gray-500 text-white rounded-lg cursor-not-allowed'
             >
-              ✓ Todos los roles
+              {t('conditions.allRoles')}
             </button>
           ) : (
             <>
@@ -549,9 +632,9 @@ function CondicionesPublicidad({
                 onClick={() => !readOnly && setShowRoleSelect(!showRoleSelect)}
                 disabled={readOnly}
                 className={`px-3 py-1 text-sm bg-brand text-white rounded-lg hover:bg-brand/80 btn-add-role ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
-                title={readOnly ? 'El proyecto está cerrado' : '+ Añadir rol'}
+                title={readOnly ? t('conditions.projectClosed') : t('conditions.addRole')}
               >
-                + Añadir rol
+                {t('conditions.addRole')}
               </button>
               {showRoleSelect && (
                 <div 
@@ -569,7 +652,7 @@ function CondicionesPublicidad({
                       onClick={() => addRole(role)}
                       className='w-full text-left px-3 py-2 text-sm text-white hover:bg-blue-300 dark:hover:bg-amber-600/40 transition-colors'
                     >
-                      {role}
+                      {translateRoleName(role)}
                     </button>
                   ))}
                 </div>
@@ -583,9 +666,9 @@ function CondicionesPublicidad({
         <table className='min-w-[920px] w-full border-collapse text-sm'>
           <thead>
             <tr>
-              <Th align='left'>Rol / Precio</Th>
+              <Th align='left'>{t('conditions.rolePrice')}</Th>
               {PRICE_HEADERS_PUBLI.map(col => (
-                <Th key={col} align='center'>{col}</Th>
+                <Th key={col} align='center'>{translateHeader(col)}</Th>
               ))}
             </tr>
           </thead>
@@ -601,11 +684,11 @@ function CondicionesPublicidad({
                       }}
                       disabled={readOnly}
                       className={`text-gray-400 hover:text-blue-500 hover:bg-blue-100 dark:hover:text-amber-500 dark:hover:bg-amber-900/20 font-bold text-sm w-6 h-6 flex items-center justify-center rounded transition-all hover:scale-110 ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
-                      title={readOnly ? 'El proyecto está cerrado' : 'Eliminar rol'}
+                      title={readOnly ? t('conditions.projectClosed') : t('conditions.deleteRole')}
                     >
                       ✕
                     </button>
-                    <span>{role}</span>
+                    <span>{translateRoleName(role)}</span>
                   </div>
                 </Td>
                 {PRICE_HEADERS_PUBLI.map(h => (
@@ -629,7 +712,7 @@ function CondicionesPublicidad({
       </section>
 
       <section className='rounded-2xl border border-neutral-border bg-neutral-panel/90 p-4'>
-        <h4 className='text-brand font-semibold mb-2'>Leyenda cálculos</h4>
+        <h4 className='text-brand font-semibold mb-2'>{t('conditions.calculationLegend')}</h4>
         <TextAreaAuto
           value={restoreStrongTags(renderWithParams(model.legendTemplate, model.params))}
           onChange={v =>
@@ -640,7 +723,7 @@ function CondicionesPublicidad({
       </section>
 
       <InfoCard
-        title='Festivos'
+        title={t('conditions.holidays')}
         value={renderWithParams(model.festivosTemplate, model.params)}
         onChange={v =>
           setText('festivosTemplate', visibleToTemplate(v, model.params))
@@ -648,7 +731,7 @@ function CondicionesPublicidad({
         readOnly={readOnly}
       />
       <InfoCard
-        title='Horarios'
+        title={t('conditions.schedules')}
         value={restoreStrongTags(renderWithParams(model.horariosTemplate, model.params))}
         onChange={v =>
           setText('horariosTemplate', visibleToTemplate(v, model.params))
@@ -656,7 +739,7 @@ function CondicionesPublicidad({
         readOnly={readOnly}
       />
       <InfoCard
-        title='Dietas'
+        title={t('conditions.perDiems')}
         value={restoreStrongTags(renderWithParams(model.dietasTemplate, model.params))}
         onChange={v =>
           setText('dietasTemplate', visibleToTemplate(v, model.params))
@@ -664,7 +747,7 @@ function CondicionesPublicidad({
         readOnly={readOnly}
       />
       <InfoCard
-        title='Transportes'
+        title={t('conditions.transportation')}
         value={renderWithParams(model.transportesTemplate, model.params)}
         onChange={v =>
           setText('transportesTemplate', visibleToTemplate(v, model.params))
@@ -672,7 +755,7 @@ function CondicionesPublicidad({
         readOnly={readOnly}
       />
       <InfoCard
-        title='Alojamiento'
+        title={t('conditions.accommodation')}
         value={renderWithParams(model.alojamientoTemplate, model.params)}
         onChange={v =>
           setText('alojamientoTemplate', visibleToTemplate(v, model.params))
@@ -680,7 +763,7 @@ function CondicionesPublicidad({
         readOnly={readOnly}
       />
       <InfoCard
-        title='Convenio'
+        title={t('conditions.agreement')}
         value={renderWithParams(model.convenioTemplate, model.params)}
         onChange={v =>
           setText('convenioTemplate', visibleToTemplate(v, model.params))
@@ -692,15 +775,15 @@ function CondicionesPublicidad({
               BOE
             </span>
           ) : (
-            <a
-              href='https://www.boe.es/diario_boe/txt.php?id=BOE-A-2024-6846'
-              target='_blank'
-              rel='noreferrer'
-              className='text-brand hover:underline text-sm'
-              title='Abrir BOE'
-            >
-              BOE
-            </a>
+          <a
+            href='https://www.boe.es/diario_boe/txt.php?id=BOE-A-2024-6846'
+            target='_blank'
+            rel='noreferrer'
+            className='text-brand hover:underline text-sm'
+              title={t('conditions.openBOE')}
+          >
+            BOE
+          </a>
           )
         }
       />
@@ -771,13 +854,13 @@ function loadOrSeedPublicidad(storageKey: string): AnyRecord {
         'Carga/descarga': '150',
       },
     },
-    legendTemplate: defaultLegendPubli,
+    legendTemplate: getDefaultLegendPubli(),
     festivosTemplate: globalDynamicFestivosText,
-    horariosTemplate: defaultHorarios,
-    dietasTemplate: defaultDietas,
-    transportesTemplate: defaultTransportes,
-    alojamientoTemplate: defaultAlojamiento,
-    convenioTemplate: defaultConvenio,
+    horariosTemplate: getDefaultHorarios(),
+    dietasTemplate: getDefaultDietas(),
+    transportesTemplate: getDefaultTransportes(),
+    alojamientoTemplate: getDefaultAlojamiento(),
+    convenioTemplate: getDefaultConvenio(),
     params: {
       jornadaTrabajo: '10',
       jornadaComida: '1',
@@ -874,13 +957,13 @@ function loadOrSeedPublicidad(storageKey: string): AnyRecord {
       transporteDia: normalizeNumeric(parsed.params?.transporteDia) || '15',
     };
 
-    parsed.legendTemplate = parsed.legendTemplate ?? defaultLegendPubli;
+    parsed.legendTemplate = parsed.legendTemplate ?? getDefaultLegendPubli();
     parsed.festivosTemplate = parsed.festivosTemplate ?? globalDynamicFestivosText;
-    parsed.horariosTemplate = parsed.horariosTemplate ?? defaultHorarios;
-    parsed.dietasTemplate = parsed.dietasTemplate ?? defaultDietas;
-    parsed.transportesTemplate = parsed.transportesTemplate ?? defaultTransportes;
-    parsed.alojamientoTemplate = parsed.alojamientoTemplate ?? defaultAlojamiento;
-    parsed.convenioTemplate = parsed.convenioTemplate ?? defaultConvenio;
+    parsed.horariosTemplate = parsed.horariosTemplate ?? getDefaultHorarios();
+    parsed.dietasTemplate = parsed.dietasTemplate ?? getDefaultDietas();
+    parsed.transportesTemplate = parsed.transportesTemplate ?? getDefaultTransportes();
+    parsed.alojamientoTemplate = parsed.alojamientoTemplate ?? getDefaultAlojamiento();
+    parsed.convenioTemplate = parsed.convenioTemplate ?? getDefaultConvenio();
 
     return parsed;
     }

@@ -1,4 +1,5 @@
 // JSX runtime import not needed due to jsx: react-jsx
+import { useTranslation } from 'react-i18next';
 
 interface ExtrasSummaryProps {
   horasExtra: number;
@@ -8,23 +9,24 @@ interface ExtrasSummaryProps {
 }
 
 export default function ExtrasSummary({ horasExtra, turnAround, nocturnidad, penaltyLunch }: ExtrasSummaryProps) {
+  const { t } = useTranslation();
   const totalExtras = horasExtra + turnAround + nocturnidad + penaltyLunch;
   const parts: string[] = [];
   
   if (horasExtra > 0) {
-    parts.push(`Horas extra x${horasExtra}`);
+    parts.push(`${t('payroll.concepts.extraHours')} x${horasExtra}`);
   }
   
   if (turnAround > 0) {
-    parts.push(`Turn Around x${turnAround}`);
+    parts.push(`${t('payroll.concepts.turnAround')} x${turnAround}`);
   }
   
   if (nocturnidad > 0) {
-    parts.push(`Nocturnidad x${nocturnidad}`);
+    parts.push(`${t('payroll.concepts.nightShift')} x${nocturnidad}`);
   }
   
   if (penaltyLunch > 0) {
-    parts.push(`Penalty lunch x${penaltyLunch}`);
+    parts.push(`${t('payroll.concepts.penaltyLunch')} x${penaltyLunch}`);
   }
   
   // Si no hay ningún extra, no mostrar nada

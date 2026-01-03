@@ -11,6 +11,7 @@ import React from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { syncAllWeeks } from '@features/planificacion/utils/sync';
 import { storage } from '@shared/services/localStorage.service';
+import { useTranslation } from 'react-i18next';
 
 export type ProjectMode = 'semanal' | 'mensual' | 'publicidad';
 export type ProjectStatus = 'Activo' | 'Cerrado';
@@ -69,6 +70,7 @@ interface StatusConfirmModalProps {
 }
 
 function StatusConfirmModal({ projectName, isClosing, onClose, onConfirm }: StatusConfirmModalProps) {
+  const { t } = useTranslation();
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
     if (typeof document !== 'undefined') {
       return (document.documentElement.getAttribute('data-theme') || 'light') as 'dark' | 'light';
@@ -103,7 +105,7 @@ function StatusConfirmModal({ projectName, isClosing, onClose, onConfirm }: Stat
     <div className='fixed inset-0 bg-black/60 grid place-items-center p-4 z-50'>
       <div className='w-full max-w-md rounded-2xl border border-neutral-border bg-neutral-panel p-6'>
         <h3 className='text-lg font-semibold mb-4' style={{color: isLight ? '#0476D9' : '#F27405'}}>
-          {isClosing ? 'Confirmar cierre' : 'Confirmar activación'}
+          {isClosing ? t('projectDetail.confirmClose') : t('projectDetail.confirmActivation')}
         </h3>
         
         <p 
@@ -111,8 +113,8 @@ function StatusConfirmModal({ projectName, isClosing, onClose, onConfirm }: Stat
           style={{color: isLight ? '#111827' : '#d1d5db'}}
           dangerouslySetInnerHTML={{
             __html: isClosing 
-              ? `¿Estás seguro de cerrar el proyecto <strong>${projectName}</strong>?`
-              : `¿Estás seguro que quieres volver a activar el proyecto <strong>${projectName}</strong>?`
+              ? t('projectDetail.confirmCloseMessage', { projectName })
+              : t('projectDetail.confirmActivationMessage', { projectName })
           }}
         />
 
@@ -127,7 +129,7 @@ function StatusConfirmModal({ projectName, isClosing, onClose, onConfirm }: Stat
             }}
             type='button'
           >
-            No
+            {t('common.no')}
           </button>
           <button
             onClick={() => {
@@ -142,7 +144,7 @@ function StatusConfirmModal({ projectName, isClosing, onClose, onConfirm }: Stat
             }}
             type='button'
           >
-            Sí
+            {t('common.yes')}
           </button>
         </div>
       </div>
@@ -188,26 +190,26 @@ function NameValidationModal({ role, group, onClose }: NameValidationModalProps)
 
   const isLight = theme === 'light';
   
-  // Traducir el nombre del grupo a español
-  const groupName = group === 'base' ? 'Equipo base' 
-    : group === 'refuerzos' ? 'Refuerzos'
-    : group === 'prelight' ? 'Equipo Prelight'
-    : group === 'recogida' ? 'Equipo Recogida'
+  // Traducir el nombre del grupo
+  const { t } = useTranslation();
+  const groupName = group === 'base' ? t('team.base')
+    : group === 'refuerzos' ? 'Refuerzos' // TODO: agregar traducción para refuerzos
+    : group === 'prelight' ? t('team.prelight')
+    : group === 'recogida' ? t('team.pickup')
     : group;
 
   return (
     <div className='fixed inset-0 bg-black/60 grid place-items-center p-4 z-50'>
       <div className='w-full max-w-md rounded-2xl border border-neutral-border bg-neutral-panel p-6'>
         <h3 className='text-lg font-semibold mb-4' style={{color: isLight ? '#0476D9' : '#F27405'}}>
-          Nombre requerido
+          {t('team.nameRequired')}
         </h3>
         
         <p 
           className='text-sm mb-6' 
           style={{color: isLight ? '#111827' : '#d1d5db'}}
-        >
-          Debes añadir un nombre al rol <strong>{role}</strong> en <strong>{groupName}</strong> antes de continuar.
-        </p>
+          dangerouslySetInnerHTML={{ __html: t('team.mustAddName', { role, group: groupName }) }}
+        />
 
         <div className='flex justify-center gap-3'>
           <button
@@ -220,7 +222,7 @@ function NameValidationModal({ role, group, onClose }: NameValidationModalProps)
             }}
             type='button'
           >
-            Entendido
+            {t('team.understood')}
           </button>
         </div>
       </div>
@@ -242,6 +244,7 @@ export default function ProjectDetail({
   onUpdateProject,
   initialTab = null,
 }: ProjectDetailProps) {
+  const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
   const params = useParams();
@@ -449,7 +452,7 @@ export default function ProjectDetail({
     return val === 'activo';
   }, [proj?.estado]);
 
-  const estadoText = isActive ? 'Activo' : 'Cerrado';
+  const estadoText = isActive ? t('common.active') : t('common.closed');
   const themeGlobal = (typeof document !== 'undefined' && document.documentElement.getAttribute('data-theme')) || 'light';
   const estadoBg = isActive ? (themeGlobal === 'light' ? '#0468BF' : '#F27405') : '#64748b';
 
@@ -503,14 +506,19 @@ export default function ProjectDetail({
   // Texto de fase activo para el título
   const activePhaseLabel = useMemo(() => {
     if (!activeTab) return '';
-    if (activeTab === 'condiciones') return `Condiciones ${condModeLabel}`;
-    if (activeTab === 'nomina') return 'Nómina';
-    if (activeTab === 'planificacion') return 'Planificación';
-    if (activeTab === 'necesidades') return 'Necesidades';
-    if (activeTab === 'equipo') return 'Equipo';
-    if (activeTab === 'reportes') return 'Reportes';
+    if (activeTab === 'condiciones') {
+      if (condModeLabel === 'semanales') return t('conditions.weekly');
+      if (condModeLabel === 'mensuales') return t('conditions.monthly');
+      if (condModeLabel === 'publicidad') return t('conditions.advertising');
+      return `Condiciones ${condModeLabel}`;
+    }
+    if (activeTab === 'nomina') return t('navigation.payroll');
+    if (activeTab === 'planificacion') return t('navigation.planning');
+    if (activeTab === 'necesidades') return t('needs.title');
+    if (activeTab === 'equipo') return t('navigation.team');
+    if (activeTab === 'reportes') return t('navigation.reports');
     return activeTab;
-  }, [activeTab, condModeLabel]);
+  }, [activeTab, condModeLabel, t]);
 
   return (
     <div>
@@ -526,7 +534,7 @@ export default function ProjectDetail({
                   className='hover:underline transition-all'
                   style={{color: 'var(--text)'}}
                 >
-                  Proyectos
+                  {t('common.projects')}
                 </button>
                 <span className='mx-2' style={{color: 'var(--text)'}}>›</span>
                 {activePhaseLabel ? (
@@ -568,7 +576,7 @@ export default function ProjectDetail({
               }}
               className={`px-3 py-2 rounded-lg text-sm font-medium border cursor-pointer`}
               style={{backgroundColor: estadoBg, borderColor: estadoBg, color: '#ffffff'}}
-              title={`Cambiar estado (actual: ${estadoText})`}
+              title={t('projectDetail.changeStatus', { status: estadoText })}
             >
               {estadoText}
             </span>
@@ -582,42 +590,42 @@ export default function ProjectDetail({
       {activeTab === null && (
         <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
           <PhaseCard
-            title={`Condiciones ${condModeLabel}`}
+            title={condModeLabel === 'semanales' ? t('conditions.weekly') : condModeLabel === 'mensuales' ? t('conditions.monthly') : t('conditions.advertising')}
             icon={<PhaseIcon name='condiciones' color='#60a5fa' />}
-            desc='Precios, Jornadas, márgenes y políticas'
+            desc={t('conditions.description')}
             onClick={() => handleTabChange('condiciones')}
           />
           <PhaseCard
-            title='Equipo'
+            title={t('navigation.team')}
             icon={<PhaseIcon name='equipo' color='#60a5fa' />}
-            desc={condTipo === 'publicidad' ? 'Base, prelight y recogida' : 'Base, refuerzos, prelight y recogida'}
+            desc={condTipo === 'publicidad' ? t('team.descriptionAdvertising') : t('team.description')}
             onClick={() => handleTabChange('equipo')}
           />
 
           <PhaseCard
-            title='Planificación'
+            title={t('navigation.planning')}
             icon={<PhaseIcon name='planificacion' color='#60a5fa' />}
-            desc='Semanas, horarios y equipo por día'
+            desc={t('planning.description')}
             onClick={() => handleTabChange('planificacion')}
           />
           <PhaseCard
-            title='Reportes'
+            title={t('navigation.reports')}
             icon={<PhaseIcon name='reportes' color='#60a5fa' />}
-            desc='Horas extra, dietas, kilometraje, transportes'
+            desc={t('reports.description')}
             onClick={() => handleTabChange('reportes')}
           />
 
           <PhaseCard
-            title='Nómina'
+            title={t('navigation.payroll')}
             icon={<PhaseIcon name='nomina' color='#60a5fa' />}
-            desc='Jornadas + Reportes, aquí sabes lo que va a cobrar el equipo'
+            desc={t('payroll.description')}
             onClick={() => handleTabChange('nomina')}
           />
 
           <PhaseCard
-            title='Necesidades de rodaje'
+            title={t('needs.title')}
             icon={<PhaseIcon name='necesidades' color='#60a5fa' />}
-            desc='Listado de lo que se necesita de forma ordenada por el orden de rodaje'
+            desc={t('needs.description')}
             onClick={() => handleTabChange('necesidades')}
           />
         </div>

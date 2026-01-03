@@ -1,5 +1,6 @@
 import LogoIcon from '@shared/components/LogoIcon';
 import { useEffect, useRef, useState, useMemo, memo, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 
 export type ProjectMode = 'semanal' | 'mensual' | 'publicidad';
 export type ProjectStatus = 'Activo' | 'Cerrado';
@@ -89,14 +90,7 @@ export interface ProjectsScreenProps {
   onSalir?: () => void;
 }
 
-const formatMode = (m: string | undefined): string => {
-  if (!m) return '—';
-  const v = String(m).toLowerCase();
-  if (v === 'semanal') return 'Semanal';
-  if (v === 'mensual') return 'Mensual';
-  if (v === 'publicidad') return 'Publicidad';
-  return '—';
-};
+// formatMode ahora se define dentro del componente para tener acceso a t()
 
 /** Campo con etiqueta (utilidad interna del modal) */
 interface FieldProps {
@@ -121,6 +115,7 @@ interface NewProjectModalProps {
 }
 
 function NewProjectModal({ onClose, onCreate }: NewProjectModalProps) {
+  const { t } = useTranslation();
   const [form, setForm] = useState<ProjectForm>(() => ({
     nombre: '',
     dop: '',
@@ -209,19 +204,19 @@ function NewProjectModal({ onClose, onCreate }: NewProjectModalProps) {
   }, []);
 
   // Obtener labels para mostrar
-  const estadoLabel = form.estado;
-  const condicionesLabel = form.condicionesTipo === 'mensual' ? 'Mensual' : form.condicionesTipo === 'semanal' ? 'Semanal' : 'Publicidad';
+  const estadoLabel = form.estado === 'Activo' ? t('common.active') : t('common.closed');
+  const condicionesLabel = form.condicionesTipo === 'mensual' ? t('common.monthly') : form.condicionesTipo === 'semanal' ? t('common.weekly') : t('common.advertising');
   const paisLabel = COUNTRIES.find(c => c.code === form.country)?.name || 'España';
-  const regionLabel = form.region ? REGIONS[form.country as keyof typeof REGIONS]?.find(r => r.code === form.region)?.name || 'Sin región específica' : 'Sin región específica';
+  const regionLabel = form.region ? REGIONS[form.country as keyof typeof REGIONS]?.find(r => r.code === form.region)?.name || t('common.noSpecificRegion') : t('common.noSpecificRegion');
 
   return (
     <div className='fixed inset-0 bg-black/60 grid place-items-center p-4 z-50'>
       <div className='w-full max-w-lg rounded-2xl border border-neutral-border bg-neutral-panel p-6'>
         <h3 className='text-lg font-semibold mb-4' style={{color: theme === 'light' ? '#0468BF' : '#F27405'}}>
-          Nuevo proyecto
+          {t('common.newProject')}
         </h3>
         <div className='grid grid-cols-2 gap-4'>
-          <Field label='Proyecto' theme={theme}>
+          <Field label={t('common.project')} theme={theme}>
             <input
               className={`w-full px-4 py-3 rounded-xl border focus:outline-none transition-colors ${
                 theme === 'light' 
@@ -244,7 +239,7 @@ function NewProjectModal({ onClose, onCreate }: NewProjectModalProps) {
               onBlur={() => setInputHovered(prev => ({ ...prev, proyecto: false }))}
             />
           </Field>
-          <Field label='DoP' theme={theme}>
+          <Field label={t('common.dop')} theme={theme}>
             <input
               className={`w-full px-4 py-3 rounded-xl border focus:outline-none transition-colors ${
                 theme === 'light' 
@@ -267,7 +262,7 @@ function NewProjectModal({ onClose, onCreate }: NewProjectModalProps) {
               onBlur={() => setInputHovered(prev => ({ ...prev, dop: false }))}
             />
           </Field>
-          <Field label='Almacén' theme={theme}>
+          <Field label={t('common.warehouse')} theme={theme}>
             <input
               className={`w-full px-4 py-3 rounded-xl border focus:outline-none transition-colors ${
                 theme === 'light' 
@@ -290,7 +285,7 @@ function NewProjectModal({ onClose, onCreate }: NewProjectModalProps) {
               onBlur={() => setInputHovered(prev => ({ ...prev, almacen: false }))}
             />
           </Field>
-          <Field label='Productora' theme={theme}>
+          <Field label={t('common.production')} theme={theme}>
             <input
               className={`w-full px-4 py-3 rounded-xl border focus:outline-none transition-colors ${
                 theme === 'light' 
@@ -313,7 +308,7 @@ function NewProjectModal({ onClose, onCreate }: NewProjectModalProps) {
               onBlur={() => setInputHovered(prev => ({ ...prev, productora: false }))}
             />
           </Field>
-          <Field label='Estado' theme={theme}>
+          <Field label={t('common.status')} theme={theme}>
             <div className='relative w-full' ref={estadoRef}>
               <button
                 type='button'
@@ -370,14 +365,14 @@ function NewProjectModal({ onClose, onCreate }: NewProjectModalProps) {
                           : (theme === 'light' ? '#111827' : 'inherit'),
                       }}
                     >
-                      {opcion}
+                      {opcion === 'Activo' ? t('common.active') : t('common.closed')}
                     </button>
                   ))}
                 </div>
               )}
             </div>
           </Field>
-          <Field label='Condiciones' theme={theme}>
+          <Field label={t('navigation.conditions')} theme={theme}>
             <div className='relative w-full' ref={condicionesRef}>
               <button
                 type='button'
@@ -411,9 +406,9 @@ function NewProjectModal({ onClose, onCreate }: NewProjectModalProps) {
                   theme === 'light' ? 'bg-white' : 'bg-neutral-panel'
                 }`}>
                   {[
-                    { value: 'mensual', label: 'Mensual' },
-                    { value: 'semanal', label: 'Semanal' },
-                    { value: 'publicidad', label: 'Publicidad' }
+                    { value: 'mensual', label: t('common.monthly') },
+                    { value: 'semanal', label: t('common.weekly') },
+                    { value: 'publicidad', label: t('common.advertising') }
                   ].map(opcion => (
                     <button
                       key={opcion.value}
@@ -445,7 +440,7 @@ function NewProjectModal({ onClose, onCreate }: NewProjectModalProps) {
               )}
             </div>
           </Field>
-          <Field label='País' theme={theme}>
+          <Field label={t('common.country')} theme={theme}>
             <div className='relative w-full' ref={paisRef}>
               <button
                 type='button'
@@ -510,7 +505,7 @@ function NewProjectModal({ onClose, onCreate }: NewProjectModalProps) {
             </div>
           </Field>
           {REGIONS[form.country as keyof typeof REGIONS] && (
-            <Field label='Región' theme={theme}>
+            <Field label={t('common.region')} theme={theme}>
               <div className='relative w-full' ref={regionRef}>
                 <button
                   type='button'
@@ -565,7 +560,7 @@ function NewProjectModal({ onClose, onCreate }: NewProjectModalProps) {
                           : (theme === 'light' ? '#111827' : 'inherit'),
                       }}
                     >
-                      Sin región específica
+                      {t('common.noSpecificRegion')}
                     </button>
                     {REGIONS[form.country as keyof typeof REGIONS].map(r => (
                       <button
@@ -621,7 +616,7 @@ function NewProjectModal({ onClose, onCreate }: NewProjectModalProps) {
             onMouseLeave={() => setCancelButtonHovered(false)}
             onClick={onClose}
           >
-            Cancelar
+            {t('common.cancel')}
           </button>
           <button
             className='inline-flex items-center justify-center px-4 py-3 rounded-xl font-semibold text-white transition shadow-lg hover:shadow-xl'
@@ -648,7 +643,7 @@ function NewProjectModal({ onClose, onCreate }: NewProjectModalProps) {
               onClose();
             }}
           >
-            Crear
+            {t('common.create')}
           </button>
         </div>
       </div>
@@ -664,6 +659,7 @@ interface EditProjectModalProps {
 }
 
 function EditProjectModal({ project, onClose, onSave }: EditProjectModalProps) {
+  const { t } = useTranslation();
   const [form, setForm] = useState<ProjectForm>(() => ({
     nombre: project?.nombre || '',
     dop: project?.dop || '',
@@ -752,10 +748,10 @@ function EditProjectModal({ project, onClose, onSave }: EditProjectModalProps) {
   }, []);
 
   // Obtener labels para mostrar
-  const estadoLabel = form.estado;
-  const condicionesLabel = form.condicionesTipo === 'mensual' ? 'Mensual' : form.condicionesTipo === 'semanal' ? 'Semanal' : 'Publicidad';
+  const estadoLabel = form.estado === 'Activo' ? t('common.active') : t('common.closed');
+  const condicionesLabel = form.condicionesTipo === 'mensual' ? t('common.monthly') : form.condicionesTipo === 'semanal' ? t('common.weekly') : t('common.advertising');
   const paisLabel = COUNTRIES.find(c => c.code === form.country)?.name || 'España';
-  const regionLabel = form.region ? REGIONS[form.country as keyof typeof REGIONS]?.find(r => r.code === form.region)?.name || 'Sin región específica' : 'Sin región específica';
+  const regionLabel = form.region ? REGIONS[form.country as keyof typeof REGIONS]?.find(r => r.code === form.region)?.name || t('common.noSpecificRegion') : t('common.noSpecificRegion');
 
   const formatMode = (m: string | undefined): ProjectMode => {
     const v = String(m || '').toLowerCase();
@@ -791,11 +787,11 @@ function EditProjectModal({ project, onClose, onSave }: EditProjectModalProps) {
     <div className='fixed inset-0 bg-black/60 grid place-items-center p-4 z-50'>
       <div className='w-full max-w-lg rounded-2xl border border-neutral-border bg-neutral-panel p-6'>
         <h3 className='text-lg font-semibold mb-4' style={{color: theme === 'light' ? '#0468BF' : '#F27405'}}>
-          Editar proyecto
+          {t('common.editProject')}
         </h3>
 
         <div className='grid grid-cols-2 gap-4'>
-          <Field label='Proyecto' theme={theme}>
+          <Field label={t('common.project')} theme={theme}>
             <input
               className={`w-full px-4 py-3 rounded-xl border focus:outline-none transition-colors ${
                 theme === 'light' 
@@ -819,7 +815,7 @@ function EditProjectModal({ project, onClose, onSave }: EditProjectModalProps) {
             />
           </Field>
 
-          <Field label='DoP' theme={theme}>
+          <Field label={t('common.dop')} theme={theme}>
             <input
               className={`w-full px-4 py-3 rounded-xl border focus:outline-none transition-colors ${
                 theme === 'light' 
@@ -843,7 +839,7 @@ function EditProjectModal({ project, onClose, onSave }: EditProjectModalProps) {
             />
           </Field>
 
-          <Field label='Almacén' theme={theme}>
+          <Field label={t('common.warehouse')} theme={theme}>
             <input
               className={`w-full px-4 py-3 rounded-xl border focus:outline-none transition-colors ${
                 theme === 'light' 
@@ -867,7 +863,7 @@ function EditProjectModal({ project, onClose, onSave }: EditProjectModalProps) {
             />
           </Field>
 
-          <Field label='Productora' theme={theme}>
+          <Field label={t('common.production')} theme={theme}>
             <input
               className={`w-full px-4 py-3 rounded-xl border focus:outline-none transition-colors ${
                 theme === 'light' 
@@ -891,7 +887,7 @@ function EditProjectModal({ project, onClose, onSave }: EditProjectModalProps) {
             />
           </Field>
 
-          <Field label='Estado' theme={theme}>
+          <Field label={t('common.status')} theme={theme}>
             <div className='relative w-full' ref={estadoRef}>
               <button
                 type='button'
@@ -948,7 +944,7 @@ function EditProjectModal({ project, onClose, onSave }: EditProjectModalProps) {
                           : (theme === 'light' ? '#111827' : 'inherit'),
                       }}
                     >
-                      {opcion}
+                      {opcion === 'Activo' ? t('common.active') : t('common.closed')}
                     </button>
                   ))}
                 </div>
@@ -956,7 +952,7 @@ function EditProjectModal({ project, onClose, onSave }: EditProjectModalProps) {
             </div>
           </Field>
 
-          <Field label='Tipo de condiciones' theme={theme}>
+          <Field label={t('common.conditionsType')} theme={theme}>
             <div className='relative w-full' ref={condicionesRef}>
               <button
                 type='button'
@@ -990,9 +986,9 @@ function EditProjectModal({ project, onClose, onSave }: EditProjectModalProps) {
                   theme === 'light' ? 'bg-white' : 'bg-neutral-panel'
                 }`}>
                   {[
-                    { value: 'mensual', label: 'Mensual' },
-                    { value: 'semanal', label: 'Semanal' },
-                    { value: 'publicidad', label: 'Publicidad' }
+                    { value: 'mensual', label: t('common.monthly') },
+                    { value: 'semanal', label: t('common.weekly') },
+                    { value: 'publicidad', label: t('common.advertising') }
                   ].map(opcion => (
                     <button
                       key={opcion.value}
@@ -1024,7 +1020,7 @@ function EditProjectModal({ project, onClose, onSave }: EditProjectModalProps) {
               )}
             </div>
           </Field>
-          <Field label='País' theme={theme}>
+          <Field label={t('common.country')} theme={theme}>
             <div className='relative w-full' ref={paisRef}>
               <button
                 type='button'
@@ -1089,7 +1085,7 @@ function EditProjectModal({ project, onClose, onSave }: EditProjectModalProps) {
             </div>
           </Field>
           {REGIONS[form.country as keyof typeof REGIONS] && (
-            <Field label='Región' theme={theme}>
+            <Field label={t('common.region')} theme={theme}>
               <div className='relative w-full' ref={regionRef}>
                 <button
                   type='button'
@@ -1144,7 +1140,7 @@ function EditProjectModal({ project, onClose, onSave }: EditProjectModalProps) {
                           : (theme === 'light' ? '#111827' : 'inherit'),
                       }}
                     >
-                      Sin región específica
+                      {t('common.noSpecificRegion')}
                     </button>
                     {REGIONS[form.country as keyof typeof REGIONS].map(r => (
                       <button
@@ -1201,7 +1197,7 @@ function EditProjectModal({ project, onClose, onSave }: EditProjectModalProps) {
             onClick={onClose}
             type='button'
           >
-            Cancelar
+            {t('common.cancel')}
           </button>
           <button
             className='inline-flex items-center justify-center px-4 py-3 rounded-xl font-semibold text-white transition shadow-lg hover:shadow-xl'
@@ -1212,7 +1208,7 @@ function EditProjectModal({ project, onClose, onSave }: EditProjectModalProps) {
             onClick={handleSave}
             type='button'
           >
-            Guardar cambios
+            {t('common.saveChanges')}
           </button>
         </div>
       </div>
@@ -1228,6 +1224,7 @@ interface DeleteConfirmModalProps {
 }
 
 function DeleteConfirmModal({ project, onClose, onConfirm }: DeleteConfirmModalProps) {
+  const { t } = useTranslation();
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
     if (typeof document !== 'undefined') {
       return (document.documentElement.getAttribute('data-theme') || 'light') as 'dark' | 'light';
@@ -1262,11 +1259,11 @@ function DeleteConfirmModal({ project, onClose, onConfirm }: DeleteConfirmModalP
     <div className='fixed inset-0 bg-black/60 grid place-items-center p-4 z-50'>
       <div className='w-full max-w-md rounded-2xl border border-neutral-border bg-neutral-panel p-6'>
         <h3 className='text-lg font-semibold mb-4' style={{color: isLight ? '#0476D9' : '#F27405'}}>
-          Confirmar eliminación
+          {t('common.confirmDeleteTitle')}
         </h3>
         
         <p className='text-sm mb-6' style={{color: isLight ? '#111827' : '#d1d5db'}}>
-          ¿Estás seguro de que quieres eliminar el proyecto <strong>{project.nombre}</strong>?
+          {t('common.confirmDelete')} <strong>{project.nombre}</strong>?
         </p>
 
         <div className='flex justify-center gap-3'>
@@ -1280,7 +1277,7 @@ function DeleteConfirmModal({ project, onClose, onConfirm }: DeleteConfirmModalP
             }}
             type='button'
           >
-            No
+            {t('common.no')}
           </button>
           <button
             onClick={() => {
@@ -1295,7 +1292,7 @@ function DeleteConfirmModal({ project, onClose, onConfirm }: DeleteConfirmModalP
             }}
             type='button'
           >
-            Sí
+            {t('common.yes')}
           </button>
         </div>
       </div>
@@ -1317,6 +1314,7 @@ function ProjectsScreen({
   onConfig,
   onSalir,
 }: ProjectsScreenProps) {
+  const { t } = useTranslation();
   const [showNew, setShowNew] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [editing, setEditing] = useState<Project | null>(null);
@@ -1404,11 +1402,20 @@ function ProjectsScreen({
     return filtered;
   }, [projects, searchQuery, filterStatus, filterType, sortBy, sortOrder]);
 
+  const formatMode = useCallback((m: string | undefined): string => {
+    if (!m) return '—';
+    const v = String(m).toLowerCase();
+    if (v === 'semanal') return t('common.weekly');
+    if (v === 'mensual') return t('common.monthly');
+    if (v === 'publicidad') return t('common.advertising');
+    return '—';
+  }, [t]);
+
   const projectCards = useMemo(() => (
     filteredAndSortedProjects.map(p => {
       const theme = document.documentElement.getAttribute('data-theme') || 'light';
       const isLight = theme === 'light';
-      const estadoVisible = p.estado;
+      const estadoVisible = p.estado === 'Activo' ? t('common.active') : t('common.closed');
       // removed unused getInitials helper (avatar shows full project name)
       
       const getAvatarColor = (_name: string) => {
@@ -1485,15 +1492,15 @@ function ProjectsScreen({
           <div className='space-y-2 mb-4'>
             <div className='flex items-center gap-2 text-sm' style={{color: isLight ? '#111827' : '#d1d5db'}}>
               <span>📸</span>
-              <span>DoP: {p.dop || '—'}</span>
+              <span>{t('common.dopLabel')} {p.dop || '—'}</span>
             </div>
             <div className='flex items-center gap-2 text-sm' style={{color: isLight ? '#111827' : '#d1d5db'}}>
               <span>🏠</span>
-              <span>Almacén: {p.almacen || '—'}</span>
+              <span>{t('common.warehouseLabel')} {p.almacen || '—'}</span>
             </div>
             <div className='flex items-center gap-2 text-sm' style={{color: isLight ? '#111827' : '#d1d5db'}}>
               <span>📽</span>
-              <span>Productora: {p.productora || '—'}</span>
+              <span>{t('common.productionLabel')} {p.productora || '—'}</span>
             </div>
           </div>
 
@@ -1510,7 +1517,7 @@ function ProjectsScreen({
             </span>
             <span 
               className='px-3 py-1 rounded-full text-xs font-medium text-white'
-              style={{backgroundColor: getStatusColor(estadoVisible)}}
+              style={{backgroundColor: getStatusColor(p.estado)}}
             >
               {estadoVisible}
             </span>
@@ -1530,10 +1537,10 @@ function ProjectsScreen({
                 backgroundColor: isLight ? '#ffffff' : 'rgba(0,0,0,0.2)',
                 color: isLight ? '#0468BF' : '#d1d5db'
               }}
-              title='Editar proyecto'
-              aria-label={`Editar ${p.nombre}`}
+              title={t('common.editProject')}
+              aria-label={`${t('common.edit')} ${p.nombre}`}
             >
-              Editar
+              {t('common.edit')}
             </button>
             <button
               type='button'
@@ -1547,16 +1554,16 @@ function ProjectsScreen({
                 color: isLight ? '#F27405' : '#F27405',
                 backgroundColor: isLight ? '#ffffff' : 'rgba(0,0,0,0.2)'
               }}
-              title='Eliminar proyecto'
-              aria-label={`Eliminar ${p.nombre}`}
+              title={t('common.deleteProject')}
+              aria-label={`${t('common.delete')} ${p.nombre}`}
             >
-              Borrar
+              {t('common.deleteButton')}
             </button>
           </div>
         </div>
       );
     })
-  ), [filteredAndSortedProjects, handleOpen]);
+  ), [filteredAndSortedProjects, handleOpen, t, formatMode]);
 
   const theme = document.documentElement.getAttribute('data-theme') || 'light';
   const isLight = theme === 'light';
@@ -1571,7 +1578,7 @@ function ProjectsScreen({
             <div className='flex items-center gap-6'>
               <LogoIcon size={80} />
               <h1 className='text-3xl font-bold' style={{color: 'var(--text)'}}>
-                SetLux <span className='mx-2' style={{color: 'var(--text)'}}>›</span> <span style={{color: 'var(--text)'}}>Proyectos</span>
+                SetLux <span className='mx-2' style={{color: 'var(--text)'}}>›</span> <span style={{color: 'var(--text)'}}>{t('common.projects')}</span>
               </h1>
             </div>
 
@@ -1582,7 +1589,7 @@ function ProjectsScreen({
                 className='px-6 py-3 rounded-xl font-semibold text-white transition-all hover:shadow-lg border border-transparent hover:border-[var(--hover-border)]'
                 style={{backgroundColor: (document.documentElement.getAttribute('data-theme')||'dark')==='light' ? '#0468BF' : 'var(--brand)'}}
               >
-                Nuevo proyecto
+                {t('common.newProject')}
               </button>
               {/* Saludo de bienvenida */}
               <div className='relative' ref={menuRef}>
@@ -1590,7 +1597,7 @@ function ProjectsScreen({
                   onClick={() => setMenuOpen(!menuOpen)}
                   className='text-sm text-zinc-300 hover:text-white transition-colors cursor-pointer'
                 >
-                  <span style={{color: (document.documentElement.getAttribute('data-theme')||'dark')==='light' ? '#111827' : undefined}}>Bienvenido, </span>
+                  <span style={{color: (document.documentElement.getAttribute('data-theme')||'dark')==='light' ? '#111827' : undefined}}>{t('common.welcome')} </span>
                   <span className='font-semibold' style={{color: (document.documentElement.getAttribute('data-theme')||'dark')==='light' ? '#0468BF' : '#F27405'}}>{userName}</span> ✨
                 </button>
                 
@@ -1620,7 +1627,7 @@ function ProjectsScreen({
                           : 'transparent',
                       }}
                     >
-                      👤 Perfil
+                      👤 {t('navigation.profile')}
                     </button>
                     <button
                       onClick={() => {
@@ -1639,7 +1646,7 @@ function ProjectsScreen({
                           : 'transparent',
                       }}
                     >
-                      ⚙️ Configuración
+                      ⚙️ {t('navigation.settings')}
                     </button>
                     <button
                       onClick={() => {
@@ -1658,7 +1665,7 @@ function ProjectsScreen({
                           : 'transparent',
                       }}
                     >
-                      🚪 Salir
+                      🚪 {t('common.exit')}
                     </button>
                   </div>
                 )}
@@ -1674,7 +1681,7 @@ function ProjectsScreen({
               </div>
               <input
                 type='text'
-                placeholder='Buscar por nombre, DoP, almacén, productora...'
+                placeholder={t('common.searchPlaceholder')}
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 className='w-full pl-12 pr-4 py-3 rounded-xl border border-neutral-border focus:outline-none focus:ring-1 focus:ring-orange-500 hover:border-[var(--hover-border)]'
@@ -1699,7 +1706,7 @@ function ProjectsScreen({
                 }}
               >
                 <span className='flex items-center gap-2'>
-                  🔽 Filtro
+                  🔽 {t('common.filter')}
                   {(filterStatus !== 'Todos' || filterType !== 'Todos') && (
                     <span className='w-2 h-2 rounded-full bg-orange-500'></span>
                   )}
@@ -1715,7 +1722,7 @@ function ProjectsScreen({
                   }}
                 >
                   <div className='px-4 py-2 border-b border-neutral-border' style={{borderColor: isLight ? 'rgba(229,231,235,0.6)' : 'var(--border)'}}>
-                    <span className='text-sm font-semibold' style={{color: 'var(--text)'}}>Estado</span>
+                    <span className='text-sm font-semibold' style={{color: 'var(--text)'}}>{t('common.status')}</span>
                   </div>
                   <button
                     onClick={() => {
@@ -1732,7 +1739,7 @@ function ProjectsScreen({
                         : 'transparent',
                     }}
                   >
-                    {filterStatus === 'Todos' ? '✓ ' : '  '}Todos
+                    {filterStatus === 'Todos' ? '✓ ' : '  '}{t('common.all')}
                   </button>
                   <button
                     onClick={() => {
@@ -1751,7 +1758,7 @@ function ProjectsScreen({
                         : 'transparent',
                     }}
                   >
-                    {filterStatus === 'Activo' ? '✓ ' : '  '}Activo
+                    {filterStatus === 'Activo' ? '✓ ' : '  '}{t('common.active')}
                   </button>
                   <button
                     onClick={() => {
@@ -1770,11 +1777,11 @@ function ProjectsScreen({
                         : 'transparent',
                     }}
                   >
-                    {filterStatus === 'Cerrado' ? '✓ ' : '  '}Cerrado
+                    {filterStatus === 'Cerrado' ? '✓ ' : '  '}{t('common.closed')}
                   </button>
                   
                   <div className='px-4 py-2 border-t border-neutral-border mt-2' style={{borderColor: isLight ? 'rgba(229,231,235,0.6)' : 'var(--border)'}}>
-                    <span className='text-sm font-semibold' style={{color: 'var(--text)'}}>Tipo</span>
+                    <span className='text-sm font-semibold' style={{color: 'var(--text)'}}>{t('common.type')}</span>
                   </div>
                   <button
                     onClick={() => {
@@ -1793,7 +1800,7 @@ function ProjectsScreen({
                         : 'transparent',
                     }}
                   >
-                    {filterType === 'Todos' ? '✓ ' : '  '}Todos
+                    {filterType === 'Todos' ? '✓ ' : '  '}{t('common.all')}
                   </button>
                   <button
                     onClick={() => {
@@ -1812,7 +1819,7 @@ function ProjectsScreen({
                         : 'transparent',
                     }}
                   >
-                    {filterType === 'semanal' ? '✓ ' : '  '}Semanal
+                    {filterType === 'semanal' ? '✓ ' : '  '}{t('common.weekly')}
                   </button>
                   <button
                     onClick={() => {
@@ -1831,7 +1838,7 @@ function ProjectsScreen({
                         : 'transparent',
                     }}
                   >
-                    {filterType === 'mensual' ? '✓ ' : '  '}Mensual
+                    {filterType === 'mensual' ? '✓ ' : '  '}{t('common.monthly')}
                   </button>
                   <button
                     onClick={() => {
@@ -1850,7 +1857,7 @@ function ProjectsScreen({
                         : 'transparent',
                     }}
                   >
-                    {filterType === 'publicidad' ? '✓ ' : '  '}Publicidad
+                    {filterType === 'publicidad' ? '✓ ' : '  '}{t('common.advertising')}
                   </button>
                 </div>
               )}
@@ -1870,7 +1877,7 @@ function ProjectsScreen({
                 }}
               >
                 <span className='flex items-center gap-2'>
-                  ↕️ Ordenar
+                  ↕️ {t('common.sort')}
                 </span>
               </button>
               
@@ -1883,7 +1890,7 @@ function ProjectsScreen({
                   }}
                 >
                   <div className='px-4 py-2 border-b border-neutral-border' style={{borderColor: isLight ? 'rgba(229,231,235,0.6)' : 'var(--border)'}}>
-                    <span className='text-sm font-semibold' style={{color: 'var(--text)'}}>Ordenar por</span>
+                    <span className='text-sm font-semibold' style={{color: 'var(--text)'}}>{t('common.sortBy')}</span>
                   </div>
                   <button
                     onClick={() => {
@@ -1902,7 +1909,7 @@ function ProjectsScreen({
                         : 'transparent',
                     }}
                   >
-                    {sortBy === 'nombre' ? '✓ ' : '  '}Nombre
+                    {sortBy === 'nombre' ? '✓ ' : '  '}{t('common.name')}
                   </button>
                   <button
                     onClick={() => {
@@ -1921,7 +1928,7 @@ function ProjectsScreen({
                         : 'transparent',
                     }}
                   >
-                    {sortBy === 'estado' ? '✓ ' : '  '}Estado
+                    {sortBy === 'estado' ? '✓ ' : '  '}{t('common.status')}
                   </button>
                   <button
                     onClick={() => {
@@ -1940,11 +1947,11 @@ function ProjectsScreen({
                         : 'transparent',
                     }}
                   >
-                    {sortBy === 'tipo' ? '✓ ' : '  '}Tipo
+                    {sortBy === 'tipo' ? '✓ ' : '  '}{t('common.type')}
                   </button>
                   
                   <div className='px-4 py-2 border-t border-neutral-border mt-2' style={{borderColor: isLight ? 'rgba(229,231,235,0.6)' : 'var(--border)'}}>
-                    <span className='text-sm font-semibold' style={{color: 'var(--text)'}}>Orden</span>
+                    <span className='text-sm font-semibold' style={{color: 'var(--text)'}}>{t('common.sortOrder')}</span>
                   </div>
                   <button
                     onClick={() => {
@@ -1963,7 +1970,7 @@ function ProjectsScreen({
                         : 'transparent',
                     }}
                   >
-                    {sortOrder === 'asc' ? '✓ ' : '  '}Ascendente
+                    {sortOrder === 'asc' ? '✓ ' : '  '}{t('common.ascending')}
                   </button>
                   <button
                     onClick={() => {
@@ -1982,7 +1989,7 @@ function ProjectsScreen({
                         : 'transparent',
                     }}
                   >
-                    {sortOrder === 'desc' ? '✓ ' : '  '}Descendente
+                    {sortOrder === 'desc' ? '✓ ' : '  '}{t('common.descending')}
                   </button>
                 </div>
               )}
@@ -2006,19 +2013,19 @@ function ProjectsScreen({
               {!hasProjects ? (
                 <>
                   <h2 className='text-3xl font-bold mb-4' style={{color: 'var(--text)'}}>
-                    ¡Hola, {userName}! 👋
+                    {t('common.hello', { name: userName })}
                   </h2>
                   <p className='text-xl max-w-2xl' style={{color: 'var(--text)', opacity: 0.8}}>
-                    Para empezar a usar SetLux, <strong>crea tu primer proyecto</strong>.
+                    <span dangerouslySetInnerHTML={{ __html: t('common.getStartedStrong') }} />
                   </p>
                 </>
               ) : (
                 <>
                   <h2 className='text-2xl font-bold mb-4' style={{color: 'var(--text)'}}>
-                    No se encontraron proyectos
+                    {t('common.noResults')}
                   </h2>
                   <p className='text-lg max-w-2xl' style={{color: 'var(--text)', opacity: 0.8}}>
-                    Intenta ajustar los filtros o la búsqueda para ver más resultados.
+                    {t('common.noResultsDescription')}
                   </p>
                 </>
               )}

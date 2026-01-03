@@ -4,6 +4,7 @@ import ToggleIconButton from '@shared/components/ToggleIconButton';
 import { ROLE_COLORS } from '@shared/constants/roles';
 import { useLocalStorage } from '@shared/hooks/useLocalStorage';
 import React, { useMemo, useCallback, useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface ConfirmModalProps {
   title: string;
@@ -13,6 +14,7 @@ interface ConfirmModalProps {
 }
 
 function ConfirmModal({ title, message, onClose, onConfirm }: ConfirmModalProps) {
+  const { t } = useTranslation();
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
     if (typeof document !== 'undefined') {
       return (document.documentElement.getAttribute('data-theme') || 'light') as 'dark' | 'light';
@@ -79,7 +81,7 @@ function ConfirmModal({ title, message, onClose, onConfirm }: ConfirmModalProps)
             }}
             type='button'
           >
-            No
+            {t('common.no')}
           </button>
           <button
             onClick={() => {
@@ -94,7 +96,7 @@ function ConfirmModal({ title, message, onClose, onConfirm }: ConfirmModalProps)
             }}
             type='button'
           >
-            Sí
+            {t('common.yes')}
           </button>
         </div>
       </div>
@@ -158,6 +160,20 @@ const addDays = (date: Date, days: number) => {
 const formatDDMMYYYY = (date: Date) =>
   `${pad2(date.getDate())}/${pad2(date.getMonth() + 1)}/${date.getFullYear()}`;
 
+// Helper function to get translated day name
+const getDayName = (key: string, t: (key: string) => string): string => {
+  const dayMap: Record<string, string> = {
+    'mon': t('planning.monday'),
+    'tue': t('planning.tuesday'),
+    'wed': t('planning.wednesday'),
+    'thu': t('planning.thursday'),
+    'fri': t('planning.friday'),
+    'sat': t('planning.saturday'),
+    'sun': t('planning.sunday'),
+  };
+  return dayMap[key] || key;
+};
+
 const DAYS = [
   { idx: 0, key: 'mon', name: 'Lunes' },
   { idx: 1, key: 'tue', name: 'Martes' },
@@ -196,8 +212,24 @@ function JornadaDropdown({
   focusColor,
   readOnly = false,
 }: JornadaDropdownProps) {
+  const { t } = useTranslation();
   const dropdownRef = useRef<HTMLDivElement>(null);
   const jornadaOptions = ['Rodaje', 'Carga', 'Descarga', 'Localizar', 'Travel Day', 'Rodaje Festivo', 'Fin', 'Descanso'];
+  
+  // Helper function to translate jornada type
+  const translateJornadaType = (tipo: string): string => {
+    const typeMap: Record<string, string> = {
+      'Rodaje': t('planning.shooting'),
+      'Carga': t('planning.loading'),
+      'Descarga': t('planning.unloading'),
+      'Localizar': t('planning.location'),
+      'Travel Day': t('planning.travelDay'),
+      'Rodaje Festivo': t('planning.holidayShooting'),
+      'Fin': t('planning.end'),
+      'Descanso': t('planning.rest'),
+    };
+    return typeMap[tipo] || tipo;
+  };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -246,7 +278,7 @@ function JornadaDropdown({
             paddingRight: '2rem',
           }}
         >
-          {day.tipo || '\u00A0'}
+          {day.tipo ? translateJornadaType(day.tipo) : '\u00A0'}
         </button>
         {dropdownState.isOpen && (
           <div className={`absolute top-full left-0 mt-1 w-full border border-neutral-border rounded-lg shadow-lg z-50 overflow-y-auto max-h-60 ${
@@ -288,7 +320,7 @@ function JornadaDropdown({
                     : 'inherit',
                 }}
               >
-                {opt}
+                {translateJornadaType(opt)}
               </button>
               );
             })}
@@ -329,6 +361,7 @@ function AddMemberDropdown({
   focusColor,
   readOnly = false,
 }: AddMemberDropdownProps) {
+  const { t } = useTranslation();
   // Verificar primero si debemos renderizar (optimización)
   if (day.tipo === 'Descanso' || day.tipo === 'Fin') {
     return null;
@@ -382,7 +415,7 @@ function AddMemberDropdown({
           paddingRight: '2rem',
         }}
       >
-        + Añadir
+        {t('planning.addMember')}
       </button>
       {dropdownState.isOpen && (
         <div className={`absolute top-full left-0 mt-1 w-full border border-neutral-border rounded-lg shadow-lg z-50 overflow-y-auto max-h-60 ${
@@ -457,6 +490,7 @@ function AddPrelightDropdown({
   focusColor,
   readOnly = false,
 }: AddPrelightDropdownProps) {
+  const { t } = useTranslation();
   // Verificar primero si debemos renderizar (optimización)
   if (day.tipo === 'Descanso' || day.tipo === 'Fin') {
     return null;
@@ -507,9 +541,9 @@ function AddPrelightDropdown({
           backgroundPosition: 'right 0.5rem center',
           paddingRight: '2rem',
         }}
-        title={readOnly ? 'El proyecto está cerrado' : '+ Añadir'}
+        title={readOnly ? t('conditions.projectClosed') : t('planning.addMember')}
       >
-        + Añadir
+        {t('planning.addMember')}
       </button>
       {dropdownState.isOpen && !readOnly && (
         <div className={`absolute top-full left-0 mt-1 w-full border border-neutral-border rounded-lg shadow-lg z-50 overflow-y-auto max-h-60 ${
@@ -592,6 +626,7 @@ function AddPickupDropdown({
   focusColor,
   readOnly = false,
 }: AddPickupDropdownProps) {
+  const { t } = useTranslation();
   // Verificar primero si debemos renderizar (optimización)
   if (day.tipo === 'Descanso' || day.tipo === 'Fin') {
     return null;
@@ -642,9 +677,9 @@ function AddPickupDropdown({
           backgroundPosition: 'right 0.5rem center',
           paddingRight: '2rem',
         }}
-        title={readOnly ? 'El proyecto está cerrado' : '+ Añadir'}
+        title={readOnly ? t('conditions.projectClosed') : t('planning.addMember')}
       >
-        + Añadir
+        {t('planning.addMember')}
       </button>
       {dropdownState.isOpen && !readOnly && (
         <div className={`absolute top-full left-0 mt-1 w-full border border-neutral-border rounded-lg shadow-lg z-50 overflow-y-auto max-h-60 ${
@@ -718,6 +753,25 @@ function WeekCard({
   project,
   readOnly = false,
 }: WeekCardProps) {
+  const { t } = useTranslation();
+  
+  // Helper function to translate week label
+  const translateWeekLabel = (label: string): string => {
+    if (!label) return '';
+    // Match patterns like "Semana 1", "Semana -1", "Week 1", "Setmana 1", etc.
+    const match = label.match(/^(Semana|Week|Setmana)\s*(-?\d+)$/i);
+    if (match) {
+      const number = match[2];
+      if (number.startsWith('-')) {
+        return t('planning.weekFormatNegative', { number: number.substring(1) });
+      } else {
+        return t('planning.weekFormat', { number });
+      }
+    }
+    // If it doesn't match the pattern, return as is (might be custom label)
+    return label;
+  };
+  
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const [memberToRemove, setMemberToRemove] = useState<{
     scope: 'pre' | 'pro';
@@ -858,7 +912,7 @@ function WeekCard({
             onClick={() => setOpen(v => !v)}
             className='w-8 h-8'
           />
-          <div className='text-brand font-semibold'>{week.label}</div>
+          <div className='text-brand font-semibold'>{translateWeekLabel(week.label)}</div>
         </div>
         <div className='flex items-center gap-2'>
           <Button
@@ -867,7 +921,7 @@ function WeekCard({
             className={`no-pdf ${btnExportCls || ''}`}
             style={{...btnExportStyle, background: '#f59e0b'}}
             onClick={onExportWeekPDF}
-            title='Exportar semana (PDF)'
+            title={t('planning.exportWeekPDF')}
           >
             PDF
           </Button>
@@ -877,10 +931,10 @@ function WeekCard({
             className={`no-pdf ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
             onClick={() => !readOnly && duplicateWeek(scope, week.id as string)}
             disabled={readOnly}
-            title={readOnly ? 'El proyecto está cerrado' : 'Duplicar semana'}
+            title={readOnly ? t('conditions.projectClosed') : t('planning.duplicateWeek')}
             type='button'
           >
-            Duplicar
+            {t('planning.duplicate')}
           </Button>
           <Button
             variant='danger'
@@ -888,7 +942,7 @@ function WeekCard({
             className={`no-pdf ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
             onClick={() => !readOnly && setShowConfirmDelete(true)}
             disabled={readOnly}
-            title={readOnly ? 'El proyecto está cerrado' : 'Eliminar semana'}
+            title={readOnly ? t('conditions.projectClosed') : t('planning.deleteWeek')}
             type='button'
           >
             🗑️
@@ -901,14 +955,14 @@ function WeekCard({
           <table className='plan min-w-[760px] w-full border-collapse text-sm'>
             <thead>
               <tr>
-                <Th align='left'>Fila / Día</Th>
+                <Th align='left'>{t('planning.row')}</Th>
                 {week.days.map((d: AnyRecord, i: number) => (
-                  <Th key={i} align='center'>{d.name}</Th>
+                  <Th key={i} align='center'>{getDayName(d.key || DAYS[i]?.key || '', t)}</Th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              <Row label='Fecha'>
+              <Row label={t('planning.date')}>
                 {DAYS.map((d, i) => (
                   <Td key={i} align='middle'>
                     <div className='text-center flex items-center justify-center h-full'>
@@ -919,7 +973,7 @@ function WeekCard({
                         onChange={onChangeMonday}
                         disabled={readOnly}
                         className={`w-full px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-left ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
-                        title={readOnly ? 'El proyecto está cerrado' : 'Cambiar lunes'}
+                        title={readOnly ? t('conditions.projectClosed') : t('planning.changeMonday')}
                       />
                     ) : (
                       datesRow[i]
@@ -929,7 +983,7 @@ function WeekCard({
                 ))}
               </Row>
 
-              <Row label='Jornada'>
+              <Row label={t('planning.dayType')}>
                 {week.days.map((day: AnyRecord, i: number) => {
                   const dropdownKey = `jornada_${week.id}_${i}`;
                   const dropdownState = getDropdownState(dropdownKey);
@@ -953,7 +1007,7 @@ function WeekCard({
                 })}
               </Row>
 
-              <Row label='Horario'>
+              <Row label={t('planning.schedule')}>
                 {week.days.map((day: AnyRecord, i: number) => (
                   <Td key={i} align='middle'>
                     <div className='flex gap-2 justify-center'>
@@ -968,7 +1022,7 @@ function WeekCard({
                         className={`flex-1 px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-left ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
                         disabled={readOnly || day.tipo === 'Descanso' || day.tipo === 'Fin'}
                         readOnly={readOnly}
-                        title={readOnly ? 'El proyecto está cerrado' : 'Inicio'}
+                        title={readOnly ? t('conditions.projectClosed') : t('planning.start')}
                       />
                       <input
                         type='time'
@@ -979,14 +1033,14 @@ function WeekCard({
                         className={`flex-1 px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-left ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
                         disabled={readOnly || day.tipo === 'Descanso' || day.tipo === 'Fin'}
                         readOnly={readOnly}
-                        title={readOnly ? 'El proyecto está cerrado' : 'Fin'}
+                        title={readOnly ? t('conditions.projectClosed') : t('planning.end')}
                       />
                     </div>
                   </Td>
                 ))}
               </Row>
 
-              <Row label='Corte cámara'>
+              <Row label={t('planning.cutRow')}>
                 {week.days.map((day: AnyRecord, i: number) => (
                   <Td key={i} align='middle'>
                     <input
@@ -998,25 +1052,31 @@ function WeekCard({
                       className={`w-full px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-left ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
                       disabled={readOnly || day.tipo === 'Descanso' || day.tipo === 'Fin'}
                       readOnly={readOnly}
-                      title={readOnly ? 'El proyecto está cerrado' : 'Corte cámara'}
+                      title={readOnly ? t('conditions.projectClosed') : t('planning.cut')}
                     />
                   </Td>
                 ))}
               </Row>
 
-              <Row label='Localización'>
+              <Row label={t('planning.location')}>
                 {week.days.map((day: AnyRecord, i: number) => (
                   <Td key={i} align='middle'>
                     <input
                       type='text'
                       placeholder={
                         day.tipo === 'Descanso'
-                          ? 'DESCANSO'
+                          ? t('planning.restLocation')
                           : day.tipo === 'Fin'
-                          ? 'FIN DEL RODAJE'
-                          : 'Rodaje / Dirección / Calle...'
+                          ? t('planning.endLocation')
+                          : t('planning.locationPlaceholder')
                       }
-                      value={day.loc || ''}
+                      value={
+                        day.tipo === 'Descanso' && day.loc === 'DESCANSO'
+                          ? t('planning.restLocation')
+                          : day.tipo === 'Fin' && day.loc === 'FIN DEL RODAJE'
+                          ? t('planning.endLocation')
+                          : day.loc || ''
+                      }
                       onChange={e =>
                         setDayField(scope, week.id as string, i, { loc: e.target.value })
                       }
@@ -1027,7 +1087,7 @@ function WeekCard({
                 ))}
               </Row>
 
-              <Row label='Equipo'>
+              <Row label={t('planning.team')}>
                 {week.days.map((day: AnyRecord, i: number) => {
                   const basePool = (baseTeam || []).map(m => ({
                     role: m.role,
@@ -1067,7 +1127,7 @@ function WeekCard({
                                 });
                               }}
                               disabled={readOnly}
-                              title={readOnly ? 'El proyecto está cerrado' : 'Quitar'}
+                              title={readOnly ? t('conditions.projectClosed') : t('planning.remove')}
                             >
                               ×
                             </Button>
@@ -1101,7 +1161,7 @@ function WeekCard({
                       onClick={() => setPreOpen(v => !v)}
                       disabled={readOnly}
                     />
-                    Prelight
+                    {t('planning.prelight')}
                   </span>
                 }
               >
@@ -1128,7 +1188,7 @@ function WeekCard({
                               className={`px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm text-left ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
                               disabled={readOnly || day.tipo === 'Descanso' || day.tipo === 'Fin'}
                               readOnly={readOnly}
-                              title={readOnly ? 'El proyecto está cerrado' : 'Inicio prelight'}
+                              title={readOnly ? t('conditions.projectClosed') : t('planning.startPrelight')}
                             />
                             <input
                               type='time'
@@ -1141,7 +1201,7 @@ function WeekCard({
                               className={`px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm text-left ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
                               disabled={readOnly || day.tipo === 'Descanso' || day.tipo === 'Fin'}
                               readOnly={readOnly}
-                              title={readOnly ? 'El proyecto está cerrado' : 'Fin prelight'}
+                              title={readOnly ? t('conditions.projectClosed') : t('planning.endPrelight')}
                             />
                           </div>
                           <div className='flex flex-wrap gap-2 justify-center'>
@@ -1170,7 +1230,7 @@ function WeekCard({
                                     });
                                   }}
                                   disabled={readOnly}
-                                  title={readOnly ? 'El proyecto está cerrado' : 'Quitar'}
+                                  title={readOnly ? t('conditions.projectClosed') : t('planning.remove')}
                                   className={readOnly ? 'opacity-50 cursor-not-allowed' : ''}
                                 >
                                   ×
@@ -1207,7 +1267,7 @@ function WeekCard({
                       onClick={() => setPickOpen(v => !v)}
                       disabled={readOnly}
                     />
-                    Recogida
+                    {t('planning.pickup')}
                   </span>
                 }
               >
@@ -1234,7 +1294,7 @@ function WeekCard({
                               className={`px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm text-left ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
                               disabled={readOnly || day.tipo === 'Descanso' || day.tipo === 'Fin'}
                               readOnly={readOnly}
-                              title={readOnly ? 'El proyecto está cerrado' : 'Inicio recogida'}
+                              title={readOnly ? t('conditions.projectClosed') : t('planning.startPickup')}
                             />
                             <input
                               type='time'
@@ -1247,7 +1307,7 @@ function WeekCard({
                               className={`px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm text-left ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
                               disabled={readOnly || day.tipo === 'Descanso' || day.tipo === 'Fin'}
                               readOnly={readOnly}
-                              title={readOnly ? 'El proyecto está cerrado' : 'Fin recogida'}
+                              title={readOnly ? t('conditions.projectClosed') : t('planning.endPickup')}
                             />
                           </div>
                           <div className='flex flex-wrap gap-2 justify-center'>
@@ -1276,7 +1336,7 @@ function WeekCard({
                                     });
                                   }}
                                   disabled={readOnly}
-                                  title={readOnly ? 'El proyecto está cerrado' : 'Quitar'}
+                                  title={readOnly ? t('conditions.projectClosed') : t('planning.remove')}
                                   className={readOnly ? 'opacity-50 cursor-not-allowed' : ''}
                                 >
                                   ×
@@ -1305,7 +1365,7 @@ function WeekCard({
                 })}
               </Row>
 
-              <Row label='Incidencias'>
+              <Row label={t('planning.issues')}>
                 {week.days.map((day: AnyRecord, i: number) => (
                   <Td key={i} align='middle'>
                     <input
@@ -1319,7 +1379,7 @@ function WeekCard({
                       className={`w-full px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-left ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
                       disabled={readOnly}
                       readOnly={readOnly}
-                      title={readOnly ? 'El proyecto está cerrado' : 'Incidencias'}
+                      title={readOnly ? t('conditions.projectClosed') : t('planning.issues')}
                     />
                   </Td>
                 ))}
@@ -1330,8 +1390,8 @@ function WeekCard({
       )}
       {showConfirmDelete && (
         <ConfirmModal
-          title='Confirmar eliminación'
-          message={`¿Estás seguro de eliminar <strong>${week.label || 'esta semana'}</strong>?`}
+          title={t('planning.confirmDelete')}
+          message={t('planning.confirmDeleteWeek', { weekLabel: translateWeekLabel(week.label) || t('planning.thisWeek') })}
           onClose={() => setShowConfirmDelete(false)}
           onConfirm={() => {
             deleteWeek(scope, week.id as string);
@@ -1340,8 +1400,8 @@ function WeekCard({
       )}
       {memberToRemove && (
         <ConfirmModal
-          title='Confirmar eliminación'
-          message={`¿Estás seguro de eliminar a <strong>${memberToRemove.memberName}</strong>?`}
+          title={t('planning.confirmDelete')}
+          message={t('team.confirmDeleteMember', { name: memberToRemove.memberName })}
           onClose={() => setMemberToRemove(null)}
           onConfirm={() => {
             removeMemberFrom(

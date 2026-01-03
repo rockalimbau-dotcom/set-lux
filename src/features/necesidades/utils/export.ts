@@ -1,5 +1,6 @@
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+import i18n from '@i18n';
 
 const pad2 = (n: number): string => String(n).padStart(2, '0');
 const parseYYYYMMDD = (s: string): Date => {
@@ -57,15 +58,32 @@ interface NeedsData {
       (c: string) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c] || c
     );
 
-  const DAYS: DayInfo[] = [
-    { idx: 0, key: 'mon', name: 'Lunes' },
-    { idx: 1, key: 'tue', name: 'Martes' },
-    { idx: 2, key: 'wed', name: 'Miércoles' },
-    { idx: 3, key: 'thu', name: 'Jueves' },
-    { idx: 4, key: 'fri', name: 'Viernes' },
-    { idx: 5, key: 'sat', name: 'Sábado' },
-    { idx: 6, key: 'sun', name: 'Domingo' },
+  const getDays = (): DayInfo[] => [
+    { idx: 0, key: 'mon', name: i18n.t('reports.dayNames.monday') },
+    { idx: 1, key: 'tue', name: i18n.t('reports.dayNames.tuesday') },
+    { idx: 2, key: 'wed', name: i18n.t('reports.dayNames.wednesday') },
+    { idx: 3, key: 'thu', name: i18n.t('reports.dayNames.thursday') },
+    { idx: 4, key: 'fri', name: i18n.t('reports.dayNames.friday') },
+    { idx: 5, key: 'sat', name: i18n.t('reports.dayNames.saturday') },
+    { idx: 6, key: 'sun', name: i18n.t('reports.dayNames.sunday') },
   ];
+
+// Helper function to translate week label
+const translateWeekLabel = (label: string): string => {
+  if (!label) return '';
+  // Match patterns like "Semana 1", "Semana -1", "Week 1", "Setmana 1", etc.
+  const match = label.match(/^(Semana|Week|Setmana)\s*(-?\d+)$/i);
+  if (match) {
+    const number = match[2];
+    if (number.startsWith('-')) {
+      return i18n.t('planning.weekFormatNegative', { number: number.substring(1) });
+    } else {
+      return i18n.t('planning.weekFormat', { number });
+    }
+  }
+  // If it doesn't match the pattern, return as is (might be custom label)
+  return label;
+};
 
 export function buildNecesidadesHTML(
   project: any,
@@ -74,6 +92,8 @@ export function buildNecesidadesHTML(
   valuesByDay: DayValues[]
 ): string {
   const monday = parseYYYYMMDD(weekStart);
+  const DAYS = getDays();
+  const translatedWeekLabel = translateWeekLabel(weekLabel);
   
   const headerRow = DAYS.map(
     (_, i) =>
@@ -82,13 +102,31 @@ export function buildNecesidadesHTML(
       </th>`
   ).join('');
 
+  // Helper function to translate location values from planning
+  const translateLocationValue = (value: string): string => {
+    if (!value) return '';
+    const normalized = value.trim();
+    // Translate common location values from planning
+    if (normalized === 'Descanso' || normalized === 'DESCANSO' || normalized.toLowerCase() === 'descanso') {
+      return i18n.t('planning.rest');
+    }
+    if (normalized === 'Fin' || normalized === 'FIN' || normalized.toLowerCase() === 'fin') {
+      return i18n.t('planning.end');
+    }
+    return value;
+  };
+
   const renderCell = (text: any): string =>
     `<div style="white-space:pre-wrap;line-height:1.35">${esc(text || '')}</div>`;
 
   const fieldRow = (key: string, label: string): string => {
       const tds = DAYS.map(
-        (_, i) =>
-        `<td style="border:1px solid #999;padding:6px;vertical-align:top;">${renderCell(valuesByDay[i]?.[key])}</td>`
+        (_, i) => {
+          const rawValue = valuesByDay[i]?.[key] || '';
+          // Only translate if it's the location field (key === 'loc')
+          const displayValue = key === 'loc' ? translateLocationValue(rawValue) : rawValue;
+          return `<td style="border:1px solid #999;padding:6px;vertical-align:top;">${renderCell(displayValue)}</td>`;
+        }
       ).join('');
     return `<tr><td style="border:1px solid #999;padding:6px;font-weight:600;background:#f8fafc;">${esc(label)}</td>${tds}</tr>`;
   };
@@ -114,24 +152,24 @@ export function buildNecesidadesHTML(
 
   // Orden exacto como en la interfaz
   const body =
-    fieldRow('loc', 'Localización') +
-    fieldRow('seq', 'Secuencias') +
-    listRow('Equipo técnico', 'crewList', 'crewTxt') +
-    fieldRow('needLoc', 'Necesidades localizaciones') +
-    fieldRow('needProd', 'Necesidades producción') +
-    fieldRow('needLight', 'Necesidades luz') +
-    fieldRow('extraMat', 'Material extra') +
-    fieldRow('precall', 'Precall') +
-    listRow('Equipo Prelight', 'preList', 'preTxt') +
-    listRow('Equipo Recogida', 'pickList', 'pickTxt') +
-    fieldRow('obs', 'Observaciones');
+    fieldRow('loc', i18n.t('needs.location')) +
+    fieldRow('seq', i18n.t('needs.sequences')) +
+    listRow(i18n.t('needs.technicalTeam'), 'crewList', 'crewTxt') +
+    fieldRow('needLoc', i18n.t('needs.locationNeeds')) +
+    fieldRow('needProd', i18n.t('needs.productionNeeds')) +
+    fieldRow('needLight', i18n.t('needs.lightNeeds')) +
+    fieldRow('extraMat', i18n.t('needs.extraMaterial')) +
+    fieldRow('precall', i18n.t('needs.precall')) +
+    listRow(i18n.t('needs.prelightTeam'), 'preList', 'preTxt') +
+    listRow(i18n.t('needs.pickupTeam'), 'pickList', 'pickTxt') +
+    fieldRow('obs', i18n.t('needs.observations'));
 
   return `
     <!DOCTYPE html>
     <html>
     <head>
       <meta charset="utf-8">
-      <title>${esc(project?.nombre || 'Proyecto')} – Necesidades de Rodaje (${esc(weekLabel)})</title>
+      <title>${esc(project?.nombre || i18n.t('needs.project'))} – ${i18n.t('needs.shootingNeeds')} (${esc(translatedWeekLabel)})</title>
       <style>
         body {
           font-family: 'Segoe UI', system-ui, -apple-system, Roboto, Ubuntu, Cantarell, 'Noto Sans', sans-serif;
@@ -277,28 +315,28 @@ export function buildNecesidadesHTML(
     <body>
       <div class="container">
         <div class="header">
-          <h1>Necesidades - ${weekLabel.includes('-') ? 'Preproducción' : weekLabel.match(/\d+/) ? 'Producción' : 'Semana'}</h1>
+          <h1>${i18n.t('needs.title')} - ${weekLabel.includes('-') ? i18n.t('needs.preproduction') : weekLabel.match(/\d+/) ? i18n.t('needs.production') : i18n.t('needs.week')}</h1>
         </div>
         
         <div class="content">
           <div class="info-panel">
             <div class="info-item">
-              <div class="info-label">Producción</div>
+              <div class="info-label">${i18n.t('needs.productionCompany')}</div>
               <div class="info-value">${esc(project?.produccion || '—')}</div>
             </div>
             <div class="info-item">
-              <div class="info-label">Proyecto</div>
-              <div class="info-value">${esc(project?.nombre || 'Proyecto')}</div>
+              <div class="info-label">${i18n.t('needs.project')}</div>
+              <div class="info-value">${esc(project?.nombre || i18n.t('needs.project'))}</div>
             </div>
           </div>
           
-          <div class="week-title">${esc(weekLabel)}</div>
+          <div class="week-title">${esc(translatedWeekLabel)}</div>
           
           <div class="table-container">
             <table>
               <thead>
                 <tr>
-                  <th>Campo / Día</th>
+                  <th>${i18n.t('needs.fieldDay')}</th>
                   ${headerRow}
                 </tr>
               </thead>
@@ -310,7 +348,7 @@ export function buildNecesidadesHTML(
         </div>
         
         <div class="footer">
-          <span>Generado automáticamente por</span>
+          <span>${i18n.t('needs.generatedAutomaticallyBy')}</span>
           <span class="setlux-logo">
             <span class="set">Set</span><span class="lux">Lux</span>
           </span>
@@ -328,6 +366,8 @@ export function buildNecesidadesHTMLForPDF(
   valuesByDay: DayValues[]
 ): string {
   const monday = parseYYYYMMDD(weekStart);
+  const DAYS = getDays();
+  const translatedWeekLabel = translateWeekLabel(weekLabel);
   
   const headerRow = DAYS.map(
     (_, i) =>
@@ -336,13 +376,31 @@ export function buildNecesidadesHTMLForPDF(
       </th>`
   ).join('');
 
+  // Helper function to translate location values from planning
+  const translateLocationValue = (value: string): string => {
+    if (!value) return '';
+    const normalized = value.trim();
+    // Translate common location values from planning
+    if (normalized === 'Descanso' || normalized === 'DESCANSO' || normalized.toLowerCase() === 'descanso') {
+      return i18n.t('planning.rest');
+    }
+    if (normalized === 'Fin' || normalized === 'FIN' || normalized.toLowerCase() === 'fin') {
+      return i18n.t('planning.end');
+    }
+    return value;
+  };
+
   const renderCell = (text: any): string =>
     `<div style="white-space:pre-wrap;line-height:1.35">${esc(text || '')}</div>`;
 
   const fieldRow = (key: string, label: string): string => {
     const tds = DAYS.map(
-      (_, i) =>
-        `<td style="border:1px solid #999;padding:6px;vertical-align:top;">${renderCell(valuesByDay[i]?.[key])}</td>`
+      (_, i) => {
+        const rawValue = valuesByDay[i]?.[key] || '';
+        // Only translate if it's the location field (key === 'loc')
+        const displayValue = key === 'loc' ? translateLocationValue(rawValue) : rawValue;
+        return `<td style="border:1px solid #999;padding:6px;vertical-align:top;">${renderCell(displayValue)}</td>`;
+      }
     ).join('');
     return `<tr><td style="border:1px solid #999;padding:6px;font-weight:600;background:#f8fafc;">${esc(label)}</td>${tds}</tr>`;
   };
@@ -368,24 +426,24 @@ export function buildNecesidadesHTMLForPDF(
 
   // Orden exacto como en la interfaz
   const body =
-    fieldRow('loc', 'Localización') +
-    fieldRow('seq', 'Secuencias') +
-    listRow('Equipo técnico', 'crewList', 'crewTxt') +
-    fieldRow('needLoc', 'Necesidades localizaciones') +
-    fieldRow('needProd', 'Necesidades producción') +
-    fieldRow('needLight', 'Necesidades luz') +
-    fieldRow('extraMat', 'Material extra') +
-    fieldRow('precall', 'Precall') +
-    listRow('Equipo Prelight', 'preList', 'preTxt') +
-    listRow('Equipo Recogida', 'pickList', 'pickTxt') +
-    fieldRow('obs', 'Observaciones');
+    fieldRow('loc', i18n.t('needs.location')) +
+    fieldRow('seq', i18n.t('needs.sequences')) +
+    listRow(i18n.t('needs.technicalTeam'), 'crewList', 'crewTxt') +
+    fieldRow('needLoc', i18n.t('needs.locationNeeds')) +
+    fieldRow('needProd', i18n.t('needs.productionNeeds')) +
+    fieldRow('needLight', i18n.t('needs.lightNeeds')) +
+    fieldRow('extraMat', i18n.t('needs.extraMaterial')) +
+    fieldRow('precall', i18n.t('needs.precall')) +
+    listRow(i18n.t('needs.prelightTeam'), 'preList', 'preTxt') +
+    listRow(i18n.t('needs.pickupTeam'), 'pickList', 'pickTxt') +
+    fieldRow('obs', i18n.t('needs.observations'));
 
   return `
     <!DOCTYPE html>
     <html>
     <head>
       <meta charset="utf-8">
-      <title>${esc(project?.nombre || 'Proyecto')} – Necesidades de Rodaje (${esc(weekLabel)})</title>
+      <title>${esc(project?.nombre || i18n.t('needs.project'))} – ${i18n.t('needs.shootingNeeds')} (${esc(translatedWeekLabel)})</title>
       <style>
         body {
           font-family: 'Segoe UI', system-ui, -apple-system, Roboto, Ubuntu, Cantarell, 'Noto Sans', sans-serif;
@@ -550,28 +608,28 @@ export function buildNecesidadesHTMLForPDF(
     <body>
       <div class="container-pdf">
         <div class="header">
-          <h1>Necesidades - ${weekLabel.includes('-') ? 'Preproducción' : weekLabel.match(/\d+/) ? 'Producción' : 'Semana'}</h1>
+          <h1>${i18n.t('needs.title')} - ${weekLabel.includes('-') ? i18n.t('needs.preproduction') : weekLabel.match(/\d+/) ? i18n.t('needs.production') : i18n.t('needs.week')}</h1>
         </div>
         
         <div class="content">
           <div class="info-panel">
             <div class="info-item">
-              <div class="info-label">Producción</div>
+              <div class="info-label">${i18n.t('needs.productionCompany')}</div>
               <div class="info-value">${esc(project?.produccion || '—')}</div>
             </div>
             <div class="info-item">
-              <div class="info-label">Proyecto</div>
-              <div class="info-value">${esc(project?.nombre || 'Proyecto')}</div>
+              <div class="info-label">${i18n.t('needs.project')}</div>
+              <div class="info-value">${esc(project?.nombre || i18n.t('needs.project'))}</div>
             </div>
           </div>
           
-          <div class="week-title">${esc(weekLabel)}</div>
+          <div class="week-title">${esc(translatedWeekLabel)}</div>
           
           <div class="table-container">
             <table>
               <thead>
                 <tr>
-                  <th>Campo / Día</th>
+                  <th>${i18n.t('needs.fieldDay')}</th>
                   ${headerRow}
                 </tr>
               </thead>
@@ -583,7 +641,7 @@ export function buildNecesidadesHTMLForPDF(
         </div>
         
         <div class="footer">
-          <span>Generado automáticamente por</span>
+          <span>${i18n.t('needs.generatedAutomaticallyBy')}</span>
           <span class="setlux-logo">
             <span class="set">Set</span><span class="lux">Lux</span>
           </span>
@@ -690,13 +748,13 @@ export function renderExportAllHTML(
     );
     return buildNecesidadesHTML(
       { nombre: projectName },
-      wk.label || 'Semana',
+      wk.label || i18n.t('needs.week'),
       wk.startDate || '',
       valuesByDay
     );
   });
   
-  return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${esc(projectName)} – Necesidades (todas)</title></head><body style="font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif;color:#111;">${parts.join('<hr style="page-break-after:always;border:none;border-top:1px solid #ddd;margin:24px 0;" />')}<footer style="margin-top:30px;font-size:10px;color:#888;">Generado con SetLux</footer></body></html>`;
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${esc(projectName)} – ${i18n.t('needs.title')} (${i18n.t('needs.all')})</title></head><body style="font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif;color:#111;">${parts.join('<hr style="page-break-after:always;border:none;border-top:1px solid #ddd;margin:24px 0;" />')}<footer style="margin-top:30px;font-size:10px;color:#888;">${i18n.t('footer.generatedBy')} SetLux</footer></body></html>`;
 }
 
 export async function exportAllToPDF(
@@ -721,7 +779,7 @@ export async function exportAllToPDF(
       // Create HTML for this week only
       const weekHTML = buildNecesidadesHTMLForPDF(
         project,
-        wk.label || 'Semana',
+        wk.label || i18n.t('needs.week'),
         wk.startDate || '',
         valuesByDay
       );
@@ -782,7 +840,7 @@ export async function exportAllToPDF(
     }
     
     // Generate filename
-    const projectName = project?.nombre || 'Proyecto';
+    const projectName = project?.nombre || i18n.t('needs.project');
     const filename = `Necesidades_${projectName.replace(/[^a-zA-Z0-9]/g, '_')}_Todas.pdf`;
     
     pdf.save(filename);

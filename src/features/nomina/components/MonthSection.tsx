@@ -8,6 +8,7 @@ import DietasSummary from './DietasSummary.jsx';
 import ExtrasSummary from './ExtrasSummary.jsx';
 import WorkedDaysSummary from './WorkedDaysSummary.tsx';
 import CargaDescargaSummary from './CargaDescargaSummary.tsx';
+import { useTranslation } from 'react-i18next';
 
 type RolePrices = {
   getForRole: (roleCode: string, baseRoleCode?: string | null) => {
@@ -117,6 +118,7 @@ function MonthSection({
   roleLabelFromCode,
   readOnly = false,
 }: MonthSectionProps) {
+  const { t } = useTranslation();
   // Helper function to display empty string for zero values
   const displayValue = (value: number | undefined | null, decimals: number = 0): string => {
     if (value === null || value === undefined || value === 0) return '';
@@ -867,19 +869,19 @@ function MonthSection({
           onClick={() => !readOnly && setOpen(v => !v)}
           disabled={readOnly}
           className={`w-6 h-6 rounded-lg border border-neutral-border flex items-center justify-center text-sm hover:border-[#F59E0B] ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
-          title={readOnly ? 'El proyecto está cerrado' : (open ? 'Contraer' : 'Desplegar')}
+          title={readOnly ? t('conditions.projectClosed') : (open ? t('payroll.collapse') : t('payroll.expand'))}
           type='button'
         >
           {open ? '−' : '+'}
         </button>
         <span className='text-lg font-semibold text-brand'>
-          Nómina {monthLabelEs(monthKey)}
+          {t('payroll.payrollTitle')} {monthLabelEs(monthKey)}
         </span>
         {(projectMode === 'semanal' || projectMode === 'mensual') && (
           <div className='ml-auto flex items-center gap-3'>
             {projectMode === 'mensual' && (
               <div className='flex items-center gap-2'>
-                <label className='text-xs text-zinc-400 whitespace-nowrap'>Precio a</label>
+                <label className='text-xs text-zinc-400 whitespace-nowrap'>{t('payroll.priceTo')}</label>
                 <input
                   type='number'
                   min='28'
@@ -895,13 +897,13 @@ function MonthSection({
                   disabled={readOnly}
                   readOnly={readOnly}
                   className={`w-12 px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-xs text-left ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  title={readOnly ? 'El proyecto está cerrado' : 'Precio a X días'}
+                  title={readOnly ? t('conditions.projectClosed') : t('payroll.priceToDays')}
                 />
-                <label className='text-xs text-zinc-400 whitespace-nowrap'>días</label>
+                <label className='text-xs text-zinc-400 whitespace-nowrap'>{t('payroll.days')}</label>
               </div>
             )}
             <div className='flex items-center gap-2'>
-              <label className='text-sm text-zinc-300 whitespace-nowrap'>Desde:</label>
+              <label className='text-sm text-zinc-300 whitespace-nowrap'>{t('payroll.from')}</label>
               <input
                 type='date'
                 value={dateFrom}
@@ -920,11 +922,11 @@ function MonthSection({
                 disabled={readOnly}
                 readOnly={readOnly}
                 className={`px-3 py-2 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm text-left ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
-                title={readOnly ? 'El proyecto está cerrado' : 'Fecha desde'}
+                title={readOnly ? t('conditions.projectClosed') : t('payroll.dateFrom')}
               />
             </div>
             <div className='flex items-center gap-2'>
-              <label className='text-sm text-zinc-300 whitespace-nowrap'>Hasta:</label>
+              <label className='text-sm text-zinc-300 whitespace-nowrap'>{t('payroll.to')}</label>
               <input
                 type='date'
                 value={dateTo}
@@ -943,7 +945,7 @@ function MonthSection({
                 disabled={readOnly}
                 readOnly={readOnly}
                 className={`px-3 py-2 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm text-left ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
-                title={readOnly ? 'El proyecto está cerrado' : 'Fecha hasta'}
+                title={readOnly ? t('conditions.projectClosed') : t('payroll.dateTo')}
               />
             </div>
           </div>
@@ -953,7 +955,7 @@ function MonthSection({
             className={btnExportCls}
             style={btnExportStyle}
             onClick={doExportPDF}
-            title='Exportar nómina del mes (PDF)'
+            title={t('payroll.exportPDF')}
             type='button'
           >
             PDF
@@ -993,32 +995,32 @@ function MonthSection({
                       title={enriched.length > 0 && enriched.every(r => {
                         const pKey = `${r.role}__${r.name}`;
                         return isRowSelected(pKey);
-                      }) ? 'Deseleccionar todas' : 'Seleccionar todas'}
+                      }) ? t('payroll.deselectAll') : t('payroll.selectAll')}
                       className='accent-blue-500 dark:accent-[#f59e0b] cursor-pointer'
                     />
                   </div>
                 </Th>
-                <Th align='center'>Persona</Th>
-                {hasWorkedDaysData && <Th align='center'>Días trabajados</Th>}
-                {hasWorkedDaysData && <Th align='center'>Total días</Th>}
-                {hasLocalizacionData && <Th align='center'>Días Localización Técnica</Th>}
-                {hasLocalizacionData && <Th align='center'>Total Días Localización Técnica</Th>}
-                {hasCargaDescargaData && <Th align='center'>Días Carga / Descarga</Th>}
-                {hasCargaDescargaData && <Th align='center'>Total días Carga / Descarga</Th>}
-                {columnVisibility.holidays && <Th align='center'>Días festivos</Th>}
-                {columnVisibility.holidays && <Th align='center'>Total días festivos</Th>}
-                {columnVisibility.travel && <Th align='center'>Días travel day</Th>}
-                {columnVisibility.travel && <Th align='center'>Total travel day</Th>}
-                {columnVisibility.extras && <Th align='center'>Horas extras</Th>}
-                {columnVisibility.extras && <Th align='center'>Total horas extra</Th>}
-                {columnVisibility.dietas && <Th align='center'>Dietas</Th>}
-                {columnVisibility.dietas && <Th align='center'>Total dietas</Th>}
-                {columnVisibility.transporte && <Th align='center'>Transportes</Th>}
-                {columnVisibility.transporte && <Th align='center'>Total transportes</Th>}
-                {columnVisibility.km && <Th align='center'>Kilometraje</Th>}
-                {columnVisibility.km && <Th align='center'>Total kilometraje</Th>}
-                <Th align='center'>TOTAL BRUTO</Th>
-                <Th align='center'>Nómina recibida</Th>
+                <Th align='center'>{t('payroll.person')}</Th>
+                {hasWorkedDaysData && <Th align='center'>{t('payroll.workedDays')}</Th>}
+                {hasWorkedDaysData && <Th align='center'>{t('payroll.totalDays')}</Th>}
+                {hasLocalizacionData && <Th align='center'>{t('payroll.localizacionTecnica')}</Th>}
+                {hasLocalizacionData && <Th align='center'>{t('payroll.totalLocalizacionTecnica')}</Th>}
+                {hasCargaDescargaData && <Th align='center'>{t('payroll.cargaDescarga')}</Th>}
+                {hasCargaDescargaData && <Th align='center'>{t('payroll.totalCargaDescarga')}</Th>}
+                {columnVisibility.holidays && <Th align='center'>{t('payroll.holidayDays')}</Th>}
+                {columnVisibility.holidays && <Th align='center'>{t('payroll.totalHolidayDays')}</Th>}
+                {columnVisibility.travel && <Th align='center'>{t('payroll.travelDays')}</Th>}
+                {columnVisibility.travel && <Th align='center'>{t('payroll.totalTravelDays')}</Th>}
+                {columnVisibility.extras && <Th align='center'>{t('payroll.extraHours')}</Th>}
+                {columnVisibility.extras && <Th align='center'>{t('payroll.totalExtraHours')}</Th>}
+                {columnVisibility.dietas && <Th align='center'>{t('payroll.dietas')}</Th>}
+                {columnVisibility.dietas && <Th align='center'>{t('payroll.totalDietas')}</Th>}
+                {columnVisibility.transporte && <Th align='center'>{t('payroll.transportes')}</Th>}
+                {columnVisibility.transporte && <Th align='center'>{t('payroll.totalTransportes')}</Th>}
+                {columnVisibility.km && <Th align='center'>{t('payroll.kilometraje')}</Th>}
+                {columnVisibility.km && <Th align='center'>{t('payroll.totalKilometraje')}</Th>}
+                <Th align='center'>{t('payroll.totalBruto')}</Th>
+                <Th align='center'>{t('payroll.received')}</Th>
               </tr>
             </thead>
             <tbody>
@@ -1044,7 +1046,7 @@ function MonthSection({
                           checked={isSelected}
                           onChange={() => !readOnly && toggleRowSelection(pKey)}
                           disabled={readOnly}
-                          title={readOnly ? 'El proyecto está cerrado' : (isSelected ? 'Deseleccionar para exportación' : 'Seleccionar para exportación')}
+                          title={readOnly ? t('conditions.projectClosed') : (isSelected ? t('payroll.deselectForExport') : t('payroll.selectForExport'))}
                           className={`accent-blue-500 dark:accent-[#f59e0b] ${readOnly ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                         />
                       </div>
@@ -1086,7 +1088,7 @@ function MonthSection({
                     {hasWorkedDaysData && (
                       <Td align='middle' className='text-center'>
                         {r._missingPrices?.jornada ? (
-                          <span className='text-xs text-zinc-400 italic'>Añade precio en condiciones</span>
+                          <span className='text-xs text-zinc-400 italic'>{t('payroll.addPriceInConditions')}</span>
                         ) : (
                           displayMoney(r._totalDias, 2)
                         )}
@@ -1101,7 +1103,7 @@ function MonthSection({
                     {hasLocalizacionData && (
                       <Td align='middle' className='text-center'>
                         {r._missingPrices?.localizacionTecnica ? (
-                          <span className='text-xs text-zinc-400 italic'>Añade precio en condiciones</span>
+                          <span className='text-xs text-zinc-400 italic'>{t('payroll.addPriceInConditions')}</span>
                         ) : (
                           displayMoney(r._totalLocalizacion, 2)
                         )}
@@ -1125,7 +1127,7 @@ function MonthSection({
                     {hasCargaDescargaData && (
                       <Td align='middle' className='text-center'>
                         {r._missingPrices?.cargaDescarga ? (
-                          <span className='text-xs text-zinc-400 italic'>Añade precio en condiciones</span>
+                          <span className='text-xs text-zinc-400 italic'>{t('payroll.addPriceInConditions')}</span>
                         ) : (
                           displayMoney(r._totalCargaDescarga, 2)
                         )}
@@ -1136,7 +1138,7 @@ function MonthSection({
                     {columnVisibility.holidays && (
                       <Td align='middle' className='text-center'>
                         {r._missingPrices?.holidayDay ? (
-                          <span className='text-xs text-zinc-400 italic'>Añade precio en condiciones</span>
+                          <span className='text-xs text-zinc-400 italic'>{t('payroll.addPriceInConditions')}</span>
                         ) : (
                           displayMoney(r._totalHolidays, 2)
                         )}
@@ -1147,7 +1149,7 @@ function MonthSection({
                     {columnVisibility.travel && (
                       <Td align='middle' className='text-center'>
                         {r._missingPrices?.travelDay ? (
-                          <span className='text-xs text-zinc-400 italic'>Añade precio en condiciones</span>
+                          <span className='text-xs text-zinc-400 italic'>{t('payroll.addPriceInConditions')}</span>
                         ) : (
                           displayMoney(r._totalTravel, 2)
                         )}
@@ -1169,7 +1171,7 @@ function MonthSection({
                     {columnVisibility.extras && (
                       <Td align='middle' className='text-center'>
                         {r._missingPrices?.horaExtra ? (
-                          <span className='text-xs text-zinc-400 italic'>Añade precio en condiciones</span>
+                          <span className='text-xs text-zinc-400 italic'>{t('payroll.addPriceInConditions')}</span>
                         ) : (
                           displayMoney(r._totalExtras, 2)
                         )}
@@ -1189,7 +1191,7 @@ function MonthSection({
                     {columnVisibility.dietas && (
                       <Td align='middle' className='text-center'>
                         {r._missingPrices?.dietas ? (
-                          <span className='text-xs text-zinc-400 italic'>Añade precio en condiciones</span>
+                          <span className='text-xs text-zinc-400 italic'>{t('payroll.addPriceInConditions')}</span>
                         ) : (
                           displayMoney(r._totalDietas, 2)
                         )}
@@ -1200,7 +1202,7 @@ function MonthSection({
                     {columnVisibility.transporte && (
                       <Td align='middle' className='text-center'>
                         {r._missingPrices?.transporte ? (
-                          <span className='text-xs text-zinc-400 italic'>Añade precio en condiciones</span>
+                          <span className='text-xs text-zinc-400 italic'>{t('payroll.addPriceInConditions')}</span>
                         ) : (
                           displayMoney(r._totalTrans, 2)
                         )}
@@ -1211,7 +1213,7 @@ function MonthSection({
                     {columnVisibility.km && (
                       <Td align='middle' className='text-center'>
                         {r._missingPrices?.km ? (
-                          <span className='text-xs text-zinc-400 italic'>Añade precio en condiciones</span>
+                          <span className='text-xs text-zinc-400 italic'>{t('payroll.addPriceInConditions')}</span>
                         ) : (
                           displayMoney(r._totalKm, 2)
                         )}
@@ -1230,17 +1232,17 @@ function MonthSection({
                           onChange={e => !readOnly && setRcv(pKey, { ok: e.target.checked })}
                           disabled={readOnly}
                           className={readOnly ? 'opacity-50 cursor-not-allowed' : ''}
-                          title={readOnly ? 'El proyecto está cerrado' : 'Marcar como recibida'}
+                          title={readOnly ? t('conditions.projectClosed') : t('payroll.markAsReceived')}
                         />
                         <input
                           type='text'
-                          placeholder='Anota mes o incidencia…'
+                          placeholder={t('payroll.notePlaceholder')}
                           value={rc.note || ''}
                           onChange={e => !readOnly && setRcv(pKey, { note: e.target.value })}
                           disabled={readOnly}
                           readOnly={readOnly}
                           className={`px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-xs ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
-                          title={readOnly ? 'El proyecto está cerrado' : 'Anota mes o incidencia'}
+                          title={readOnly ? t('conditions.projectClosed') : t('payroll.noteTitle')}
                         />
                       </div>
                     </Td>
@@ -1260,7 +1262,7 @@ function MonthSection({
                     (columnVisibility.km ? 2 : 0) // Kilometraje + Total kilometraje
                   } align='center' className='text-center'>
                     <div className='text-sm text-zinc-400'>
-                      No hay datos en este mes.
+                      {t('payroll.noDataThisMonth')}
                     </div>
                   </Td>
                 </tr>

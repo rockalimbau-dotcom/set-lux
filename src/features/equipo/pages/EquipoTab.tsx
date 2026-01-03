@@ -1,6 +1,7 @@
 import { ROLE_COLORS, ROLES, roleRank } from '@shared/constants/roles';
 import { useLocalStorage } from '@shared/hooks/useLocalStorage';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface ConfirmModalProps {
   title: string;
@@ -10,6 +11,7 @@ interface ConfirmModalProps {
 }
 
 function ConfirmModal({ title, message, onClose, onConfirm }: ConfirmModalProps) {
+  const { t } = useTranslation();
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
     if (typeof document !== 'undefined') {
       return (document.documentElement.getAttribute('data-theme') || 'light') as 'dark' | 'light';
@@ -76,7 +78,7 @@ function ConfirmModal({ title, message, onClose, onConfirm }: ConfirmModalProps)
             }}
             type='button'
           >
-            No
+            {t('common.no')}
           </button>
           <button
             onClick={() => {
@@ -91,7 +93,7 @@ function ConfirmModal({ title, message, onClose, onConfirm }: ConfirmModalProps)
             }}
             type='button'
           >
-            Sí
+            {t('common.yes')}
           </button>
         </div>
       </div>
@@ -126,6 +128,7 @@ function EquipoTab({
   storageKey?: string;
   projectMode?: 'semanal' | 'mensual' | 'publicidad';
 }) {
+  const { t } = useTranslation();
   const canEdit = useMemo(() => {
     if (allowEditOverride) return true;
     if (readOnlyProp === true) return false;
@@ -289,11 +292,11 @@ function EquipoTab({
               onClick={() => canEdit && enableGroup('prelight')}
               disabled={!canEdit}
               className={`px-3 py-2 rounded-lg border text-xs border-neutral-border hover:border-accent ${!canEdit ? 'opacity-50 cursor-not-allowed' : ''}`}
-              title={!canEdit ? 'El proyecto está cerrado' : 'Añadir Equipo Prelight'}
-              aria-label='+ Prelight'
+              title={!canEdit ? t('conditions.projectClosed') : t('team.addPrelight')}
+              aria-label={t('team.addPrelightButton')}
               type='button'
             >
-              + Prelight
+              {t('team.addPrelightButton')}
             </button>
           )}
           {!groupsEnabled.pickup && (
@@ -301,20 +304,20 @@ function EquipoTab({
               onClick={() => canEdit && enableGroup('pickup')}
               disabled={!canEdit}
               className={`px-3 py-2 rounded-lg border text-xs border-neutral-border hover:border-accent ${!canEdit ? 'opacity-50 cursor-not-allowed' : ''}`}
-              title={!canEdit ? 'El proyecto está cerrado' : 'Añadir Equipo Recogida'}
-              aria-label='+ Recogida'
+              title={!canEdit ? t('conditions.projectClosed') : t('team.addPickup')}
+              aria-label={t('team.addPickupButton')}
               type='button'
             >
-              + Recogida
+              {t('team.addPickupButton')}
             </button>
           )}
         </div>
       </div>
 
       <TeamGroup
-        title='Equipo base'
+        title={t('team.baseTeam')}
         rows={team.base}
-        setRows={(rows: AnyRecord[]) => setTeam(t => ({ ...t, base: sortTeam(rows) }))}
+        setRows={(rows: AnyRecord[]) => setTeam(prev => ({ ...prev, base: sortTeam(rows) }))}
         canEdit={canEdit}
         nextSeq={nextSeq}
         allowedRoles={allowedRoles}
@@ -322,9 +325,9 @@ function EquipoTab({
       />
       {showReinforcements && (
         <TeamGroup
-          title='Refuerzos'
+          title={t('team.reinforcements')}
           rows={team.reinforcements}
-          setRows={(rows: AnyRecord[]) => setTeam(t => ({ ...t, reinforcements: sortTeam(rows) }))}
+          setRows={(rows: AnyRecord[]) => setTeam(prev => ({ ...prev, reinforcements: sortTeam(rows) }))}
           canEdit={canEdit}
           nextSeq={nextSeq}
           allowedRoles={ROLES.filter(r => r.code === 'REF')}
@@ -333,9 +336,9 @@ function EquipoTab({
       )}
       {groupsEnabled.prelight && (
         <TeamGroup
-          title='Equipo Prelight'
+          title={t('team.prelightTeam')}
           rows={team.prelight}
-          setRows={(rows: AnyRecord[]) => setTeam(t => ({ ...t, prelight: sortTeam(rows) }))}
+          setRows={(rows: AnyRecord[]) => setTeam(prev => ({ ...prev, prelight: sortTeam(rows) }))}
           canEdit={canEdit}
           nextSeq={nextSeq}
           removable
@@ -346,9 +349,9 @@ function EquipoTab({
       )}
       {groupsEnabled.pickup && (
         <TeamGroup
-          title='Equipo Recogida'
+          title={t('team.pickupTeam')}
           rows={team.pickup}
-          setRows={(rows: AnyRecord[]) => setTeam(t => ({ ...t, pickup: sortTeam(rows) }))}
+          setRows={(rows: AnyRecord[]) => setTeam(prev => ({ ...prev, pickup: sortTeam(rows) }))}
           canEdit={canEdit}
           nextSeq={nextSeq}
           removable
@@ -359,9 +362,8 @@ function EquipoTab({
       )}
 
       <p className='text-[11px] text-zinc-500'>
-        <span className='text-brand font-semibold'>Tip:</span> El{' '}
-        <em>Equipo base</em> se añade por defecto al crear semana o marcar
-        “Rodaje” en Planificación.
+        <span className='text-brand font-semibold'>{t('team.tip')}</span>{' '}
+        <span dangerouslySetInnerHTML={{ __html: t('team.tipMessage') }} />
       </p>
     </div>
   );
@@ -389,6 +391,14 @@ function displayRolesForGroup(roles: AnyRecord[], groupKey: string) {
   return roles.map(r => ({ ...r, label: `${r.label}${sufTitle}` }));
 }
 
+// Helper function to translate role labels
+function translateRoleLabel(roleCode: string, t: (key: string) => string): string {
+  const translationKey = `team.roles.${roleCode}`;
+  const translated = t(translationKey);
+  // If translation exists (not the key itself), return it; otherwise return the original label
+  return translated !== translationKey ? translated : '';
+}
+
 function TeamGroup({
   title,
   rows,
@@ -400,6 +410,7 @@ function TeamGroup({
   nextSeq,
   groupKey = 'base',
 }: AnyRecord) {
+  const { t } = useTranslation();
   const [showConfirmRemove, setShowConfirmRemove] = useState(false);
 
   const addRow = () => {
@@ -441,22 +452,22 @@ function TeamGroup({
                 onClick={() => canEdit && setShowConfirmRemove(true)}
                 disabled={!canEdit}
                 className={`px-3 py-2 rounded-lg border text-xs border-neutral-border ${!canEdit ? 'opacity-50 cursor-not-allowed' : ''}`}
-                aria-label={'Quitar grupo'}
-                title={!canEdit ? 'El proyecto está cerrado' : 'Quitar grupo'}
+                aria-label={t('team.removeGroup')}
+                title={!canEdit ? t('conditions.projectClosed') : t('team.removeGroup')}
                 type='button'
               >
-                Quitar grupo
+                {t('team.removeGroup')}
               </button>
             )}
           <button
             onClick={addRow}
             disabled={!canEdit}
             className={`px-3 py-2 rounded-lg border text-xs border-neutral-border hover:border-accent ${!canEdit ? 'opacity-50 cursor-not-allowed' : ''}`}
-            aria-label={`Añadir miembro a ${title}`}
-            title={!canEdit ? 'El proyecto está cerrado' : `Añadir miembro a ${title}`}
+            aria-label={t('team.addMemberTo', { title })}
+            title={!canEdit ? t('conditions.projectClosed') : t('team.addMemberTo', { title })}
             type='button'
           >
-            + Añadir
+            {t('team.addMember')}
           </button>
         </div>
       </div>
@@ -465,10 +476,10 @@ function TeamGroup({
         {rows.length === 0 ? (
           <div className='flex flex-col items-center justify-center py-16 px-8 text-center'>
             <h2 className='text-3xl font-bold mb-4' style={{color: 'var(--text)'}}>
-              No hay equipo
+              {t('team.noTeam')}
             </h2>
             <p className='text-xl max-w-2xl' style={{color: 'var(--text)', opacity: 0.8}}>
-              Pulsa el botón "+ Añadir" para añadir miembros al equipo.
+              {t('team.noTeamMessage')}
             </p>
           </div>
         ) : (
@@ -490,8 +501,8 @@ function TeamGroup({
     </section>
     {showConfirmRemove && (
       <ConfirmModal
-        title='Confirmar eliminación'
-        message={`¿Estás seguro de eliminar <strong>${title}</strong>?`}
+        title={t('team.confirmDeletion')}
+        message={t('team.confirmDeleteGroup', { title })}
         onClose={() => setShowConfirmRemove(false)}
         onConfirm={() => {
           onRemoveGroup();
@@ -503,6 +514,7 @@ function TeamGroup({
 }
 
 function TeamRow({ row, onChange, onRemove, canEdit, allowedRoles, groupKey = 'base' }: AnyRecord) {
+  const { t } = useTranslation();
   const col = (ROLE_COLORS as any)[row.role] || (ROLE_COLORS as any).E;
   const [showConfirmRemove, setShowConfirmRemove] = useState(false);
   
@@ -558,9 +570,11 @@ function TeamRow({ row, onChange, onRemove, canEdit, allowedRoles, groupKey = 'b
     };
   }, [isOpen]);
 
-  // Obtener el label del rol seleccionado
+  // Obtener el label del rol seleccionado (traducido)
   const selectedRole = allowedRoles.find((r: AnyRecord) => r.code === row.role);
-  const selectedLabel = selectedRole ? selectedRole.label : '';
+  const selectedLabel = selectedRole 
+    ? (translateRoleLabel(selectedRole.code, t) || selectedRole.label)
+    : '';
 
   const focusColor = theme === 'light' ? '#0476D9' : '#F27405';
 
@@ -577,7 +591,7 @@ function TeamRow({ row, onChange, onRemove, canEdit, allowedRoles, groupKey = 'b
           </span>
         </div>
         <div className='sm:w-[220px] w-full relative' ref={dropdownRef}>
-          <label htmlFor={`role-${row.id}`} className='sr-only'>Cargo</label>
+          <label htmlFor={`role-${row.id}`} className='sr-only'>{t('team.role')}</label>
           <button
             type='button'
             disabled={!canEdit}
@@ -585,8 +599,8 @@ function TeamRow({ row, onChange, onRemove, canEdit, allowedRoles, groupKey = 'b
             onMouseEnter={() => setIsButtonHovered(true)}
             onMouseLeave={() => setIsButtonHovered(false)}
             onBlur={() => setIsButtonHovered(false)}
-            title='Cargo'
-            aria-label='Cargo'
+            title={t('team.role')}
+            aria-label={t('team.role')}
             id={`role-${row.id}`}
             className={`w-full min-w-0 px-3 py-2 rounded-lg border focus:outline-none text-sm text-left transition-colors ${
               theme === 'light' 
@@ -638,22 +652,22 @@ function TeamRow({ row, onChange, onRemove, canEdit, allowedRoles, groupKey = 'b
                       : 'inherit',
                   }}
                 >
-                {r.label}
+                {translateRoleLabel(r.code, t) || r.label}
                 </button>
             ))}
             </div>
           )}
         </div>
         <div className='flex-1 min-w-[220px]'>
-          <label htmlFor={`name-${row.id}`} className='sr-only'>Nombre y apellidos</label>
+          <label htmlFor={`name-${row.id}`} className='sr-only'>{t('team.nameAndSurname')}</label>
           <input
             disabled={!canEdit}
             type='text'
             value={row.name}
             onChange={e => onChange(row.id, { name: e.target.value })}
-            placeholder='Nombre y apellidos'
+            placeholder={t('team.nameAndSurname')}
             className='w-full min-w-0 px-3 py-2 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm'
-            aria-label='Nombre y apellidos'
+            aria-label={t('team.nameAndSurname')}
             id={`name-${row.id}`}
           />
         </div>
@@ -677,8 +691,8 @@ function TeamRow({ row, onChange, onRemove, canEdit, allowedRoles, groupKey = 'b
                 e.currentTarget.style.borderColor = '';
               }
             }}
-            title={!canEdit ? 'El proyecto está cerrado' : 'Eliminar fila'}
-            aria-label={`Eliminar fila ${row.name || ''}`}
+            title={!canEdit ? t('conditions.projectClosed') : t('team.removeRow')}
+            aria-label={`${t('team.removeRow')} ${row.name || ''}`}
             type='button'
           >
             ×
@@ -687,8 +701,8 @@ function TeamRow({ row, onChange, onRemove, canEdit, allowedRoles, groupKey = 'b
       </div>
       {showConfirmRemove && (
         <ConfirmModal
-          title='Confirmar eliminación'
-          message={`¿Estás seguro de eliminar a <strong>${row.name || 'este miembro'}</strong>?`}
+          title={t('team.confirmDeletion')}
+          message={t('team.confirmDeleteMember', { name: row.name || t('team.thisMember') })}
           onClose={() => setShowConfirmRemove(false)}
           onConfirm={() => {
             onRemove(row.id);

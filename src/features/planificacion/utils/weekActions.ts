@@ -1,4 +1,5 @@
 import { toYYYYMMDD, parseYYYYMMDD, addDays } from '../../../shared/utils/date';
+import i18n from '@i18n';
 
 import { relabelWeekByCalendar } from './calendar';
 import { createWeek } from './weeks';
@@ -61,7 +62,8 @@ export const addPreWeekAction = (
   holidayFull: Set<string>,
   holidayMD: Set<string>
 ): Week[] => {
-  const label = `Semana -${preWeeks.length + 1}`;
+  const weekNumber = preWeeks.length + 1;
+  const label = i18n.t('planning.weekFormatNegative', { number: weekNumber });
   const start = nextStartForPre(preWeeks, []);
   const next = [
     ...preWeeks,
@@ -87,7 +89,8 @@ export const addProWeekAction = (
   holidayFull: Set<string>,
   holidayMD: Set<string>
 ): Week[] => {
-  const label = `Semana ${proWeeks.length + 1}`;
+  const weekNumber = proWeeks.length + 1;
+  const label = i18n.t('planning.weekFormat', { number: weekNumber });
   const start = nextStartForPro(preWeeks, proWeeks);
   const next = [
     ...proWeeks,
@@ -116,10 +119,11 @@ export const duplicateWeekAction = (
   dup.id = crypto?.randomUUID
     ? crypto.randomUUID()
     : Math.random().toString(36).slice(2);
+  const weekNumber = weeks.length + 1;
   dup.label =
     typeof makeLabel === 'function'
-      ? makeLabel(weeks.length + 1)
-      : `Semana ${weeks.length + 1}`;
+      ? makeLabel(weekNumber)
+      : i18n.t('planning.weekFormat', { number: weekNumber });
   dup.startDate = toYYYYMMDD(
     addDays(parseYYYYMMDD(w.startDate), direction * 7)
   );

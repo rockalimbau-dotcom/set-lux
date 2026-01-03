@@ -19,24 +19,31 @@ export const monthKeyFromISO = (iso: string): string => {
   return `${y}-${pad2(m)}`;
 };
 
-const MESES_ES = [
-  'Enero',
-  'Febrero',
-  'Marzo',
-  'Abril',
-  'Mayo',
-  'Junio',
-  'Julio',
-  'Agosto',
-  'Septiembre',
-  'Octubre',
-  'Noviembre',
-  'Diciembre',
-];
+// Import i18n for translations
+import i18n from '@i18n';
+
+const getMonthName = (monthNumber: number): string => {
+  const monthKeys = [
+    'common.months.january',
+    'common.months.february',
+    'common.months.march',
+    'common.months.april',
+    'common.months.may',
+    'common.months.june',
+    'common.months.july',
+    'common.months.august',
+    'common.months.september',
+    'common.months.october',
+    'common.months.november',
+    'common.months.december',
+  ];
+  const key = monthKeys[(monthNumber || 1) - 1];
+  return key ? i18n.t(key) : '';
+};
 
 export const monthLabelEs = (monthKey: string, withYear = false): string => {
   const [y, m] = monthKey.split('-').map(Number);
-  const name = MESES_ES[(m || 1) - 1] || '';
+  const name = getMonthName(m || 1);
   return withYear ? `${name} ${y}` : `${name}`;
 };
 

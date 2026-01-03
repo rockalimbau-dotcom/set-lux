@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { Td } from '@shared/components';
+import { useTranslation } from 'react-i18next';
 
 type Props = {
   label: string;
@@ -8,12 +9,21 @@ type Props = {
 };
 
 function ReportBlockScheduleRow({ label, semana, valueForISO }: Props) {
+  const { t } = useTranslation();
   if (!Array.isArray(semana) || semana.length === 0) return null;
   const values = useMemo(() => semana.map(iso => valueForISO(iso)), [semana, valueForISO]);
+  
+  // Translate label if it matches known patterns
+  const translatedLabel = label === 'Horario Prelight' 
+    ? t('reports.prelightSchedule')
+    : label === 'Horario Recogida'
+    ? t('reports.pickupSchedule')
+    : label;
+  
   return (
     <tr className='schedule-row'>
       <Td className='whitespace-nowrap align-middle bg-white/5' align='middle'>
-        <div className='text-sm font-semibold text-zinc-200 flex items-center'>{label}</div>
+        <div className='text-sm font-semibold text-zinc-200 flex items-center'>{translatedLabel}</div>
       </Td>
       {semana.map((iso, i) => (
         <Td key={`sched_${label}_${iso}`} className='text-sm font-semibold text-center align-middle bg-white/5' align='middle'>

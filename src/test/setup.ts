@@ -1,4 +1,55 @@
 import '@testing-library/jest-dom';
+import { vi } from 'vitest';
+import es from '../locales/es.json';
+
+// Helper function para obtener traducciones anidadas
+const getTranslation = (key: string, options?: any): string => {
+  const keys = key.split('.');
+  let value: any = es;
+  for (const k of keys) {
+    value = value?.[k];
+  }
+  // Si no se encuentra, devolver la clave
+  if (typeof value !== 'string') {
+    return key;
+  }
+  // Reemplazar interpolaciones
+  if (options) {
+    return value.replace(/\{\{(\w+)\}\}/g, (match, k) => {
+      return options[k] || match;
+    });
+  }
+  return value || key;
+};
+
+// Mock i18n para tests
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: getTranslation,
+    i18n: {
+      language: 'es',
+      changeLanguage: vi.fn(),
+      on: vi.fn(),
+      off: vi.fn(),
+    },
+  }),
+  initReactI18next: {
+    type: '3rdParty',
+    init: vi.fn(),
+  },
+}));
+
+// Mock i18n directo
+vi.mock('../i18n/config', () => ({
+  default: {
+    t: getTranslation,
+    language: 'es',
+    changeLanguage: vi.fn(),
+    on: vi.fn(),
+    off: vi.fn(),
+  },
+  changeLanguage: vi.fn(),
+}));
 
 // Mock localStorage
 const localStorageMock = {

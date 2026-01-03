@@ -5,6 +5,8 @@ import { Analytics } from '@vercel/analytics/react';
 import App from './App.tsx';
 import './index.css';
 import { storage } from '@shared/services/localStorage.service';
+import './i18n/config'; // Inicializar i18n
+import i18n from './i18n/config';
 
 // Copia mínima del ErrorBoundary o impórtalo desde un archivo común
 class RootErrorBoundary extends React.Component<
@@ -25,7 +27,7 @@ class RootErrorBoundary extends React.Component<
     if (this.state.error) {
       return (
         <div style={{ padding: 16, color: '#f87171' }}>
-          <h3>💥 Error cargando la aplicación</h3>
+          <h3>{i18n.t('common.errorLoadingApp')}</h3>
           <pre style={{ whiteSpace: 'pre-wrap', fontSize: 12 }}>
             {String(this.state.error?.stack || this.state.error)}
           </pre>

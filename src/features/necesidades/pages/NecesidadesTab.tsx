@@ -2,6 +2,7 @@ import { Th } from '@shared/components';
 import { useLocalStorage } from '@shared/hooks/useLocalStorage';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 import FieldRow from '../components/FieldRow';
 import ListRow from '../components/ListRow';
@@ -10,15 +11,7 @@ import { storage } from '@shared/services/localStorage.service';
 
 type AnyRecord = Record<string, any>;
 
-const DAYS = [
-  { idx: 0, key: 'mon', name: 'Lunes' },
-  { idx: 1, key: 'tue', name: 'Martes' },
-  { idx: 2, key: 'wed', name: 'Miércoles' },
-  { idx: 3, key: 'thu', name: 'Jueves' },
-  { idx: 4, key: 'fri', name: 'Viernes' },
-  { idx: 5, key: 'sat', name: 'Sábado' },
-  { idx: 6, key: 'sun', name: 'Domingo' },
-];
+// DAYS will be created inside the component to use translations
 
 const pad2 = (n: number) => String(n).padStart(2, '0');
 const parseYYYYMMDD = (s: string) => {
@@ -39,6 +32,35 @@ type NecesidadesTabProps = {
 
 export default function NecesidadesTab({ project, readOnly = false }: NecesidadesTabProps) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
+  
+  // Helper function to translate week label
+  const translateWeekLabel = (label: string): string => {
+    if (!label) return '';
+    // Match patterns like "Semana 1", "Semana -1", "Week 1", "Setmana 1", etc.
+    const match = label.match(/^(Semana|Week|Setmana)\s*(-?\d+)$/i);
+    if (match) {
+      const number = match[2];
+      if (number.startsWith('-')) {
+        return t('planning.weekFormatNegative', { number: number.substring(1) });
+      } else {
+        return t('planning.weekFormat', { number });
+      }
+    }
+    // If it doesn't match the pattern, return as is (might be custom label)
+    return label;
+  };
+  
+  // Create DAYS array with translations
+  const DAYS = useMemo(() => [
+    { idx: 0, key: 'mon', name: t('reports.dayNames.monday') },
+    { idx: 1, key: 'tue', name: t('reports.dayNames.tuesday') },
+    { idx: 2, key: 'wed', name: t('reports.dayNames.wednesday') },
+    { idx: 3, key: 'thu', name: t('reports.dayNames.thursday') },
+    { idx: 4, key: 'fri', name: t('reports.dayNames.friday') },
+    { idx: 5, key: 'sat', name: t('reports.dayNames.saturday') },
+    { idx: 6, key: 'sun', name: t('reports.dayNames.sunday') },
+  ], [t]);
   
   // Add error boundary state
   const [hasError, setHasError] = useState(false);
@@ -213,7 +235,7 @@ export default function NecesidadesTab({ project, readOnly = false }: Necesidade
     } catch (error) {
       console.error('Error in syncFromPlanRaw:', error);
       setHasError(true);
-      setErrorMessage('Error al sincronizar datos de planificación');
+      setErrorMessage(t('needs.errorSyncingPlanning'));
     }
   }, [setNeeds]);
 
@@ -256,7 +278,7 @@ export default function NecesidadesTab({ project, readOnly = false }: Necesidade
     } catch (error) {
       console.error('Error migrating needs data:', error);
       setHasError(true);
-      setErrorMessage('Error al migrar datos existentes');
+      setErrorMessage(t('needs.errorMigratingData'));
     }
     setIsLoaded(true);
   }, [storageKey, setNeeds]);
@@ -270,7 +292,7 @@ export default function NecesidadesTab({ project, readOnly = false }: Necesidade
     } catch (error) {
       console.error('Error loading plan data:', error);
       setHasError(true);
-      setErrorMessage('Error al cargar datos de planificación');
+      setErrorMessage(t('needs.errorLoadingPlanning'));
     }
   }, [planKey, syncFromPlanRaw]);
 
@@ -422,7 +444,7 @@ export default function NecesidadesTab({ project, readOnly = false }: Necesidade
       const w: AnyRecord = needs[weekId];
       if (!w) {
         console.error('Week not found:', weekId);
-        alert('Semana no encontrada');
+        alert(t('needs.weekNotFound'));
         return;
       }
       const valuesByDay = Array.from({ length: 7 }).map((_, i) => (w.days as AnyRecord)?.[i] || {});
@@ -431,13 +453,13 @@ export default function NecesidadesTab({ project, readOnly = false }: Necesidade
       console.log('🔍 Project produccion (PDF):', project?.produccion);
       await exportToPDF(
         project,
-        w.label || 'Semana',
+        w.label || t('needs.week'),
         w.startDate || '',
         valuesByDay
       );
     } catch (error) {
       console.error('Error exporting PDF:', error);
-      alert('Error al generar el PDF. Por favor, inténtalo de nuevo.');
+      alert(t('needs.errorGeneratingPDF'));
     }
   };
 
@@ -487,7 +509,7 @@ export default function NecesidadesTab({ project, readOnly = false }: Necesidade
       );
     } catch (error) {
       console.error('Error exporting all needs PDF:', error);
-      alert('Error al generar el PDF. Por favor, inténtalo de nuevo.');
+      alert(t('needs.errorGeneratingPDF'));
     }
   };
 
@@ -496,7 +518,7 @@ export default function NecesidadesTab({ project, readOnly = false }: Necesidade
     return (
       <div className='space-y-4'>
         <div className='text-sm text-red-400 border border-red-800 rounded-xl p-4 bg-red-950/30'>
-          <h3 className='font-semibold mb-2'>Error al cargar Necesidades</h3>
+          <h3 className='font-semibold mb-2'>{t('needs.errorLoadingNeeds')}</h3>
           <p className='mb-3'>{errorMessage}</p>
           <button
             onClick={() => {
@@ -507,7 +529,7 @@ export default function NecesidadesTab({ project, readOnly = false }: Necesidade
             }}
             className='px-3 py-2 bg-red-800 hover:bg-red-700 text-white rounded-lg text-sm'
           >
-            Recargar página
+            {t('needs.reloadPage')}
           </button>
         </div>
       </div>
@@ -522,9 +544,9 @@ export default function NecesidadesTab({ project, readOnly = false }: Necesidade
             className={btnExportCls}
             style={btnExportStyle}
             onClick={exportAllNeedsPDF}
-            title='Exportar todas las semanas (PDF)'
+            title={t('needs.exportAllWeeksPDF')}
           >
-            PDF Entero
+            {t('needs.exportFullPDF')}
           </button>
         </div>
       )}
@@ -532,10 +554,10 @@ export default function NecesidadesTab({ project, readOnly = false }: Necesidade
       {weekEntries.length === 0 ? (
         <div className='flex flex-col items-center justify-center py-16 px-8 text-center'>
           <h2 className='text-3xl font-bold mb-4' style={{color: 'var(--text)'}}>
-            No hay semanas en Planificación
+            {t('needs.noWeeksInPlanning')}
           </h2>
           <p className='text-xl max-w-2xl mb-4' style={{color: 'var(--text)', opacity: 0.8}}>
-            Crea semanas en{' '}
+            {t('needs.createWeeksIn')}{' '}
             <button
               onClick={() => {
                 if (readOnly) return;
@@ -546,11 +568,11 @@ export default function NecesidadesTab({ project, readOnly = false }: Necesidade
               disabled={readOnly}
               className={`underline font-semibold hover:opacity-80 transition-opacity ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
               style={{color: 'var(--brand)'}}
-              title={readOnly ? 'El proyecto está cerrado' : 'Ir a Planificación'}
+              title={readOnly ? t('conditions.projectClosed') : t('reports.goToPlanning')}
             >
-              Planificación
+              {t('needs.planning')}
             </button>
-            {' '}para que aparezcan aquí las necesidades.
+            {' '}{t('needs.toAppearHere')}
           </p>
         </div>
       ) : (
@@ -569,12 +591,12 @@ export default function NecesidadesTab({ project, readOnly = false }: Necesidade
                     onClick={() => !readOnly && setWeekOpen(wid, !(wk as AnyRecord).open)}
                     disabled={readOnly}
                     className={`w-8 h-8 rounded-lg border border-neutral-border hover:border-[#F59E0B] ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
-                    title={readOnly ? 'El proyecto está cerrado' : ((wk as AnyRecord).open ? 'Cerrar' : 'Abrir')}
+                    title={readOnly ? t('conditions.projectClosed') : ((wk as AnyRecord).open ? t('needs.close') : t('needs.open'))}
                   >
                     {(wk as AnyRecord).open ? '−' : '+'}
                   </button>
                   <div className='text-brand font-semibold'>
-                    {(wk as AnyRecord).label || 'Semana'}
+                    {translateWeekLabel((wk as AnyRecord).label || t('needs.week'))}
                   </div>
                 </div>
                 <div className='flex items-center gap-2'>
@@ -582,9 +604,9 @@ export default function NecesidadesTab({ project, readOnly = false }: Necesidade
                     className={btnExportCls}
                     style={btnExportStyle}
                     onClick={() => exportWeekPDF(wid)}
-                    title='Exportar semana PDF'
+                    title={t('needs.exportWeekPDF')}
                   >
-                    PDF
+                    {t('needs.pdf')}
                   </button>
                 </div>
               </div>
@@ -594,7 +616,7 @@ export default function NecesidadesTab({ project, readOnly = false }: Necesidade
                   <table className='min-w-[1360px] w-full border-collapse text-sm'>
                     <thead>
                       <tr>
-                        <Th>Campo / Día</Th>
+                        <Th>{t('needs.fieldDay')}</Th>
                         {DAYS.map((d, i) => (
                           <Th key={d.key} align='center' className='text-center'>
                             <div>{d.name}</div>
@@ -610,7 +632,7 @@ export default function NecesidadesTab({ project, readOnly = false }: Necesidade
                         weekId={wid}
                         weekObj={wk}
                         fieldKey='loc'
-                        label='Localización'
+                        label={t('needs.location')}
                         setCell={setCell}
                         readOnly={readOnly}
                       />
@@ -618,12 +640,12 @@ export default function NecesidadesTab({ project, readOnly = false }: Necesidade
                         weekId={wid}
                         weekObj={wk}
                         fieldKey='seq'
-                        label='Secuencias'
+                        label={t('needs.sequences')}
                         setCell={setCell}
                         readOnly={readOnly}
                       />
                       <ListRow
-                        label='Equipo técnico'
+                        label={t('needs.technicalTeam')}
                         listKey='crewList'
                         notesKey='crewTxt'
                         weekId={wid}
@@ -636,7 +658,7 @@ export default function NecesidadesTab({ project, readOnly = false }: Necesidade
                         weekId={wid}
                         weekObj={wk}
                         fieldKey='needLoc'
-                        label='Necesidades localizaciones'
+                        label={t('needs.locationNeeds')}
                         setCell={setCell}
                         readOnly={readOnly}
                       />
@@ -644,7 +666,7 @@ export default function NecesidadesTab({ project, readOnly = false }: Necesidade
                         weekId={wid}
                         weekObj={wk}
                         fieldKey='needProd'
-                        label='Necesidades producción'
+                        label={t('needs.productionNeeds')}
                         setCell={setCell}
                         readOnly={readOnly}
                       />
@@ -652,7 +674,7 @@ export default function NecesidadesTab({ project, readOnly = false }: Necesidade
                         weekId={wid}
                         weekObj={wk}
                         fieldKey='needLight'
-                        label='Necesidades luz'
+                        label={t('needs.lightNeeds')}
                         setCell={setCell}
                         readOnly={readOnly}
                       />
@@ -660,7 +682,7 @@ export default function NecesidadesTab({ project, readOnly = false }: Necesidade
                         weekId={wid}
                         weekObj={wk}
                         fieldKey='extraMat'
-                        label='Material extra'
+                        label={t('needs.extraMaterial')}
                         setCell={setCell}
                         readOnly={readOnly}
                       />
@@ -668,12 +690,12 @@ export default function NecesidadesTab({ project, readOnly = false }: Necesidade
                         weekId={wid}
                         weekObj={wk}
                         fieldKey='precall'
-                        label='Precall'
+                        label={t('needs.precall')}
                         setCell={setCell}
                         readOnly={readOnly}
                       />
                       <ListRow
-                        label='Equipo Prelight'
+                        label={t('needs.prelightTeam')}
                         listKey='preList'
                         notesKey='preTxt'
                         weekId={wid}
@@ -684,7 +706,7 @@ export default function NecesidadesTab({ project, readOnly = false }: Necesidade
                         readOnly={readOnly}
                       />
                       <ListRow
-                        label='Equipo Recogida'
+                        label={t('needs.pickupTeam')}
                         listKey='pickList'
                         notesKey='pickTxt'
                         weekId={wid}
@@ -698,7 +720,7 @@ export default function NecesidadesTab({ project, readOnly = false }: Necesidade
                         weekId={wid}
                         weekObj={wk}
                         fieldKey='obs'
-                        label='Observaciones'
+                        label={t('needs.observations')}
                         setCell={setCell}
                         readOnly={readOnly}
                       />
@@ -713,7 +735,7 @@ export default function NecesidadesTab({ project, readOnly = false }: Necesidade
             return (
               <section key={wid} className='rounded-2xl border border-red-800 bg-red-950/30 p-4'>
                 <div className='text-red-400 text-sm'>
-                  Error al cargar la semana {wid}. Por favor, recarga la página.
+                  {t('needs.errorLoadingWeek', { weekId: wid })}
                 </div>
               </section>
             );

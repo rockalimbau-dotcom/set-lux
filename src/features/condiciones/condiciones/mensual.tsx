@@ -2,6 +2,8 @@ import { Th, Td } from '@shared/components';
 import { useLocalStorage } from '@shared/hooks/useLocalStorage';
 import { useEffect, useMemo, useState, useRef, memo } from 'react';
 import { createPortal } from 'react-dom';
+import { useTranslation } from 'react-i18next';
+import i18n from '@i18n';
 
 import { PRICE_HEADERS, PRICE_ROLES } from './shared.constants';
 import { renderWithParams, visibleToTemplate, loadJSON, TextAreaAuto, InfoCard, ParamInput, restoreStrongTags } from './shared';
@@ -15,6 +17,7 @@ interface DeleteRoleConfirmModalProps {
 }
 
 function DeleteRoleConfirmModal({ roleName, onClose, onConfirm }: DeleteRoleConfirmModalProps) {
+  const { t } = useTranslation();
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
     if (typeof document !== 'undefined') {
       return (document.documentElement.getAttribute('data-theme') || 'light') as 'dark' | 'light';
@@ -54,14 +57,14 @@ function DeleteRoleConfirmModal({ roleName, onClose, onConfirm }: DeleteRoleConf
         }}
       >
         <h3 className='text-lg font-semibold mb-4' style={{color: isLight ? '#0476D9' : '#F27405'}}>
-          Confirmar eliminación
+          {t('conditions.confirmDeleteRole')}
         </h3>
         
         <p 
           className='text-sm mb-6' 
           style={{color: isLight ? '#111827' : '#d1d5db'}}
           dangerouslySetInnerHTML={{
-            __html: `¿Estás seguro de eliminar el rol <strong>${roleName}</strong>?`
+            __html: t('conditions.confirmDeleteRoleMessage', { roleName })
           }}
         />
 
@@ -76,7 +79,7 @@ function DeleteRoleConfirmModal({ roleName, onClose, onConfirm }: DeleteRoleConf
             }}
             type='button'
           >
-            No
+            {t('common.no')}
           </button>
           <button
             onClick={() => {
@@ -91,7 +94,7 @@ function DeleteRoleConfirmModal({ roleName, onClose, onConfirm }: DeleteRoleConf
             }}
             type='button'
           >
-            Sí
+            {t('common.yes')}
           </button>
         </div>
       </div>
@@ -101,14 +104,7 @@ function DeleteRoleConfirmModal({ roleName, onClose, onConfirm }: DeleteRoleConf
 
 type AnyRecord = Record<string, any>;
 
-const defaultLegend = `<strong>Tarifa mensual:</strong> Este precio equivale al precio semanal multiplicado por {{SEMANAS_MES}} semanas.
-<strong>Tarifa semanal:</strong> Este precio equivale a semanas completas de {{DIAS_DIARIO}} días ({{DIAS_JORNADA}} días de trabajo de {{JORNADA_TRABAJO}}h + {{JORNADA_COMIDA}}h para el almuerzo/cena).
-<strong>Precio diario:</strong> Es el resultado de dividir el precio mensual entre 30 días.
-<strong>Precio jornada:</strong> Precio equivalente a semanas incompletas (menos de {{DIAS_DIARIO}} días) de trabajo. Se calcula dividiendo el precio mensual entre el resultado de {{DIAS_JORNADA}} × {{SEMANAS_MES}}.
-<strong>Precio refuerzo:</strong> Precio para el trabajador que trabaja días esporádicos.
-<strong>Precio día extra/festivo:</strong> Es el precio equivalente al de jornada multiplicado por {{FACTOR_FESTIVO}}.
-<strong>Travel day:</strong> Es el precio equivalente al de jornada dividido entre {{DIV_TRAVEL}}.
-<strong>Horas extras:</strong> Resultado de dividir el precio mensual entre ({{HORAS_SEMANA}} × {{SEMANAS_MES}}) y aplicar un factor {{FACTOR_HORA_EXTRA}}×. Se considera hora extra a partir de {{CORTESIA_MIN}} minutos después del fin de la jornada pactada. A partir de la segunda hora extra no habrá cortesía de {{CORTESIA_MIN}}′. Las horas extras son voluntarias y deberán comunicarse antes del final de la jornada pactada.`;
+const getDefaultLegend = () => i18n.t('conditions.defaultLegendMonthly');
 
 // Variable global para festivos dinámicos
 let globalDynamicFestivosText = DEFAULT_FESTIVOS_TEXT;
@@ -122,26 +118,17 @@ const updateDynamicFestivos = async () => {
   }
 };
 
-const defaultHorarios = `<strong>Turn around:</strong> El descanso entre jornadas será de {{TA_DIARIO}}h entre días laborables y de {{TA_FINDE}}h los fines de semana. Todas las horas que no se descansen serán consideradas horas extras.
-<strong>Nocturnidad:</strong> Se considerará jornada nocturna cuando el inicio o final de la jornada sea entre las {{NOCTURNO_INI}} y las {{NOCTURNO_FIN}}. Se bonificará con un complemento salarial equivalente a una hora extra a cada miembro del equipo.`;
+const getDefaultHorarios = () => i18n.t('conditions.defaultSchedules');
 
-const defaultDietas = `Se ingresarán en nómina (importe libre de impuestos) las siguientes cantidades cuando no se disponga de manutención en el rodaje así como cuando se trabaje fuera del centro de actividades habitual. Se incrementará en un 50% fuera del territorio nacional. También se efectuará un anticipo de éstas.
-<strong>Comida:</strong> {{DIETA_COMIDA}}€
-<strong>Cena:</strong> {{DIETA_CENA}}€
-<strong>Dieta completa sin pernocta:</strong> {{DIETA_SIN_PERNOCTA}} €
-<strong>Dieta completa y desayuno:</strong> {{DIETA_ALOJ_DES}}€
-<strong>Gastos de bolsillo:</strong> {{GASTOS_BOLSILLO}}€`;
+const getDefaultDietas = () => i18n.t('conditions.defaultPerDiems');
 
-const defaultTransportes = `Cuando por necesidades de rodaje, el trabajador se desplace fuera del centro habitual de trabajo, se abonará la cantidad de {{KM_EURO}}€/km más los peajes y gastos de estacionamiento pertinentes.
-En caso de transportar a miembros del equipo se bonificará también con la cantidad de {{TRANSPORTE_DIA}}€/día extra.`;
+const getDefaultTransportes = () => i18n.t('conditions.defaultTransportation');
 
-const defaultAlojamiento = `En caso de tener que pernoctar fuera del domicilio habitual del trabajador, la productora deberá facilitar un hotel (mínimo 3 estrellas) con habitación individual y las dietas y gastos de bolsillo pertinentes.`;
+const getDefaultAlojamiento = () => i18n.t('conditions.defaultAccommodation');
 
-const defaultPrepro = `El gaffer del proyecto tendrá derecho a un mínimo de 1 día de trabajo por semana de rodaje.
-El best boy del proyecto tendrá derecho a un mínimo de 1 día de trabajo por cada dos semanas de rodaje.
-De esta forma el gaffer y best boy serán dados de alta durante la pre producción del proyecto para trabajar en las tareas previas al inicio del rodaje (localizaciones técnicas, listas de material, calendarios, etc).`;
+const getDefaultPrepro = () => i18n.t('conditions.defaultPreProduction');
 
-const defaultConvenio = `También se tendrá en cuenta el convenio “Resolución de 22 de marzo de 2024, de la Dirección General de Trabajo, por la que se registra y publica el III Convenio colectivo de ámbito estatal de la industria de producción audiovisual (técnicos).`;
+const getDefaultConvenio = () => i18n.t('conditions.defaultAgreement');
 
 function parseNum(input: unknown): number {
   if (input == null) return NaN;
@@ -174,6 +161,47 @@ interface CondicionesMensualProps {
 }
 
 function CondicionesMensual({ project, onChange = () => {}, onRegisterExport, readOnly = false }: CondicionesMensualProps) {
+  const { t, i18n } = useTranslation();
+  
+  // Función helper para traducir headers de precios
+  const translateHeader = (header: string): string => {
+    const headerMap: Record<string, string> = {
+      'Precio mensual': t('conditions.priceMonthly'),
+      'Precio semanal': t('conditions.priceWeekly'),
+      'Precio diario': t('conditions.priceDaily'),
+      'Precio jornada': t('conditions.priceWorkDay'),
+      'Precio refuerzo': t('conditions.priceReinforcement'),
+      'Precio Día extra/Festivo': t('conditions.priceExtraDayHoliday'),
+      'Travel day': t('conditions.travelDay'),
+      'Horas extras': t('conditions.extraHours'),
+    };
+    return headerMap[header] || header;
+  };
+
+  // Función helper para traducir nombres de roles
+  const translateRoleName = (roleName: string): string => {
+    // Mapeo de nombres de roles en español a códigos
+    const roleNameToCode: Record<string, string> = {
+      'Gaffer': 'G',
+      'Best boy': 'BB',
+      'Eléctrico': 'E',
+      'Auxiliar': 'AUX',
+      'Meritorio': 'M',
+      'Técnico de mesa': 'TM',
+      'Finger boy': 'FB',
+      'Refuerzo': 'REF',
+    };
+    
+    const roleCode = roleNameToCode[roleName];
+    if (roleCode) {
+      const translationKey = `team.roles.${roleCode}`;
+      const translated = t(translationKey);
+      // Si la traducción existe (no es la clave misma), devolverla; si no, devolver el nombre original
+      return translated !== translationKey ? translated : roleName;
+    }
+    return roleName;
+  };
+  
   const storageKey = useMemo(() => {
     const base = (project as AnyRecord)?.id || (project as AnyRecord)?.nombre || 'tmp';
     return `cond_${base}_mensual`;
@@ -189,6 +217,69 @@ function CondicionesMensual({ project, onChange = () => {}, onRegisterExport, re
   const [model, setModel] = useLocalStorage<AnyRecord>(storageKey, () =>
     loadOrSeed(storageKey)
   );
+
+  // Actualizar textos por defecto cuando cambia el idioma
+  useEffect(() => {
+    const handleLanguageChange = async () => {
+      // Actualizar festivos dinámicos con el nuevo idioma
+      await updateDynamicFestivos();
+      
+      setModel((m: AnyRecord) => {
+        if (!m) return m;
+        const updated = { ...m };
+        
+        // Obtener los textos por defecto actuales en el nuevo idioma
+        const newDefaultLegend = getDefaultLegend();
+        const newDefaultHorarios = getDefaultHorarios();
+        const newDefaultDietas = getDefaultDietas();
+        const newDefaultTransportes = getDefaultTransportes();
+        const newDefaultAlojamiento = getDefaultAlojamiento();
+        const newDefaultPrepro = getDefaultPrepro();
+        const newDefaultConvenio = getDefaultConvenio();
+        
+        // Actualizar solo si están vacíos o si contienen variables (textos por defecto)
+        const isEmptyOrDefault = (template: any) => {
+          const str = String(template || '');
+          if (!str || str.trim() === '') return true;
+          // Si el template contiene las variables típicas de los textos por defecto, probablemente es un texto por defecto
+          return str.includes('{{') && str.includes('}}');
+        };
+        
+        if (isEmptyOrDefault(m.legendTemplate)) {
+          updated.legendTemplate = newDefaultLegend;
+        }
+        // Actualizar festivos con el nuevo texto traducido
+        if (isEmptyOrDefault(m.festivosTemplate)) {
+          updated.festivosTemplate = globalDynamicFestivosText;
+        }
+        if (isEmptyOrDefault(m.horariosTemplate)) {
+          updated.horariosTemplate = newDefaultHorarios;
+        }
+        if (isEmptyOrDefault(m.dietasTemplate)) {
+          updated.dietasTemplate = newDefaultDietas;
+        }
+        if (isEmptyOrDefault(m.transportesTemplate)) {
+          updated.transportesTemplate = newDefaultTransportes;
+        }
+        if (isEmptyOrDefault(m.alojamientoTemplate)) {
+          updated.alojamientoTemplate = newDefaultAlojamiento;
+        }
+        if (isEmptyOrDefault(m.preproTemplate)) {
+          updated.preproTemplate = newDefaultPrepro;
+        }
+        if (isEmptyOrDefault(m.convenioTemplate)) {
+          updated.convenioTemplate = newDefaultConvenio;
+        }
+        
+        return updated;
+      });
+    };
+
+    i18n.on('languageChanged', handleLanguageChange);
+    return () => {
+      i18n.off('languageChanged', handleLanguageChange);
+    };
+  }, [i18n, setModel]);
   const [showRoleSelect, setShowRoleSelect] = useState(false);
   const [roleToDelete, setRoleToDelete] = useState<string | null>(null);
 
@@ -337,8 +428,8 @@ function CondicionesMensual({ project, onChange = () => {}, onRegisterExport, re
           <button
             onClick={() => setShowParams(v => !v)}
             className='w-6 h-6 rounded-lg border border-neutral-border flex items-center justify-center text-sm hover:border-accent'
-            title={showParams ? 'Contraer' : 'Desplegar'}
-            aria-label='Alternar parámetros'
+            title={showParams ? t('conditions.collapse') : t('conditions.expand')}
+            aria-label={t('conditions.calculationParameters')}
             aria-expanded={showParams}
             aria-controls='mensual-params'
             type='button'
@@ -346,13 +437,12 @@ function CondicionesMensual({ project, onChange = () => {}, onRegisterExport, re
             {showParams ? '−' : '+'}
           </button>
           <h4 className='text-brand font-semibold m-0'>
-            Parámetros de cálculo
+            {t('conditions.calculationParameters')}
           </h4>
         </div>
 
         <div className='text-xs text-zinc-400 mb-3'>
-          Ajusta aquí los parámetros que alimentan los textos y cálculos de esta
-          sección.
+          {t('conditions.calculationParametersDescription')}
         </div>
 
         {showParams && (
@@ -361,11 +451,11 @@ function CondicionesMensual({ project, onChange = () => {}, onRegisterExport, re
             ref={paramsRef}
             tabIndex={-1}
             role='region'
-            aria-label='Parámetros mensuales'
+            aria-label={t('conditions.parametersMonthly')}
             className='grid grid-cols-1 sm:grid-cols-3 gap-3'
           >
             <ParamInput
-              label='Jornada laboral'
+              label={t('conditions.workDay')}
               suffix='h'
               duo={[
                 {
@@ -380,67 +470,67 @@ function CondicionesMensual({ project, onChange = () => {}, onRegisterExport, re
               readOnly={readOnly}
             />
             <ParamInput
-              label='Días jornada'
+              label={t('conditions.workDays')}
               value={p.diasJornada ?? '5'}
               onChange={(v: string) => setParam('diasJornada', v)}
               readOnly={readOnly}
             />
             <ParamInput
-              label='Días diario'
+              label={t('conditions.dailyDays')}
               value={p.diasDiario ?? '7'}
               onChange={(v: string) => setParam('diasDiario', v)}
               readOnly={readOnly}
             />
             <ParamInput
-              label='Semanas por mes'
+              label={t('conditions.weeksPerMonth')}
               value={p.semanasMes ?? '4'}
               onChange={(v: string) => setParam('semanasMes', v)}
               readOnly={readOnly}
             />
             <ParamInput
-              label='Horas semanales'
+              label={t('conditions.weeklyHours')}
               value={p.horasSemana ?? '45'}
               onChange={(v: string) => setParam('horasSemana', v)}
               readOnly={readOnly}
             />
             <ParamInput
-              label='Día extra/Festivo (×)'
+              label={t('conditions.extraDayHoliday')}
               value={p.factorFestivo ?? '1.75'}
               onChange={(v: string) => setParam('factorFestivo', v)}
               readOnly={readOnly}
             />
             <ParamInput
-              label='Hora extra (×)'
+              label={t('conditions.extraHour')}
               value={p.factorHoraExtra ?? '1.5'}
               onChange={(v: string) => setParam('factorHoraExtra', v)}
               readOnly={readOnly}
             />
             <ParamInput
-              label='Travel day (divisor)'
+              label={t('conditions.travelDayDivisor')}
               value={p.divTravel ?? '2'}
               onChange={(v: string) => setParam('divTravel', v)}
               readOnly={readOnly}
             />
             <ParamInput
-              label='Cortesía (min)'
+              label={t('conditions.courtesyMinutes')}
               value={p.cortesiaMin ?? '15'}
               onChange={(v: string) => setParam('cortesiaMin', v)}
               readOnly={readOnly}
             />
             <ParamInput
-              label='Turn Around Diario (h)'
+              label={t('conditions.turnAroundDaily')}
               value={p.taDiario ?? '12'}
               onChange={(v: string) => setParam('taDiario', v)}
               readOnly={readOnly}
             />
             <ParamInput
-              label='Turn Around Fin de semana (h)'
+              label={t('conditions.turnAroundWeekend')}
               value={p.taFinde ?? '48'}
               onChange={(v: string) => setParam('taFinde', v)}
               readOnly={readOnly}
             />
             <ParamInput
-              label='Nocturno (inicio / fin)'
+              label={t('conditions.nightShift')}
               duo={[
                 {
                   value: p.nocturnoIni ?? '22:00',
@@ -454,43 +544,43 @@ function CondicionesMensual({ project, onChange = () => {}, onRegisterExport, re
               readOnly={readOnly}
             />
             <ParamInput
-              label='Comida (€)'
+              label={t('conditions.lunch')}
               value={p.dietaComida ?? '14.02'}
               readOnly={readOnly}
               onChange={(v: string) => setParam('dietaComida', v)}
             />
             <ParamInput
-              label='Cena (€)'
+              label={t('conditions.dinner')}
               value={p.dietaCena ?? '16.36'}
               onChange={(v: string) => setParam('dietaCena', v)}
               readOnly={readOnly}
             />
             <ParamInput
-              label='Dieta s/ pernocta (€)'
+              label={t('conditions.perDiemNoOvernight')}
               value={p.dietaSinPernocta ?? '30.38'}
               onChange={(v: string) => setParam('dietaSinPernocta', v)}
               readOnly={readOnly}
             />
             <ParamInput
-              label='Alojamiento + desayuno (€)'
+              label={t('conditions.accommodationBreakfast')}
               value={p.dietaAlojDes ?? '51.39'}
               onChange={(v: string) => setParam('dietaAlojDes', v)}
               readOnly={readOnly}
             />
             <ParamInput
-              label='Gastos de bolsillo (€)'
+              label={t('conditions.pocketExpenses')}
               value={p.gastosBolsillo ?? '8.81'}
               onChange={(v: string) => setParam('gastosBolsillo', v)}
               readOnly={readOnly}
             />
             <ParamInput
-              label='Kilometraje (€/km)'
+              label={t('conditions.kilometers')}
               value={p.kilometrajeKm ?? '0.26'}
               onChange={(v: string) => setParam('kilometrajeKm', v)}
               readOnly={readOnly}
             />
             <ParamInput
-              label='Transporte (€/día)'
+              label={t('conditions.transportPerDay')}
               value={p.transporteDia ?? '12'}
               onChange={(v: string) => setParam('transporteDia', v)}
               readOnly={readOnly}
@@ -500,18 +590,14 @@ function CondicionesMensual({ project, onChange = () => {}, onRegisterExport, re
       </section>
 
       <div className='text-xs text-zinc-400 mb-4 flex items-center justify-between'>
-        <span>
-          Introduce el <strong>precio mensual</strong> y el resto de importes se
-          calcularán automáticamente. Solo tendrás que indicar manualmente el{' '}
-          <strong>precio de refuerzo</strong>.
-        </span>
+        <span dangerouslySetInnerHTML={{ __html: t('conditions.introduceMonthlyPrice') }} />
         <div className='relative'>
           {PRICE_ROLES.filter(r => !roles.includes(r)).length === 0 ? (
             <button
               disabled
               className='px-3 py-1 text-sm bg-gray-500 text-white rounded-lg cursor-not-allowed'
             >
-              ✓ Todos los roles
+              {t('conditions.allRoles')}
             </button>
           ) : (
             <>
@@ -519,9 +605,9 @@ function CondicionesMensual({ project, onChange = () => {}, onRegisterExport, re
                 onClick={() => !readOnly && setShowRoleSelect(!showRoleSelect)}
                 disabled={readOnly}
                 className={`px-3 py-1 text-sm bg-brand text-white rounded-lg hover:bg-brand/80 btn-add-role ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
-                title={readOnly ? 'El proyecto está cerrado' : '+ Añadir rol'}
+                title={readOnly ? t('conditions.projectClosed') : t('conditions.addRole')}
               >
-                + Añadir rol
+                {t('conditions.addRole')}
               </button>
               {showRoleSelect && (
                 <div 
@@ -539,7 +625,7 @@ function CondicionesMensual({ project, onChange = () => {}, onRegisterExport, re
                       onClick={() => addRole(role)}
                       className='w-full text-left px-3 py-2 text-sm text-white hover:bg-blue-300 dark:hover:bg-amber-600/40 transition-colors'
                     >
-                      {role}
+                      {translateRoleName(role)}
                     </button>
                   ))}
                 </div>
@@ -552,9 +638,9 @@ function CondicionesMensual({ project, onChange = () => {}, onRegisterExport, re
         <table className='min-w-[920px] w-full border-collapse text-sm'>
           <thead>
             <tr>
-              <Th align='left'>Rol / Precio</Th>
+              <Th align='left'>{t('conditions.rolePrice')}</Th>
               {PRICE_HEADERS.map(col => (
-                <Th key={col} align='center'>{col}</Th>
+                <Th key={col} align='center'>{translateHeader(col)}</Th>
               ))}
             </tr>
           </thead>
@@ -570,11 +656,11 @@ function CondicionesMensual({ project, onChange = () => {}, onRegisterExport, re
                       }}
                       disabled={readOnly}
                       className={`text-gray-400 hover:text-blue-500 hover:bg-blue-100 dark:hover:text-amber-500 dark:hover:bg-amber-900/20 font-bold text-sm w-6 h-6 flex items-center justify-center rounded transition-all hover:scale-110 ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
-                      title={readOnly ? 'El proyecto está cerrado' : 'Eliminar rol'}
+                      title={readOnly ? t('conditions.projectClosed') : t('conditions.deleteRole')}
                     >
                       ✕
                     </button>
-                    <span>{role}</span>
+                    <span>{translateRoleName(role)}</span>
                   </div>
                 </Td>
                 {PRICE_HEADERS.map(h => (
@@ -598,7 +684,7 @@ function CondicionesMensual({ project, onChange = () => {}, onRegisterExport, re
       </section>
 
       <section className='rounded-2xl border border-neutral-border bg-neutral-panel/90 p-4'>
-        <h4 className='text-brand font-semibold mb-2'>Leyenda cálculos</h4>
+        <h4 className='text-brand font-semibold mb-2'>{t('conditions.calculationLegend')}</h4>
         <TextAreaAuto
           value={restoreStrongTags(renderWithParams(model.legendTemplate, model.params))}
           onChange={v =>
@@ -610,7 +696,7 @@ function CondicionesMensual({ project, onChange = () => {}, onRegisterExport, re
       </section>
 
       <InfoCard
-        title='Festivos'
+        title={t('conditions.holidays')}
         value={renderWithParams(model.festivosTemplate, model.params)}
         onChange={v =>
           setText('festivosTemplate', visibleToTemplate(v, model.params))
@@ -618,7 +704,7 @@ function CondicionesMensual({ project, onChange = () => {}, onRegisterExport, re
         readOnly={readOnly}
       />
       <InfoCard
-        title='Horarios'
+        title={t('conditions.schedules')}
         value={restoreStrongTags(renderWithParams(model.horariosTemplate, model.params))}
         onChange={v =>
           setText('horariosTemplate', visibleToTemplate(v, model.params))
@@ -626,7 +712,7 @@ function CondicionesMensual({ project, onChange = () => {}, onRegisterExport, re
         readOnly={readOnly}
       />
       <InfoCard
-        title='Dietas'
+        title={t('conditions.perDiems')}
         value={restoreStrongTags(renderWithParams(model.dietasTemplate, model.params))}
         onChange={v =>
           setText('dietasTemplate', visibleToTemplate(v, model.params))
@@ -634,7 +720,7 @@ function CondicionesMensual({ project, onChange = () => {}, onRegisterExport, re
         readOnly={readOnly}
       />
       <InfoCard
-        title='Transportes'
+        title={t('conditions.transportation')}
         value={renderWithParams(model.transportesTemplate, model.params)}
         onChange={v =>
           setText('transportesTemplate', visibleToTemplate(v, model.params))
@@ -642,7 +728,7 @@ function CondicionesMensual({ project, onChange = () => {}, onRegisterExport, re
         readOnly={readOnly}
       />
       <InfoCard
-        title='Alojamiento'
+        title={t('conditions.accommodation')}
         value={renderWithParams(model.alojamientoTemplate, model.params)}
         onChange={v =>
           setText('alojamientoTemplate', visibleToTemplate(v, model.params))
@@ -650,7 +736,7 @@ function CondicionesMensual({ project, onChange = () => {}, onRegisterExport, re
         readOnly={readOnly}
       />
       <InfoCard
-        title='Pre producción'
+        title={t('conditions.preProduction')}
         value={renderWithParams(model.preproTemplate, model.params)}
         onChange={v =>
           setText('preproTemplate', visibleToTemplate(v, model.params))
@@ -658,7 +744,7 @@ function CondicionesMensual({ project, onChange = () => {}, onRegisterExport, re
         readOnly={readOnly}
       />
       <InfoCard
-        title='Convenio'
+        title={t('conditions.agreement')}
         value={renderWithParams(model.convenioTemplate, model.params)}
         onChange={v =>
           setText('convenioTemplate', visibleToTemplate(v, model.params))
@@ -675,7 +761,7 @@ function CondicionesMensual({ project, onChange = () => {}, onRegisterExport, re
               target='_blank'
               rel='noreferrer'
               className='text-brand hover:underline text-sm'
-              title='Abrir BOE'
+              title={t('conditions.openBOE')}
             >
               BOE
             </a>
@@ -704,14 +790,14 @@ function loadOrSeed(storageKey: string): AnyRecord {
   const fallback: AnyRecord = {
     roles: ['Gaffer', 'Eléctrico'],
     prices: {},
-    legendTemplate: defaultLegend,
+    legendTemplate: getDefaultLegend(),
     festivosTemplate: globalDynamicFestivosText,
-    horariosTemplate: defaultHorarios,
-    dietasTemplate: defaultDietas,
-    transportesTemplate: defaultTransportes,
-    alojamientoTemplate: defaultAlojamiento,
-    preproTemplate: defaultPrepro,
-    convenioTemplate: defaultConvenio,
+    horariosTemplate: getDefaultHorarios(),
+    dietasTemplate: getDefaultDietas(),
+    transportesTemplate: getDefaultTransportes(),
+    alojamientoTemplate: getDefaultAlojamiento(),
+    preproTemplate: getDefaultPrepro(),
+    convenioTemplate: getDefaultConvenio(),
     params: {
       jornadaTrabajo: '9',
       jornadaComida: '1',
@@ -808,14 +894,14 @@ function loadOrSeed(storageKey: string): AnyRecord {
       transporteDia: normalizeNumeric(parsed.params?.transporteDia) || '12',
     };
 
-    parsed.legendTemplate = parsed.legendTemplate ?? defaultLegend;
+    parsed.legendTemplate = parsed.legendTemplate ?? getDefaultLegend();
     parsed.festivosTemplate = parsed.festivosTemplate ?? globalDynamicFestivosText;
-    parsed.horariosTemplate = parsed.horariosTemplate ?? defaultHorarios;
-    parsed.dietasTemplate = parsed.dietasTemplate ?? defaultDietas;
-    parsed.transportesTemplate = parsed.transportesTemplate ?? defaultTransportes;
-    parsed.alojamientoTemplate = parsed.alojamientoTemplate ?? defaultAlojamiento;
-    parsed.preproTemplate = parsed.preproTemplate ?? defaultPrepro;
-    parsed.convenioTemplate = parsed.convenioTemplate ?? defaultConvenio;
+    parsed.horariosTemplate = parsed.horariosTemplate ?? getDefaultHorarios();
+    parsed.dietasTemplate = parsed.dietasTemplate ?? getDefaultDietas();
+    parsed.transportesTemplate = parsed.transportesTemplate ?? getDefaultTransportes();
+    parsed.alojamientoTemplate = parsed.alojamientoTemplate ?? getDefaultAlojamiento();
+    parsed.preproTemplate = parsed.preproTemplate ?? getDefaultPrepro();
+    parsed.convenioTemplate = parsed.convenioTemplate ?? getDefaultConvenio();
 
     return parsed;
   }

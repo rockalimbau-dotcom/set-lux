@@ -3,8 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import LogoIcon from '@shared/components/LogoIcon';
 import { storage } from '@shared/services/localStorage.service';
 import { ROLES } from '@shared/constants/roles';
+import { useTranslation } from 'react-i18next';
 
 export default function ProfilePage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [nombre, setNombre] = useState('');
   const [apellido, setApellido] = useState('');
@@ -94,7 +96,7 @@ export default function ProfilePage() {
                   style={{color: 'var(--text)'}}
                 >
                   SetLux
-                </button> <span className='mx-2' style={{color: 'var(--text)'}}>›</span> <span style={{color: 'var(--text)'}}>Perfil</span>
+                </button> <span className='mx-2' style={{color: 'var(--text)'}}>›</span> <span style={{color: 'var(--text)'}}>{t('profile.title')}</span>
               </h1>
             </div>
           </div>
@@ -103,46 +105,46 @@ export default function ProfilePage() {
 
       <div className='max-w-6xl mx-auto p-6 flex justify-center'>
         <div className='max-w-md w-full rounded-2xl border p-8' style={{backgroundColor: 'var(--panel)', borderColor: 'var(--border)'}}>
-          <h3 className='text-xl font-semibold mb-6' style={{color: isLight ? '#0468BF' : '#F27405'}}>Datos de usuario</h3>
+          <h3 className='text-xl font-semibold mb-6' style={{color: isLight ? '#0468BF' : '#F27405'}}>{t('common.userData')}</h3>
 
         <div className='space-y-6'>
           <div className='grid grid-cols-2 gap-4'>
             <label className='block space-y-2'>
-              <span className='text-sm font-medium' style={{color: isLight ? '#6b7280' : '#d1d5db'}}>Nombre</span>
+              <span className='text-sm font-medium' style={{color: isLight ? '#6b7280' : '#d1d5db'}}>{t('common.firstName')}</span>
               <input
                 className='w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-1 transition-colors'
                 style={{backgroundColor: isLight ? '#ffffff' : 'rgba(0,0,0,0.4)', color: 'var(--text)', borderColor: 'var(--border)', boxShadow: '0 0 0 1px transparent'}}
                 value={nombre}
                 onChange={e => setNombre(e.target.value)}
-                placeholder='Nombre'
+                placeholder={t('auth.firstNamePlaceholder')}
               />
             </label>
             <label className='block space-y-2'>
-              <span className='text-sm font-medium' style={{color: isLight ? '#6b7280' : '#d1d5db'}}>Apellido</span>
+              <span className='text-sm font-medium' style={{color: isLight ? '#6b7280' : '#d1d5db'}}>{t('common.lastName')}</span>
               <input
                 className='w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-1 transition-colors'
                 style={{backgroundColor: isLight ? '#ffffff' : 'rgba(0,0,0,0.4)', color: 'var(--text)', borderColor: 'var(--border)', boxShadow: '0 0 0 1px transparent'}}
                 value={apellido}
                 onChange={e => setApellido(e.target.value)}
-                placeholder='Apellido'
+                placeholder={t('auth.lastNamePlaceholder')}
               />
             </label>
           </div>
 
           <label className='block space-y-2'>
-            <span className='text-sm font-medium' style={{color: isLight ? '#6b7280' : '#d1d5db'}}>Email</span>
+            <span className='text-sm font-medium' style={{color: isLight ? '#6b7280' : '#d1d5db'}}>{t('common.email')}</span>
             <input
               type='email'
               className='w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-1 transition-colors'
               style={{backgroundColor: isLight ? '#ffffff' : 'rgba(0,0,0,0.4)', color: 'var(--text)', borderColor: 'var(--border)'}}
               value={email}
               onChange={e => setEmail(e.target.value)}
-              placeholder='tucorreo@ejemplo.com'
+              placeholder={t('auth.emailPlaceholder')}
             />
           </label>
 
           <label className='block space-y-2'>
-            <span className='text-sm font-medium' style={{color: isLight ? '#6b7280' : '#d1d5db'}}>Rol</span>
+            <span className='text-sm font-medium' style={{color: isLight ? '#6b7280' : '#d1d5db'}}>{t('common.role')}</span>
             <div className='relative w-full' ref={roleDropdownRef}>
               <button
                 type='button'
@@ -213,12 +215,12 @@ export default function ProfilePage() {
             className='px-6 py-3 rounded-xl font-semibold text-white transition-colors'
             style={{backgroundColor: isLight ? '#0468BF' : '#F27405'}}
           >
-            Guardar
+            {t('common.save')}
           </button>
         </div>
 
         {saved && (
-          <div className='mt-4 text-sm text-green-400 font-medium'>Perfil guardado ✓</div>
+          <div className='mt-4 text-sm text-green-400 font-medium'>{t('profile.saveSuccess')}</div>
         )}
         </div>
       </div>

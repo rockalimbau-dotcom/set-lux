@@ -1,6 +1,8 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 export function Footer() {
+  const { t } = useTranslation();
   const currentYear = new Date().getFullYear();
   
   return (
@@ -13,7 +15,7 @@ export function Footer() {
     >
       <div className='max-w-7xl mx-auto px-4 text-center text-xs text-zinc-400'>
         <p>
-          © {currentYear} SetLux. Todos los derechos reservados.
+          {t('footer.copyright', { year: currentYear })}
         </p>
       </div>
     </footer>

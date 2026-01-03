@@ -6,6 +6,7 @@ import {
   useParams,
   useLocation,
 } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 interface Project {
   id: string;
@@ -18,6 +19,7 @@ interface MainLayoutProps {
 }
 
 export default function MainLayout({ project, onBack }: MainLayoutProps) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const pid = id || project?.id;
@@ -38,12 +40,12 @@ export default function MainLayout({ project, onBack }: MainLayoutProps) {
           onClick={onBack}
           className='w-full px-3 py-2 rounded-lg border border-neutral-border hover:border-brand text-sm'
         >
-          ← Volver a proyectos
+          ← {t('common.backToProjects')}
         </button>
 
-        <div className='text-xs text-zinc-400'>Proyecto</div>
+        <div className='text-xs text-zinc-400'>{t('common.project')}</div>
         <div className='text-sm font-semibold break-words'>
-          {project?.nombre || 'Proyecto'}
+          {project?.nombre || t('common.project')}
         </div>
 
         {!isIndex && (
@@ -53,19 +55,19 @@ export default function MainLayout({ project, onBack }: MainLayoutProps) {
               className={linkCls}
               end
             >
-              Planificación
+              {t('navigation.planning')}
             </NavLink>
             <NavLink to={`/project/${pid}/equipo`} className={linkCls} end>
-              Equipo
+              {t('navigation.team')}
             </NavLink>
             <NavLink to={`/project/${pid}/necesidades`} className={linkCls} end>
-              Necesidades
+              {t('navigation.needs')}
             </NavLink>
             <NavLink to={`/project/${pid}/reportes`} className={linkCls} end>
-              Reportes
+              {t('navigation.reports')}
             </NavLink>
             <NavLink to={`/project/${pid}/nomina`} className={linkCls} end>
-              Nómina
+              {t('navigation.payroll')}
             </NavLink>
           </nav>
         )}

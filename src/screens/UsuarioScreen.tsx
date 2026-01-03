@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { storage } from '@shared/services/localStorage.service';
 import { useNavigate } from 'react-router-dom';
 
@@ -7,26 +8,27 @@ interface UsuarioScreenProps {
 }
 
 export default function UsuarioScreen({ onClose }: UsuarioScreenProps) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   const handlePerfil = () => {
-    alert('Abrir perfil (pendiente de implementar)');
+    alert(t('userMenu.profilePending'));
   };
 
   const handleConfiguracion = () => {
-    alert('Abrir configuración (pendiente de implementar)');
+    alert(t('userMenu.settingsPending'));
   };
 
   const handleCambiarContraseña = () => {
-    alert('Cambiar contraseña (pendiente de implementar)');
+    alert(t('userMenu.changePasswordPending'));
   };
 
   const handleAtajos = () => {
-    alert('Mostrar atajos de teclado (pendiente de implementar)');
+    alert(t('userMenu.keyboardShortcutsPending'));
   };
 
   const handleAyuda = () => {
-    alert('Abrir centro de ayuda / feedback (pendiente de implementar)');
+    alert(t('userMenu.helpCenterPending'));
   };
 
   const handleSalir = () => {
@@ -48,13 +50,13 @@ export default function UsuarioScreen({ onClose }: UsuarioScreenProps) {
           onClick={handlePerfil}
           className='px-4 py-2 hover:bg-white/10 cursor-pointer'
         >
-          Perfil
+          {t('userMenu.profile')}
         </li>
         <li
           onClick={handleConfiguracion}
           className='px-4 py-2 hover:bg-white/10 cursor-pointer'
         >
-          Configuración
+          {t('userMenu.settings')}
         </li>
 
         {/* Opciones extra preparadas (solo muestran alert por ahora) */}
@@ -62,26 +64,26 @@ export default function UsuarioScreen({ onClose }: UsuarioScreenProps) {
           onClick={handleCambiarContraseña}
           className='px-4 py-2 hover:bg-white/10 cursor-pointer'
         >
-          Cambiar contraseña
+          {t('userMenu.changePassword')}
         </li>
         <li
           onClick={handleAtajos}
           className='px-4 py-2 hover:bg-white/10 cursor-pointer'
         >
-          Atajos de teclado
+          {t('userMenu.keyboardShortcuts')}
         </li>
         <li
           onClick={handleAyuda}
           className='px-4 py-2 hover:bg-white/10 cursor-pointer'
         >
-          Centro de ayuda / Feedback
+          {t('userMenu.helpCenter')}
         </li>
 
         <li
           onClick={handleSalir}
           className='px-4 py-2 hover:bg-red-500/20 hover:text-red-400 cursor-pointer'
         >
-          Salir
+          {t('userMenu.logout')}
         </li>
       </ul>
     </div>

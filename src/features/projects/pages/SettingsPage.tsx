@@ -2,8 +2,11 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import LogoIcon from '@shared/components/LogoIcon';
 import { storage } from '@shared/services/localStorage.service';
+import { useTranslation } from 'react-i18next';
+import { changeLanguage } from '@i18n/config';
 
 export default function SettingsPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   
   const [theme, setTheme] = useState<'dark' | 'light'>('light');
@@ -14,7 +17,16 @@ export default function SettingsPage() {
   const [themeDropdown, setThemeDropdown] = useState({ isOpen: false, isButtonHovered: false, hoveredOption: null as string | null });
   const [idiomaDropdown, setIdiomaDropdown] = useState({ isOpen: false, isButtonHovered: false, hoveredOption: null as string | null });
   
-  const idiomaOptions = ['Español', 'Catalán', 'Inglés'];
+  // Valores internos de idioma (siempre en español para compatibilidad)
+  const idiomaValues = ['Español', 'Catalán', 'Inglés'];
+  
+  // Función helper para obtener el nombre traducido del idioma
+  const getLanguageName = (value: string): string => {
+    if (value === 'Español') return t('settings.spanish');
+    if (value === 'Catalán') return t('settings.catalan');
+    if (value === 'Inglés') return t('settings.english');
+    return value;
+  };
 
   const themeRef = useRef<HTMLDivElement>(null);
   const idiomaRef = useRef<HTMLDivElement>(null);
@@ -41,7 +53,7 @@ export default function SettingsPage() {
   const focusColor = currentTheme === 'light' ? '#0476D9' : '#F27405';
 
   // Obtener labels para mostrar
-  const themeLabel = theme === 'dark' ? 'Oscuro' : 'Claro';
+  const themeLabel = theme === 'dark' ? t('settings.dark') : t('settings.light');
 
   useEffect(() => {
     const s = storage.getJSON<any>('settings_v1') || {};
@@ -68,9 +80,11 @@ export default function SettingsPage() {
 
   const save = () => {
     storage.setJSON('settings_v1', { theme });
-    // Guardar idioma en profile_v1 para mantener consistencia
+    // Guardar idioma en el perfil (aunque ya se haya cambiado, lo guardamos para persistencia)
     const profile = storage.getJSON<any>('profile_v1') || {};
-    storage.setJSON('profile_v1', { ...profile, idioma });
+    storage.setJSON('profile_v1', { ...profile, idioma: idioma });
+    // Asegurar que el idioma esté aplicado (por si acaso)
+    changeLanguage(idioma);
     setSaved(true);
     setTimeout(() => setSaved(false), 1200);
   };
@@ -107,7 +121,7 @@ export default function SettingsPage() {
                   style={{color: colors.titleMain}}
                 >
                   SetLux
-                </button> <span className='mx-2' style={{color: colors.titleMain}}>›</span> <span style={{color: colors.titleMain}}>Configuración</span>
+                </button> <span className='mx-2' style={{color: colors.titleMain}}>›</span> <span style={{color: colors.titleMain}}>{t('settings.title')}</span>
               </h1>
             </div>
           </div>
@@ -116,11 +130,11 @@ export default function SettingsPage() {
 
       <div className='max-w-6xl mx-auto p-6 flex justify-center'>
         <div className='max-w-md w-full rounded-2xl border p-8' style={{backgroundColor: colors.panelBg, borderColor: colors.panelBorder}}>
-          <h3 className='text-xl font-semibold mb-6' style={{color: colors.primary}}>Preferencias</h3>
+          <h3 className='text-xl font-semibold mb-6' style={{color: colors.primary}}>{t('settings.preferences')}</h3>
 
           <div className='space-y-6'>
             <label className='block space-y-2'>
-              <span className='text-sm font-medium' style={{color: colors.mutedText}}>Tema</span>
+              <span className='text-sm font-medium' style={{color: colors.mutedText}}>{t('settings.theme')}</span>
               <div className='relative w-full' ref={themeRef}>
                 <button
                   type='button'
@@ -154,8 +168,8 @@ export default function SettingsPage() {
                     currentTheme === 'light' ? 'bg-white' : 'bg-neutral-panel'
                   }`}>
                     {[
-                      { value: 'dark', label: 'Oscuro' },
-                      { value: 'light', label: 'Claro' }
+                      { value: 'dark', label: t('settings.dark') },
+                      { value: 'light', label: t('settings.light') }
                     ].map(opcion => (
                       <button
                         key={opcion.value}
@@ -189,7 +203,7 @@ export default function SettingsPage() {
             </label>
 
             <label className='block space-y-2'>
-              <span className='text-sm font-medium' style={{color: colors.mutedText}}>Idioma</span>
+              <span className='text-sm font-medium' style={{color: colors.mutedText}}>{t('settings.language')}</span>
               <div className='relative w-full' ref={idiomaRef}>
                 <button
                   type='button'
@@ -216,18 +230,20 @@ export default function SettingsPage() {
                     paddingRight: '2.5rem',
                   }}
                 >
-                  {idioma || '\u00A0'}
+                  {getLanguageName(idioma) || '\u00A0'}
                 </button>
                 {idiomaDropdown.isOpen && (
                   <div className={`absolute top-full left-0 mt-1 w-full border border-neutral-border rounded-lg shadow-lg z-50 overflow-y-auto max-h-60 ${
                     currentTheme === 'light' ? 'bg-white' : 'bg-neutral-panel'
                   }`}>
-                    {idiomaOptions.map(opcion => (
+                    {idiomaValues.map(opcion => (
                       <button
                         key={opcion}
                         type='button'
                         onClick={() => {
                           setIdioma(opcion);
+                          // Cambiar el idioma de la aplicación inmediatamente
+                          changeLanguage(opcion);
                           setIdiomaDropdown({ isOpen: false, isButtonHovered: false, hoveredOption: null });
                         }}
                         onMouseEnter={() => setIdiomaDropdown(prev => ({ ...prev, hoveredOption: opcion }))}
@@ -246,7 +262,7 @@ export default function SettingsPage() {
                             : 'inherit',
                         }}
                       >
-                        {opcion}
+                        {getLanguageName(opcion)}
                       </button>
                     ))}
                   </div>
@@ -263,12 +279,12 @@ export default function SettingsPage() {
               className='px-6 py-3 rounded-xl font-semibold text-white transition-all hover:shadow-lg'
               style={{backgroundColor: colors.primary, borderColor: colors.primary}}
             >
-              Guardar
+              {t('common.save')}
             </button>
           </div>
 
           {saved && (
-            <div className='mt-4 text-sm font-medium' style={{color: isLight ? '#059669' : '#34d399'}}>Configuración guardada ✓</div>
+            <div className='mt-4 text-sm font-medium' style={{color: isLight ? '#059669' : '#34d399'}}>{t('settings.saveSuccess')}</div>
           )}
         </div>
       </div>
