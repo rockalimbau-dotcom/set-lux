@@ -325,6 +325,7 @@ export default function NominaPublicidad({ project, readOnly = false }: NominaPu
     let holidayDays = 0;
     // Contadores por tipo de día para publicidad
     let rodaje = 0;
+    let oficina = 0;
     let localizar = 0;
     let carga = 0;
     let descarga = 0;
@@ -382,7 +383,10 @@ export default function NominaPublicidad({ project, readOnly = false }: NominaPu
         const dayType = day?.tipo || '';
         if (dayType === 'Rodaje') {
           rodaje += 1;
-          workedDays += 1; // Solo Rodaje cuenta en días trabajados
+          workedDays += 1; // Solo Rodaje y Oficina cuentan en días trabajados
+        } else if (dayType === 'Oficina') {
+          oficina += 1;
+          workedDays += 1; // Solo Rodaje y Oficina cuentan en días trabajados
         } else if (dayType === 'Travel Day') {
           travelDays += 1;
           // No contar en workedDays porque tiene su propia columna
@@ -414,6 +418,7 @@ export default function NominaPublicidad({ project, readOnly = false }: NominaPu
       workedPick, 
       holidayDays,
       rodaje,
+      oficina,
       localizar,
       carga,
       descarga

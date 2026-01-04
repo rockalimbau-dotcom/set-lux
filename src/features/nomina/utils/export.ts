@@ -20,9 +20,13 @@ export function buildNominaMonthHTML(
   const generateWorkedDaysText = (r: any): string => {
     const parts: string[] = [];
     
-    // Orden: Localizar, Carga, Rodaje, Descarga
+    // Orden: Localizar, Oficina, Carga, Rodaje, Descarga
     if ((r._localizar || 0) > 0) {
       parts.push(`${i18n.t('payroll.dayTypes.location')} x${r._localizar}`);
+    }
+    
+    if ((r._oficina || 0) > 0) {
+      parts.push(`${i18n.t('payroll.dayTypes.office')} x${r._oficina}`);
     }
     
     if ((r._carga || 0) > 0) {
@@ -477,9 +481,13 @@ export function buildNominaMonthHTMLForPDF(
   const generateWorkedDaysText = (r: any): string => {
     const parts: string[] = [];
     
-    // Orden: Localizar, Carga, Rodaje, Descarga
+    // Orden: Localizar, Oficina, Carga, Rodaje, Descarga
     if ((r._localizar || 0) > 0) {
       parts.push(`${i18n.t('payroll.dayTypes.location')} x${r._localizar}`);
+    }
+    
+    if ((r._oficina || 0) > 0) {
+      parts.push(`${i18n.t('payroll.dayTypes.office')} x${r._oficina}`);
     }
     
     if ((r._carga || 0) > 0) {

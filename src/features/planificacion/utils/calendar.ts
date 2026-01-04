@@ -51,7 +51,7 @@ export function relabelWeekByCalendar(
           next.loc = 'DESCANSO';
         }
       } else if (isHoliday) {
-        if (!next.tipo || next.tipo === 'Rodaje') {
+        if (!next.tipo || next.tipo === 'Rodaje' || next.tipo === 'Oficina') {
           next.tipo = 'Rodaje Festivo';
           if (next.loc === 'DESCANSO') next.loc = '';
         }
@@ -61,6 +61,8 @@ export function relabelWeekByCalendar(
         }
         // Revertir festivo si ya no aplica con datos actuales
         if (next.tipo === 'Rodaje Festivo') {
+          // Mantener el tipo original si era Oficina, sino volver a Rodaje
+          // Por ahora siempre volvemos a Rodaje, pero podríamos guardar el tipo original
           next.tipo = 'Rodaje';
         }
       }
@@ -108,7 +110,7 @@ export async function relabelWeekByCalendarDynamic(
           next.loc = 'DESCANSO';
         }
       } else if (isHoliday) {
-        if (!next.tipo || next.tipo === 'Rodaje') {
+        if (!next.tipo || next.tipo === 'Rodaje' || next.tipo === 'Oficina') {
           next.tipo = 'Rodaje Festivo';
           if (next.loc === 'DESCANSO') next.loc = '';
         }
@@ -118,6 +120,8 @@ export async function relabelWeekByCalendarDynamic(
         }
         // Revertir festivo si ya no aplica con datos actuales
         if (next.tipo === 'Rodaje Festivo') {
+          // Mantener el tipo original si era Oficina, sino volver a Rodaje
+          // Por ahora siempre volvemos a Rodaje, pero podríamos guardar el tipo original
           next.tipo = 'Rodaje';
         }
       }

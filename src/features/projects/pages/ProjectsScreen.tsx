@@ -1571,10 +1571,10 @@ function ProjectsScreen({
   return (
     <>
       {/* Header moderno y prominente */}
-      <div className='px-6 py-8' style={{backgroundColor: 'var(--bg)', minHeight: '120px', position: 'relative', contain: 'layout style', marginTop: 0, paddingTop: '2rem', paddingBottom: '2rem'}}>
-        <div className='max-w-6xl mx-auto' style={{position: 'relative', contain: 'layout'}}>
+      <div className='px-6 py-8' style={{backgroundColor: 'var(--bg)', minHeight: '120px', position: 'relative', contain: 'layout style', marginTop: 0, paddingTop: '2rem', paddingBottom: '2rem', zIndex: 10}}>
+        <div className='max-w-6xl mx-auto' style={{position: 'relative', contain: 'layout', zIndex: 10}}>
           {/* Header limpio */}
-          <div className='flex items-center justify-between mb-8' style={{minHeight: '80px', position: 'relative', contain: 'layout'}}>
+          <div className='flex items-center justify-between mb-8' style={{minHeight: '80px', position: 'relative', contain: 'layout', zIndex: 10}}>
             <div className='flex items-center gap-6' style={{position: 'relative', willChange: 'auto', transform: 'translateZ(0)'}}>
               <div style={{width: '80px', height: '80px', position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transform: 'translateZ(0)'}}>
                 <LogoIcon size={80} />
@@ -1606,10 +1606,11 @@ function ProjectsScreen({
                 {/* Menú desplegable */}
                 {menuOpen && (
                   <div 
-                    className='absolute right-0 top-full mt-2 w-48 rounded-lg shadow-lg border py-2 z-50'
+                    className='absolute right-0 top-full mt-2 w-48 rounded-lg shadow-lg border py-2'
                     style={{
                       backgroundColor: 'var(--panel)',
-                      borderColor: isLight ? 'rgba(229,231,235,0.6)' : 'var(--border)'
+                      borderColor: isLight ? 'rgba(229,231,235,0.6)' : 'var(--border)',
+                      zIndex: 100
                     }}
                   >
                     <button
@@ -1676,7 +1677,7 @@ function ProjectsScreen({
           </div>
 
           {/* Barra de búsqueda y filtros */}
-          <div className='flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4'>
+          <div className='flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4' style={{position: 'relative', zIndex: 1}}>
             <div className='flex-1 relative'>
               <div className='absolute left-4 top-1/2 transform -translate-y-1/2 text-zinc-400'>
                 🔍

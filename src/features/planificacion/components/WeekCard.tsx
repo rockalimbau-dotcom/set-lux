@@ -214,12 +214,13 @@ function JornadaDropdown({
 }: JornadaDropdownProps) {
   const { t } = useTranslation();
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const jornadaOptions = ['Rodaje', 'Carga', 'Descarga', 'Localizar', 'Travel Day', 'Rodaje Festivo', 'Fin', 'Descanso'];
+  const jornadaOptions = ['Rodaje', 'Oficina', 'Carga', 'Descarga', 'Localizar', 'Travel Day', 'Rodaje Festivo', 'Fin', 'Descanso'];
   
   // Helper function to translate jornada type
   const translateJornadaType = (tipo: string): string => {
     const typeMap: Record<string, string> = {
       'Rodaje': t('planning.shooting'),
+      'Oficina': t('planning.office'),
       'Carga': t('planning.loading'),
       'Descarga': t('planning.unloading'),
       'Localizar': t('planning.location'),

@@ -273,6 +273,7 @@
       "location": "Localitzar",
       "loading": "Càrrega",
       "shooting": "Rodatge",
+      "office": "Oficina",
       "unloading": "Descàrrega"
     },
     "assignPeopleToWeeks": "Assigna persones a les setmanes",
@@ -416,6 +417,7 @@
     "saturday": "Dissabte",
     "sunday": "Diumenge",
     "shooting": "Rodatge",
+    "office": "Oficina",
     "loading": "Càrrega",
     "unloading": "Descàrrega",
     "location": "Localitzar",

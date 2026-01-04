@@ -1763,6 +1763,7 @@ export async function exportReportRangeToPDF(params: ExportReportRangeParams) {
       if (!tipo) return '';
       const typeMap: Record<string, string> = {
         'Rodaje': getTranslation('planning.shooting', 'Rodaje'),
+        'Oficina': getTranslation('planning.office', 'Oficina'),
         'Carga': getTranslation('planning.loading', 'Carga'),
         'Descarga': getTranslation('planning.unloading', 'Descarga'),
         'Localizar': getTranslation('planning.location', 'Localizar'),
@@ -1779,7 +1780,7 @@ export async function exportReportRangeToPDF(params: ExportReportRangeParams) {
       const addInPlanning = getTranslation('reports.addInPlanning', 'Añadelo en Planificación');
       if (!day) return addInPlanning;
       if ((day.tipo || '') === 'Descanso') return getTranslation('planning.rest', 'DESCANSO');
-      const etiqueta = day.tipo && day.tipo !== 'Rodaje' && day.tipo !== 'Rodaje Festivo' ? `${translateJornadaType(day.tipo)}: ` : '';
+      const etiqueta = day.tipo && day.tipo !== 'Rodaje' && day.tipo !== 'Oficina' && day.tipo !== 'Rodaje Festivo' ? `${translateJornadaType(day.tipo)}: ` : '';
       if (!day.start || !day.end) return `${etiqueta}${addInPlanning}`;
       return `${etiqueta}${day.start}–${day.end}`;
     };

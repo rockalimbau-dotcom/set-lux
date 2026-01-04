@@ -132,6 +132,7 @@ export default function ReportesSemana({
     const translateJornadaType = (tipo: string): string => {
       const typeMap: Record<string, string> = {
         'Rodaje': t('planning.shooting'),
+        'Oficina': t('planning.office'),
         'Carga': t('planning.loading'),
         'Descarga': t('planning.unloading'),
         'Localizar': t('planning.location'),
@@ -143,8 +144,8 @@ export default function ReportesSemana({
       return typeMap[tipo] || tipo;
     };
     
-    // Para "Rodaje Festivo", no mostrar el prefijo, solo el horario o "Añadelo en Planificación"
-    const etiqueta = day.tipo && day.tipo !== 'Rodaje' && day.tipo !== 'Rodaje Festivo' 
+    // Para "Rodaje Festivo", "Rodaje" y "Oficina", no mostrar el prefijo, solo el horario o "Añadelo en Planificación"
+    const etiqueta = day.tipo && day.tipo !== 'Rodaje' && day.tipo !== 'Oficina' && day.tipo !== 'Rodaje Festivo' 
       ? `${translateJornadaType(day.tipo)}: ` 
       : '';
     if (!day.start || !day.end) return `${etiqueta}${t('reports.addInPlanning')}`;

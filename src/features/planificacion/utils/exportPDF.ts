@@ -224,6 +224,7 @@ export function buildPlanificacionHTMLForPDF(
     if (!tipo) return '';
     const typeMap: Record<string, string> = {
       'Rodaje': getTranslation('planning.shooting', 'Rodaje'),
+      'Oficina': getTranslation('planning.office', 'Oficina'),
       'Carga': getTranslation('planning.loading', 'Carga'),
       'Descarga': getTranslation('planning.unloading', 'Descarga'),
       'Localizar': getTranslation('planning.location', 'Localizar'),

@@ -6,15 +6,20 @@ interface WorkedDaysSummaryProps {
   descarga: number;
   localizar: number;
   rodaje: number;
+  oficina: number;
 }
 
-export default function WorkedDaysSummary({ carga, descarga, localizar, rodaje }: WorkedDaysSummaryProps) {
+export default function WorkedDaysSummary({ carga, descarga, localizar, rodaje, oficina }: WorkedDaysSummaryProps) {
   const { t } = useTranslation();
   const parts: string[] = [];
   
-  // Orden: Localizar, Carga, Rodaje, Descarga
+  // Orden: Localizar, Oficina, Carga, Rodaje, Descarga
   if (localizar > 0) {
     parts.push(`${t('payroll.dayTypes.location')} x${localizar}`);
+  }
+  
+  if (oficina > 0) {
+    parts.push(`${t('payroll.dayTypes.office')} x${oficina}`);
   }
   
   if (carga > 0) {

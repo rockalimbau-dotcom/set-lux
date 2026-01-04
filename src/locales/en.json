@@ -273,6 +273,7 @@
       "location": "Location",
       "loading": "Loading",
       "shooting": "Filming",
+      "office": "Office",
       "unloading": "Unloading"
     },
     "assignPeopleToWeeks": "Assign people to weeks",
@@ -404,6 +405,7 @@
     "saturday": "Saturday",
     "sunday": "Sunday",
     "shooting": "Filming",
+    "office": "Office",
     "loading": "Loading",
     "unloading": "Unloading",
     "location": "Location",

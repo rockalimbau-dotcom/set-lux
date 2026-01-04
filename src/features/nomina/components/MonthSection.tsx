@@ -82,6 +82,7 @@ interface MonthSectionProps {
     workedPick: number; 
     holidayDays: number;
     rodaje?: number;
+    oficina?: number;
     travelDay?: number;
     carga?: number;
     descarga?: number;
@@ -409,15 +410,15 @@ function MonthSection({
     return rows.map(r => {
       const person = { role: r.role, name: r.name };
       const breakdown = calcWorkedBreakdown(weeksForMonth, filterISO, person);
-      const { workedDays, travelDays, workedBase, workedPre, workedPick, holidayDays, rodaje, travelDay, carga, descarga, localizar, rodajeFestivo } = breakdown;
+      const { workedDays, travelDays, workedBase, workedPre, workedPick, holidayDays, rodaje, oficina, travelDay, carga, descarga, localizar, rodajeFestivo } = breakdown;
       
       // Para mensual, "Total días trabajados" debe ser desde el primer día trabajado hasta el último día trabajado
       // (incluyendo rodaje + descansos en ese rango)
-      // Para publicidad, solo contar Rodaje en días trabajados
+      // Para publicidad, solo contar Rodaje y Oficina en días trabajados
       const totalDiasTrabajados = projectMode === 'mensual' 
         ? calculateWorkingDaysInMonth 
         : projectMode === 'publicidad' 
-          ? (rodaje || 0)
+          ? (rodaje || 0) + (oficina || 0)
           : workedDays;
 
       const keyNoPR = `${stripPR(r.role)}__${r.name}`;
@@ -548,8 +549,8 @@ function MonthSection({
 
       if (projectMode === 'publicidad') {
         // Cálculo específico para publicidad
-        // Total días = solo rodaje × precio jornada (carga/descarga y localización tienen sus propias columnas)
-        const rodajeDays = rodaje || 0;
+        // Total días = rodaje + oficina × precio jornada (carga/descarga y localización tienen sus propias columnas)
+        const rodajeDays = (rodaje || 0) + (oficina || 0);
         if (rodajeDays > 0 && (effectivePr.jornada || 0) === 0) {
           missingPrices.jornada = true;
         }
@@ -733,6 +734,7 @@ function MonthSection({
         _workedPre: workedPre, // Días de prelight (compatibilidad)
         _workedPick: workedPick, // Días de pickup (compatibilidad)
         _rodaje: rodaje, // Días de tipo "Rodaje"
+        _oficina: oficina, // Días de tipo "Oficina"
         _travelDay: travelDay, // Días de tipo "Travel Day"
         _carga: carga, // Días de tipo "Carga"
         _descarga: descarga, // Días de tipo "Descarga"
@@ -1080,6 +1082,7 @@ function MonthSection({
                               descarga={r._descarga || 0}
                               localizar={r._localizar || 0}
                               rodaje={r._rodaje || 0}
+                              oficina={r._oficina || 0}
                             />
                           )}
                         </div>

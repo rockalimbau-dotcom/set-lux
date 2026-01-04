@@ -273,6 +273,7 @@
       "location": "Localizar",
       "loading": "Carga",
       "shooting": "Rodaje",
+      "office": "Oficina",
       "unloading": "Descarga"
     },
     "assignPeopleToWeeks": "Asigna personas a las semanas",
@@ -416,6 +417,7 @@
     "saturday": "Sábado",
     "sunday": "Domingo",
     "shooting": "Rodaje",
+    "office": "Oficina",
     "loading": "Carga",
     "unloading": "Descarga",
     "location": "Localizar",

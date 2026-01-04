@@ -314,6 +314,7 @@ export default function NominaSemanal({ project, readOnly = false }: NominaSeman
     let holidayDays = 0;
     // Contadores por tipo de día
     let rodaje = 0;
+    let oficina = 0;
     let travelDay = 0;
     let carga = 0;
     let descarga = 0;
@@ -374,6 +375,9 @@ export default function NominaSemanal({ project, readOnly = false }: NominaSeman
         if (dayType === 'Rodaje') {
           rodaje += 1;
           workedDays += 1;
+        } else if (dayType === 'Oficina') {
+          oficina += 1;
+          workedDays += 1;
         } else if (dayType === 'Travel Day') {
           travelDay += 1;
           travelDays += 1;
@@ -406,6 +410,7 @@ export default function NominaSemanal({ project, readOnly = false }: NominaSeman
       workedPick, 
       holidayDays,
       rodaje,
+      oficina,
       travelDay,
       carga,
       descarga,
