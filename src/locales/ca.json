@@ -18,6 +18,8 @@
     "getStarted": "Per començar a utilitzar SetLux, crea el teu primer projecte.",
     "loading": "Carregant...",
     "close": "Tancar",
+    "openMenu": "Obrir menú",
+    "closeMenu": "Tancar menú",
     "errorLoadingApp": "💥 Error carregant l'aplicació",
     "appError": "Error en l'aplicació",
     "unexpectedError": "S'ha produït un error inesperat. Si us plau, recarrega la pàgina.",

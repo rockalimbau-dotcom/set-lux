@@ -249,6 +249,14 @@ export default function ProjectDetail({
   const navigate = useNavigate();
   const params = useParams();
   const pid = params.id || project?.id || project?.nombre || 'tmp';
+
+  // Prevenir scroll automático al cambiar de ruta para evitar movimiento del logo
+  React.useEffect(() => {
+    // Forzar scroll a la parte superior inmediatamente sin animación
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    }
+  }, [location.pathname]);
   
   // --- modo de condiciones/nómina (mensual | semanal | publicidad)
   const condTipo = useMemo(
@@ -521,13 +529,24 @@ export default function ProjectDetail({
   }, [activeTab, condModeLabel, t]);
 
   return (
-    <div>
+    <div className='min-h-screen bg-neutral-bg text-neutral-text pb-12' style={{paddingTop: 0}}>
       {/* Header con los mismos tamaños que ProjectsScreen y flecha debajo del título */}
-      <div className='px-6 pt-8 pb-12' style={{backgroundColor: 'var(--bg)'}}>
-        <div className='max-w-6xl mx-auto'>
-          <div className='flex items-center justify-between mb-8'>
-            <div className='flex items-center gap-6'>
-              <LogoIcon size={80} onClick={handleNavigateAway} />
+      <div 
+        className='px-6 pt-16 pb-8 lg:pt-8 lg:pb-8' 
+        style={{
+          backgroundColor: 'var(--bg)', 
+          minHeight: '120px', 
+          position: 'relative', 
+          contain: 'layout style', 
+          marginTop: 0
+        }}
+      >
+        <div className='max-w-6xl mx-auto' style={{position: 'relative', contain: 'layout'}}>
+          <div className='flex items-center justify-between mb-8' style={{minHeight: '80px', position: 'relative', contain: 'layout'}}>
+            <div className='flex items-center gap-6' style={{position: 'relative', willChange: 'auto', transform: 'translateZ(0)'}}>
+              <div style={{width: '80px', height: '80px', position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transform: 'translateZ(0)'}}>
+                <LogoIcon size={80} onClick={handleNavigateAway} />
+              </div>
               <h1 className='text-3xl font-bold' style={{color: 'var(--text)'}}>
                 <button 
                   onClick={handleNavigateAway}
@@ -569,17 +588,24 @@ export default function ProjectDetail({
               </h1>
             </div>
 
-            <span
-              onClick={() => {
-                // Mostrar modal de confirmación
-                setShowStatusModal({ isClosing: isActive });
-              }}
-              className={`px-3 py-2 rounded-lg text-sm font-medium border cursor-pointer`}
-              style={{backgroundColor: estadoBg, borderColor: estadoBg, color: '#ffffff'}}
-              title={t('projectDetail.changeStatus', { status: estadoText })}
-            >
-              {estadoText}
-            </span>
+            {/* Contenedor derecho con altura fija para evitar movimiento del logo */}
+            <div className='flex flex-col items-end gap-2' style={{minHeight: '60px', justifyContent: 'flex-start'}}>
+              <span
+                onClick={() => {
+                  // Mostrar modal de confirmación
+                  setShowStatusModal({ isClosing: isActive });
+                }}
+                className={`px-3 py-2 rounded-lg text-xs font-medium border cursor-pointer`}
+                style={{backgroundColor: estadoBg, borderColor: estadoBg, color: '#ffffff'}}
+                title={t('projectDetail.changeStatus', { status: estadoText })}
+              >
+                {estadoText}
+              </span>
+              {/* Espaciador invisible para mantener la altura */}
+              <div style={{height: '20px', visibility: 'hidden'}} aria-hidden="true">
+                &nbsp;
+              </div>
+            </div>
           </div>
         </div>
       </div>

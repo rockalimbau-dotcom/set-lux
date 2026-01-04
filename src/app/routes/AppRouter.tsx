@@ -45,6 +45,18 @@ export default function AppRouter({
   const isProjectsPath = location.pathname === '/projects';
   const isProjectPath = location.pathname.startsWith('/project/');
 
+  // Prevenir scroll automático al cambiar de ruta para evitar movimiento del logo
+  React.useEffect(() => {
+    // Pequeño delay para asegurar que el DOM está listo
+    const timer = setTimeout(() => {
+      // Solo hacer scroll si no estamos ya en la parte superior
+      if (window.scrollY > 0) {
+        window.scrollTo({ top: 0, behavior: 'instant' });
+      }
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [location.pathname]);
+
   // Alinea el modo con la ruta actual al recargar
   React.useEffect(() => {
     if (isProjectsPath && mode !== 'projects') setMode('projects');
@@ -75,7 +87,7 @@ export default function AppRouter({
 
   if (isProjectsPath || mode === 'projects') {
     return (
-      <div className='min-h-screen bg-neutral-bg text-neutral-text pb-12'>
+      <div className='min-h-screen bg-neutral-bg text-neutral-text pb-12' style={{paddingTop: 0}}>
         <ErrorBoundary>
           <React.Suspense fallback={null}>
           <ProjectsScreen

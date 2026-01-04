@@ -215,7 +215,7 @@ function NewProjectModal({ onClose, onCreate }: NewProjectModalProps) {
         <h3 className='text-lg font-semibold mb-4' style={{color: theme === 'light' ? '#0468BF' : '#F27405'}}>
           {t('common.newProject')}
         </h3>
-        <div className='grid grid-cols-2 gap-4'>
+        <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
           <Field label={t('common.project')} theme={theme}>
             <input
               className={`w-full px-4 py-3 rounded-xl border focus:outline-none transition-colors ${
@@ -790,7 +790,7 @@ function EditProjectModal({ project, onClose, onSave }: EditProjectModalProps) {
           {t('common.editProject')}
         </h3>
 
-        <div className='grid grid-cols-2 gap-4'>
+        <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
           <Field label={t('common.project')} theme={theme}>
             <input
               className={`w-full px-4 py-3 rounded-xl border focus:outline-none transition-colors ${
@@ -1571,22 +1571,24 @@ function ProjectsScreen({
   return (
     <>
       {/* Header moderno y prominente */}
-      <div className='px-6 py-8' style={{backgroundColor: 'var(--bg)'}}>
-        <div className='max-w-6xl mx-auto'>
+      <div className='px-6 py-8' style={{backgroundColor: 'var(--bg)', minHeight: '120px', position: 'relative', contain: 'layout style', marginTop: 0, paddingTop: '2rem', paddingBottom: '2rem'}}>
+        <div className='max-w-6xl mx-auto' style={{position: 'relative', contain: 'layout'}}>
           {/* Header limpio */}
-          <div className='flex items-center justify-between mb-8'>
-            <div className='flex items-center gap-6'>
-              <LogoIcon size={80} />
+          <div className='flex items-center justify-between mb-8' style={{minHeight: '80px', position: 'relative', contain: 'layout'}}>
+            <div className='flex items-center gap-6' style={{position: 'relative', willChange: 'auto', transform: 'translateZ(0)'}}>
+              <div style={{width: '80px', height: '80px', position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transform: 'translateZ(0)'}}>
+                <LogoIcon size={80} />
+              </div>
               <h1 className='text-3xl font-bold' style={{color: 'var(--text)'}}>
                 SetLux <span className='mx-2' style={{color: 'var(--text)'}}>›</span> <span style={{color: 'var(--text)'}}>{t('common.projects')}</span>
               </h1>
             </div>
 
             {/* Botón Nuevo Proyecto */}
-            <div className='flex flex-col items-end gap-2'>
+            <div className='flex flex-col items-end gap-2' style={{minHeight: '60px', justifyContent: 'flex-start'}}>
               <button
                 onClick={() => setShowNew(true)}
-                className='px-6 py-3 rounded-xl font-semibold text-white transition-all hover:shadow-lg border border-transparent hover:border-[var(--hover-border)]'
+                className='px-4 py-2 rounded-xl font-semibold text-white transition-all hover:shadow-lg border border-transparent hover:border-[var(--hover-border)] text-sm'
                 style={{backgroundColor: (document.documentElement.getAttribute('data-theme')||'dark')==='light' ? '#0468BF' : 'var(--brand)'}}
               >
                 {t('common.newProject')}
@@ -1595,7 +1597,7 @@ function ProjectsScreen({
               <div className='relative' ref={menuRef}>
                 <button
                   onClick={() => setMenuOpen(!menuOpen)}
-                  className='text-sm text-zinc-300 hover:text-white transition-colors cursor-pointer'
+                  className='text-xs text-zinc-300 hover:text-white transition-colors cursor-pointer'
                 >
                   <span style={{color: (document.documentElement.getAttribute('data-theme')||'dark')==='light' ? '#111827' : undefined}}>{t('common.welcome')} </span>
                   <span className='font-semibold' style={{color: (document.documentElement.getAttribute('data-theme')||'dark')==='light' ? '#0468BF' : '#F27405'}}>{userName}</span> ✨
@@ -1674,7 +1676,7 @@ function ProjectsScreen({
           </div>
 
           {/* Barra de búsqueda y filtros */}
-          <div className='flex items-center gap-4'>
+          <div className='flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4'>
             <div className='flex-1 relative'>
               <div className='absolute left-4 top-1/2 transform -translate-y-1/2 text-zinc-400'>
                 🔍
