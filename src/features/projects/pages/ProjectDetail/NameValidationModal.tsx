@@ -49,7 +49,7 @@ export function NameValidationModal({ role, group, onClose }: NameValidationModa
 
   return (
     <div className={modalOverlay}>
-      <div className={modalContainer}>
+      <div className={`${modalContainer} bg-neutral-panel`}>
         <h3 className='text-lg font-semibold mb-4' style={{color: isLight ? '#0476D9' : '#F27405'}}>
           {t('team.nameRequired')}
         </h3>

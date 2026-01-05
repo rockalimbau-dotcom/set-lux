@@ -89,9 +89,6 @@ export function SearchAndFilters({
         >
           <span className='flex items-center gap-2'>
             🔽 {t('common.filter')}
-            {(filterStatus !== 'Todos' || filterType !== 'Todos') && (
-              <span className='w-2 h-2 rounded-full bg-orange-500'></span>
-            )}
           </span>
         </button>
         
