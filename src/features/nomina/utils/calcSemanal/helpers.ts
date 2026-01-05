@@ -28,12 +28,7 @@ export function storageKeyVariants(storageKey: string): string[] {
   variants.add(`${rolePart}_pre__${name}`);
   variants.add(`${rolePart}_pick__${name}`);
   
-  const result = Array.from(variants);
-  // Debug temporal
-  if (isDev()) {
-    console.debug('[NOMINA.SKV]', storageKey, '=>', result.length, 'variants:', result);
-  }
-  return result;
+  return Array.from(variants);
 }
 
 /**
@@ -45,10 +40,6 @@ export function getCellValueCandidates(
   colNames: readonly string[],
   iso: string
 ) {
-  if (isDev()) {
-    console.debug('[NOMINA.GCVC]', 'Looking for', colNames, 'on', iso, 'in keys:', storageKeys);
-  }
-  
   // Priorizar claves específicas de GP/GR (.pre__, .pick__) sobre claves base
   const sortedKeys = [...storageKeys].sort((a, b) => {
     const aIsSpecific = a.includes('.pre__') || a.includes('.pick__');
@@ -60,20 +51,12 @@ export function getCellValueCandidates(
   
   for (const sk of sortedKeys) {
     const cols = dataObj?.[sk];
-    if (!cols) {
-      if (isDev()) console.debug('[NOMINA.GCVC]', 'No data for key:', sk);
-      continue;
-    }
-    if (isDev()) {
-      console.debug('[NOMINA.GCVC]', 'Found data for key:', sk, 'columns:', Object.keys(cols));
-    }
+    if (!cols) continue;
+    
     // 1) Directo
     for (const cn of colNames) {
       const v = cols?.[cn]?.[iso];
-      if (v != null && v !== '') {
-        if (isDev()) console.debug('[NOMINA.GCVC]', 'Found direct match:', sk, cn, iso, '=', v);
-        return v;
-      }
+      if (v != null && v !== '') return v;
     }
     // 2) Normalizado a lowercase sin tildes
     const toKey = new Map<string, string>();
@@ -86,14 +69,10 @@ export function getCellValueCandidates(
       const real = toKey.get(low);
       if (real) {
         const v = cols?.[real]?.[iso];
-        if (v != null && v !== '') {
-          if (isDev()) console.debug('[NOMINA.GCVC]', 'Found normalized match:', sk, real, iso, '=', v);
-          return v;
-        }
+        if (v != null && v !== '') return v;
       }
     }
   }
-  if (isDev()) console.debug('[NOMINA.GCVC]', 'No match found for', colNames, 'on', iso);
   return undefined;
 }
 
@@ -128,13 +107,10 @@ export function isDev(): boolean {
 }
 
 /**
- * Debug logging function
+ * Debug logging function (disabled to improve performance)
  */
 export function dbgLog(...args: any[]) {
-  if (isDev()) {
-    // eslint-disable-next-line no-console
-    console.debug('[NOMINA.AGG]', ...args);
-  }
+  // Debug logging disabled to reduce console spam
 }
 
 /**

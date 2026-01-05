@@ -1,4 +1,3 @@
-import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Th } from '@shared/components';
 import { AnyRecord } from '@shared/types/common';
@@ -19,7 +18,7 @@ import { PickupRow } from './WeekCardTable/PickupRow';
 export function WeekCardTable({
   week,
   scope,
-  weekStart,
+  weekStart: _weekStart,
   datesRow,
   onChangeMonday,
   setDayField,
