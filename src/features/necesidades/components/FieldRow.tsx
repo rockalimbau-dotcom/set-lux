@@ -1,10 +1,9 @@
 import { Td, Row } from '@shared/components';
+import { AnyRecord } from '@shared/types/common';
 import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import TextAreaAuto from './TextAreaAuto';
-
-type AnyRecord = Record<string, any>;
 
 type FieldRowProps = {
   weekId: string;

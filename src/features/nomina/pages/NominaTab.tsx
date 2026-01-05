@@ -1,8 +1,7 @@
 import NominaMensual from '@features/nomina/nominas/NominaMensual';
 import NominaSemanal from '@features/nomina/nominas/NominaSemanal';
 import NominaPublicidad from '@features/nomina/nominas/NominaPublicidad';
-
-type AnyRecord = Record<string, any>;
+import { AnyRecord } from '@shared/types/common';
 
 interface NominaTabProps extends AnyRecord {
   project?: any;

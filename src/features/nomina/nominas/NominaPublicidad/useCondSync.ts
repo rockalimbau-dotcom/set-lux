@@ -1,0 +1,49 @@
+import { useState, useEffect } from 'react';
+import { storage } from '@shared/services/localStorage.service';
+import { loadCondModel } from '../../utils/cond';
+
+/**
+ * Hook para sincronizar cambios en condiciones de publicidad
+ */
+export function useCondSync(project: any, baseId: string) {
+  const condKeys = [`cond_${baseId}_publicidad`];
+
+  const [condStamp, setCondStamp] = useState<string>(() =>
+    condKeys.map(k => storage.getString(k) || '').join('|')
+  );
+
+  useEffect(() => {
+    // Garantizar que exista la clave de condiciones de publicidad en localStorage
+    try {
+      const cur = storage.getString(condKeys[0]);
+      if (!cur) {
+        // Esto fuerza la siembra y persistencia inmediata si no existe
+        loadCondModel(project);
+        const after = storage.getString(condKeys[0]) || '';
+        if (after) setCondStamp(after);
+      }
+    } catch {}
+
+    const tick = () => {
+      const cur = condKeys.map(k => storage.getString(k) || '').join('|');
+      setCondStamp(prev => (prev === cur ? prev : cur));
+    };
+    const onFocus = () => tick();
+    const onStorage = (e: StorageEvent) => {
+      if (e && e.key && condKeys.includes(e.key)) tick();
+    };
+
+    window.addEventListener('focus', onFocus);
+    window.addEventListener('storage', onStorage);
+    const id = setInterval(tick, 1000);
+
+    return () => {
+      window.removeEventListener('focus', onFocus);
+      window.removeEventListener('storage', onStorage);
+      clearInterval(id);
+    };
+  }, [baseId, project]);
+
+  return condStamp;
+}
+

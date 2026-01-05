@@ -5,7 +5,7 @@ import {
   addDays, 
   monthKeyFromISO, 
   monthLabelEs 
-} from './date';
+} from '@shared/utils/date';
 
 describe('date.ts', () => {
   describe('parseYYYYMMDD', () => {

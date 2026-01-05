@@ -503,6 +503,7 @@
     "changeStatus": "Canviar estat (actual: {{status}})"
   },
   "reports": {
+    "description": "Hores extres, dietes, quilometratge, transportes",
     "configureProject": "Configura el projecte",
     "addWeeksIn": "Afegeix setmanes a",
     "andTeamIn": "i equip a",

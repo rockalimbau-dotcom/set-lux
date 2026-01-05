@@ -489,6 +489,7 @@
     "changeStatus": "Change status (current: {{status}})"
   },
   "reports": {
+    "description": "Extra hours, diets, mileage, transportation",
     "configureProject": "Configure the project",
     "addWeeksIn": "Add weeks in",
     "andTeamIn": "and team in",

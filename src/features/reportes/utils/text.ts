@@ -1,11 +1,8 @@
 // Normalización y helpers de dietas
+import { norm } from '@shared/utils/normalize';
 
-export const norm = (s: any): string =>
-  String(s ?? '')
-    .normalize('NFKD')
-    .replace(/\p{Diacritic}/gu, '')
-    .trim()
-    .toLowerCase();
+// Re-exportar norm para mantener compatibilidad con imports existentes
+export { norm };
 
 export function parseDietas(val: any): { items: Set<string>; ticket: number | null } {
   const out = { items: new Set<string>(), ticket: null as number | null };

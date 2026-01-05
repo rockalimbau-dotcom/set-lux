@@ -5,33 +5,18 @@ import ReportBlockScheduleRow from '../components/ReportBlockScheduleRow';
 import ReportPersonRows from '../components/ReportPersonRows';
 import ReportTableHead from '../components/ReportTableHead';
 import ReportWeekHeader from '../components/ReportWeekHeader';
-import { DAY_NAMES, CONCEPTS, DIETAS_OPCIONES, DIETAS_OPCIONES_PUBLICIDAD, SI_NO } from '../constants';
+import { DAY_NAMES, CONCEPTS, SI_NO } from '../constants';
 import useAutoCalculations from '../hooks/useAutoCalculations';
 import useCollapsedState from '../hooks/useCollapsedState';
 import useReportData from '../hooks/useReportData';
-import {
-  toDisplayDate,
-  dayNameFromISO,
-  mondayOf,
-  toISO,
-  defaultWeek,
-} from '../utils/date';
-import {
-  collectWeekTeamWithSuffixFactory,
-  buildSafePersonas,
-  buildPeopleBase,
-  buildPeoplePre,
-  buildPeoplePick,
-  collectRefNamesForBlock,
-} from '../utils/derive';
-import { buildReportWeekHTML, exportReportWeekToPDF } from '../utils/export';
-import { personaKey, personaRole, personaName } from '../utils/model';
-import { storage } from '@shared/services/localStorage.service';
+import { dayNameFromISO } from '@shared/utils/date';
+import { parseDietas, formatDietas, norm } from '../utils/text';
+import { AnyRecord } from '@shared/types/common';
+import { btnExport } from '@shared/utils/tailwindClasses';
 import {
   isMemberRefuerzo,
   isPersonScheduledOnBlock,
   blockKeyForPerson,
-  findWeekAndDayFactory,
 } from '../utils/plan';
 import {
   readCondParams,
@@ -40,23 +25,15 @@ import {
   calcHorasExtraMin,
   findPrevWorkingContextFactory,
 } from '../utils/runtime';
-import { parseDietas, formatDietas, norm } from '../utils/text';
+import { personaKey, personaRole, personaName } from '../utils/model';
+import { storage } from '@shared/services/localStorage.service';
+import { mondayOf, toISO } from '@shared/utils/date';
 
-type AnyRecord = Record<string, any>;
-
-type Project = { id?: string; nombre?: string };
-
-type Props = {
-  project?: Project;
-  title?: string;
-  semana?: string[];
-  personas?: AnyRecord[];
-  mode?: 'semanal' | 'mensual' | 'publicidad';
-  horasExtraTipo?: string;
-  readOnly?: boolean;
-  onExportWeekHTML?: () => void;
-  onExportWeekPDF?: () => void;
-};
+import { ReportesSemanaProps } from './ReportesSemana/ReportesSemanaTypes';
+import { useDietasOpciones } from './ReportesSemana/useDietasOpciones';
+import { useWeekData } from './ReportesSemana/useWeekData';
+import { createHorarioHelpers, isWeekend } from './ReportesSemana/horarioHelpers';
+import { defaultExportWeek, handleExportPDF } from './ReportesSemana/exportHelpers';
 
 export default function ReportesSemana({
   project,
@@ -68,32 +45,45 @@ export default function ReportesSemana({
   readOnly = false,
   onExportWeekHTML,
   onExportWeekPDF,
-}: Props) {
+}: ReportesSemanaProps) {
   const { t } = useTranslation();
-  console.log('[REPORTES.DEBUG] ReportesSemana initialized with mode:', mode, 'project:', project?.id, 'title:', title);
   
-  const safeSemana =
-    Array.isArray(semana) && semana.length === 7 ? semana : defaultWeek();
   const providedPersonas = Array.isArray(personas) ? personas : [];
+  
+  const {
+    safeSemana,
+    findWeekAndDay,
+    getPlanAllWeeks,
+    weekPrelightActive,
+    weekPickupActive,
+    peopleBase,
+    peoplePre,
+    peoplePick,
+    safePersonas,
+  } = useWeekData(project, semana, providedPersonas);
 
-  // Seleccionar opciones de dietas según el modo (traducidas)
-  const dietasOpciones = useMemo(() => {
-    const baseOptions = mode === 'publicidad' ? DIETAS_OPCIONES_PUBLICIDAD : DIETAS_OPCIONES;
-    const translations = mode === 'publicidad' ? t('reports.dietOptionsAdvertising', { returnObjects: true }) : t('reports.dietOptions', { returnObjects: true });
-    return baseOptions.map((opt, idx) => {
-      if (idx === 0) return opt; // Empty string
-      const key = Object.keys(translations as Record<string, string>)[idx];
-      return (translations as Record<string, string>)[key] || opt;
+  const dietasOpciones = useDietasOpciones(mode);
+
+  const { horarioTexto, horarioPrelight, horarioPickup } = createHorarioHelpers(findWeekAndDay, t);
+
+  const filteredSemana = useMemo(() => {
+    return safeSemana.filter(iso => {
+      const dayLabel = horarioTexto(iso);
+      if (dayLabel === 'DESCANSO' && isWeekend(iso)) {
+        const hasPrelight = horarioPrelight(iso) !== '—';
+        const hasPickup = horarioPickup(iso) !== '—';
+        if (!hasPrelight && !hasPickup) {
+          return false;
+        }
+      }
+      return true;
     });
-  }, [mode, t]);
-  console.log('[REPORTES.DEBUG] dietasOpciones selected:', dietasOpciones);
+  }, [safeSemana, horarioTexto, horarioPrelight, horarioPickup]);
 
   const storageKey = useMemo(() => {
     const base = project?.id || project?.nombre || 'tmp';
     const wk = safeSemana.join('_');
-    const key = `reportes_${base}_${wk}`;
-    console.log('[REPORTES.DEBUG] storageKey generated:', key);
-    return key;
+    return `reportes_${base}_${wk}`;
   }, [project?.id, project?.nombre, safeSemana]);
 
   const persistBase = useMemo(() => {
@@ -101,196 +91,6 @@ export default function ReportesSemana({
     const wk = safeSemana.join('_');
     return `repstate_${base}_${wk}`;
   }, [project?.id, project?.nombre, safeSemana]);
-
-  const planKey = useMemo(
-    () => `plan_${project?.id || project?.nombre || 'demo'}`,
-    [project?.id, project?.nombre]
-  );
-
-  const getPlanAllWeeks = () => {
-    try {
-      const obj = storage.getJSON<any>(planKey);
-      if (!obj) return { pre: [], pro: [] };
-      return obj || { pre: [], pro: [] };
-    } catch {
-      return { pre: [], pro: [] };
-    }
-  };
-
-  const findWeekAndDay = findWeekAndDayFactory(
-    getPlanAllWeeks,
-    mondayOf,
-    toISO
-  );
-
-  const horarioTexto = (iso: string) => {
-    const { day } = findWeekAndDay(iso);
-    if (!day) return t('reports.addInPlanning');
-    if ((day.tipo || '') === 'Descanso') return t('reports.rest');
-    
-    // Helper para traducir tipos de jornada
-    const translateJornadaType = (tipo: string): string => {
-      const typeMap: Record<string, string> = {
-        'Rodaje': t('planning.shooting'),
-        'Oficina': t('planning.office'),
-        'Carga': t('planning.loading'),
-        'Descarga': t('planning.unloading'),
-        'Localizar': t('planning.location'),
-        'Travel Day': t('planning.travelDay'),
-        'Rodaje Festivo': t('planning.holidayShooting'),
-        'Fin': t('planning.end'),
-        'Descanso': t('planning.rest'),
-      };
-      return typeMap[tipo] || tipo;
-    };
-    
-    // Para "Rodaje Festivo", "Rodaje" y "Oficina", no mostrar el prefijo, solo el horario o "Añadelo en Planificación"
-    const etiqueta = day.tipo && day.tipo !== 'Rodaje' && day.tipo !== 'Oficina' && day.tipo !== 'Rodaje Festivo' 
-      ? `${translateJornadaType(day.tipo)}: ` 
-      : '';
-    if (!day.start || !day.end) return `${etiqueta}${t('reports.addInPlanning')}`;
-    return `${etiqueta}${day.start}–${day.end}`;
-  };
-
-  // Funciones de horario para prelight y pickup con traducción
-  const horarioPrelight = (iso: string) => {
-    const { day } = findWeekAndDay(iso);
-    if (!day || day.tipo === 'Descanso') return '—';
-    if (!day.prelightStart || !day.prelightEnd)
-      return t('reports.addInPlanning');
-    return `${day.prelightStart}–${day.prelightEnd}`;
-  };
-  
-  const horarioPickup = (iso: string) => {
-    const { day } = findWeekAndDay(iso);
-    if (!day || day.tipo === 'Descanso') return '—';
-    if (!day.pickupStart || !day.pickupEnd) return t('reports.addInPlanning');
-    return `${day.pickupStart}–${day.pickupEnd}`;
-  };
-
-  // Helper function to check if a date is Saturday (6) or Sunday (0)
-  const isWeekend = (iso: string): boolean => {
-    try {
-      const [y, m, d] = iso.split('-').map(Number);
-      const dt = new Date(y, m - 1, d);
-      const dayOfWeek = dt.getDay();
-      return dayOfWeek === 0 || dayOfWeek === 6; // 0 = Sunday, 6 = Saturday
-    } catch {
-      return false;
-    }
-  };
-
-  // Filtrar sábados y domingos de descanso sin prelight ni recogidas
-  const filteredSemana = useMemo(() => {
-    return safeSemana.filter(iso => {
-      const dayLabel = horarioTexto(iso);
-      // Si es DESCANSO y es sábado o domingo
-      if (dayLabel === 'DESCANSO' && isWeekend(iso)) {
-        // Verificar si tiene prelight o recogidas
-        const hasPrelight = horarioPrelight(iso) !== '—';
-        const hasPickup = horarioPickup(iso) !== '—';
-        // Si no tiene prelight ni recogidas, excluirlo
-        if (!hasPrelight && !hasPickup) {
-          return false;
-        }
-      }
-      return true; // Incluir todos los demás días
-    });
-  }, [safeSemana, planKey, horarioTexto, horarioPrelight, horarioPickup]);
-
-  const weekPrelightActive = useMemo(() => {
-    return safeSemana.some(iso => {
-      const { day } = findWeekAndDay(iso);
-      return !!(
-        day &&
-        day.tipo !== 'Descanso' &&
-        ((day.prelight || []).length > 0 ||
-          day.prelightStart ||
-          day.prelightEnd)
-      );
-    });
-  }, [planKey, JSON.stringify(safeSemana)]);
-
-  const weekPickupActive = useMemo(() => {
-    return safeSemana.some(iso => {
-      const { day } = findWeekAndDay(iso);
-      return !!(
-        day &&
-        day.tipo !== 'Descanso' &&
-        ((day.pickup || []).length > 0 || day.pickupStart || day.pickupEnd)
-      );
-    });
-  }, [planKey, JSON.stringify(safeSemana)]);
-
-  const collectWeekTeamWithSuffix = collectWeekTeamWithSuffixFactory(
-    findWeekAndDay,
-    [...safeSemana]
-  );
-
-  const prelightPeople = useMemo(
-    () =>
-      weekPrelightActive ? collectWeekTeamWithSuffix('prelight', 'P') : [],
-    [weekPrelightActive, planKey, JSON.stringify(safeSemana)]
-  );
-
-  const pickupPeople = useMemo(
-    () => (weekPickupActive ? collectWeekTeamWithSuffix('pickup', 'R') : []),
-    [weekPickupActive, planKey, JSON.stringify(safeSemana)]
-  );
-
-  const refNamesBase = useMemo(
-    () => collectRefNamesForBlock(safeSemana, findWeekAndDay, 'team'),
-    [JSON.stringify(safeSemana), planKey]
-  );
-  const refNamesPre = useMemo(
-    () => collectRefNamesForBlock(safeSemana, findWeekAndDay, 'prelight'),
-    [JSON.stringify(safeSemana), planKey]
-  );
-  const refNamesPick = useMemo(
-    () => collectRefNamesForBlock(safeSemana, findWeekAndDay, 'pickup'),
-    [JSON.stringify(safeSemana), planKey]
-  );
-
-  const safePersonas = useMemo(
-    () =>
-      buildSafePersonas(
-        providedPersonas,
-        weekPrelightActive,
-        prelightPeople,
-        weekPickupActive,
-        pickupPeople
-      ),
-    [
-      JSON.stringify(providedPersonas),
-      weekPrelightActive,
-      weekPickupActive,
-      JSON.stringify(prelightPeople),
-      JSON.stringify(pickupPeople),
-    ]
-  );
-
-  const peopleBase = useMemo(
-    () => buildPeopleBase(providedPersonas, refNamesBase),
-    [JSON.stringify(providedPersonas), JSON.stringify(refNamesBase)]
-  );
-
-  const peoplePre = useMemo(
-    () => buildPeoplePre(weekPrelightActive, prelightPeople, refNamesPre),
-    [
-      weekPrelightActive,
-      JSON.stringify(prelightPeople),
-      JSON.stringify(refNamesPre),
-    ]
-  );
-
-  const peoplePick = useMemo(
-    () => buildPeoplePick(weekPickupActive, pickupPeople, refNamesPick),
-    [
-      weekPickupActive,
-      JSON.stringify(pickupPeople),
-      JSON.stringify(refNamesPick),
-    ]
-  );
 
   const { collapsed, setCollapsed } = useCollapsedState(
     persistBase,
@@ -356,7 +156,7 @@ export default function ReportesSemana({
     isPersonScheduledOnBlock,
     setData,
     horasExtraTipo,
-    currentData: data, // Pasar el estado actual para preservar valores
+    currentData: data,
   });
 
   const [open, setOpen] = useState<boolean>(() => {
@@ -373,57 +173,43 @@ export default function ReportesSemana({
     } catch {}
   }, [open, persistBase]);
 
-  const btnExportCls = 'px-3 py-2 rounded-lg text-sm font-semibold';
+  const btnExportCls = btnExport;
   const btnExportStyle = {
     background: '#0476D9',
     color: '#FFFFFF',
     border: '1px solid rgba(255,255,255,0.08)',
   } as React.CSSProperties;
 
-  const defaultExportWeek = () => {
-    const css = `body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif;color:#111;padding:20px} table{width:100%;border-collapse:collapse;font-size:12px;margin:8px 0} th,td{border:1px solid #222;padding:6px;vertical-align:top} thead th{background:#eee}`;
-    const inner = buildReportWeekHTML({
-      project,
-      title,
-      safeSemana: [...safeSemana],
-      dayNameFromISO: (iso: string, index: number) => dayNameFromISO(iso, index, [...DAY_NAMES] as any),
-      toDisplayDate,
-      horarioTexto,
-      CONCEPTS: [...CONCEPTS],
-      data,
-      personaKey,
-      personaRole,
-      personaName,
-    });
-    const w = window.open('', '_blank');
-    if (w) {
-      w.document.open();
-      w.document.write(`<!doctype html><html><head><meta charset="utf-8" /><title>${project?.nombre || 'Proyecto'} – Reporte</title><style>${css}</style></head><body>${inner}</body></html>`);
-      w.document.close();
-    }
-  };
   const handleExportHTML = () => {
     if (typeof onExportWeekHTML === 'function') return onExportWeekHTML();
-    defaultExportWeek();
-  };
-
-  const handleExportPDF = async () => {
-    if (typeof onExportWeekPDF === 'function') return onExportWeekPDF();
-    const ok = await exportReportWeekToPDF({
+    defaultExportWeek(
       project,
       title,
-      safeSemana: [...safeSemana],
-      dayNameFromISO: (iso: string, index: number) => dayNameFromISO(iso, index, [...DAY_NAMES] as any),
-      toDisplayDate,
+      safeSemana,
+      (iso: string, index: number) => dayNameFromISO(iso, index, [...DAY_NAMES] as any),
       horarioTexto,
-      CONCEPTS: [...CONCEPTS],
+      data
+    );
+  };
+
+  const handleExportPDFAsync = async () => {
+    await handleExportPDF(
+      project,
+      title,
+      safeSemana,
+      (iso: string, index: number) => dayNameFromISO(iso, index, [...DAY_NAMES] as any),
+      horarioTexto,
       data,
-      personaKey,
-      personaRole,
-      personaName,
-      orientation: 'landscape',
-    });
-    if (!ok) defaultExportWeek();
+      onExportWeekPDF,
+      () => defaultExportWeek(
+        project,
+        title,
+        safeSemana,
+        (iso: string, index: number) => dayNameFromISO(iso, index, [...DAY_NAMES] as any),
+        horarioTexto,
+        data
+      )
+    );
   };
 
   const contentId = 'report-week-content';
@@ -433,6 +219,28 @@ export default function ReportesSemana({
       contentRef.current.focus();
     }
   }, [open]);
+
+  const renderPersonRows = (list: AnyRecord[], block: 'base' | 'pre' | 'pick') => (
+    <ReportPersonRows
+      list={list}
+      block={block}
+      semana={[...filteredSemana]}
+      collapsed={collapsed}
+      setCollapsed={setCollapsed}
+      data={data}
+      setCell={setCell}
+      findWeekAndDay={findWeekAndDay as any}
+      isPersonScheduledOnBlock={isPersonScheduledOnBlock as any}
+      CONCEPTS={[...CONCEPTS] as any}
+      DIETAS_OPCIONES={dietasOpciones as any}
+      SI_NO={SI_NO as any}
+      parseDietas={parseDietas}
+      formatDietas={formatDietas}
+      horasExtraTipo={horasExtraTipo}
+      readOnly={readOnly}
+    />
+  );
+
   return (
     <section className='rounded-2xl border border-neutral-border bg-neutral-panel/90'>
       <ReportWeekHeader
@@ -440,7 +248,7 @@ export default function ReportesSemana({
         title={title}
         onToggle={() => !readOnly && setOpen(v => !v)}
         onExportHTML={handleExportHTML}
-        onExportPDF={handleExportPDF}
+        onExportPDF={handleExportPDFAsync}
         btnExportCls={btnExportCls}
         btnExportStyle={btnExportStyle}
         contentId={contentId}
@@ -473,57 +281,36 @@ export default function ReportesSemana({
                 return dayMap[dayIndex] || dayIndex;
               }}
               DAY_NAMES={[...DAY_NAMES] as any}
-              toDisplayDate={toDisplayDate}
+              toDisplayDate={(iso: string) => {
+                const [y, m, d] = iso.split('-').map(Number);
+                const dt = new Date(y, m - 1, d);
+                const dd = String(dt.getDate()).padStart(2, '0');
+                const mm = String(dt.getMonth() + 1).padStart(2, '0');
+                return `${dd}/${mm}`;
+              }}
               horarioTexto={horarioTexto}
             />
 
             <tbody>
-              {(() => {
-                const renderPersonRows = (list: AnyRecord[], block: 'base' | 'pre' | 'pick') => (
-                  <ReportPersonRows
-                    list={list}
-                    block={block}
-                    semana={[...filteredSemana]}
-                    collapsed={collapsed}
-                    setCollapsed={setCollapsed}
-                    data={data}
-                    setCell={setCell}
-                    findWeekAndDay={findWeekAndDay as any}
-                    isPersonScheduledOnBlock={isPersonScheduledOnBlock as any}
-                    CONCEPTS={[...CONCEPTS] as any}
-                    DIETAS_OPCIONES={dietasOpciones as any}
-                    SI_NO={SI_NO as any}
-                    parseDietas={parseDietas}
-                    formatDietas={formatDietas}
-                    horasExtraTipo={horasExtraTipo}
-                    readOnly={readOnly}
-                  />
-                );
+              {renderPersonRows(peopleBase, 'base')}
 
-                return (
-                  <>
-                    {renderPersonRows(peopleBase, 'base')}
+              {peoplePre.length > 0 && (
+                <ReportBlockScheduleRow
+                  label={t('reports.prelightSchedule')}
+                  semana={[...filteredSemana]}
+                  valueForISO={horarioPrelight}
+                />
+              )}
+              {renderPersonRows(peoplePre, 'pre')}
 
-                    {peoplePre.length > 0 && (
-                      <ReportBlockScheduleRow
-                        label={t('reports.prelightSchedule')}
-                        semana={[...filteredSemana]}
-                        valueForISO={horarioPrelight}
-                      />
-                    )}
-                    {renderPersonRows(peoplePre, 'pre')}
-
-                    {peoplePick.length > 0 && (
-                      <ReportBlockScheduleRow
-                        label={t('reports.pickupSchedule')}
-                        semana={[...filteredSemana]}
-                        valueForISO={horarioPickup}
-                      />
-                    )}
-                    {renderPersonRows(peoplePick, 'pick')}
-                  </>
-                );
-              })()}
+              {peoplePick.length > 0 && (
+                <ReportBlockScheduleRow
+                  label={t('reports.pickupSchedule')}
+                  semana={[...filteredSemana]}
+                  valueForISO={horarioPickup}
+                />
+              )}
+              {renderPersonRows(peoplePick, 'pick')}
             </tbody>
           </table>
         </div>

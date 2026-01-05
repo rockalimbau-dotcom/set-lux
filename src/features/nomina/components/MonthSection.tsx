@@ -1,58 +1,16 @@
-import React, { useMemo, useEffect, useCallback, useState } from 'react';
-import { Th, Td } from '@shared/components';
+import React, { useMemo } from 'react';
 import { useLocalStorage } from '@shared/hooks/useLocalStorage';
-import { storage } from '@shared/services/localStorage.service';
-import { parseYYYYMMDD, monthKeyFromISO, toISO } from '../utils/date';
-import { weekISOdays } from '../utils/plan';
-import DietasSummary from './DietasSummary.jsx';
-import ExtrasSummary from './ExtrasSummary.jsx';
-import WorkedDaysSummary from './WorkedDaysSummary.tsx';
-import CargaDescargaSummary from './CargaDescargaSummary.tsx';
-import { useTranslation } from 'react-i18next';
+import { getDaysInMonth, calculateWorkingDaysInMonth } from '../utils/monthCalculations';
+import { MonthSectionHeader } from './MonthSection/MonthSectionHeader';
+import { MonthSectionTable } from './MonthSection/MonthSectionTable';
+import { RolePrices, RowIn, WindowOverride, MonthSectionProps as MonthSectionPropsBase } from './MonthSection/MonthSectionTypes';
+import { useDateRangeSync } from './MonthSection/useDateRangeSync';
+import { useFilteredData } from './MonthSection/useFilteredData';
+import { useEnrichedRows } from './MonthSection/useEnrichedRows';
+import { useRowSelection } from './MonthSection/useRowSelection';
+import { useColumnVisibility } from './MonthSection/useColumnVisibility';
 
-type RolePrices = {
-  getForRole: (roleCode: string, baseRoleCode?: string | null) => {
-    jornada: number;
-    travelDay: number;
-    horaExtra: number;
-    holidayDay: number; // Added holidayDay property
-    transporte: number;
-    km: number;
-    dietas: Record<string, number>;
-    // Campos específicos de publicidad
-    cargaDescarga?: number;
-    localizacionTecnica?: number;
-    factorHoraExtraFestiva?: number;
-  };
-};
-
-type RowIn = {
-  role: string;
-  name: string;
-  extras: number;
-  horasExtra: number;
-  turnAround: number;
-  nocturnidad: number;
-  penaltyLunch: number;
-  transporte: number;
-  km: number;
-  dietasCount: Map<string, number>;
-  ticketTotal: number;
-};
-
-type WindowOverride = Map<string, {
-  extras?: number;
-  horasExtra?: number;
-  turnAround?: number;
-  nocturnidad?: number;
-  penaltyLunch?: number;
-  transporte?: number;
-  km?: number;
-  dietasCount?: Map<string, number>;
-  ticketTotal?: number;
-}>;
-
-interface MonthSectionProps {
+interface MonthSectionProps extends Omit<MonthSectionPropsBase, 'monthKey' | 'rows' | 'weeksForMonth' | 'filterISO' | 'rolePrices' | 'persistKeyBase'> {
   monthKey: string;
   rows: RowIn[];
   weeksForMonth: any[];
@@ -119,231 +77,27 @@ function MonthSection({
   roleLabelFromCode,
   readOnly = false,
 }: MonthSectionProps) {
-  const { t } = useTranslation();
-  // Helper function to display empty string for zero values
-  const displayValue = (value: number | undefined | null, decimals: number = 0): string => {
-    if (value === null || value === undefined || value === 0) return '';
-    return decimals > 0 ? value.toFixed(decimals) : String(value);
-  };
-
-  // Helper function to display monetary values with € symbol
-  const displayMoney = (value: number | undefined | null, decimals: number = 2): string => {
-    if (value === null || value === undefined || value === 0) return '';
-    const formatted = value.toFixed(decimals);
-    // Remove .00 if there are no meaningful decimals
-    const cleaned = formatted.replace(/\.00$/, '');
-    return `${cleaned}€`;
-  };
-
   const openKey = `${persistKeyBase}_${monthKey}_open`;
   const [open, setOpen] = useLocalStorage<boolean>(openKey, defaultOpen);
 
-  // Fechas para filtrar conceptos específicos (solo semanal y mensual)
-  // Usar las mismas claves que reportes para sincronización
-  const dateRangeKey = useMemo(() => {
-    const base = project?.id || project?.nombre || 'tmp';
-    return `reportes_dateRange_${base}_${projectMode}_${monthKey}`;
-  }, [project?.id, project?.nombre, projectMode, monthKey]);
-  
-  // Función simple para leer valores de localStorage (useLocalStorage guarda como JSON string)
-  const readStorageValue = useCallback((key: string): string => {
-    const stored = storage.getString(key);
-    if (stored) {
-      try {
-        return JSON.parse(stored);
-      } catch {
-        return stored;
-      }
-    }
-    return '';
-  }, []);
-  
-  // Leer fechas directamente de localStorage (las mismas claves que usa Reportes)
-  const [dateFrom, setDateFrom] = useState<string>(() => {
-    const stored = storage.getString(`${dateRangeKey}_from`);
-    if (stored) {
-      try {
-        return JSON.parse(stored);
-      } catch {
-        return stored;
-      }
-    }
-    return '';
+  // Sincronizar fechas con localStorage
+  const { dateRangeKey, dateFrom, setDateFrom, dateTo, setDateTo } = useDateRangeSync({
+    project,
+    projectMode,
+    monthKey,
   });
-  
-  const [dateTo, setDateTo] = useState<string>(() => {
-    const stored = storage.getString(`${dateRangeKey}_to`);
-    if (stored) {
-      try {
-        return JSON.parse(stored);
-      } catch {
-        return stored;
-      }
-    }
-    return '';
-  });
-  
-  // Sincronizar con localStorage cuando cambia la clave
-  useEffect(() => {
-    const keyFrom = `${dateRangeKey}_from`;
-    const keyTo = `${dateRangeKey}_to`;
-    const storedFrom = readStorageValue(keyFrom);
-    const storedTo = readStorageValue(keyTo);
-    
-    if (storedFrom) {
-      setDateFrom(storedFrom);
-    }
-    if (storedTo) {
-      setDateTo(storedTo);
-    }
-  }, [dateRangeKey, readStorageValue]);
-  
-  // Verificar periódicamente por si Reportes guarda las fechas después
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const keyFrom = `${dateRangeKey}_from`;
-      const keyTo = `${dateRangeKey}_to`;
-      const storedFrom = readStorageValue(keyFrom);
-      const storedTo = readStorageValue(keyTo);
-      
-      if (storedFrom && storedFrom !== dateFrom) {
-        setDateFrom(storedFrom);
-      }
-      if (storedTo && storedTo !== dateTo) {
-        setDateTo(storedTo);
-      }
-    }, 300);
-    
-    return () => clearInterval(interval);
-  }, [dateRangeKey, readStorageValue, dateFrom, dateTo]);
-  
-  // Guardar en localStorage cuando cambian (para persistencia si el usuario las modifica)
-  useEffect(() => {
-    if (dateFrom) {
-      storage.setString(`${dateRangeKey}_from`, JSON.stringify(dateFrom));
-    }
-  }, [dateRangeKey, dateFrom]);
-  
-  useEffect(() => {
-    if (dateTo) {
-      storage.setString(`${dateRangeKey}_to`, JSON.stringify(dateTo));
-    }
-  }, [dateRangeKey, dateTo]);
 
-  // Calcular días del mes (30 o 31) para nómina mensual
-  const getDaysInMonth = (monthKey: string): number => {
-    const [year, month] = monthKey.split('-').map(Number);
-    const days = new Date(year, month, 0).getDate();
-    if ((import.meta as any).env.DEV) {
-      console.debug('[NOMINA.MONTH] getDaysInMonth:', monthKey, '->', days, 'days');
-    }
-    return days;
-  };
-
-  // Calcular días trabajados del mes: desde el primer día trabajado hasta el final del mes
-  // IMPORTANTE: Este cálculo debe funcionar correctamente incluso cuando las semanas cruzan meses
-  // Si se encuentra "Fin" en planificación, el conteo se detiene hasta ese día (sin contarlo)
-  const calculateWorkingDaysInMonth = React.useMemo(() => {
-    if (projectMode !== 'mensual') {
-      return getDaysInMonth(monthKey);
-    }
-    
-    // Buscar el primer día con "Fin" en todas las semanas del proyecto (ordenadas cronológicamente)
-    // Usar allWeeks si está disponible, sino usar weeksForMonth
-    let finDayISO: string | null = null;
-    const weeksToSearch = (allWeeks && allWeeks.length > 0) ? allWeeks : weeksForMonth;
-    const allWeeksSorted = [...weeksToSearch].sort((a, b) => {
-      const aDate = parseYYYYMMDD(a.startDate);
-      const bDate = parseYYYYMMDD(b.startDate);
-      return aDate.getTime() - bDate.getTime();
-    });
-    
-    for (const week of allWeeksSorted) {
-      const weekDays = weekISOdays(week);
-      for (let idx = 0; idx < (week.days || []).length; idx++) {
-        const day = (week.days || [])[idx];
-        if ((day?.tipo || '') === 'Fin') {
-          const iso = weekDays[idx];
-          // Guardar el primer "Fin" encontrado (el más temprano)
-          if (!finDayISO || iso < finDayISO) {
-            finDayISO = iso;
-          }
-        }
-      }
-    }
-    
-    // Verificar si "Fin" está en el mes actual o antes (solo entonces afecta el cálculo)
-    const finDayMonthKey = finDayISO ? monthKeyFromISO(finDayISO) : null;
-    const finAffectsThisMonth = finDayISO && finDayMonthKey && finDayMonthKey <= monthKey;
-    
-    // Obtener todos los días ISO de las semanas del mes que pertenecen AL MES ACTUAL
-    // Esto es crítico: aunque una semana cruce meses, solo contamos los días del mes actual
-    const allDays: string[] = [];
-    for (const week of weeksForMonth) {
-      const weekDays = weekISOdays(week);
-      for (let idx = 0; idx < (week.days || []).length; idx++) {
-        const iso = weekDays[idx];
-        const dayMonthKey = monthKeyFromISO(iso);
-        // Solo añadir días que pertenecen al mes actual
-        if (dayMonthKey === monthKey) {
-          // Si encontramos "Fin" antes o en este día, no añadir este día ni los siguientes
-          if (finAffectsThisMonth && finDayISO && iso >= finDayISO) {
-            break;
-          }
-          allDays.push(iso);
-        }
-      }
-    }
-    
-    // Si no hay días trabajados en este mes, devolver 0
-    if (allDays.length === 0) {
-      return 0;
-    }
-    
-    // Ordenar días y obtener el primero y el último (el primer y último día trabajado del mes)
-    allDays.sort();
-    const firstDayWorked = parseYYYYMMDD(allDays[0]);
-    
-    // Si hay "Fin" que afecta este mes, usar el día anterior a "Fin" como último día trabajado
-    // Si no hay "Fin" o está en un mes posterior, usar el último día trabajado o el final del mes
-    let lastDayWorked: Date;
-    if (finAffectsThisMonth && finDayISO) {
-      const finDate = parseYYYYMMDD(finDayISO);
-      const dayBeforeFin = new Date(finDate);
-      dayBeforeFin.setDate(dayBeforeFin.getDate() - 1);
-      // Asegurar que dayBeforeFin no sea anterior al primer día trabajado del mes
-      lastDayWorked = dayBeforeFin < firstDayWorked ? firstDayWorked : dayBeforeFin;
-    } else {
-      lastDayWorked = parseYYYYMMDD(allDays[allDays.length - 1]);
-    }
-    
-    if (!firstDayWorked || !lastDayWorked) {
-      return 0;
-    }
-    
-    // Obtener el último día del mes calendario
-    const [year, month] = monthKey.split('-').map(Number);
-    const lastDayOfMonth = new Date(year, month, 0); // día 0 del mes siguiente = último día del mes actual
-    
-    // Calcular días desde el primer día trabajado hasta el último día trabajado O hasta el final del mes
-    // Usar el menor de los dos: último día trabajado o último día del mes
-    const endDate = lastDayWorked > lastDayOfMonth ? lastDayOfMonth : lastDayWorked;
-    
-    // Calcular días desde el primer día trabajado hasta el día final (incluyendo ambos)
-    // Esto incluye rodaje + descansos desde el primer día trabajado hasta el último día trabajado (o final del mes)
-    const diffTime = endDate.getTime() - firstDayWorked.getTime();
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
-    
-    // Asegurar que no sea negativo
-    return Math.max(0, diffDays);
-  }, [projectMode, weeksForMonth, monthKey]);
+  // Calcular días trabajados del mes usando la función extraída
+  const calculateWorkingDaysInMonthValue = useMemo(() => {
+    return calculateWorkingDaysInMonth(projectMode, monthKey, weeksForMonth, allWeeks);
+  }, [projectMode, monthKey, weeksForMonth, allWeeks]);
 
   // Campo para días del mes (solo mensual) - inicializar con los días del mes (30 o 31)
   const daysInMonth = getDaysInMonth(monthKey);
   
   // Debug para verificar daysInMonth
   if ((import.meta as any).env.DEV && projectMode === 'mensual') {
-    console.debug('[NOMINA.MONTH] daysInMonth calculated:', daysInMonth, 'calculateWorkingDaysInMonth:', calculateWorkingDaysInMonth, 'for monthKey:', monthKey, 'projectMode:', projectMode);
+    console.debug('[NOMINA.MONTH] daysInMonth calculated:', daysInMonth, 'calculateWorkingDaysInMonth:', calculateWorkingDaysInMonthValue, 'for monthKey:', monthKey, 'projectMode:', projectMode);
   }
   const daysInMonthKey = `${persistKeyBase}_${monthKey}_priceDays`;
   const [priceDays, setPriceDays] = useLocalStorage<number>(daysInMonthKey, daysInMonth);
@@ -363,402 +117,24 @@ function MonthSection({
     });
   };
 
-  const btnExportCls = 'px-3 py-2 rounded-lg text-sm font-semibold';
-  const btnExportStyle: React.CSSProperties = {
-    background: '#f59e0b',
-    color: '#FFFFFF',
-    border: '1px solid rgba(255,255,255,0.08)',
-  };
-
   const refuerzoSet = useMemo(
     () => buildRefuerzoIndex(weeksForMonth),
     [weeksForMonth, buildRefuerzoIndex]
   );
 
-  // Obtener datos filtrados por fecha si hay fechas seleccionadas (solo para semanal y mensual)
-  // Cuando hay fechas seleccionadas, necesitamos incluir semanas de otros meses si las fechas lo requieren
-  const filteredData = React.useMemo(() => {
-    if ((projectMode !== 'semanal' && projectMode !== 'mensual') || !dateFrom || !dateTo || !project || !aggregateFilteredConcepts) {
-      return null;
-    }
-    
-    // Si hay fechas seleccionadas, buscar todas las semanas que contengan días dentro del rango
-    // Esto incluye semanas de otros meses si las fechas lo requieren
-    let weeksToUse = weeksForMonth;
-    if (allWeeks && allWeeks.length > 0) {
-      const fromDate = parseYYYYMMDD(dateFrom);
-      const toDate = parseYYYYMMDD(dateTo);
-      
-      if (fromDate && toDate) {
-        // Filtrar semanas que tengan al menos un día dentro del rango de fechas
-        weeksToUse = allWeeks.filter((w: any) => {
-          const weekDays = weekISOdays(w);
-          return weekDays.some((iso: string) => {
-            const dayDate = parseYYYYMMDD(iso);
-            return dayDate && dayDate >= fromDate && dayDate <= toDate;
-          });
-        });
-      }
-    }
-    
-    // Cuando hay fechas seleccionadas, pasar null como filterISO para incluir todos los días del rango
-    // independientemente del mes
-    return aggregateFilteredConcepts(project, weeksToUse, null, dateFrom, dateTo);
-  }, [projectMode, dateFrom, dateTo, project, weeksForMonth, allWeeks, aggregateFilteredConcepts]);
+  // Obtener datos filtrados por fecha
+  const filteredData = useFilteredData({
+    projectMode,
+    dateFrom,
+    dateTo,
+    project,
+    weeksForMonth,
+    allWeeks,
+    aggregateFilteredConcepts,
+  });
 
-  const enriched = useMemo(() => {
-    return rows.map(r => {
-      const person = { role: r.role, name: r.name };
-      const breakdown = calcWorkedBreakdown(weeksForMonth, filterISO, person);
-      const { workedDays, travelDays, workedBase, workedPre, workedPick, holidayDays, rodaje, oficina, travelDay, carga, descarga, localizar, rodajeFestivo } = breakdown;
-      
-      // Para mensual, "Total días trabajados" debe ser desde el primer día trabajado hasta el último día trabajado
-      // (incluyendo rodaje + descansos en ese rango)
-      // Para publicidad, solo contar Rodaje y Oficina en días trabajados
-      const totalDiasTrabajados = projectMode === 'mensual' 
-        ? calculateWorkingDaysInMonth 
-        : projectMode === 'publicidad' 
-          ? (rodaje || 0) + (oficina || 0)
-          : workedDays;
-
-      const keyNoPR = `${stripPR(r.role)}__${r.name}`;
-      const baseRoleCode = stripPR(r.role);
-      const baseRoleLabel = roleLabelFromCode(baseRoleCode);
-      const pr = refuerzoSet.has(keyNoPR)
-        ? rolePrices.getForRole('REF', baseRoleLabel)
-        : rolePrices.getForRole(baseRoleLabel);
-
-      // Debug: log the role prices
-      if ((import.meta as any).env.DEV) {
-        console.debug('[NOMINA.MONTH] Role prices for', baseRoleLabel, ':', pr);
-      }
-
-      // Para publicidad: si el rol no tiene precio jornada (no está en condiciones), 
-      // forzar todos los precios a 0 para que no se muestren cantidades
-      // pero sí se pueden mostrar días trabajados
-      const hasValidPrices = projectMode === 'publicidad' ? pr.jornada > 0 : true;
-      const effectivePr = projectMode === 'publicidad' && !hasValidPrices
-        ? {
-            ...pr,
-            jornada: 0,
-            travelDay: 0,
-            horaExtra: 0,
-            holidayDay: 0,
-            transporte: 0,
-            km: 0,
-            cargaDescarga: 0,
-            localizacionTecnica: 0,
-            dietas: {
-              Desayuno: 0,
-              Comida: 0,
-              Cena: 0,
-              'Dieta sin pernoctar': 0,
-              'Dieta completa + desayuno': 0,
-              'Gastos de bolsillo': 0,
-            },
-          }
-        : pr;
-
-      let roleDisplay = r.role;
-      if (r.role !== 'REF') {
-        if (workedPre > 0 && workedBase === 0 && workedPick === 0)
-          roleDisplay = `${baseRoleCode}P`;
-        else if (workedPick > 0 && workedBase === 0 && workedPre === 0)
-          roleDisplay = `${baseRoleCode}R`;
-        else roleDisplay = baseRoleCode;
-      }
-
-      const pKey = `${r.role}__${r.name}`;
-      const ov = (windowOverrideMap && 'get' in windowOverrideMap)
-        ? (windowOverrideMap as WindowOverride).get(pKey)
-        : null;
-
-      // Obtener datos filtrados para esta persona si existen
-      // La clave en filteredData usa visibleRoleFor (que es el role visible, no el role display)
-      // Necesitamos usar la misma lógica que en aggregateFilteredConcepts
-      // En aggregateFilteredConcepts, usa info.roleVisible que viene de visibleRoleFor
-      const keyNoPRForFilter = `${stripPR(r.role)}__${r.name}`;
-      let visibleRoleForFilter: string;
-      if (refuerzoSet.has(keyNoPRForFilter)) {
-        visibleRoleForFilter = 'REF';
-      } else {
-        // visibleRoleFor devuelve el role base con sufijo P/R si existe
-        const baseRole = stripPR(r.role);
-        const suffix = /[PR]$/.test(r.role || '') ? r.role.slice(-1) : '';
-        visibleRoleForFilter = suffix ? `${baseRole}${suffix}` : baseRole;
-      }
-      const filteredKey = `${visibleRoleForFilter}__${r.name}`;
-      const filteredRow = filteredData?.get(filteredKey);
-      
-      // Debug para verificar las claves
-      if ((import.meta as any).env.DEV && filteredData && dateFrom && dateTo) {
-        console.debug('[NOMINA.FILTER] r.role:', r.role, 'r.name:', r.name, 'pKey:', pKey, 'filteredKey:', filteredKey, 'filteredRow:', filteredRow, 'filteredData keys:', Array.from(filteredData.keys()));
-      }
-      
-      // Usar datos filtrados para conceptos específicos si hay fechas seleccionadas y filteredRow existe
-      // Si filteredRow no existe o está vacío, usar datos completos de r
-      // Solo usar filteredRow si hay fechas seleccionadas Y filteredRow tiene datos
-      // Verificar que las fechas no estén vacías (string vacío no cuenta como fecha válida)
-      const hasDateFilter = dateFrom && dateTo && dateFrom.trim() !== '' && dateTo.trim() !== '' && filteredData;
-      const useFilteredData = hasDateFilter && filteredRow;
-      
-      const extrasValue = ov?.extras ?? (useFilteredData ? filteredRow.horasExtra + filteredRow.turnAround : r.extras);
-      const horasExtraValue = ov?.horasExtra ?? (useFilteredData ? filteredRow.horasExtra : r.horasExtra);
-      const turnAroundValue = ov?.turnAround ?? (useFilteredData ? filteredRow.turnAround : r.turnAround);
-      const nocturnidadValue = ov?.nocturnidad ?? (useFilteredData ? filteredRow.nocturnidad : r.nocturnidad);
-      const penaltyLunchValue = ov?.penaltyLunch ?? (useFilteredData ? filteredRow.penaltyLunch : r.penaltyLunch);
-      const transporteValue = ov?.transporte ?? (useFilteredData ? filteredRow.transporte : r.transporte);
-      const kmValue = ov?.km ?? (useFilteredData ? filteredRow.km : r.km);
-      const dietasMap = ov?.dietasCount ?? (useFilteredData ? filteredRow.dietasCount : r.dietasCount);
-      const ticketValue = ov?.ticketTotal ?? (useFilteredData ? filteredRow.ticketTotal : r.ticketTotal);
-
-      const cnt = (label: string) => dietasMap.get(label) || 0;
-      const totalDietas =
-        cnt('Desayuno') * (effectivePr.dietas['Desayuno'] || 0) +
-        cnt('Comida') * (effectivePr.dietas['Comida'] || 0) +
-        cnt('Cena') * (effectivePr.dietas['Cena'] || 0) +
-        cnt('Dieta sin pernoctar') * (effectivePr.dietas['Dieta sin pernoctar'] || 0) +
-        cnt('Dieta completa + desayuno') *
-          (effectivePr.dietas['Dieta completa + desayuno'] || 0) +
-        cnt('Gastos de bolsillo') * (effectivePr.dietas['Gastos de bolsillo'] || 0) +
-        (ticketValue || 0);
-
-      // Cálculo de días según el modo del proyecto
-      let totalDias: number;
-      let totalTravel: number;
-      let totalHolidays: number;
-      let _totalExtras: number;
-      let _totalTrans: number;
-      let _totalKm: number;
-      let _totalBruto: number;
-      let _totalLocalizacion: number = 0;
-      let _totalCargaDescarga: number = 0;
-
-      // Detectar qué precios faltan para mostrar mensajes
-      const missingPrices: {
-        jornada?: boolean;
-        localizacionTecnica?: boolean;
-        cargaDescarga?: boolean;
-        travelDay?: boolean;
-        holidayDay?: boolean;
-        horaExtra?: boolean;
-        transporte?: boolean;
-        km?: boolean;
-        dietas?: boolean;
-      } = {};
-
-      if (projectMode === 'publicidad') {
-        // Cálculo específico para publicidad
-        // Total días = rodaje + oficina × precio jornada (carga/descarga y localización tienen sus propias columnas)
-        const rodajeDays = (rodaje || 0) + (oficina || 0);
-        if (rodajeDays > 0 && (effectivePr.jornada || 0) === 0) {
-          missingPrices.jornada = true;
-        }
-        totalDias = rodajeDays * (effectivePr.jornada || 0);
-        
-        // Calcular totales para las nuevas columnas
-        const localizacionDays = localizar || 0;
-        const cargaDays = carga || 0;
-        const descargaDays = descarga || 0;
-        if (localizacionDays > 0 && (effectivePr.localizacionTecnica || 0) === 0) {
-          missingPrices.localizacionTecnica = true;
-        }
-        if ((cargaDays + descargaDays) > 0 && (effectivePr.cargaDescarga || 0) === 0) {
-          missingPrices.cargaDescarga = true;
-        }
-        _totalLocalizacion = localizacionDays * (effectivePr.localizacionTecnica || 0);
-        _totalCargaDescarga = (cargaDays + descargaDays) * (effectivePr.cargaDescarga || 0);
-        
-        if (travelDays > 0 && (effectivePr.travelDay || 0) === 0) {
-          missingPrices.travelDay = true;
-        }
-        if (holidayDays > 0 && (effectivePr.holidayDay || 0) === 0) {
-          missingPrices.holidayDay = true;
-        }
-        totalTravel = travelDays * (effectivePr.travelDay || 0);
-        totalHolidays = holidayDays * (effectivePr.holidayDay || 0);
-        
-        // Total horas extras = horas extras + turn around + nocturnidad + penalty lunch + horas extras festivas
-        const horasExtrasFestivas = 0; // TODO: Necesitamos datos de horas extras festivas
-        const totalExtrasCount = horasExtraValue + turnAroundValue + nocturnidadValue + penaltyLunchValue;
-        if (totalExtrasCount > 0 && (effectivePr.horaExtra || 0) === 0) {
-          missingPrices.horaExtra = true;
-        }
-        _totalExtras = 
-          (horasExtraValue * (effectivePr.horaExtra || 0)) +
-          (turnAroundValue * (effectivePr.horaExtra || 0)) +
-          (nocturnidadValue * (effectivePr.horaExtra || 0) * (effectivePr.factorHoraExtraFestiva || 1)) +
-          (penaltyLunchValue * (effectivePr.horaExtra || 0)) +
-          (horasExtrasFestivas * (effectivePr.horaExtra || 0) * (effectivePr.factorHoraExtraFestiva || 1));
-        
-        if (transporteValue > 0 && (effectivePr.transporte || 0) === 0) {
-          missingPrices.transporte = true;
-        }
-        if ((kmValue || 0) > 0 && (effectivePr.km || 0) === 0) {
-          missingPrices.km = true;
-        }
-        _totalTrans = transporteValue * (effectivePr.transporte || 0);
-        _totalKm = (kmValue || 0) * (effectivePr.km || 0);
-        
-        // Verificar dietas
-        const hasDietasData = cnt('Desayuno') > 0 || cnt('Comida') > 0 || cnt('Cena') > 0 || 
-                              cnt('Dieta sin pernoctar') > 0 || cnt('Dieta completa + desayuno') > 0 || 
-                              cnt('Gastos de bolsillo') > 0 || (ticketValue || 0) > 0;
-        if (hasDietasData && totalDietas === 0) {
-          // Verificar si todos los precios de dietas son 0
-          const allDietasPricesZero = 
-            (effectivePr.dietas['Desayuno'] || 0) === 0 &&
-            (effectivePr.dietas['Comida'] || 0) === 0 &&
-            (effectivePr.dietas['Cena'] || 0) === 0 &&
-            (effectivePr.dietas['Dieta sin pernoctar'] || 0) === 0 &&
-            (effectivePr.dietas['Dieta completa + desayuno'] || 0) === 0 &&
-            (effectivePr.dietas['Gastos de bolsillo'] || 0) === 0;
-          if (allDietasPricesZero) {
-            missingPrices.dietas = true;
-          }
-        }
-        
-        _totalBruto =
-          totalDias +
-          _totalLocalizacion +
-          _totalCargaDescarga +
-          totalTravel +
-          totalHolidays +
-          _totalExtras +
-          totalDietas +
-          _totalTrans +
-          _totalKm;
-      } else {
-        // Cálculo estándar para semanal/mensual
-        if (projectMode === 'mensual') {
-          // Para mensual: usar precio diario calculado desde precio mensual
-          // Total días = totalDiasTrabajados (todos los días del mes) * precio diario
-          const precioMensual = (effectivePr as any).precioMensual || 0;
-          const precioDiario = precioMensual > 0 && priceDays > 0 ? precioMensual / priceDays : (effectivePr.jornada || 0);
-          if (totalDiasTrabajados > 0 && precioDiario === 0) {
-            missingPrices.jornada = true;
-          }
-          totalDias = totalDiasTrabajados * precioDiario;
-        } else {
-          // Para semanal: usar precio jornada como antes
-          if (workedDays > 0 && (effectivePr.jornada || 0) === 0) {
-            missingPrices.jornada = true;
-          }
-          totalDias = workedDays * (effectivePr.jornada || 0);
-        }
-        if (travelDays > 0 && (effectivePr.travelDay || 0) === 0) {
-          missingPrices.travelDay = true;
-        }
-        if (holidayDays > 0 && (effectivePr.holidayDay || 0) === 0) {
-          missingPrices.holidayDay = true;
-        }
-        const totalExtrasCount = horasExtraValue + turnAroundValue + nocturnidadValue + penaltyLunchValue;
-        if (totalExtrasCount > 0 && (effectivePr.horaExtra || 0) === 0) {
-          missingPrices.horaExtra = true;
-        }
-        totalTravel = travelDays * (effectivePr.travelDay || 0);
-        totalHolidays = holidayDays * (effectivePr.holidayDay || 0);
-        _totalExtras = (horasExtraValue + turnAroundValue + nocturnidadValue + penaltyLunchValue) * (effectivePr.horaExtra || 0);
-        if (transporteValue > 0 && (effectivePr.transporte || 0) === 0) {
-          missingPrices.transporte = true;
-        }
-        if ((kmValue || 0) > 0 && (effectivePr.km || 0) === 0) {
-          missingPrices.km = true;
-        }
-        _totalTrans = transporteValue * (effectivePr.transporte || 0);
-        _totalKm = (kmValue || 0) * (effectivePr.km || 0);
-        
-        // Verificar dietas
-        const hasDietasData = cnt('Desayuno') > 0 || cnt('Comida') > 0 || cnt('Cena') > 0 || 
-                              cnt('Dieta sin pernoctar') > 0 || cnt('Dieta completa + desayuno') > 0 || 
-                              cnt('Gastos de bolsillo') > 0 || (ticketValue || 0) > 0;
-        if (hasDietasData && totalDietas === 0) {
-          // Verificar si todos los precios de dietas son 0
-          const allDietasPricesZero = 
-            (effectivePr.dietas['Desayuno'] || 0) === 0 &&
-            (effectivePr.dietas['Comida'] || 0) === 0 &&
-            (effectivePr.dietas['Cena'] || 0) === 0 &&
-            (effectivePr.dietas['Dieta sin pernoctar'] || 0) === 0 &&
-            (effectivePr.dietas['Dieta completa + desayuno'] || 0) === 0 &&
-            (effectivePr.dietas['Gastos de bolsillo'] || 0) === 0;
-          if (allDietasPricesZero) {
-            missingPrices.dietas = true;
-          }
-        }
-        
-        _totalBruto =
-          totalDias +
-          totalTravel +
-          totalHolidays +
-          _totalExtras +
-          totalDietas +
-          _totalTrans +
-          _totalKm;
-      }
-
-      const dietasLabelParts: string[] = [];
-      if (cnt('Desayuno')) dietasLabelParts.push(`Desayuno x${cnt('Desayuno')}`);
-      if (cnt('Comida')) dietasLabelParts.push(`Comida x${cnt('Comida')}`);
-      if (cnt('Cena')) dietasLabelParts.push(`Cena x${cnt('Cena')}`);
-      if (cnt('Dieta sin pernoctar'))
-        dietasLabelParts.push(
-          `Dieta sin pernoctar x${cnt('Dieta sin pernoctar')}`
-        );
-      if (cnt('Dieta completa + desayuno'))
-        dietasLabelParts.push(
-          `Dieta completa + desayuno x${cnt('Dieta completa + desayuno')}`
-        );
-      if (cnt('Gastos de bolsillo'))
-        dietasLabelParts.push(
-          `Gastos de bolsillo x${cnt('Gastos de bolsillo')}`
-        );
-      if (ticketValue > 0)
-        dietasLabelParts.push(`Ticket €${(ticketValue || 0).toFixed(2)}`);
-
-      return {
-        ...r,
-        role: roleDisplay,
-        extras: extrasValue,
-        horasExtra: horasExtraValue,
-        turnAround: turnAroundValue,
-        nocturnidad: nocturnidadValue,
-        penaltyLunch: penaltyLunchValue,
-        transporte: transporteValue,
-        km: kmValue,
-        dietasCount: dietasMap,
-        ticketTotal: ticketValue,
-        _worked: totalDiasTrabajados, // Para mensual es desde el primer día trabajado hasta el final del mes, para otros es workedDays
-        _travel: travelDays,
-        _holidays: holidayDays,
-        _workedBase: workedBase, // Días de rodaje (compatibilidad)
-        _workedPre: workedPre, // Días de prelight (compatibilidad)
-        _workedPick: workedPick, // Días de pickup (compatibilidad)
-        _rodaje: rodaje, // Días de tipo "Rodaje"
-        _oficina: oficina, // Días de tipo "Oficina"
-        _travelDay: travelDay, // Días de tipo "Travel Day"
-        _carga: carga, // Días de tipo "Carga"
-        _descarga: descarga, // Días de tipo "Descarga"
-        _localizar: localizar, // Días de tipo "Localizar"
-        _rodajeFestivo: rodajeFestivo, // Días de tipo "Rodaje Festivo"
-        _totalDias: totalDias,
-        _totalTravel: totalTravel,
-        _totalHolidays: totalHolidays,
-        _totalExtras,
-        _totalDietas: totalDietas,
-        _totalTrans,
-        _totalKm,
-        _totalBruto,
-        _totalLocalizacion: projectMode === 'publicidad' ? _totalLocalizacion : 0,
-        _totalCargaDescarga: projectMode === 'publicidad' ? _totalCargaDescarga : 0,
-        _localizarDays: projectMode === 'publicidad' ? (localizar || 0) : 0,
-        _cargaDays: projectMode === 'publicidad' ? (carga || 0) : 0,
-        _descargaDays: projectMode === 'publicidad' ? (descarga || 0) : 0,
-        _dietasLabel: dietasLabelParts.join(' · ') || '—',
-        _pr: effectivePr,
-        _missingPrices: missingPrices,
-      };
-    });
-  }, [
+  // Calcular datos enriquecidos
+  const enriched = useEnrichedRows({
     rows,
     weeksForMonth,
     filterISO,
@@ -768,85 +144,29 @@ function MonthSection({
     stripPR,
     calcWorkedBreakdown,
     filteredData,
+    dateFrom,
+    dateTo,
     projectMode,
-    daysInMonth,
-    calculateWorkingDaysInMonth,
+    calculateWorkingDaysInMonthValue,
     priceDays,
-  ]);
+    roleLabelFromCode,
+  });
 
-  // Verificar si hay datos de localización o carga/descarga para mostrar columnas solo cuando haya datos
-  const hasLocalizacionData = React.useMemo(() => {
-    if (projectMode !== 'publicidad') return false;
-    return enriched.some(r => (r._localizarDays || 0) > 0 || (r._totalLocalizacion || 0) > 0);
-  }, [enriched, projectMode]);
+  // Manejar selección de filas
+  const { toggleRowSelection, isRowSelected } = useRowSelection({
+    persistKey,
+    enriched,
+  });
 
-  const hasCargaDescargaData = React.useMemo(() => {
-    if (projectMode !== 'publicidad') return false;
-    return enriched.some(r => (r._cargaDays || 0) > 0 || (r._descargaDays || 0) > 0 || (r._totalCargaDescarga || 0) > 0);
-  }, [enriched, projectMode]);
-
-  // Verificar si hay datos de días trabajados o total días para mostrar columnas solo cuando haya datos
-  const hasWorkedDaysData = React.useMemo(() => {
-    return enriched.some(r => (r._worked || 0) > 0 || (r._totalDias || 0) > 0);
-  }, [enriched]);
-
-  // Estado para filas seleccionadas para exportación (por defecto todas seleccionadas)
-  const selectedRowsKey = `${persistKey}_selectedRows`;
-  const [selectedRowsArray, setSelectedRowsArray] = useLocalStorage<string[]>(
-    selectedRowsKey,
-    []
-  );
-
-  // Convertir array a Set para uso interno
-  const selectedRows = React.useMemo(() => new Set(selectedRowsArray), [selectedRowsArray]);
-
-  // Inicializar todas las filas como seleccionadas solo si no hay selección guardada y hay filas
-  // Usamos una referencia para saber si ya se inicializó una vez
-  const hasInitializedRef = React.useRef(false);
-  React.useEffect(() => {
-    if (!hasInitializedRef.current && selectedRowsArray.length === 0 && enriched.length > 0) {
-      const allKeys = enriched.map(r => `${r.role}__${r.name}`);
-      setSelectedRowsArray(allKeys);
-      hasInitializedRef.current = true;
-    } else if (enriched.length > 0 && !hasInitializedRef.current) {
-      hasInitializedRef.current = true;
-    }
-  }, [enriched.length, selectedRowsArray.length, setSelectedRowsArray]);
-
-  const toggleRowSelection = (personKey: string) => {
-    setSelectedRowsArray(prev => {
-      const prevSet = new Set(prev);
-      if (prevSet.has(personKey)) {
-        prevSet.delete(personKey);
-      } else {
-        prevSet.add(personKey);
-      }
-      return Array.from(prevSet);
-    });
-  };
-
-  const isRowSelected = (personKey: string) => {
-    return selectedRows.has(personKey);
-  };
-
-  // Detect which columns have data to show/hide empty columns
-  const columnVisibility = useMemo(() => {
-    const hasHolidays = enriched.some(r => r._holidays > 0);
-    const hasTravel = enriched.some(r => r._travel > 0);
-    const hasExtras = enriched.some(r => r.extras > 0);
-    const hasTransporte = enriched.some(r => r.transporte > 0);
-    const hasKm = enriched.some(r => r.km > 0);
-    const hasDietas = enriched.some(r => r._totalDietas > 0);
-
-    return {
-      holidays: hasHolidays,
-      travel: hasTravel,
-      extras: hasExtras,
-      transporte: hasTransporte,
-      km: hasKm,
-      dietas: hasDietas,
-    };
-  }, [enriched]);
+  // Calcular visibilidad de columnas
+  const {
+    columnVisibility,
+    hasLocalizacionData,
+    hasCargaDescargaData,
+    hasWorkedDaysData,
+  } = useColumnVisibility({
+    enriched,
+  });
 
   const doExport = () => {
     const selectedEnriched = enriched.filter(r => {
@@ -866,418 +186,41 @@ function MonthSection({
 
   return (
     <section className='rounded-2xl border border-neutral-border bg-neutral-panel/90'>
-      <div className='flex items-center gap-2 px-5 py-4'>
-        <button
-          onClick={() => !readOnly && setOpen(v => !v)}
-          disabled={readOnly}
-          className={`w-6 h-6 rounded-lg border border-neutral-border flex items-center justify-center text-sm hover:border-[#F59E0B] ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
-          title={readOnly ? t('conditions.projectClosed') : (open ? t('payroll.collapse') : t('payroll.expand'))}
-          type='button'
-        >
-          {open ? '−' : '+'}
-        </button>
-        <span className='text-lg font-semibold text-brand'>
-          {t('payroll.payrollTitle')} {monthLabelEs(monthKey)}
-        </span>
-        {(projectMode === 'semanal' || projectMode === 'mensual') && (
-          <div className='ml-auto flex items-center gap-3'>
-            {projectMode === 'mensual' && (
-              <div className='flex items-center gap-2'>
-                <label className='text-xs text-zinc-400 whitespace-nowrap'>{t('payroll.priceTo')}</label>
-                <input
-                  type='number'
-                  min='28'
-                  max='31'
-                  value={priceDays}
-                  onChange={e => {
-                    if (readOnly) return;
-                    const val = parseInt(e.target.value, 10);
-                    if (val >= 28 && val <= 31) {
-                      setPriceDays(val);
-                    }
-                  }}
-                  disabled={readOnly}
-                  readOnly={readOnly}
-                  className={`w-12 px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-xs text-left ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  title={readOnly ? t('conditions.projectClosed') : t('payroll.priceToDays')}
-                />
-                <label className='text-xs text-zinc-400 whitespace-nowrap'>{t('payroll.days')}</label>
-              </div>
-            )}
-            <div className='flex items-center gap-2'>
-              <label className='text-sm text-zinc-300 whitespace-nowrap'>{t('payroll.from')}</label>
-              <input
-                type='date'
-                value={dateFrom}
-                onChange={e => {
-                  if (readOnly) return;
-                  const newValue = e.target.value;
-                  setDateFrom(newValue);
-                  // Sincronizar con reportes: actualizar la clave de reportes y disparar evento
-                  storage.setString(`${dateRangeKey}_from`, newValue);
-                  window.dispatchEvent(
-                    new CustomEvent('localStorageChange', {
-                      detail: { key: `${dateRangeKey}_from`, value: newValue },
-                    })
-                  );
-                }}
-                disabled={readOnly}
-                readOnly={readOnly}
-                className={`px-3 py-2 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm text-left ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
-                title={readOnly ? t('conditions.projectClosed') : t('payroll.dateFrom')}
-              />
-            </div>
-            <div className='flex items-center gap-2'>
-              <label className='text-sm text-zinc-300 whitespace-nowrap'>{t('payroll.to')}</label>
-              <input
-                type='date'
-                value={dateTo}
-                onChange={e => {
-                  if (readOnly) return;
-                  const newValue = e.target.value;
-                  setDateTo(newValue);
-                  // Sincronizar con reportes: actualizar la clave de reportes y disparar evento
-                  storage.setString(`${dateRangeKey}_to`, newValue);
-                  window.dispatchEvent(
-                    new CustomEvent('localStorageChange', {
-                      detail: { key: `${dateRangeKey}_to`, value: newValue },
-                    })
-                  );
-                }}
-                disabled={readOnly}
-                readOnly={readOnly}
-                className={`px-3 py-2 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm text-left ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
-                title={readOnly ? t('conditions.projectClosed') : t('payroll.dateTo')}
-              />
-            </div>
-          </div>
-        )}
-        <div className='ml-auto flex gap-2'>
-          <button
-            className={btnExportCls}
-            style={btnExportStyle}
-            onClick={doExportPDF}
-            title={t('payroll.exportPDF')}
-            type='button'
-          >
-            PDF
-          </button>
-        </div>
-      </div>
+      <MonthSectionHeader
+        monthLabel={monthLabelEs(monthKey)}
+        open={open}
+        setOpen={setOpen}
+        projectMode={projectMode}
+        priceDays={priceDays}
+        setPriceDays={setPriceDays}
+        dateFrom={dateFrom}
+        setDateFrom={setDateFrom}
+        dateTo={dateTo}
+        setDateTo={setDateTo}
+        dateRangeKey={dateRangeKey}
+        onExportPDF={doExportPDF}
+        readOnly={readOnly}
+      />
 
       {open && (
-        <div className='px-5 pb-5 overflow-x-auto'>
-          <table className='min-w-[1200px] w-full border-collapse text-sm'>
-            <thead>
-              <tr>
-                <Th align='center'>
-                  <div className='flex justify-center'>
-                    <input
-                      type='checkbox'
-                      checked={enriched.length > 0 && enriched.every(r => {
-                        const pKey = `${r.role}__${r.name}`;
-                        return isRowSelected(pKey);
-                      })}
-                      onChange={e => {
-                        if (readOnly) return;
-                        if (e.target.checked) {
-                          // Seleccionar todas
-                          const allKeys = enriched.map(r => `${r.role}__${r.name}`);
-                          setSelectedRowsArray(allKeys);
-                        } else {
-                          // Deseleccionar todas
-                          setSelectedRowsArray([]);
-                        }
-                      }}
-                      disabled={readOnly}
-                      onClick={e => {
-                        // Prevenir el comportamiento por defecto y manejar manualmente
-                        e.stopPropagation();
-                      }}
-                      title={enriched.length > 0 && enriched.every(r => {
-                        const pKey = `${r.role}__${r.name}`;
-                        return isRowSelected(pKey);
-                      }) ? t('payroll.deselectAll') : t('payroll.selectAll')}
-                      className='accent-blue-500 dark:accent-[#f59e0b] cursor-pointer'
-                    />
-                  </div>
-                </Th>
-                <Th align='center'>{t('payroll.person')}</Th>
-                {hasWorkedDaysData && <Th align='center'>{t('payroll.workedDays')}</Th>}
-                {hasWorkedDaysData && <Th align='center'>{t('payroll.totalDays')}</Th>}
-                {hasLocalizacionData && <Th align='center'>{t('payroll.localizacionTecnica')}</Th>}
-                {hasLocalizacionData && <Th align='center'>{t('payroll.totalLocalizacionTecnica')}</Th>}
-                {hasCargaDescargaData && <Th align='center'>{t('payroll.cargaDescarga')}</Th>}
-                {hasCargaDescargaData && <Th align='center'>{t('payroll.totalCargaDescarga')}</Th>}
-                {columnVisibility.holidays && <Th align='center'>{t('payroll.holidayDays')}</Th>}
-                {columnVisibility.holidays && <Th align='center'>{t('payroll.totalHolidayDays')}</Th>}
-                {columnVisibility.travel && <Th align='center'>{t('payroll.travelDays')}</Th>}
-                {columnVisibility.travel && <Th align='center'>{t('payroll.totalTravelDays')}</Th>}
-                {columnVisibility.extras && <Th align='center'>{t('payroll.extraHours')}</Th>}
-                {columnVisibility.extras && <Th align='center'>{t('payroll.totalExtraHours')}</Th>}
-                {columnVisibility.dietas && <Th align='center'>{t('payroll.dietas')}</Th>}
-                {columnVisibility.dietas && <Th align='center'>{t('payroll.totalDietas')}</Th>}
-                {columnVisibility.transporte && <Th align='center'>{t('payroll.transportes')}</Th>}
-                {columnVisibility.transporte && <Th align='center'>{t('payroll.totalTransportes')}</Th>}
-                {columnVisibility.km && <Th align='center'>{t('payroll.kilometraje')}</Th>}
-                {columnVisibility.km && <Th align='center'>{t('payroll.totalKilometraje')}</Th>}
-                <Th align='center'>{t('payroll.totalBruto')}</Th>
-                <Th align='center'>{t('payroll.received')}</Th>
-              </tr>
-            </thead>
-            <tbody>
-              {enriched.map((r, idx) => {
-                const pKey = `${r.role}__${r.name}`;
-                const roleForColor = String(r.role || '').replace(/[PR]$/, '');
-                const col =
-                  ROLE_COLORS[roleForColor] ||
-                  ROLE_COLORS[roleLabelFromCode(roleForColor)] ||
-                  (roleForColor === 'REF'
-                    ? { bg: '#F59E0B', fg: '#111' }
-                    : { bg: '#444', fg: '#fff' });
-
-                const rc = (received as any)[pKey] || { ok: false, note: '' };
-                const isSelected = isRowSelected(pKey);
-
-                return (
-                  <tr key={idx}>
-                    <Td align='middle'>
-                      <div className='flex justify-center'>
-                        <input
-                          type='checkbox'
-                          checked={isSelected}
-                          onChange={() => !readOnly && toggleRowSelection(pKey)}
-                          disabled={readOnly}
-                          title={readOnly ? t('conditions.projectClosed') : (isSelected ? t('payroll.deselectForExport') : t('payroll.selectForExport'))}
-                          className={`accent-blue-500 dark:accent-[#f59e0b] ${readOnly ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-                        />
-                      </div>
-                    </Td>
-                    <Td align='middle' className='text-center'>
-                      <div className='flex justify-center'>
-                      <span
-                        className='inline-flex items-center gap-2 px-2 py-1 rounded-lg border border-neutral-border bg-black/40'
-                        title={`${r.role} - ${r.name}`}
-                      >
-                        <span
-                          className='inline-flex items-center justify-center w-6 h-5 rounded-md font-bold text-[10px]'
-                          style={{ background: col.bg, color: col.fg }}
-                        >
-                          {r.role || '—'}
-                        </span>
-                        <span className='text-xs text-zinc-200'>{r.name}</span>
-                      </span>
-                      </div>
-                    </Td>
-
-                    {hasWorkedDaysData && (
-                      <Td align='middle' className='text-center'>
-                        <div className='flex flex-col items-center'>
-                          {r._worked > 0 && (
-                            <div className='text-right font-medium text-zinc-100 mb-1'>{r._worked}</div>
-                          )}
-                          {projectMode !== 'publicidad' && (
-                            <WorkedDaysSummary
-                              carga={r._carga || 0}
-                              descarga={r._descarga || 0}
-                              localizar={r._localizar || 0}
-                              rodaje={r._rodaje || 0}
-                              oficina={r._oficina || 0}
-                            />
-                          )}
-                        </div>
-                      </Td>
-                    )}
-                    {hasWorkedDaysData && (
-                      <Td align='middle' className='text-center'>
-                        {r._missingPrices?.jornada ? (
-                          <span className='text-xs text-zinc-400 italic'>{t('payroll.addPriceInConditions')}</span>
-                        ) : (
-                          displayMoney(r._totalDias, 2)
-                        )}
-                      </Td>
-                    )}
-
-                    {hasLocalizacionData && (
-                      <Td align='middle' className='text-center'>
-                        {r._localizarDays > 0 ? r._localizarDays : '—'}
-                      </Td>
-                    )}
-                    {hasLocalizacionData && (
-                      <Td align='middle' className='text-center'>
-                        {r._missingPrices?.localizacionTecnica ? (
-                          <span className='text-xs text-zinc-400 italic'>{t('payroll.addPriceInConditions')}</span>
-                        ) : (
-                          displayMoney(r._totalLocalizacion, 2)
-                        )}
-                      </Td>
-                    )}
-                    {hasCargaDescargaData && (
-                      <Td align='middle' className='text-center'>
-                        <div className='flex flex-col items-center'>
-                          {(r._cargaDays || 0) + (r._descargaDays || 0) > 0 && (
-                            <div className='text-right font-medium text-zinc-100 mb-1'>
-                              {(r._cargaDays || 0) + (r._descargaDays || 0)}
-                            </div>
-                          )}
-                          <CargaDescargaSummary
-                            carga={r._cargaDays || 0}
-                            descarga={r._descargaDays || 0}
-                          />
-                        </div>
-                      </Td>
-                    )}
-                    {hasCargaDescargaData && (
-                      <Td align='middle' className='text-center'>
-                        {r._missingPrices?.cargaDescarga ? (
-                          <span className='text-xs text-zinc-400 italic'>{t('payroll.addPriceInConditions')}</span>
-                        ) : (
-                          displayMoney(r._totalCargaDescarga, 2)
-                        )}
-                      </Td>
-                    )}
-
-                    {columnVisibility.holidays && <Td align='middle' className='text-center'>{displayValue(r._holidays)}</Td>}
-                    {columnVisibility.holidays && (
-                      <Td align='middle' className='text-center'>
-                        {r._missingPrices?.holidayDay ? (
-                          <span className='text-xs text-zinc-400 italic'>{t('payroll.addPriceInConditions')}</span>
-                        ) : (
-                          displayMoney(r._totalHolidays, 2)
-                        )}
-                      </Td>
-                    )}
-
-                    {columnVisibility.travel && <Td align='middle' className='text-center'>{displayValue(r._travel)}</Td>}
-                    {columnVisibility.travel && (
-                      <Td align='middle' className='text-center'>
-                        {r._missingPrices?.travelDay ? (
-                          <span className='text-xs text-zinc-400 italic'>{t('payroll.addPriceInConditions')}</span>
-                        ) : (
-                          displayMoney(r._totalTravel, 2)
-                        )}
-                      </Td>
-                    )}
-
-                    {columnVisibility.extras && (
-                      <Td align='middle' className='text-center'>
-                        <div className='flex justify-center'>
-                        <ExtrasSummary
-                          horasExtra={r.horasExtra}
-                          turnAround={r.turnAround}
-                          nocturnidad={r.nocturnidad}
-                          penaltyLunch={r.penaltyLunch}
-                        />
-                        </div>
-                      </Td>
-                    )}
-                    {columnVisibility.extras && (
-                      <Td align='middle' className='text-center'>
-                        {r._missingPrices?.horaExtra ? (
-                          <span className='text-xs text-zinc-400 italic'>{t('payroll.addPriceInConditions')}</span>
-                        ) : (
-                          displayMoney(r._totalExtras, 2)
-                        )}
-                      </Td>
-                    )}
-
-                    {columnVisibility.dietas && (
-                      <Td align='middle' className='text-center'>
-                        <div className='flex justify-center'>
-                        <DietasSummary
-                          dietasCount={r.dietasCount}
-                          ticketTotal={r.ticketTotal}
-                        />
-                        </div>
-                      </Td>
-                    )}
-                    {columnVisibility.dietas && (
-                      <Td align='middle' className='text-center'>
-                        {r._missingPrices?.dietas ? (
-                          <span className='text-xs text-zinc-400 italic'>{t('payroll.addPriceInConditions')}</span>
-                        ) : (
-                          displayMoney(r._totalDietas, 2)
-                        )}
-                      </Td>
-                    )}
-
-                    {columnVisibility.transporte && <Td align='middle' className='text-center'>{displayValue(r.transporte)}</Td>}
-                    {columnVisibility.transporte && (
-                      <Td align='middle' className='text-center'>
-                        {r._missingPrices?.transporte ? (
-                          <span className='text-xs text-zinc-400 italic'>{t('payroll.addPriceInConditions')}</span>
-                        ) : (
-                          displayMoney(r._totalTrans, 2)
-                        )}
-                      </Td>
-                    )}
-
-                    {columnVisibility.km && <Td align='middle' className='text-center'>{displayValue(r.km, 1)}</Td>}
-                    {columnVisibility.km && (
-                      <Td align='middle' className='text-center'>
-                        {r._missingPrices?.km ? (
-                          <span className='text-xs text-zinc-400 italic'>{t('payroll.addPriceInConditions')}</span>
-                        ) : (
-                          displayMoney(r._totalKm, 2)
-                        )}
-                      </Td>
-                    )}
-
-                    <Td align='middle' className='text-center font-semibold'>
-                      {displayMoney(r._totalBruto, 2)}
-                    </Td>
-
-                    <Td align='middle' className='text-center'>
-                      <div className='flex items-center justify-center gap-2'>
-                        <input
-                          type='checkbox'
-                          checked={!!rc.ok}
-                          onChange={e => !readOnly && setRcv(pKey, { ok: e.target.checked })}
-                          disabled={readOnly}
-                          className={readOnly ? 'opacity-50 cursor-not-allowed' : ''}
-                          title={readOnly ? t('conditions.projectClosed') : t('payroll.markAsReceived')}
-                        />
-                        <input
-                          type='text'
-                          placeholder={t('payroll.notePlaceholder')}
-                          value={rc.note || ''}
-                          onChange={e => !readOnly && setRcv(pKey, { note: e.target.value })}
-                          disabled={readOnly}
-                          readOnly={readOnly}
-                          className={`px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-xs ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
-                          title={readOnly ? t('conditions.projectClosed') : t('payroll.noteTitle')}
-                        />
-                      </div>
-                    </Td>
-                  </tr>
-                );
-              })}
-
-              {enriched.length === 0 && (
-                <tr>
-                  <Td colSpan={
-                    6 + // Base columns: Checkbox, Persona, Días trabajados, Total días, TOTAL BRUTO, Nómina recibida
-                    (columnVisibility.holidays ? 2 : 0) + // Días festivos + Total días festivos
-                    (columnVisibility.travel ? 2 : 0) + // Travel Day + Total travel days
-                    (columnVisibility.extras ? 2 : 0) + // Horas extra + Total horas extra
-                    (columnVisibility.dietas ? 2 : 0) + // Dietas + Total dietas
-                    (columnVisibility.transporte ? 2 : 0) + // Transportes + Total transportes
-                    (columnVisibility.km ? 2 : 0) // Kilometraje + Total kilometraje
-                  } align='center' className='text-center'>
-                    <div className='text-sm text-zinc-400'>
-                      {t('payroll.noDataThisMonth')}
-                    </div>
-                  </Td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+        <MonthSectionTable
+          enriched={enriched}
+          projectMode={projectMode}
+          hasWorkedDaysData={hasWorkedDaysData}
+          hasLocalizacionData={hasLocalizacionData}
+          hasCargaDescargaData={hasCargaDescargaData}
+          columnVisibility={columnVisibility}
+          isRowSelected={isRowSelected}
+          toggleRowSelection={toggleRowSelection}
+          received={received}
+          setRcv={setRcv}
+          ROLE_COLORS={ROLE_COLORS}
+          roleLabelFromCode={roleLabelFromCode}
+          readOnly={readOnly}
+        />
       )}
     </section>
   );
 }
 
 export default React.memo(MonthSection);
-
-

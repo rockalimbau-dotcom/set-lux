@@ -7,7 +7,7 @@ import {
   addDays,
   monthKeyFromISO,
   monthLabelEs,
-} from './date.ts';
+} from '@shared/utils/date';
 
 describe('nomina/utils/date', () => {
   describe('pad2', () => {

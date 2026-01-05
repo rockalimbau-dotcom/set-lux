@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { storage } from '@shared/services/localStorage.service';
-import { parseYYYYMMDD, toISO, addDays } from './date';
+import { parseYYYYMMDD, toISO, addDays } from '@shared/utils/date';
 
 export function usePlanWeeks(project: { id?: string; nombre?: string } | null) {
   const storageKey = useMemo(() => {

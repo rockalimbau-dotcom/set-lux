@@ -19,6 +19,7 @@ export interface Translations {
     password: string;
     login: string;
     register: string;
+    back: string;
     noAccount: string;
     signUp: string;
     name: string;
@@ -345,6 +346,8 @@ const translations: Record<Language, Translations> = {
 };
 
 export default translations;
+
+
 
 
 

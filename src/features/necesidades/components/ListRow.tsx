@@ -1,4 +1,5 @@
 import { Td, Row } from '@shared/components';
+import { AnyRecord } from '@shared/types/common';
 import React, { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -103,7 +104,6 @@ function ConfirmModal({ title, message, onClose, onConfirm }: ConfirmModalProps)
   );
 }
 
-type AnyRecord = Record<string, any>;
 
 // DAYS will be created inside the component to use translations
 

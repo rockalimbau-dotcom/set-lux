@@ -1,9 +1,8 @@
 import React, { useMemo } from 'react';
+import { AnyRecord } from '@shared/types/common';
 import Accordion from './Accordion';
 import EmptyHint from './EmptyHint';
 import WeekCard from './WeekCard';
-
-type AnyRecord = Record<string, any>;
 
 type PlanScopeSectionProps = {
   title: string;

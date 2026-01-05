@@ -1,0 +1,43 @@
+import { RowIn } from '../MonthSectionTypes';
+
+/**
+ * Calculate total working days based on project mode
+ */
+export function calculateTotalWorkingDays(
+  projectMode: 'semanal' | 'mensual' | 'publicidad',
+  calculateWorkingDaysInMonthValue: number,
+  workedDays: number,
+  rodaje?: number,
+  oficina?: number
+): number {
+  if (projectMode === 'mensual') {
+    return calculateWorkingDaysInMonthValue;
+  }
+  if (projectMode === 'publicidad') {
+    return (rodaje || 0) + (oficina || 0);
+  }
+  return workedDays;
+}
+
+/**
+ * Determine role display based on worked days breakdown
+ */
+export function determineRoleDisplay(
+  role: string,
+  baseRoleCode: string,
+  workedBase: number,
+  workedPre: number,
+  workedPick: number
+): string {
+  if (role === 'REF') {
+    return role;
+  }
+  if (workedPre > 0 && workedBase === 0 && workedPick === 0) {
+    return `${baseRoleCode}P`;
+  }
+  if (workedPick > 0 && workedBase === 0 && workedPre === 0) {
+    return `${baseRoleCode}R`;
+  }
+  return baseRoleCode;
+}
+

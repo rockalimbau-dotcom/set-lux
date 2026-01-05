@@ -1,106 +1,34 @@
 import React, { useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { storage } from '@shared/services/localStorage.service';
-import MonthSection from '../components/MonthSection.jsx';
-import { ROLE_COLORS, roleLabelFromCode } from '@shared/constants/roles';
-import {
-  makeRolePrices as makeRolePricesSemanal,
-  aggregateReports as aggregateReportsSemanal,
-  aggregateWindowedReport as aggregateWindowedReportSemanal,
-  getCondParams as getCondParamsSemanal,
-  getOvertimeWindowForPayrollMonth as getOvertimeWindowForPayrollMonthSemanal,
-  isoInRange as isoInRangeSemanal,
-  aggregateFilteredConcepts as aggregateFilteredConceptsSemanal,
-} from '../utils/calcSemanal';
-import { monthKeyFromISO, monthLabelEs } from '../utils/date';
-import { buildNominaMonthHTML, openPrintWindow, exportToPDF } from '../utils/export';
-import {
-  usePlanWeeks,
-  stripPR,
-  buildRefuerzoIndex,
-  weekISOdays,
-  weekAllPeopleActive,
-} from '../utils/plan';
-
-interface ProjectLike {
-  id?: string;
-  nombre?: string;
-  conditions?: {
-    tipo?: string;
-  };
-}
-
-interface NominaSemanalProps {
-  project: ProjectLike;
-  readOnly?: boolean;
-}
+import { usePlanWeeks } from '../utils/plan';
+import { weekAllPeopleActive } from '../utils/plan';
+import { NominaSemanalProps, ProjectLike } from './NominaSemanal/NominaSemanalTypes';
+import { useHasTeam } from './NominaPublicidad/useHasTeam';
+import { EmptyState } from './NominaPublicidad/EmptyState';
+import { useCondSync } from './NominaSemanal/useCondSync';
+import { makeRolePrices as makeRolePricesSemanal } from '../utils/calcSemanal';
+import { NominaSemanalContent } from './NominaSemanal/NominaSemanalContent';
 
 export default function NominaSemanal({ project, readOnly = false }: NominaSemanalProps) {
-  const navigate = useNavigate();
   const { t } = useTranslation();
-  
+
   // Asegurar que el proyecto tenga el modo correcto para semanal
-  const projectWithMode = {
-    ...project,
-    conditions: {
-      ...project?.conditions,
-      tipo: 'semanal'
-    }
-  };
-  
+  const projectWithMode = useMemo(
+    () => ({
+      ...project,
+      conditions: {
+        ...project?.conditions,
+        tipo: 'semanal',
+      },
+    }),
+    [project]
+  );
+
   const { pre, pro } = usePlanWeeks(projectWithMode as any);
   const allWeeks = [...pre, ...pro];
   const baseId = project?.id || project?.nombre || 'tmp';
 
-  // Verificar si hay equipo guardado (verifica tanto en el objeto del proyecto como en localStorage)
-  // Esta verificación debe ser independiente del orden de creación (equipo vs planificación)
-  const hasTeam = useMemo(() => {
-    try {
-      // 1. Verificar si el equipo está en el objeto del proyecto directamente
-      const projectTeam = (project as any)?.team;
-      if (projectTeam) {
-        const base = Array.isArray(projectTeam.base) ? projectTeam.base : [];
-        const reinforcements = Array.isArray(projectTeam.reinforcements) ? projectTeam.reinforcements : [];
-        const prelight = Array.isArray(projectTeam.prelight) ? projectTeam.prelight : [];
-        const pickup = Array.isArray(projectTeam.pickup) ? projectTeam.pickup : [];
-        if (base.length > 0 || reinforcements.length > 0 || prelight.length > 0 || pickup.length > 0) {
-          return true;
-        }
-      }
-      
-      // 2. Verificar en localStorage con la clave que usa EquipoTab
-      const teamKey = `team_${baseId}`;
-      const teamData = storage.getJSON<any>(teamKey);
-      if (teamData) {
-        const base = Array.isArray(teamData.base) ? teamData.base : [];
-        const reinforcements = Array.isArray(teamData.reinforcements) ? teamData.reinforcements : [];
-        const prelight = Array.isArray(teamData.prelight) ? teamData.prelight : [];
-        const pickup = Array.isArray(teamData.pickup) ? teamData.pickup : [];
-        if (base.length > 0 || reinforcements.length > 0 || prelight.length > 0 || pickup.length > 0) {
-          return true;
-        }
-      }
-      
-      // 3. Verificar también en la clave del proyecto completo (por si acaso)
-      const projectKey = `project_${baseId}`;
-      const projectData = storage.getJSON<any>(projectKey);
-      if (projectData?.team) {
-        const base = Array.isArray(projectData.team.base) ? projectData.team.base : [];
-        const reinforcements = Array.isArray(projectData.team.reinforcements) ? projectData.team.reinforcements : [];
-        const prelight = Array.isArray(projectData.team.prelight) ? projectData.team.prelight : [];
-        const pickup = Array.isArray(projectData.team.pickup) ? projectData.team.pickup : [];
-        if (base.length > 0 || reinforcements.length > 0 || prelight.length > 0 || pickup.length > 0) {
-          return true;
-        }
-      }
-      
-      return false;
-    } catch {
-      return false;
-    }
-  }, [baseId, project]);
-
+  const hasTeam = useHasTeam(project, baseId);
   const hasWeeks = allWeeks.length > 0;
   const projectId = project?.id || project?.nombre;
   const planificacionPath = projectId ? `/project/${projectId}/planificacion` : '/projects';
@@ -109,369 +37,82 @@ export default function NominaSemanal({ project, readOnly = false }: NominaSeman
   // Caso 1: Faltan ambas cosas (semanas Y equipo)
   if (!hasWeeks && !hasTeam) {
     return (
-      <div className='flex flex-col items-center justify-center py-16 px-8 text-center'>
-        <h2 className='text-3xl font-bold mb-4' style={{color: 'var(--text)'}}>
-          {t('payroll.configureProject')}
-        </h2>
-        <p className='text-xl max-w-2xl mb-4' style={{color: 'var(--text)', opacity: 0.8}}>
-          {t('payroll.addWeeksInPlanningAndTeam')}{' '}
-          <button
-            onClick={() => navigate(planificacionPath)}
-            className='underline font-semibold hover:opacity-80 transition-opacity'
-            style={{color: 'var(--brand)'}}
-          >
-            {t('payroll.planning')}
-          </button>
-          {' '}{t('payroll.andTeamIn')}{' '}
-          <button
-            onClick={() => navigate(equipoPath)}
-            className='underline font-semibold hover:opacity-80 transition-opacity'
-            style={{color: 'var(--brand)'}}
-          >
-            {t('navigation.team')}
-          </button>
-          {' '}{t('payroll.toCalculatePayroll')}
-        </p>
-      </div>
+      <EmptyState
+        title={t('payroll.configureProject')}
+        message={t('payroll.addWeeksInPlanningAndTeam')}
+        planificacionPath={planificacionPath}
+        equipoPath={equipoPath}
+        planningLabel={t('payroll.planning')}
+        teamLabel={t('navigation.team')}
+        andLabel={t('payroll.andTeamIn')}
+        toLabel={t('payroll.toCalculatePayroll')}
+      />
     );
   }
 
   // Caso 2: Solo faltan semanas (pero SÍ hay equipo)
   if (!hasWeeks) {
     return (
-      <div className='flex flex-col items-center justify-center py-16 px-8 text-center'>
-        <h2 className='text-3xl font-bold mb-4' style={{color: 'var(--text)'}}>
-          {t('payroll.noWeeksInPlanning')}
-        </h2>
-        <p className='text-xl max-w-2xl mb-4' style={{color: 'var(--text)', opacity: 0.8}}>
-          {t('payroll.addWeeksInPlanningForPayroll')}{' '}
-          <button
-            onClick={() => navigate(planificacionPath)}
-            className='underline font-semibold hover:opacity-80 transition-opacity'
-            style={{color: 'var(--brand)'}}
-          >
-            {t('payroll.planning')}
-          </button>
-          {' '}{t('payroll.toAppearHerePayroll')}
-        </p>
-      </div>
+      <EmptyState
+        title={t('payroll.noWeeksInPlanning')}
+        message={t('payroll.addWeeksInPlanningForPayroll')}
+        planificacionPath={planificacionPath}
+        planningLabel={t('payroll.planning')}
+        toLabel={t('payroll.toAppearHerePayroll')}
+      />
     );
   }
 
-  const weeksWithPeople = allWeeks.filter(
-    (w: any) => weekAllPeopleActive(w).length > 0
-  );
+  const weeksWithPeople = allWeeks.filter((w: any) => weekAllPeopleActive(w).length > 0);
 
   // Caso 3: Solo falta equipo (pero SÍ hay semanas)
-  // IMPORTANTE: Verificar hasTeam directamente, no weeksWithPeople.length
-  // porque weeksWithPeople puede ser 0 si no hay semanas, pero el equipo puede existir
   if (hasWeeks && !hasTeam) {
     return (
-      <div className='flex flex-col items-center justify-center py-16 px-8 text-center'>
-        <h2 className='text-3xl font-bold mb-4' style={{color: 'var(--text)'}}>
-          {t('payroll.missingTeam')}
-        </h2>
-        <p className='text-xl max-w-2xl mb-4' style={{color: 'var(--text)', opacity: 0.8}}>
-          {t('payroll.fillTeamIn')}{' '}
-          <button
-            onClick={() => navigate(equipoPath)}
-            className='underline font-semibold hover:opacity-80 transition-opacity'
-            style={{color: 'var(--brand)'}}
-          >
-            {t('navigation.team')}
-          </button>
-          {' '}{t('payroll.toCalculatePayrollTeam')}
-        </p>
-      </div>
+      <EmptyState
+        title={t('payroll.missingTeam')}
+        message={t('payroll.fillTeamIn')}
+        equipoPath={equipoPath}
+        teamLabel={t('navigation.team')}
+        toLabel={t('payroll.toCalculatePayrollTeam')}
+      />
     );
   }
 
   // Caso 4: Hay semanas y equipo, pero las semanas no tienen personas asignadas
   if (hasWeeks && hasTeam && weeksWithPeople.length === 0) {
     return (
-      <div className='flex flex-col items-center justify-center py-16 px-8 text-center'>
-        <h2 className='text-3xl font-bold mb-4' style={{color: 'var(--text)'}}>
-          {t('payroll.assignPeopleToWeeks')}
-        </h2>
-        <p className='text-xl max-w-2xl mb-4' style={{color: 'var(--text)', opacity: 0.8}}>
-          {t('payroll.weeksWithoutTeam', { count: allWeeks.length, plural: allWeeks.length !== 1 ? 's' : '' })}{' '}
-          <button
-            onClick={() => navigate(planificacionPath)}
-            className='underline font-semibold hover:opacity-80 transition-opacity'
-            style={{color: 'var(--brand)'}}
-          >
-            {t('payroll.planning')}
-          </button>
-          {' '}{t('payroll.butNoPeopleAssigned')}
-        </p>
-      </div>
+      <EmptyState
+        title={t('payroll.assignPeopleToWeeks')}
+        message={t('payroll.weeksWithoutTeam', {
+          count: allWeeks.length,
+          plural: allWeeks.length !== 1 ? 's' : '',
+        })}
+        planificacionPath={planificacionPath}
+        planningLabel={t('payroll.planning')}
+        toLabel={t('payroll.butNoPeopleAssigned')}
+      />
     );
   }
-
-  // Agrupar por mes natural
-  const monthMap: Map<string, { weeks: Set<any>; isos: Set<string> }> = new Map();
-  for (const w of weeksWithPeople) {
-    const isos = weekISOdays(w);
-    for (const iso of isos) {
-      const mk = monthKeyFromISO(iso);
-      if (!monthMap.has(mk))
-        monthMap.set(mk, { weeks: new Set(), isos: new Set() });
-      const bucket = monthMap.get(mk)!;
-      bucket.weeks.add(w);
-      bucket.isos.add(iso);
-    }
-  }
-  const monthKeys = Array.from(monthMap.keys()).sort();
 
   // === Re-render cuando cambian Condiciones semanal ===
-  const condKeys = [
-    `cond_${baseId}_semanal`,
-  ];
-
-  const [condStamp, setCondStamp] = React.useState<string>(() =>
-    condKeys.map(k => storage.getString(k) || '').join('|')
-  );
-
-  React.useEffect(() => {
-    const tick = () => {
-      const cur = condKeys.map(k => storage.getString(k) || '').join('|');
-      setCondStamp(prev => (prev === cur ? prev : cur));
-    };
-    const onFocus = () => tick();
-    const onStorage = (e: StorageEvent) => {
-      if (e && e.key && condKeys.includes(e.key)) tick();
-    };
-
-    window.addEventListener('focus', onFocus);
-    window.addEventListener('storage', onStorage);
-    const id = setInterval(tick, 1000);
-
-    return () => {
-      window.removeEventListener('focus', onFocus);
-      window.removeEventListener('storage', onStorage);
-      clearInterval(id);
-    };
-  }, [baseId]);
+  const condStamp = useCondSync(baseId);
 
   // Precios por rol listos - usando funciones específicas de semanal
-  const rolePrices = React.useMemo(
+  const rolePrices = useMemo(
     () => makeRolePricesSemanal(projectWithMode),
-    [project, condStamp]
+    [projectWithMode, condStamp]
   );
-
-  // Export por mes usando las filas enriquecidas que nos pasa MonthSection
-  const exportMonth = (monthKey: string, enrichedRows: any[]) => {
-    const html = buildNominaMonthHTML(
-      project,
-      monthKey,
-      enrichedRows,
-      monthLabelEs
-    );
-    openPrintWindow(html);
-  };
-
-  // Export to PDF
-  const exportMonthPDF = async (monthKey: string, enrichedRows: any[]) => {
-    const success = await exportToPDF(
-      project,
-      monthKey,
-      enrichedRows,
-      monthLabelEs
-    );
-    if (!success) {
-      // Fallback to HTML if PDF fails
-      exportMonth(monthKey, enrichedRows);
-    }
-  };
 
   const basePersist = `nomina_${project?.id || project?.nombre || 'tmp'}`;
 
-  // ===== Días trabajados / Travel Day =====
-  function calcWorkedBreakdown(
-    weeks: any[],
-    filterISO: (iso: string) => boolean,
-    person: { role: string; name: string }
-  ) {
-    const isWantedISO = filterISO || (() => true);
-    const wantedRole = String(person.role || '');
-    const wantedBase = wantedRole.replace(/[PR]$/, '');
-    const wantedSuffix = /P$/.test(wantedRole)
-      ? 'P'
-      : /R$/.test(wantedRole)
-      ? 'R'
-      : '';
-    const wantedNameNorm = String(person.name || '')
-      .normalize('NFKD')
-      .replace(/\p{Diacritic}/gu, '')
-      .trim()
-      .toLowerCase();
-
-    let workedBase = 0;
-    let workedPre = 0;
-    let workedPick = 0;
-    let workedDays = 0;
-    let travelDays = 0;
-    let holidayDays = 0;
-    // Contadores por tipo de día
-    let rodaje = 0;
-    let oficina = 0;
-    let travelDay = 0;
-    let carga = 0;
-    let descarga = 0;
-    let localizar = 0;
-    let rodajeFestivo = 0;
-
-    const nameEq = (s: string) =>
-      String(s || '')
-        .normalize('NFKD')
-        .replace(/\p{Diacritic}/gu, '')
-        .trim()
-        .toLowerCase() === wantedNameNorm;
-
-    // Flag para detener el conteo cuando se encuentre "Fin"
-    let foundFin = false;
-
-    for (const w of weeks) {
-      if (foundFin) break; // Detener si ya encontramos "Fin"
-      const isos = weekISOdays(w);
-      for (let idx = 0; idx < (w.days || []).length; idx++) {
-        if (foundFin) break; // Detener si ya encontramos "Fin"
-        const day = (w.days || [])[idx];
-        const iso = isos[idx];
-        if (!isWantedISO(iso)) continue;
-        
-        // Si encontramos "Fin", detener el conteo (no contar este día ni los siguientes)
-        if ((day?.tipo || '') === 'Fin') {
-          foundFin = true;
-          break;
-        }
-        
-        if ((day?.tipo || '') === 'Descanso') continue;
-
-        // Verificar si la persona está trabajando en este día (en team, prelight o pickup)
-        let isWorking = false;
-        if (wantedRole === 'REF') {
-          const anyRef = (arr: any[]) =>
-            (arr || []).some((m: any) => nameEq(m?.name) && /ref/i.test(String(m?.role || '')));
-          isWorking = anyRef(day?.team) || anyRef(day?.prelight) || anyRef(day?.pickup);
-        } else {
-          const list =
-            wantedSuffix === 'P'
-              ? day?.prelight
-              : wantedSuffix === 'R'
-              ? day?.pickup
-              : day?.team;
-          isWorking = (list || []).some((m: any) => {
-            if (!nameEq(m?.name)) return false;
-            const mBase = String(m?.role || '').replace(/[PR]$/, '');
-            return !m?.role || !wantedBase || mBase === wantedBase;
-          });
-        }
-        
-        if (!isWorking) continue;
-          
-        // Contar por tipo de día según planificación
-        const dayType = day?.tipo || '';
-        if (dayType === 'Rodaje') {
-          rodaje += 1;
-          workedDays += 1;
-        } else if (dayType === 'Oficina') {
-          oficina += 1;
-          workedDays += 1;
-        } else if (dayType === 'Travel Day') {
-          travelDay += 1;
-          travelDays += 1;
-          // No contar en workedDays porque tiene su propia columna
-        } else if (dayType === 'Carga') {
-          carga += 1;
-          workedDays += 1;
-        } else if (dayType === 'Descarga') {
-          descarga += 1;
-          workedDays += 1;
-        } else if (dayType === 'Localizar') {
-          localizar += 1;
-          workedDays += 1;
-        } else if (dayType === 'Rodaje Festivo') {
-          rodajeFestivo += 1;
-            holidayDays += 1;
-          }
-          
-        // Mantener compatibilidad con código existente
-          if (wantedSuffix === 'P') workedPre += 1;
-          else if (wantedSuffix === 'R') workedPick += 1;
-          else workedBase += 1;
-      }
-    }
-    return { 
-      workedDays, 
-      travelDays, 
-      workedBase, 
-      workedPre, 
-      workedPick, 
-      holidayDays,
-      rodaje,
-      oficina,
-      travelDay,
-      carga,
-      descarga,
-      localizar,
-      rodajeFestivo
-    };
-  }
-
   return (
-    <div className='space-y-6'>
-      {monthKeys.map((mk, i) => {
-        const bucket = monthMap.get(mk)!;
-        const weeks = bucket ? Array.from(bucket.weeks) : [];
-        const isos = bucket ? Array.from(bucket.isos) : [];
-        const isoSet = new Set(isos);
-        const filterISO = (iso: string) => isoSet.has(iso);
-
-        // Ventana contable (si está configurada en Condiciones)
-        const params = getCondParamsSemanal(projectWithMode);
-        const win = getOvertimeWindowForPayrollMonthSemanal(mk, params);
-
-        // Si hay ventana contable, agregamos variables en esa ventana:
-        let windowOverrideMap: Map<string, any> | null = null;
-        if (win) {
-          const filterWindowISO = (iso: string) => isoInRangeSemanal(iso, win.start, win.end);
-          windowOverrideMap = aggregateWindowedReportSemanal(
-            projectWithMode,
-            weeks,
-            filterWindowISO
-          ) as Map<string, any>;
-        }
-
-        const baseRows = aggregateReportsSemanal(projectWithMode, weeks, filterISO);
-
-        return (
-          <MonthSection
-            key={mk}
-            monthKey={mk}
-            rows={baseRows as any}
-            weeksForMonth={weeks}
-            filterISO={filterISO}
-            rolePrices={rolePrices}
-            projectMode="semanal"
-            defaultOpen={i === 0}
-            persistKeyBase={basePersist}
-            onExport={exportMonth}
-            onExportPDF={exportMonthPDF}
-            windowOverrideMap={windowOverrideMap}
-            project={projectWithMode}
-            aggregateFilteredConcepts={aggregateFilteredConceptsSemanal}
-            allWeeks={weeksWithPeople}
-            buildRefuerzoIndex={buildRefuerzoIndex}
-            stripPR={stripPR}
-            calcWorkedBreakdown={calcWorkedBreakdown}
-            monthLabelEs={monthLabelEs}
-            ROLE_COLORS={ROLE_COLORS as any}
-            roleLabelFromCode={roleLabelFromCode}
-            readOnly={readOnly}
-          />
-        );
-      })}
-    </div>
+    <NominaSemanalContent
+      project={project}
+      projectWithMode={projectWithMode}
+      allWeeks={allWeeks}
+      rolePrices={rolePrices}
+      basePersist={basePersist}
+      readOnly={readOnly}
+    />
   );
 }

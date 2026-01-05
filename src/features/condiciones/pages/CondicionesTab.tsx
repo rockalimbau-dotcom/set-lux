@@ -3,7 +3,8 @@ import CondicionesPublicidad from '@features/condiciones/condiciones/publicidad'
 import CondicionesSemanal from '@features/condiciones/condiciones/semanal';
 import React, { useMemo, useState, useEffect } from 'react';
 
-type AnyRecord = Record<string, any>;
+import { AnyRecord } from '@shared/types/common';
+import { btnExport } from '@shared/utils/tailwindClasses';
 
 type CondicionesTabProps = {
   project?: AnyRecord;
@@ -25,7 +26,7 @@ export default function CondicionesTab({ project, mode, onChange = () => {}, rea
     setDoExport(() => null);
   }, [effectiveMode]);
 
-  const btnExportCls = 'px-3 py-2 rounded-lg text-sm font-semibold';
+  const btnExportCls = btnExport;
   const btnExportStyle: React.CSSProperties = {
     background: '#f59e0b',
     color: '#FFFFFF',

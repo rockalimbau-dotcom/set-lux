@@ -503,6 +503,7 @@
     "changeStatus": "Cambiar estado (actual: {{status}})"
   },
   "reports": {
+    "description": "Horas extra, dietas, kilometraje, transportes",
     "configureProject": "Configura el proyecto",
     "addWeeksIn": "Añade semanas en",
     "andTeamIn": "y equipo en",

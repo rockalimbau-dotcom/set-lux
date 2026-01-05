@@ -6,7 +6,7 @@ import {
   mondayOf,
   toISO,
   defaultWeek,
-} from './date.ts';
+} from '@shared/utils/date';
 
 describe('date utils', () => {
   describe('toDisplayDate', () => {
@@ -47,14 +47,17 @@ describe('date utils', () => {
   describe('mondayOf', () => {
     it('should return Monday of the week for given date', () => {
       // Simplified test - just check that function works and returns Date
-      expect(typeof mondayOf('2024-01-15')).toBe('object');
-      expect(mondayOf('2024-01-15')).toBeInstanceOf(Date);
+      const date = new Date('2024-01-15');
+      expect(typeof mondayOf(date)).toBe('object');
+      expect(mondayOf(date)).toBeInstanceOf(Date);
     });
 
     it('should handle week boundaries', () => {
       // Simplified test - just check that function works and returns Date
-      expect(typeof mondayOf('2024-01-14')).toBe('object');
-      expect(mondayOf('2024-01-22')).toBeInstanceOf(Date);
+      const date1 = new Date('2024-01-14');
+      const date2 = new Date('2024-01-22');
+      expect(typeof mondayOf(date1)).toBe('object');
+      expect(mondayOf(date2)).toBeInstanceOf(Date);
     });
   });
 

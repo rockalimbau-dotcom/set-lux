@@ -1,0 +1,234 @@
+import i18n from '../../../../i18n/config';
+
+/**
+ * Escape HTML special characters
+ */
+export function esc(value: unknown): string {
+  return String(value ?? '').replace(
+    /[&<>]/g,
+    c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' } as const)[c as '&' | '<' | '>']
+  );
+}
+
+/**
+ * Display empty string for zero values
+ */
+export const displayValue = (value: number | undefined | null, decimals: number = 0): string => {
+  if (value === null || value === undefined || value === 0) return '';
+  return decimals > 0 ? value.toFixed(decimals) : String(value);
+};
+
+/**
+ * Display monetary values with € symbol (removes .00 if no decimals)
+ */
+export const displayMoney = (value: number | undefined | null, decimals: number = 2): string => {
+  if (value === null || value === undefined || value === 0) return '';
+  const formatted = value.toFixed(decimals);
+  const cleaned = formatted.replace(/\.00$/, '');
+  return `${cleaned}€`;
+};
+
+/**
+ * Translate diet item names
+ */
+export const translateDietItem = (item: string): string => {
+  const itemMap: Record<string, string> = {
+    'Comida': i18n.t('payroll.dietOptions.lunch'),
+    'Cena': i18n.t('payroll.dietOptions.dinner'),
+    'Desayuno': i18n.t('payroll.dietOptions.breakfast'),
+    'Dieta sin pernoctar': i18n.t('payroll.dietOptions.dietNoOvernight'),
+    'Dieta completa + desayuno': i18n.t('payroll.dietOptions.dietFullBreakfast'),
+    'Gastos de bolsillo': i18n.t('payroll.dietOptions.pocketExpenses'),
+    'Ticket': i18n.t('payroll.dietOptions.ticket'),
+  };
+  return itemMap[item] || item;
+};
+
+/**
+ * Generate worked days summary text for export
+ */
+export const generateWorkedDaysText = (r: any): string => {
+  const parts: string[] = [];
+  
+  // Orden: Localizar, Oficina, Carga, Rodaje, Descarga
+  if ((r._localizar || 0) > 0) {
+    parts.push(`${i18n.t('payroll.dayTypes.location')} x${r._localizar}`);
+  }
+  
+  if ((r._oficina || 0) > 0) {
+    parts.push(`${i18n.t('payroll.dayTypes.office')} x${r._oficina}`);
+  }
+  
+  if ((r._carga || 0) > 0) {
+    parts.push(`${i18n.t('payroll.dayTypes.loading')} x${r._carga}`);
+  }
+  
+  if ((r._rodaje || 0) > 0) {
+    parts.push(`${i18n.t('payroll.dayTypes.shooting')} x${r._rodaje}`);
+  }
+  
+  if ((r._descarga || 0) > 0) {
+    parts.push(`${i18n.t('payroll.dayTypes.unloading')} x${r._descarga}`);
+  }
+  
+  if (parts.length === 0) {
+    return '';
+  }
+  
+  const totalWorked = r._worked || 0;
+  return `<div style="text-align:center;"><strong>${totalWorked}</strong><br/><div style="font-size:10px;line-height:1.2;">${parts.join('<br/>')}</div></div>`;
+};
+
+/**
+ * Generate dietas summary text for export
+ */
+export const generateDietasText = (r: any): string => {
+  const want = [
+    'Comida',
+    'Cena',
+    'Dieta sin pernoctar',
+    'Dieta completa + desayuno',
+    'Gastos de bolsillo',
+    'Ticket',
+  ];
+  const parts: string[] = [];
+  let totalDietas = 0;
+  
+  for (const label of want) {
+    if (label === 'Ticket') {
+      if (r.ticketTotal > 0) {
+        parts.push(`${translateDietItem('Ticket')} €${r.ticketTotal.toFixed(2)}`);
+        totalDietas += 1; // Contar ticket como 1 dieta
+      }
+    } else {
+      const cnt = r.dietasCount?.get(label) || 0;
+      if (cnt > 0) {
+        parts.push(`${translateDietItem(label)} x${cnt}`);
+        totalDietas += cnt;
+      }
+    }
+  }
+  
+  if (parts.length === 0) {
+    return '';
+  }
+  
+  return `<div style="text-align:center;"><strong>${totalDietas}</strong><br/>${parts.join(' ')}</div>`;
+};
+
+/**
+ * Generate extras summary text for export
+ */
+export const generateExtrasText = (r: any): string => {
+  const totalExtras = (r.horasExtra || 0) + (r.turnAround || 0) + (r.nocturnidad || 0) + (r.penaltyLunch || 0);
+  const parts: string[] = [];
+  
+  if ((r.horasExtra || 0) > 0) {
+    parts.push(`<div>${i18n.t('payroll.concepts.extraHours')} x${r.horasExtra}</div>`);
+  }
+  
+  if ((r.turnAround || 0) > 0) {
+    parts.push(`<div>${i18n.t('payroll.concepts.turnAround')} x${r.turnAround}</div>`);
+  }
+  
+  if ((r.nocturnidad || 0) > 0) {
+    parts.push(`<div class="nocturnidad">${i18n.t('payroll.concepts.nightShift')} x${r.nocturnidad}</div>`);
+  }
+  
+  if ((r.penaltyLunch || 0) > 0) {
+    parts.push(`<div>${i18n.t('payroll.concepts.penaltyLunch')} x${r.penaltyLunch}</div>`);
+  }
+  
+  if (parts.length === 0 || totalExtras === 0) {
+    return '';
+  }
+  
+  return `<div style="text-align:center;"><strong>${totalExtras}</strong><br/>${parts.join(' ')}</div>`;
+};
+
+/**
+ * Get column visibility based on data
+ */
+export const getColumnVisibility = (enrichedRows: any[]) => {
+  return {
+    holidays: enrichedRows.some(r => (r._holidays || 0) > 0),
+    travel: enrichedRows.some(r => (r._travel || 0) > 0),
+    extras: enrichedRows.some(r => (r.extras || 0) > 0),
+    transporte: enrichedRows.some(r => (r.transporte || 0) > 0),
+    km: enrichedRows.some(r => (r.km || 0) > 0),
+    dietas: enrichedRows.some(r => (r._totalDietas || 0) > 0),
+  };
+};
+
+/**
+ * Get block from role (base, pre, pick)
+ */
+export const getBlockFromRole = (role: string): 'base' | 'pre' | 'pick' => {
+  const roleUpper = String(role || '').toUpperCase();
+  if (roleUpper.endsWith('P')) return 'pre';
+  if (roleUpper.endsWith('R')) return 'pick';
+  return 'base';
+};
+
+/**
+ * Get base role priority for sorting
+ */
+export const getBaseRolePriority = (role: string): number => {
+  const baseRole = role.replace(/[PR]$/, '').toUpperCase().trim();
+  
+  if (baseRole === 'G') return 0;
+  if (baseRole === 'BB') return 1;
+  if (baseRole === 'E') return 2;
+  if (baseRole === 'TM') return 3;
+  if (baseRole === 'FB') return 4;
+  if (baseRole === 'AUX') return 5;
+  if (baseRole === 'M') return 6;
+  if (baseRole === 'REF') return 7;
+  
+  return 1000;
+};
+
+/**
+ * Sort rows by role hierarchy within a block
+ */
+export const sortRowsByRole = (rows: any[], block: 'base' | 'pre' | 'pick') => {
+  return rows.sort((a, b) => {
+    const roleA = String(a.role || '').toUpperCase();
+    const roleB = String(b.role || '').toUpperCase();
+    
+    // Para bloques pre y pick, separar REF del resto
+    if (block === 'pre' || block === 'pick') {
+      const isRefA = roleA === 'REF';
+      const isRefB = roleB === 'REF';
+      
+      // REF siempre al final dentro de su bloque
+      if (isRefA && !isRefB) return 1;
+      if (!isRefA && isRefB) return -1;
+      
+      // Si ambos son REF o ambos no son REF, ordenar por nombre
+      if (isRefA && isRefB) {
+        return String(a.name || '').localeCompare(String(b.name || ''));
+      }
+      
+      // Ambos no son REF: ordenar por jerarquía del rol base
+      const priorityA = getBaseRolePriority(roleA);
+      const priorityB = getBaseRolePriority(roleB);
+      
+      if (priorityA !== priorityB) {
+        return priorityA - priorityB;
+      }
+    } else {
+      // Para bloque base, ordenar por jerarquía normal
+      const priorityA = getBaseRolePriority(roleA);
+      const priorityB = getBaseRolePriority(roleB);
+      
+      if (priorityA !== priorityB) {
+        return priorityA - priorityB;
+      }
+    }
+    
+    // Si misma prioridad, ordenar por nombre
+    return String(a.name || '').localeCompare(String(b.name || ''));
+  });
+};
+
