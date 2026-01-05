@@ -123,12 +123,10 @@ export const deduplicateData = (data: any): any => {
     
     // Skip completely empty keys (role fantasma)
     if (!role && !name) {
-      console.log(`🚫 Skipping empty key: "${k}"`);
       return;
     }
     
     if (roleNameMap.has(key)) {
-      console.log(`🔄 Merging duplicate: "${k}" into "${roleNameMap.get(key)}"`);
       
       // Merge data from duplicate into original
       const originalKey = roleNameMap.get(key);

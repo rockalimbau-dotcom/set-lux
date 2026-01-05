@@ -10,12 +10,6 @@ interface NominaTabProps extends AnyRecord {
 }
 
 export default function NominaTab({ project, mode, readOnly = false, ...props }: NominaTabProps) {
-  // Debug para ver qué está recibiendo
-  if ((import.meta as any).env.DEV) {
-    console.debug('[NOMINA.TAB] mode:', mode, 'project.conditions?.tipo:', project?.conditions?.tipo);
-    console.debug('[NOMINA.TAB] project:', project);
-  }
-  
   // Usar el componente específico según el modo
   if (mode === 'publicidad') {
     return <NominaPublicidad project={project} readOnly={readOnly} {...props} />;

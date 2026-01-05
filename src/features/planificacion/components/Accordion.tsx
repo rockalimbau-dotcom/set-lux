@@ -31,13 +31,21 @@ export default function Accordion({
   const isPreproduction = title === t('planning.preproduction') || title === 'Preproducción';
   const isProduction = title === t('planning.production') || title === 'Producción';
   
+  // Optimizar el handler de toggle para evitar reflows forzados
+  const handleToggle = React.useCallback(() => {
+    // Usar requestAnimationFrame para diferir el trabajo pesado
+    requestAnimationFrame(() => {
+      onToggle();
+    });
+  }, [onToggle]);
+  
   return (
     <section className='rounded-2xl border border-neutral-border bg-neutral-panel/90'>
       <div className='flex items-center justify-between px-5 py-4 gap-3'>
         <div className='flex items-center gap-3'>
           <ToggleIconButton
             isOpen={open}
-            onClick={onToggle}
+            onClick={handleToggle}
             className='w-8 h-8'
           />
           <h4 className='text-brand font-semibold'>{title}</h4>

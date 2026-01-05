@@ -1,23 +1,13 @@
-import { translateJornadaType as translateJornadaTypeUtil } from '@shared/utils/jornadaTranslations';
 import { ExportReportRangeParams } from './types';
 import { buildReportWeekHTMLForPDF } from './buildReportWeekHTMLForPDF';
 import { calculatePersonsPerPage } from './paginationHelpers';
-import { generateRangeFilename, getFilenameTranslation } from './filenameHelpers';
-import { rolePriorityForReports, sortPersonKeysByRole } from './dataHelpers';
-
-/**
- * Helper function to check if a date is Saturday (6) or Sunday (0)
- */
-const isWeekend = (iso: string): boolean => {
-  try {
-    const [y, m, d] = iso.split('-').map(Number);
-    const dt = new Date(y, m - 1, d);
-    const dayOfWeek = dt.getDay();
-    return dayOfWeek === 0 || dayOfWeek === 6; // 0 = Sunday, 6 = Saturday
-  } catch {
-    return false;
-  }
-};
+import { generateRangeFilename } from './filenameHelpers';
+import { sortPersonKeysByRole } from './dataHelpers';
+import { isWeekend } from './dateHelpers';
+import { filterWeekDaysForExport, translateWeekLabel } from './weekProcessingHelpers';
+import { prepareWeekData } from './weekDataHelpers';
+import { generatePDFPageFromHTML } from './pdfGenerationHelpers';
+import { initializeExportHelpers } from './exportInitializationHelpers';
 
 export async function exportReportRangeToPDF(params: ExportReportRangeParams) {
   const {
@@ -34,22 +24,19 @@ export async function exportReportRangeToPDF(params: ExportReportRangeParams) {
   } = params;
 
   try {
-    const { storage } = await import('@shared/services/localStorage.service');
     const { toDisplayDate, dayNameFromISO, mondayOf, toISO } = await import('@shared/utils/date');
     const { findWeekAndDayFactory } = await import('../plan');
-    const { personaKey } = await import('../model');
     const { DAY_NAMES, CONCEPTS } = await import('../../constants');
     const { 
-      horarioPrelightFactory, 
-      horarioPickupFactory,
       buildSafePersonas,
       collectWeekTeamWithSuffixFactory,
       collectRefNamesForBlock,
     } = await import('../derive');
-    const { getTranslation } = await import('./translationHelpers');
 
-    const planKey = `plan_${project?.id || project?.nombre || 'demo'}`;
+    // Initialize helper functions
     const getPlanAllWeeks = () => {
+      const { storage } = require('@shared/services/localStorage.service');
+      const planKey = `plan_${project?.id || project?.nombre || 'demo'}`;
       try {
         const obj = storage.getJSON<any>(planKey);
         if (!obj) return { pre: [], pro: [] };
@@ -61,23 +48,16 @@ export async function exportReportRangeToPDF(params: ExportReportRangeParams) {
 
     const findWeekAndDay = findWeekAndDayFactory(getPlanAllWeeks, mondayOf, toISO);
 
-    // Helper to translate jornada type
-    const translateJornadaType = (tipo: string): string => {
-      return translateJornadaTypeUtil(tipo, (key: string, defaultValue?: string) => getTranslation(key, defaultValue || key));
-    };
-
-    const horarioTexto = (iso: string) => {
-      const { day } = findWeekAndDay(iso);
-      const addInPlanning = getTranslation('reports.addInPlanning', 'Añadelo en Planificación');
-      if (!day) return addInPlanning;
-      if ((day.tipo || '') === 'Descanso') return getTranslation('planning.rest', 'DESCANSO');
-      const etiqueta = day.tipo && day.tipo !== 'Rodaje' && day.tipo !== 'Oficina' && day.tipo !== 'Rodaje Festivo' ? `${translateJornadaType(day.tipo)}: ` : '';
-      if (!day.start || !day.end) return `${etiqueta}${addInPlanning}`;
-      return `${etiqueta}${day.start}–${day.end}`;
-    };
-
-    const horarioPrelightFn = horarioPrelight || horarioPrelightFactory(findWeekAndDay);
-    const horarioPickupFn = horarioPickup || horarioPickupFactory(findWeekAndDay);
+    const {
+      horarioTexto,
+      horarioPrelightFn,
+      horarioPickupFn,
+    } = await initializeExportHelpers({
+      project,
+      findWeekAndDay,
+      horarioPrelight,
+      horarioPickup,
+    });
 
     // Sort weeks by start date
     const sortedWeeks = [...weeks].sort((a, b) => {
@@ -101,26 +81,13 @@ export async function exportReportRangeToPDF(params: ExportReportRangeParams) {
       const week = sortedWeeks[weekIndex];
       const weekDays = weekToSemanasISO(week);
       
-      // Filter only days from this week that are in the range
-      const weekDaysInRange = weekDays.filter(day => safeSemana.includes(day));
-      
-      if (weekDaysInRange.length === 0) continue;
-
-      // Filter days that are not DESCANSO or have data
-      const restLabel = getTranslation('planning.rest', 'DESCANSO');
-      const filteredWeekDays = weekDaysInRange.filter(iso => {
-        const dayLabel = horarioTexto(iso);
-        // If it's DESCANSO and it's Saturday or Sunday
-        if (dayLabel === restLabel && isWeekend(iso)) {
-          // Check if it has prelight or pickup
-          const hasPrelight = horarioPrelightFn(iso) !== '—';
-          const hasPickup = horarioPickupFn(iso) !== '—';
-          // If it doesn't have prelight or pickup, exclude it
-          if (!hasPrelight && !hasPickup) {
-            return false;
-          }
-        }
-        return true; // Include all other days
+      const filteredWeekDays = filterWeekDaysForExport({
+        weekDays,
+        safeSemana,
+        horarioTexto,
+        horarioPrelightFn,
+        horarioPickupFn,
+        isWeekend,
       });
 
       if (filteredWeekDays.length === 0) continue;
@@ -170,49 +137,12 @@ export async function exportReportRangeToPDF(params: ExportReportRangeParams) {
         pickupPeople
       );
 
-      // Get data for this week
-      const weekKey = `reportes_${baseId}_${weekDays.join('_')}`;
-      let weekData: any = {};
-      try {
-        weekData = storage.getJSON<any>(weekKey) || {};
-      } catch (e) {
-        console.error('Error loading week data:', e);
-      }
-
-      // Ensure all personas have data structure
-      safePersonas.forEach(p => {
-        const key = personaKey(p);
-        if (!weekData[key]) {
-          weekData[key] = {};
-        }
-        CONCEPTS.forEach(concepto => {
-          if (!weekData[key][concepto]) {
-            weekData[key][concepto] = {};
-          }
-          filteredWeekDays.forEach(day => {
-            if (weekData[key][concepto][day] === undefined) {
-              weekData[key][concepto][day] = '';
-            }
-          });
-        });
+      const weekData = prepareWeekData({
+        project,
+        weekDays: filteredWeekDays,
+        safePersonas,
       });
 
-      // Helper to translate week label
-      const translateWeekLabel = (label: string): string => {
-        if (!label) return getTranslation('reports.week', 'Semana');
-        const match = label.match(/^(Semana|Week|Setmana)\s*(-?\d+)$/i);
-        if (match) {
-          const number = match[2];
-          if (number.startsWith('-')) {
-            return getTranslation('planning.weekFormatNegative', `Semana -${number.substring(1)}`).replace('{{number}}', number.substring(1));
-          } else {
-            return getTranslation('planning.weekFormat', `Semana ${number}`).replace('{{number}}', number);
-          }
-        }
-        return label;
-      };
-
-      // Title for this week
       const weekLabel = week.label as string || `Semana ${weekIndex + 1}`;
       const weekTitle = translateWeekLabel(weekLabel);
 
@@ -251,60 +181,12 @@ export async function exportReportRangeToPDF(params: ExportReportRangeParams) {
           data: pageData,
         });
 
-        // Convert HTML to image and add to PDF
-        const html2canvas = (await import('html2canvas')).default;
-        const tempContainer = document.createElement('div');
-        tempContainer.innerHTML = html;
-        tempContainer.style.position = 'absolute';
-        tempContainer.style.left = '-9999px';
-        tempContainer.style.top = '0';
-        tempContainer.style.width = '1123px';
-        tempContainer.style.height = 'auto';
-        tempContainer.style.minHeight = '794px';
-        tempContainer.style.backgroundColor = 'white';
-        tempContainer.style.overflow = 'visible';
-
-        document.body.appendChild(tempContainer);
-        await new Promise(resolve => setTimeout(resolve, 200));
-
-        // Debug: Check if footer exists and is visible
-        const footer = tempContainer.querySelector('.footer') as HTMLElement;
-        if (footer) {
-          console.log(`📄 Week ${weekIndex + 1}, Page ${pageIndex + 1}: Footer found, height: ${footer.offsetHeight}px, visible: ${footer.offsetHeight > 0}`);
-        } else {
-          console.log(`❌ Week ${weekIndex + 1}, Page ${pageIndex + 1}: Footer NOT found!`);
-        }
-
-        const canvas = await html2canvas(tempContainer, {
-          scale: 3,
-          useCORS: true,
-          allowTaint: true,
-          backgroundColor: '#ffffff',
-          width: 1123,
-          height: tempContainer.scrollHeight + 100,
-          scrollX: 0,
-          scrollY: 0,
-          windowWidth: 1123,
-          windowHeight: tempContainer.scrollHeight + 100,
-          ignoreElements: () => false,
-          onclone: (clonedDoc) => {
-            const footer = clonedDoc.querySelector('.footer') as HTMLElement;
-            if (footer) {
-              footer.style.position = 'relative';
-              footer.style.display = 'flex';
-              footer.style.visibility = 'visible';
-              footer.style.opacity = '1';
-              console.log(`🔧 Week ${weekIndex + 1}, Page ${pageIndex + 1}: Footer styles applied in cloned document`);
-            } else {
-              console.log(`❌ Week ${weekIndex + 1}, Page ${pageIndex + 1}: Footer not found in cloned document`);
-            }
-          }
+        const { imgData, imgHeight } = await generatePDFPageFromHTML({
+          html,
+          weekIndex,
+          pageIndex,
         });
-
-        document.body.removeChild(tempContainer);
-
-        const imgData = canvas.toDataURL('image/png');
-        const imgHeight = (canvas.height / canvas.width) * 297;
+        
         pdf.addImage(imgData, 'PNG', 0, 0, 297, imgHeight);
       }
     }

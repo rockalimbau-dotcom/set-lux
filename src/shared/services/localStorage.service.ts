@@ -21,9 +21,16 @@ export const storage = {
 
   setString: (key: string, value: string): void => {
     try {
-      console.log('[STORAGE.DEBUG] setString called:', key, value);
+      // Solo loggear en desarrollo y con datos pequeños para evitar spam
+      if (import.meta.env.DEV && value.length < 200) {
+        console.log('[STORAGE.DEBUG] setString called:', key, value);
+      } else if (import.meta.env.DEV) {
+        console.log('[STORAGE.DEBUG] setString called:', key, 'size:', value.length, 'chars');
+      }
       window.localStorage.setItem(key, value);
-      console.log('[STORAGE.DEBUG] setString success');
+      if (import.meta.env.DEV && value.length < 200) {
+        console.log('[STORAGE.DEBUG] setString success');
+      }
     } catch (e) {
       console.error('[STORAGE.DEBUG] setString error:', e);
     }

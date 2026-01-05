@@ -1,0 +1,84 @@
+import { useMemo } from 'react';
+import { AnyRecord } from '@shared/types/common';
+import { PRICE_ROLES } from '../shared.constants';
+import { computeFromMonthly } from './mensualUtils';
+
+interface UseMensualRolesProps {
+  model: AnyRecord;
+  setModel: React.Dispatch<React.SetStateAction<AnyRecord>>;
+}
+
+interface UseMensualRolesReturn {
+  roles: string[];
+  addRole: (newRole: string) => void;
+  removeRole: (role: string) => void;
+  handleRoleChange: (role: string, header: string, rawVal: string) => void;
+}
+
+/**
+ * Hook to manage roles in mensual conditions
+ */
+export function useMensualRoles({ model, setModel }: UseMensualRolesProps): UseMensualRolesReturn {
+  const roles = useMemo(() => model.roles || PRICE_ROLES, [model.roles]);
+
+  const addRole = (newRole: string) => {
+    if (!newRole) return;
+    
+    setModel((m: AnyRecord) => {
+      const currentRoles = m.roles || PRICE_ROLES;
+      if (currentRoles.includes(newRole)) return m;
+      
+      const nextRoles: string[] = [];
+      const currentSet = new Set(currentRoles);
+      
+      for (const role of PRICE_ROLES) {
+        if (role === newRole) {
+          nextRoles.push(newRole);
+        } else if (currentSet.has(role)) {
+          nextRoles.push(role);
+        }
+      }
+      
+      if (!PRICE_ROLES.includes(newRole)) {
+        nextRoles.push(newRole);
+      }
+      
+      return { ...m, roles: nextRoles };
+    });
+  };
+  
+  const removeRole = (role: string) => {
+    setModel((m: AnyRecord) => {
+      const roles = m.roles || PRICE_ROLES;
+      const nextRoles = roles.filter((r: string) => r !== role);
+      const nextPrices = { ...m.prices };
+      delete nextPrices[role];
+      return { ...m, roles: nextRoles, prices: nextPrices };
+    });
+  };
+  
+  const handleRoleChange = (role: string, header: string, rawVal: string) => {
+    const val = rawVal;
+    setModel((m: AnyRecord) => {
+      const next: AnyRecord = { ...m, prices: { ...(m.prices || {}) } };
+      const row: AnyRecord = { ...(next.prices[role] || {}) };
+      row[header] = val;
+
+      if (header === 'Precio mensual') {
+        const derived = computeFromMonthly(val, m.params);
+        row['Precio semanal'] = derived['Precio semanal'];
+        row['Precio diario'] = derived['Precio diario'];
+        row['Precio jornada'] = derived['Precio jornada'];
+        row['Precio Día extra/Festivo'] = derived['Precio Día extra/Festivo'];
+        row['Travel day'] = derived['Travel day'];
+        row['Horas extras'] = derived['Horas extras'];
+      }
+
+      next.prices[role] = row;
+      return next;
+    });
+  };
+
+  return { roles, addRole, removeRole, handleRoleChange };
+}
+

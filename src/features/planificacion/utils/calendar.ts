@@ -4,7 +4,6 @@ import {
   parseYYYYMMDD,
   addDays,
 } from '../../../shared/utils/date';
-// import { isFestivo, isFestivoDynamic } from '@shared/constants/festivos';
 import { mdKey } from '../constants';
 
 interface Day {

@@ -17,11 +17,37 @@ export default function ReportesTab({ project, mode = 'semanal', readOnly = fals
   
   // Al entrar en Reportes, asegurar que la página está arriba del todo
   useEffect(() => {
-    try {
-      if (typeof window !== 'undefined' && typeof window.scrollTo === 'function') {
-        window.scrollTo(0, 0);
-      }
-    } catch {}
+    // Usar múltiples intentos para asegurar que el scroll se ejecute después del renderizado completo
+    // y después de cualquier focus automático que pueda ocurrir
+    const scrollToTop = () => {
+      try {
+        if (typeof window !== 'undefined' && typeof window.scrollTo === 'function') {
+          window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+          // También hacer scroll en el contenedor principal si existe
+          const mainContent = document.querySelector('main') || document.documentElement;
+          if (mainContent && 'scrollTo' in mainContent) {
+            (mainContent as HTMLElement).scrollTo({ top: 0, left: 0, behavior: 'instant' });
+          }
+          // También hacer scroll en el body si es necesario
+          if (document.body) {
+            document.body.scrollTop = 0;
+            document.documentElement.scrollTop = 0;
+          }
+        }
+      } catch {}
+    };
+    
+    // Ejecutar inmediatamente
+    scrollToTop();
+    
+    // Ejecutar después del siguiente frame
+    requestAnimationFrame(() => {
+      scrollToTop();
+      // Ejecutar después de un delay más largo para asegurar que se ejecute después de cualquier focus
+      setTimeout(scrollToTop, 100);
+      // Una vez más después de un delay aún mayor para contenido que se renderiza más tarde
+      setTimeout(scrollToTop, 300);
+    });
   }, []);
 
   const { pre, pro } = usePlanWeeks(project);

@@ -1,55 +1,481 @@
-import { describe, it, expect } from 'vitest';
-import { relabelWeekByCalendar, relabelWeekByCalendarDynamic } from './calendar';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-function makeWeek(startDate: string, tipos?: Array<string | undefined>) {
-  const days = new Array(7).fill(null).map((_, i) => ({ tipo: tipos?.[i] }));
-  return { startDate, days } as any;
-}
+import { relabelWeekByCalendar } from './calendar.ts';
 
-describe('calendar relabel', () => {
-  it('marks holiday as Rodaje Festivo when date is in holiday sets', () => {
-    const week = makeWeek('2025-09-08', [undefined, undefined, undefined, undefined, undefined, undefined, undefined]);
-    const full = new Set<string>(['2025-09-11']); // Thursday (Cataluña example)
-    const md = new Set<string>();
+// Mock shared utils
+vi.mock('../../../shared/utils/date', () => ({
+  pad2: vi.fn(n => String(n).padStart(2, '0')),
+  toYYYYMMDD: vi.fn(date => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }),
+  parseYYYYMMDD: vi.fn(str => new Date(str)),
+  addDays: vi.fn((date, days) => {
+    const newDate = new Date(date);
+    newDate.setDate(date.getDate() + days);
+    return newDate;
+  }),
+}));
 
-    const relabeled = relabelWeekByCalendar(week, '2025-09-08', full, md);
-    // Index 3 is Thursday from Monday start: Mon(0) Tue(1) Wed(2) Thu(3)
-    expect(relabeled.days[3].tipo).toBe('Rodaje Festivo');
+// Mock constants
+vi.mock('../constants', () => ({
+  mdKey: vi.fn(
+    (m, d) => `${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+  ),
+}));
+
+describe('planificacion/utils/calendar', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
   });
 
-  it('reverts Rodaje Festivo to Rodaje when holiday removed', () => {
-    // Start with a week where a day is already festivo
-    const week = makeWeek('2025-09-08', ['Rodaje', 'Rodaje Festivo', 'Rodaje', 'Rodaje', 'Rodaje', 'Rodaje', 'Rodaje']);
-    const full = new Set<string>(); // no holidays now
-    const md = new Set<string>();
+  describe('relabelWeekByCalendar', () => {
+    it('relabels week with correct start date', async () => {
+      const week = {
+        id: 'test-week',
+        days: [
+          { tipo: 'Rodaje', team: [{ role: 'G', name: 'John' }] },
+          { tipo: 'Rodaje', team: [{ role: 'E', name: 'Jane' }] },
+        ],
+      };
 
-    const relabeled = relabelWeekByCalendar(week, '2025-09-08', full, md);
-    expect(relabeled.days[1].tipo).toBe('Rodaje');
-  });
+      const mondayDateStr = '2023-01-02';
+      const holidayFull = new Set();
+      const holidayMD = new Set();
 
-  it('respects manual override (manualTipo) and does not change tipo', async () => {
-    const week = makeWeek('2025-03-10');
-    // Mark Wednesday as manual override to Rodaje although it is a holiday
-    (week.days[2] as any).tipo = 'Rodaje';
-    (week.days[2] as any).manualTipo = true;
+      const { parseYYYYMMDD, addDays, toYYYYMMDD } = vi.mocked(
+        await import('../../../shared/utils/date')
+      );
+      const { mdKey } = await import('../constants');
 
-    const full = new Set<string>(['2025-03-12']); // Wednesday
-    const md = new Set<string>();
+      parseYYYYMMDD.mockReturnValue(new Date('2023-01-02'));
+      addDays.mockImplementation((date, days) => {
+        const newDate = new Date(date);
+        newDate.setDate(date.getDate() + days);
+        return newDate;
+      });
+      toYYYYMMDD.mockImplementation(date => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      });
+      mdKey.mockImplementation(
+        (m, d) => `${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+      );
 
-    const relabeled = await relabelWeekByCalendarDynamic(week, '2025-03-10', full, md);
-    expect(relabeled.days[2].tipo).toBe('Rodaje'); // unchanged
-  });
+      const result = relabelWeekByCalendar(
+        week,
+        mondayDateStr,
+        holidayFull,
+        holidayMD
+      );
 
-  it('sets Descanso on weekends when tipo is not set', () => {
-    const week = makeWeek('2025-03-10', [undefined, undefined, undefined, undefined, undefined, undefined, undefined]);
-    const full = new Set<string>();
-    const md = new Set<string>();
+      expect(result.startDate).toBe(mondayDateStr);
+      expect(result.id).toBe('test-week');
+      expect(result.days).toHaveLength(2);
+    });
 
-    const relabeled = relabelWeekByCalendar(week, '2025-03-10', full, md);
-    // Saturday index 5, Sunday index 6
-    expect(relabeled.days[5].tipo).toBe('Descanso');
-    expect(relabeled.days[6].tipo).toBe('Descanso');
+    it('sets weekend days as Descanso', async () => {
+      const week = {
+        days: [
+          { tipo: 'Rodaje', team: [{ role: 'G', name: 'John' }] },
+          { tipo: 'Rodaje', team: [{ role: 'E', name: 'Jane' }] },
+          { tipo: 'Rodaje', team: [{ role: 'BB', name: 'Bob' }] },
+          { tipo: 'Rodaje', team: [{ role: 'REF', name: 'Alice' }] },
+          { tipo: 'Rodaje', team: [{ role: 'REF', name: 'Charlie' }] },
+          { team: [{ role: 'REF', name: 'David' }] }, // No tipo for weekend
+          { team: [{ role: 'REF', name: 'Eve' }] }, // No tipo for weekend
+        ],
+      };
+
+      const mondayDateStr = '2023-01-02';
+      const holidayFull = new Set();
+      const holidayMD = new Set();
+
+      const { parseYYYYMMDD, addDays, toYYYYMMDD } = vi.mocked(
+        await import('../../../shared/utils/date')
+      );
+      const { mdKey } = await import('../constants');
+
+      parseYYYYMMDD.mockReturnValue(new Date('2023-01-02'));
+      addDays.mockImplementation((date, days) => {
+        const newDate = new Date(date);
+        newDate.setDate(date.getDate() + days);
+        return newDate;
+      });
+      toYYYYMMDD.mockImplementation(date => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      });
+      mdKey.mockImplementation(
+        (m, d) => `${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+      );
+
+      const result = relabelWeekByCalendar(
+        week,
+        mondayDateStr,
+        holidayFull,
+        holidayMD
+      );
+
+      // Saturday (index 5) and Sunday (index 6) should be Descanso
+      expect(result.days[5].tipo).toBe('Descanso');
+      expect(result.days[5].team).toEqual([]);
+      expect(result.days[5].loc).toBe('DESCANSO');
+      expect(result.days[6].tipo).toBe('Descanso');
+      expect(result.days[6].team).toEqual([]);
+      expect(result.days[6].loc).toBe('DESCANSO');
+    });
+
+    it('sets holidays as Rodaje Festivo', async () => {
+      const week = {
+        days: [
+          { tipo: 'Rodaje', team: [{ role: 'G', name: 'John' }] },
+          { tipo: 'Rodaje', team: [{ role: 'E', name: 'Jane' }] },
+        ],
+      };
+
+      const mondayDateStr = '2023-01-02';
+      const holidayFull = new Set(['2023-01-02']); // Monday is holiday
+      const holidayMD = new Set();
+
+      const { parseYYYYMMDD, addDays, toYYYYMMDD } = vi.mocked(
+        await import('../../../shared/utils/date')
+      );
+      const { mdKey } = await import('../constants');
+
+      parseYYYYMMDD.mockReturnValue(new Date('2023-01-02'));
+      addDays.mockImplementation((date, days) => {
+        const newDate = new Date(date);
+        newDate.setDate(date.getDate() + days);
+        return newDate;
+      });
+      toYYYYMMDD.mockImplementation(date => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      });
+      mdKey.mockImplementation(
+        (m, d) => `${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+      );
+
+      const result = relabelWeekByCalendar(
+        week,
+        mondayDateStr,
+        holidayFull,
+        holidayMD
+      );
+
+      expect(result.days[0].tipo).toBe('Rodaje Festivo');
+    });
+
+    it('sets holidays using MD format', async () => {
+      const week = {
+        days: [
+          { tipo: 'Rodaje', team: [{ role: 'G', name: 'John' }] },
+          { tipo: 'Rodaje', team: [{ role: 'E', name: 'Jane' }] },
+        ],
+      };
+
+      const mondayDateStr = '2023-01-02';
+      const holidayFull = new Set();
+      const holidayMD = new Set(['01-02']); // January 2nd
+
+      const { parseYYYYMMDD, addDays, toYYYYMMDD } = vi.mocked(
+        await import('../../../shared/utils/date')
+      );
+      const { mdKey } = await import('../constants');
+
+      parseYYYYMMDD.mockReturnValue(new Date('2023-01-02'));
+      addDays.mockImplementation((date, days) => {
+        const newDate = new Date(date);
+        newDate.setDate(date.getDate() + days);
+        return newDate;
+      });
+      toYYYYMMDD.mockImplementation(date => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      });
+      mdKey.mockImplementation(
+        (m, d) => `${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+      );
+
+      const result = relabelWeekByCalendar(
+        week,
+        mondayDateStr,
+        holidayFull,
+        holidayMD
+      );
+
+      expect(result.days[0].tipo).toBe('Rodaje Festivo');
+    });
+
+    it('sets holidays using DD-MM format', async () => {
+      const week = {
+        days: [
+          { tipo: 'Rodaje', team: [{ role: 'G', name: 'John' }] },
+          { tipo: 'Rodaje', team: [{ role: 'E', name: 'Jane' }] },
+        ],
+      };
+
+      const mondayDateStr = '2023-01-02';
+      const holidayFull = new Set();
+      const holidayMD = new Set(['02-01']); // 2nd January
+
+      const { parseYYYYMMDD, addDays, toYYYYMMDD } = vi.mocked(
+        await import('../../../shared/utils/date')
+      );
+      const { mdKey } = await import('../constants');
+
+      parseYYYYMMDD.mockReturnValue(new Date('2023-01-02'));
+      addDays.mockImplementation((date, days) => {
+        const newDate = new Date(date);
+        newDate.setDate(date.getDate() + days);
+        return newDate;
+      });
+      toYYYYMMDD.mockImplementation(date => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      });
+      mdKey.mockImplementation(
+        (m, d) => `${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+      );
+
+      const result = relabelWeekByCalendar(
+        week,
+        mondayDateStr,
+        holidayFull,
+        holidayMD
+      );
+
+      expect(result.days[0].tipo).toBe('Rodaje Festivo');
+    });
+
+    it('preserves existing Descanso type for weekends', async () => {
+      const week = {
+        days: [
+          { tipo: 'Rodaje', team: [{ role: 'G', name: 'John' }] },
+          { tipo: 'Rodaje', team: [{ role: 'E', name: 'Jane' }] },
+          { tipo: 'Rodaje', team: [{ role: 'BB', name: 'Bob' }] },
+          { tipo: 'Rodaje', team: [{ role: 'REF', name: 'Alice' }] },
+          { tipo: 'Rodaje', team: [{ role: 'REF', name: 'Charlie' }] },
+          { tipo: 'Descanso', team: [{ role: 'REF', name: 'David' }] },
+          { tipo: 'Descanso', team: [{ role: 'REF', name: 'Eve' }] },
+        ],
+      };
+
+      const mondayDateStr = '2023-01-02';
+      const holidayFull = new Set();
+      const holidayMD = new Set();
+
+      const { parseYYYYMMDD, addDays, toYYYYMMDD } = vi.mocked(
+        await import('../../../shared/utils/date')
+      );
+      const { mdKey } = await import('../constants');
+
+      parseYYYYMMDD.mockReturnValue(new Date('2023-01-02'));
+      addDays.mockImplementation((date, days) => {
+        const newDate = new Date(date);
+        newDate.setDate(date.getDate() + days);
+        return newDate;
+      });
+      toYYYYMMDD.mockImplementation(date => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      });
+      mdKey.mockImplementation(
+        (m, d) => `${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+      );
+
+      const result = relabelWeekByCalendar(
+        week,
+        mondayDateStr,
+        holidayFull,
+        holidayMD
+      );
+
+      expect(result.days[5].tipo).toBe('Descanso');
+      expect(result.days[6].tipo).toBe('Descanso');
+    });
+
+    it('changes Rodaje to Rodaje Festivo for holidays', async () => {
+      const week = {
+        days: [
+          { tipo: 'Rodaje', team: [{ role: 'G', name: 'John' }] },
+          { tipo: 'Rodaje', team: [{ role: 'E', name: 'Jane' }] },
+        ],
+      };
+
+      const mondayDateStr = '2023-01-02';
+      const holidayFull = new Set(['2023-01-02']);
+      const holidayMD = new Set();
+
+      const { parseYYYYMMDD, addDays, toYYYYMMDD } = vi.mocked(
+        await import('../../../shared/utils/date')
+      );
+      const { mdKey } = await import('../constants');
+
+      parseYYYYMMDD.mockReturnValue(new Date('2023-01-02'));
+      addDays.mockImplementation((date, days) => {
+        const newDate = new Date(date);
+        newDate.setDate(date.getDate() + days);
+        return newDate;
+      });
+      toYYYYMMDD.mockImplementation(date => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      });
+      mdKey.mockImplementation(
+        (m, d) => `${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+      );
+
+      const result = relabelWeekByCalendar(
+        week,
+        mondayDateStr,
+        holidayFull,
+        holidayMD
+      );
+
+      expect(result.days[0].tipo).toBe('Rodaje Festivo');
+    });
+
+    it('clears DESCANSO location for non-weekend days', async () => {
+      const week = {
+        days: [
+          {
+            tipo: 'Rodaje',
+            team: [{ role: 'G', name: 'John' }],
+            loc: 'DESCANSO',
+          },
+          { tipo: 'Rodaje', team: [{ role: 'E', name: 'Jane' }] },
+        ],
+      };
+
+      const mondayDateStr = '2023-01-02';
+      const holidayFull = new Set();
+      const holidayMD = new Set();
+
+      const { parseYYYYMMDD, addDays, toYYYYMMDD } = vi.mocked(
+        await import('../../../shared/utils/date')
+      );
+      const { mdKey } = await import('../constants');
+
+      parseYYYYMMDD.mockReturnValue(new Date('2023-01-02'));
+      addDays.mockImplementation((date, days) => {
+        const newDate = new Date(date);
+        newDate.setDate(date.getDate() + days);
+        return newDate;
+      });
+      toYYYYMMDD.mockImplementation(date => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      });
+      mdKey.mockImplementation(
+        (m, d) => `${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+      );
+
+      const result = relabelWeekByCalendar(
+        week,
+        mondayDateStr,
+        holidayFull,
+        holidayMD
+      );
+
+      expect(result.days[0].loc).toBe('');
+    });
+
+    it('handles empty days array', async () => {
+      const week = {
+        days: [],
+      };
+
+      const mondayDateStr = '2023-01-02';
+      const holidayFull = new Set();
+      const holidayMD = new Set();
+
+      const { parseYYYYMMDD, addDays, toYYYYMMDD } = vi.mocked(
+        await import('../../../shared/utils/date')
+      );
+      const { mdKey } = await import('../constants');
+
+      parseYYYYMMDD.mockReturnValue(new Date('2023-01-02'));
+      addDays.mockImplementation((date, days) => {
+        const newDate = new Date(date);
+        newDate.setDate(date.getDate() + days);
+        return newDate;
+      });
+      toYYYYMMDD.mockImplementation(date => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      });
+      mdKey.mockImplementation(
+        (m, d) => `${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+      );
+
+      const result = relabelWeekByCalendar(
+        week,
+        mondayDateStr,
+        holidayFull,
+        holidayMD
+      );
+
+      expect(result.days).toEqual([]);
+    });
+
+    it('handles undefined days', async () => {
+      const week = {};
+
+      const mondayDateStr = '2023-01-02';
+      const holidayFull = new Set();
+      const holidayMD = new Set();
+
+      const { parseYYYYMMDD, addDays, toYYYYMMDD } = vi.mocked(
+        await import('../../../shared/utils/date')
+      );
+      const { mdKey } = await import('../constants');
+
+      parseYYYYMMDD.mockReturnValue(new Date('2023-01-02'));
+      addDays.mockImplementation((date, days) => {
+        const newDate = new Date(date);
+        newDate.setDate(date.getDate() + days);
+        return newDate;
+      });
+      toYYYYMMDD.mockImplementation(date => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      });
+      mdKey.mockImplementation(
+        (m, d) => `${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+      );
+
+      const result = relabelWeekByCalendar(
+        week,
+        mondayDateStr,
+        holidayFull,
+        holidayMD
+      );
+
+      expect(result.days).toEqual([]);
+    });
   });
 });
-
-

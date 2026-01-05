@@ -21,25 +21,8 @@ export function useNeedsActions({
 
   const setCell = useCallback((weekId: string, dayIdx: number, fieldKey: string, value: unknown) => {
     if (readOnly) return;
-    // Si se está cambiando localización, sincronizar con planificación
-    if (fieldKey === 'loc') {
-      try {
-        const planData = storage.getJSON<any>(planKey);
-        if (planData) {
-          const allWeeks = [...(Array.isArray(planData.pre) ? planData.pre : []), ...(Array.isArray(planData.pro) ? planData.pro : [])];
-          const week = allWeeks.find((w: AnyRecord) => w.id === weekId);
-          if (week && week.days && week.days[dayIdx]) {
-            // Actualizar en planificación
-            week.days[dayIdx].loc = value;
-            // Guardar de vuelta en localStorage
-            storage.setJSON(planKey, planData);
-          }
-        }
-      } catch (error) {
-        console.error('Error syncing loc to planificación:', error);
-      }
-    }
-
+    
+    // Actualizar estado primero (más rápido)
     setNeeds((prev: AnyRecord) => {
       const w: AnyRecord = prev[weekId] || { days: {} };
       const day: AnyRecord = (w.days && w.days[dayIdx]) || {};
@@ -52,6 +35,28 @@ export function useNeedsActions({
       };
       return next;
     });
+    
+    // Sincronizar con planificación de forma asíncrona para no bloquear el UI
+    if (fieldKey === 'loc') {
+      // Usar setTimeout para hacer la operación pesada de forma asíncrona
+      setTimeout(() => {
+        try {
+          const planData = storage.getJSON<any>(planKey);
+          if (planData) {
+            const allWeeks = [...(Array.isArray(planData.pre) ? planData.pre : []), ...(Array.isArray(planData.pro) ? planData.pro : [])];
+            const week = allWeeks.find((w: AnyRecord) => w.id === weekId);
+            if (week && week.days && week.days[dayIdx]) {
+              // Actualizar en planificación
+              week.days[dayIdx].loc = value;
+              // Guardar de vuelta en localStorage
+              storage.setJSON(planKey, planData);
+            }
+          }
+        } catch (error) {
+          console.error('Error syncing loc to planificación:', error);
+        }
+      }, 0);
+    }
   }, [readOnly, planKey, setNeeds]);
 
   const removeFromList = useCallback((weekId: string, dayIdx: number, listKey: string, idx: number) => {

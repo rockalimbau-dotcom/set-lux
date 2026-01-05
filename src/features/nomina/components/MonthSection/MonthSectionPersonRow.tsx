@@ -1,5 +1,5 @@
 import { Td } from '@shared/components';
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { displayValue, displayMoney } from '../../utils/displayHelpers';
 import WorkedDaysSummary from '../WorkedDaysSummary.tsx';
@@ -50,6 +50,41 @@ export function MonthSectionPersonRow({
   const { t } = useTranslation();
   const rc = (received as any)[pKey] || { ok: false, note: '' };
 
+  // Detectar el tema actual
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+    if (typeof document !== 'undefined') {
+      return (document.documentElement.getAttribute('data-theme') || 'light') as 'dark' | 'light';
+    }
+    return 'light';
+  });
+
+  useEffect(() => {
+    const updateTheme = () => {
+      if (typeof document !== 'undefined') {
+        const currentTheme = (document.documentElement.getAttribute('data-theme') || 'light') as 'dark' | 'light';
+        setTheme(currentTheme);
+      }
+    };
+
+    const observer = new MutationObserver(updateTheme);
+    if (typeof document !== 'undefined') {
+      observer.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['data-theme'],
+      });
+    }
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
+  // Colores uniformes basados en tema: Best Boy en claro, Eléctrico en oscuro
+  const roleBgColor = theme === 'light' 
+    ? 'linear-gradient(135deg,#60A5FA,#0369A1)' // Color de Best Boy (más oscuro)
+    : 'linear-gradient(135deg,#FDE047,#F59E0B)'; // Color de Eléctrico
+  const roleFgColor = theme === 'light' ? 'white' : '#000000'; // Blanco en claro, negro en oscuro
+
   return (
     <tr>
       <Td align='middle'>
@@ -72,7 +107,12 @@ export function MonthSectionPersonRow({
         >
           <span
             className='inline-flex items-center justify-center w-6 h-5 rounded-md font-bold text-[10px]'
-            style={{ background: col.bg, color: col.fg }}
+            style={{ 
+              background: roleBgColor, 
+              color: roleFgColor,
+              WebkitTextFillColor: roleFgColor,
+              textFillColor: roleFgColor
+            } as React.CSSProperties}
           >
             {r.role || '—'}
           </span>

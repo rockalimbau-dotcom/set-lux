@@ -10,12 +10,34 @@ type TextAreaAutoProps = {
 export default function TextAreaAuto({ value, onChange, placeholder, readOnly = false }: TextAreaAutoProps) {
   const [v, setV] = useState<string>(value || '');
   const ref = useRef<HTMLTextAreaElement | null>(null);
+  const rafRef = useRef<number | null>(null);
+  
   useEffect(() => setV(value || ''), [value]);
-  useEffect(() => {
+  
+  const adjustHeight = () => {
     if (!ref.current) return;
-    ref.current.style.height = '0px';
-    ref.current.style.height = ref.current.scrollHeight + 'px';
+    // Usar requestAnimationFrame para evitar reflows forzados
+    if (rafRef.current) {
+      cancelAnimationFrame(rafRef.current);
+    }
+    rafRef.current = requestAnimationFrame(() => {
+      if (!ref.current) return;
+      ref.current.style.height = '0px';
+      const scrollHeight = ref.current.scrollHeight;
+      ref.current.style.height = scrollHeight + 'px';
+      rafRef.current = null;
+    });
+  };
+  
+  useEffect(() => {
+    adjustHeight();
+    return () => {
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current);
+      }
+    };
   }, [v]);
+  
   return (
     <textarea
       ref={ref}
@@ -33,9 +55,7 @@ export default function TextAreaAuto({ value, onChange, placeholder, readOnly = 
       rows={1}
       onInput={e => {
         if (readOnly) return;
-        const el = e.target as HTMLTextAreaElement;
-        el.style.height = '0px';
-        el.style.height = el.scrollHeight + 'px';
+        adjustHeight();
       }}
     />
   );

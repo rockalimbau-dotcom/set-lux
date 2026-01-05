@@ -94,14 +94,7 @@ export function aggregateFilteredConcepts(
   dateTo: string | null
 ) {
   if (!dateFrom || !dateTo) {
-    if ((import.meta as any).env.DEV) {
-      console.debug('[NOMINA.FILTER] No dates provided, returning null');
-    }
     return null;
-  }
-
-  if ((import.meta as any).env.DEV) {
-    console.debug('[NOMINA.FILTER] Starting aggregateFilteredConcepts with dates:', dateFrom, 'to', dateTo);
   }
 
   const base = project?.id || project?.nombre || 'tmp';
@@ -117,11 +110,7 @@ export function aggregateFilteredConcepts(
   const isInDateRange = (iso: string): boolean => {
     const date = parseYYYYMMDD(iso);
     if (!date) return false;
-    const inRange = date >= fromDate && date <= toDate;
-    if ((import.meta as any).env.DEV) {
-      console.debug('[NOMINA.FILTER] Checking date:', iso, 'from:', dateFrom, 'to:', dateTo, 'inRange:', inRange);
-    }
-    return inRange;
+    return date >= fromDate && date <= toDate;
   };
 
   for (const w of weeks) {

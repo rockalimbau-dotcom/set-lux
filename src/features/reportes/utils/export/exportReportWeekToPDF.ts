@@ -77,9 +77,7 @@ export async function exportReportWeekToPDF(params: BuildPdfParams) {
       // Debug: Check if footer exists and is visible
       const footer = tempContainer.querySelector('.footer') as HTMLElement;
       if (footer) {
-        console.log(`📄 Page ${pageIndex + 1}: Footer found, height: ${footer.offsetHeight}px, visible: ${footer.offsetHeight > 0}`);
       } else {
-        console.log(`❌ Page ${pageIndex + 1}: Footer NOT found!`);
       }
       
       // Convert to canvas with dynamic height to include footer
@@ -102,9 +100,7 @@ export async function exportReportWeekToPDF(params: BuildPdfParams) {
             footer.style.display = 'flex';
             footer.style.visibility = 'visible';
             footer.style.opacity = '1';
-            console.log('🔧 Footer styles applied in cloned document');
           } else {
-            console.log('❌ Footer not found in cloned document');
           }
         }
       });
@@ -120,7 +116,6 @@ export async function exportReportWeekToPDF(params: BuildPdfParams) {
       // Add image to PDF with dynamic height
       const imgData = canvas.toDataURL('image/png');
       const imgHeight = (canvas.height / canvas.width) * 297;
-      console.log(`📄 Page ${pageIndex + 1}: Canvas dimensions: ${canvas.width}x${canvas.height}, PDF height: ${imgHeight}mm`);
       pdf.addImage(imgData, 'PNG', 0, 0, 297, imgHeight);
     }
     

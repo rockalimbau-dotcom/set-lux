@@ -78,6 +78,12 @@ export function TeamRow({ row, onChange, onRemove, canEdit, allowedRoles, groupK
     : '';
 
   const focusColor = theme === 'light' ? '#0476D9' : '#F27405';
+  
+  // Colores uniformes basados en tema: Best Boy en claro, Eléctrico en oscuro
+  const roleBgColor = theme === 'light' 
+    ? 'linear-gradient(135deg,#60A5FA,#0369A1)' // Color de Best Boy (más oscuro)
+    : 'linear-gradient(135deg,#FDE047,#F59E0B)'; // Color de Eléctrico
+  const roleFgColor = theme === 'light' ? 'white' : '#000000'; // Blanco en claro, negro en oscuro
 
   return (
     <>
@@ -86,7 +92,12 @@ export function TeamRow({ row, onChange, onRemove, canEdit, allowedRoles, groupK
           <div className='sm:w-12 flex sm:justify-start'>
             <span
               className='inline-flex items-center justify-center h-8 min-w-10 px-3 rounded-lg font-bold'
-              style={{ background: col.bg, color: col.fg }}
+              style={{ 
+                background: roleBgColor, 
+                color: roleFgColor,
+                WebkitTextFillColor: roleFgColor,
+                textFillColor: roleFgColor
+              } as React.CSSProperties}
               title={row.role}
             >
               {displayBadge(row.role || '—', groupKey)}

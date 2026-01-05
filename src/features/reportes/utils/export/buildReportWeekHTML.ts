@@ -22,19 +22,12 @@ export function buildReportWeekHTML({
   CONCEPTS,
   data,
 }: BuildReportWeekHTMLParams): string {
-  // Debug: log persona keys
-  const personKeys = Object.keys(data || {});
-  console.log('=== HTML EXPORT DEBUG ===');
-  console.log('Persona keys in HTML export:', personKeys);
+  // Debug removed to improve performance
 
   // Deduplicate data
   const finalData = deduplicateData(data);
   const sortedPersonKeys = sortPersonKeysByRole(Object.keys(finalData || {}));
 
-  console.log('📋 Sorted person keys by role hierarchy:', sortedPersonKeys.map(k => {
-    const [role] = String(k).split('__');
-    return `${role}`;
-  }));
 
   // Filter days that are not DESCANSO or have data
   const safeSemanaWithData = filterDaysWithData(
@@ -53,7 +46,6 @@ export function buildReportWeekHTML({
     finalData
   );
 
-  console.log('📊 Filtered concepts with data (HTML):', conceptosConDatos);
 
   // Filter persons that have meaningful data
   const finalPersonKeys = filterPersonsWithData(
@@ -101,7 +93,6 @@ export function buildReportWeekHTML({
 
       // Skip entries with empty or invalid roles/names
       if (!role && !name) {
-        console.log(`Skipping invalid entry: "${pk}"`);
         return '';
       }
 

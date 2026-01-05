@@ -64,20 +64,6 @@ export function computeBaseTurnAround(
       Math.round((currStartDT.getTime() - prevEndDT.getTime()) / 60000)
     );
 
-    // Debug TA Base
-    if (debugEnabled) {
-      try {
-        console.debug('[TA.base]', {
-          iso,
-          prevISO,
-          prevEndStr,
-          start,
-          gapMin,
-          reqMin,
-          ta: ceilHours(Math.max(0, reqMin - gapMin)),
-        });
-      } catch {}
-    }
 
     return ceilHours(Math.max(0, reqMin - gapMin));
   } catch {
@@ -167,21 +153,6 @@ export function computePickupTurnAround(
       0,
       Math.round((currStartDT.getTime() - prevEndDT.getTime()) / 60000)
     );
-
-    // Debug TA Recogida
-    if (debugEnabled) {
-      try {
-        console.debug('[TA.pick]', {
-          iso,
-          prevISO,
-          prevEndStr,
-          start,
-          gapMin,
-          reqMin,
-          ta: ceilHours(Math.max(0, reqMin - gapMin)),
-        });
-      } catch {}
-    }
 
     return ceilHours(Math.max(0, reqMin - gapMin));
   } catch {

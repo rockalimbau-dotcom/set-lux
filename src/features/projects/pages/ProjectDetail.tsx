@@ -1,27 +1,21 @@
-import { useLocalStorage } from '@shared/hooks/useLocalStorage';
-import { useEffect, useMemo, useState } from 'react';
 import React from 'react';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { createPortal } from 'react-dom';
-import { storage } from '@shared/services/localStorage.service';
+import { useMemo } from 'react';
 
-import {
-  Project,
-  ProjectDetailProps,
-  ProjectTab,
-  ProjectTeam,
-  ProjectStatus,
-  ProjectMode,
-} from './ProjectDetail/ProjectDetailTypes';
-import { isEmptyTeam, validateTeamNames, formatMode } from './ProjectDetail/ProjectDetailUtils';
+import { ProjectDetailProps, ProjectTab } from './ProjectDetail/ProjectDetailTypes';
+import { formatMode } from './ProjectDetail/ProjectDetailUtils';
 import { StatusConfirmModal } from './ProjectDetail/StatusConfirmModal';
 import { NameValidationModal } from './ProjectDetail/NameValidationModal';
 import { ProjectDetailHeader } from './ProjectDetail/ProjectDetailHeader';
 import { PhaseGrid } from './ProjectDetail/PhaseGrid';
 import { ProjectDetailContent } from './ProjectDetail/ProjectDetailContent';
-import { useProjectSync } from './ProjectDetail/useProjectSync';
 import { useTeamList } from './ProjectDetail/useTeamList';
+import { useProjectStorage } from './ProjectDetail/useProjectStorage';
+import { useProjectNavigation } from './ProjectDetail/useProjectNavigation';
+import { useProjectModals } from './ProjectDetail/useProjectModals';
+import { useProjectHandlers } from './ProjectDetail/useProjectHandlers';
 
 /**
  * ProjectDetail
@@ -38,121 +32,52 @@ export default function ProjectDetail({
   initialTab = null,
 }: ProjectDetailProps) {
   const { t } = useTranslation();
-  const location = useLocation();
   const navigate = useNavigate();
-  const params = useParams();
-  const pid = params.id || project?.id || project?.nombre || 'tmp';
 
-  // Prevenir scroll automático al cambiar de ruta para evitar movimiento del logo
-  React.useEffect(() => {
-    // Forzar scroll a la parte superior inmediatamente sin animación
-    if (typeof window !== 'undefined') {
-      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
-    }
-  }, [location.pathname]);
-  
-  // --- modo de condiciones/nómina (mensual | semanal | publicidad)
-  const condTipo = useMemo(
-    () => (project?.conditions?.tipo || 'semanal').toLowerCase() as ProjectMode,
-    [project?.conditions?.tipo]
-  );
-  
-  // Claves de almacenamiento por proyecto
-  const storageKey = useMemo(() => {
-    const base = project?.id || project?.nombre || 'tmp';
-    return `project_${base}`;
-  }, [project?.id, project?.nombre]);
+  // Storage and state management
+  const { proj, setProj, condTipo, isActive } = useProjectStorage({ project });
 
-  const teamKey = useMemo(() => {
-    const base = project?.id || project?.nombre || 'tmp';
-    return `team_${base}`;
-  }, [project?.id, project?.nombre]);
-
-  // Estado inicial del proyecto
-  const initialProject: Project = {
-    ...project,
-    team: project?.team || {
-      base: [],
-      reinforcements: [],
-      prelight: [],
-      pickup: [],
-      enabledGroups: { prelight: false, pickup: false },
-    },
-  };
-
-  // Persistencia del proyecto principal
-  const [proj, setProj] = useLocalStorage<Project>(storageKey, initialProject);
-
-  // Persistencia del equipo (separada para compatibilidad)
-  const [, setTeam] = useLocalStorage<ProjectTeam>(teamKey, initialProject.team || {
-    base: [],
-    reinforcements: [],
-    prelight: [],
-    pickup: [],
-    enabledGroups: { prelight: false, pickup: false },
+  // Navigation and tab management
+  const { activeTab, setActiveTab, pid, isNavigatingRef } = useProjectNavigation({
+    project,
+    initialTab,
   });
 
-  // Hook de sincronización
-  const { loaded } = useProjectSync(proj);
+  // Modal state management
+  const {
+    showStatusModal,
+    setShowStatusModal,
+    showNameValidationModal,
+    setShowNameValidationModal,
+  } = useProjectModals();
 
-  // Sincronizar cambios de equipo hacia el localStorage separado
-  useEffect(() => {
-    if (!loaded) return;
-    if (proj?.team && !isEmptyTeam(proj.team)) {
-      setTeam(proj.team);
-    }
-  }, [proj?.team, loaded, setTeam]);
+  // Event handlers
+  const {
+    handleTabChange,
+    handleNavigateAway,
+    handleNavigateToProject,
+    handleTeamChange,
+    handleConditionsChange,
+    handleStatusConfirm,
+  } = useProjectHandlers({
+    proj,
+    isActive,
+    activeTab,
+    setProj,
+    setActiveTab,
+    setShowNameValidationModal,
+    onUpdateProject,
+    navigate,
+    pid,
+    isNavigatingRef,
+  });
 
-  const [activeTab, setActiveTab] = useState<ProjectTab | null>(initialTab as ProjectTab ?? null);
-  const [showStatusModal, setShowStatusModal] = useState<{ isClosing: boolean } | null>(null);
-  const [showNameValidationModal, setShowNameValidationModal] = useState<{ targetTab: ProjectTab | null; roleWithoutName: { role: string; group: string } } | null>(null);
-  const isNavigatingRef = React.useRef(false);
+  // Override handleStatusClick to set modal
+  const handleStatusClick = () => {
+    setShowStatusModal({ isClosing: isActive });
+  };
 
-  // Ruta -> pestaña (al entrar directamente por URL o al refrescar)
-  useEffect(() => {
-    if (isNavigatingRef.current) {
-      isNavigatingRef.current = false;
-      return;
-    }
-    
-    try {
-      const path = String(location.pathname || '');
-      const m = path.match(/\/project\/[^/]+\/?([^/?#]+)?/);
-      const seg = (m && m[1]) || '';
-      const valid = new Set<ProjectTab>([
-        'equipo',
-        'planificacion',
-        'reportes',
-        'nomina',
-        'necesidades',
-        'condiciones',
-      ]);
-      if (seg && valid.has(seg as ProjectTab)) {
-        if (activeTab !== seg) setActiveTab(seg as ProjectTab);
-      } else if (!seg && activeTab !== null) {
-        setActiveTab(null);
-      }
-    } catch {}
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [location.pathname]);
-
-  // Pestaña -> ruta (sin cambiar UI)
-  useEffect(() => {
-    const base = `/project/${pid}`;
-    const want = activeTab ? `${base}/${activeTab}` : base;
-    if (location.pathname !== want) {
-      isNavigatingRef.current = true;
-      navigate(want, { replace: true });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab, pid]);
-
-  // Estado (activo/cerrado) — case-insensitive
-  const isActive = useMemo(() => {
-    const val = (proj?.estado ?? '').toString().trim().toLowerCase();
-    return val === 'activo';
-  }, [proj?.estado]);
-
+  // UI state
   const estadoText = isActive ? t('common.active') : t('common.closed');
   const themeGlobal = (typeof document !== 'undefined' && document.documentElement.getAttribute('data-theme')) || 'light';
   const estadoBg = isActive ? (themeGlobal === 'light' ? '#0468BF' : '#F27405') : '#64748b';
@@ -181,83 +106,6 @@ export default function ProjectDetail({
     if (activeTab === 'reportes') return t('navigation.reports');
     return activeTab;
   }, [activeTab, condModeLabel, t]);
-
-  // Wrapper para setActiveTab que valida nombres antes de cambiar
-  const handleTabChange = (newTab: ProjectTab | null) => {
-    // Si estamos en la pestaña de equipo o saliendo de ella, validar nombres
-    if (activeTab === 'equipo' || newTab === 'equipo') {
-      const invalidRole = validateTeamNames(proj?.team);
-      if (invalidRole) {
-        setShowNameValidationModal({ targetTab: newTab, roleWithoutName: invalidRole });
-        return;
-      }
-    }
-    setActiveTab(newTab);
-  };
-
-  // Wrapper para navegar fuera del proyecto que valida nombres
-  const handleNavigateAway = () => {
-    // Si estamos en la pestaña de equipo, validar nombres antes de salir
-    if (activeTab === 'equipo') {
-      const invalidRole = validateTeamNames(proj?.team);
-      if (invalidRole) {
-        setShowNameValidationModal({ targetTab: null, roleWithoutName: invalidRole });
-        return;
-      }
-    }
-    isNavigatingRef.current = true;
-    navigate('/projects');
-  };
-
-  const handleNavigateToProject = () => {
-    // Validar nombres antes de volver al menú del proyecto
-    if (activeTab === 'equipo') {
-      const invalidRole = validateTeamNames(proj?.team);
-      if (invalidRole) {
-        setShowNameValidationModal({ targetTab: null, roleWithoutName: invalidRole });
-        return;
-      }
-    }
-    isNavigatingRef.current = true;
-    setActiveTab(null);
-    navigate(`/project/${proj?.id}`, { replace: false });
-  };
-
-  const handleStatusClick = () => {
-    setShowStatusModal({ isClosing: isActive });
-  };
-
-  const handleTeamChange = (model: ProjectTeam) => {
-    // Si el proyecto está cerrado, no permitir cambios
-    if (!isActive) return;
-    // Actualiza proyecto + persiste (en ambas claves)
-    setProj(p => {
-      const next = { ...p, team: model };
-      return next;
-    });
-  };
-
-  const handleConditionsChange = (patch: any) => {
-    // Si el proyecto está cerrado, no permitir cambios
-    if (!isActive) return;
-    // Solo actualizar si hay cambios reales
-    if (!patch) return;
-    
-    setProj(p => {
-      // Si desde Condiciones cambian el tipo, respétalo; si no, conserva el actual
-      const prevTipo = p?.conditions?.tipo || 'semanal';
-      const nextTipo = (patch?.tipo || prevTipo).toLowerCase() as ProjectMode;
-      const next = {
-        ...p,
-        conditions: {
-          ...(p.conditions || {}),
-          ...patch,
-          tipo: nextTipo,
-        },
-      };
-      return next;
-    });
-  };
 
   return (
     <div className='min-h-screen bg-neutral-bg text-neutral-text pb-12' style={{paddingTop: 0}}>
@@ -307,16 +155,7 @@ export default function ProjectDetail({
           projectName={proj?.nombre || 'este proyecto'}
           isClosing={showStatusModal.isClosing}
           onClose={() => setShowStatusModal(null)}
-          onConfirm={() => {
-            const nextEstado: ProjectStatus = showStatusModal.isClosing ? 'Cerrado' : 'Activo';
-            setProj(p => {
-              const updated = { ...p, estado: nextEstado };
-              try {
-                onUpdateProject?.(updated);
-              } catch {}
-              return updated;
-            });
-          }}
+          onConfirm={handleStatusConfirm}
         />,
         document.body
       )}

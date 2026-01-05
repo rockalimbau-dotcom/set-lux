@@ -15,7 +15,12 @@ export default function Chip({ label, colorBg, colorFg, text }: ChipProps) {
     >
       <span
         className='inline-flex items-center justify-center w-6 h-5 rounded-md font-bold text-[10px]'
-        style={{ background: colorBg, color: colorFg }}
+        style={{ 
+          background: colorBg, 
+          color: colorFg,
+          WebkitTextFillColor: colorFg,
+          textFillColor: colorFg
+        } as React.CSSProperties}
       >
         {label}
       </span>

@@ -26,7 +26,11 @@ export function useCondSync(project: any, baseId: string) {
 
     const tick = () => {
       const cur = condKeys.map(k => storage.getString(k) || '').join('|');
-      setCondStamp(prev => (prev === cur ? prev : cur));
+      setCondStamp(prev => {
+        // Solo actualizar si realmente cambió
+        if (prev === cur) return prev;
+        return cur;
+      });
     };
     const onFocus = () => tick();
     const onStorage = (e: StorageEvent) => {
@@ -35,7 +39,8 @@ export function useCondSync(project: any, baseId: string) {
 
     window.addEventListener('focus', onFocus);
     window.addEventListener('storage', onStorage);
-    const id = setInterval(tick, 1000);
+    // Aumentar intervalo a 3 segundos para reducir carga
+    const id = setInterval(tick, 3000);
 
     return () => {
       window.removeEventListener('focus', onFocus);

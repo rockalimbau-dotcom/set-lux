@@ -95,10 +95,6 @@ function MonthSection({
   // Campo para días del mes (solo mensual) - inicializar con los días del mes (30 o 31)
   const daysInMonth = getDaysInMonth(monthKey);
   
-  // Debug para verificar daysInMonth
-  if ((import.meta as any).env.DEV && projectMode === 'mensual') {
-    console.debug('[NOMINA.MONTH] daysInMonth calculated:', daysInMonth, 'calculateWorkingDaysInMonth:', calculateWorkingDaysInMonthValue, 'for monthKey:', monthKey, 'projectMode:', projectMode);
-  }
   const daysInMonthKey = `${persistKeyBase}_${monthKey}_priceDays`;
   const [priceDays, setPriceDays] = useLocalStorage<number>(daysInMonthKey, daysInMonth);
 

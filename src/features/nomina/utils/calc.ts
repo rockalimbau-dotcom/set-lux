@@ -19,10 +19,6 @@ function getProjectType(project: any): 'semanal' | 'mensual' | 'publicidad' {
 export function makeRolePrices(project: any) {
   const projectType = getProjectType(project);
   
-  if ((import.meta as any).env.DEV) {
-    console.debug('[NOMINA.MAIN] makeRolePrices - project type:', projectType);
-  }
-  
   switch (projectType) {
     case 'mensual':
       return makeRolePricesMensual(project);
@@ -38,10 +34,6 @@ export function makeRolePrices(project: any) {
 export function aggregateReports(project: any, weeks: any[], filterISO: ((iso: string) => boolean) | null = null) {
   const projectType = getProjectType(project);
   
-  if ((import.meta as any).env.DEV) {
-    console.debug('[NOMINA.MAIN] aggregateReports - project type:', projectType);
-  }
-  
   switch (projectType) {
     case 'mensual':
       return aggregateReportsMensual(project, weeks, filterISO);
@@ -56,10 +48,6 @@ export function aggregateReports(project: any, weeks: any[], filterISO: ((iso: s
 export function getCondParams(project: any) {
   const projectType = getProjectType(project);
   
-  if ((import.meta as any).env.DEV) {
-    console.debug('[NOMINA.MAIN] getCondParams - project type:', projectType);
-  }
-  
   switch (projectType) {
     case 'mensual':
       return getCondParamsMensual(project);
@@ -73,10 +61,6 @@ export function getCondParams(project: any) {
 
 export function getOvertimeWindowForPayrollMonth(project: any, monthKey: string) {
   const projectType = getProjectType(project);
-  
-  if ((import.meta as any).env.DEV) {
-    console.debug('[NOMINA.MAIN] getOvertimeWindowForPayrollMonth - project type:', projectType);
-  }
   
   switch (projectType) {
     case 'mensual':
@@ -96,10 +80,6 @@ export function isoInRange(iso: string, start: Date, end: Date) {
 
 export function aggregateWindowedReport(project: any, weeks: any[], filterISO: (iso: string) => boolean) {
   const projectType = getProjectType(project);
-  
-  if ((import.meta as any).env.DEV) {
-    console.debug('[NOMINA.MAIN] aggregateWindowedReport - project type:', projectType);
-  }
   
   switch (projectType) {
     case 'mensual':

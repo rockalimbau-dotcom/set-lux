@@ -19,7 +19,6 @@ export function generatePersonHeader(
 
   // Skip entries with empty or invalid roles/names
   if (!role && !name) {
-    console.log(`Skipping invalid entry (PDF): "${pk}"`);
     return '';
   }
 

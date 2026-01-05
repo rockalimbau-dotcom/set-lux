@@ -47,11 +47,36 @@ export function useLocalStorage<T>(
     return () => window.removeEventListener('storage', onStorage);
   }, []);
 
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const pendingValueRef = useRef<T | null>(null);
+  
   const set = useCallback((updater: SetValue<T>) => {
     setValue(prev => {
       const next = typeof updater === 'function' ? (updater as (prevValue: T) => T)(prev) : updater;
-      console.log('[LOCALSTORAGE.DEBUG] Setting key:', keyRef.current, 'value:', next);
-      storage.setString(keyRef.current, safeStringify(next));
+      
+      // Guardar el valor pendiente
+      pendingValueRef.current = next;
+      
+      // Debug removed to improve performance
+      
+      // Limpiar timeout anterior si existe
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+      
+      // Calcular el tiempo de debounce basado en el tamaño de los datos
+      const str = safeStringify(next);
+      const debounceTime = str.length > 10000 ? 500 : str.length > 1000 ? 300 : 100;
+      
+      // Usar debounce para evitar escrituras excesivas
+      timeoutRef.current = setTimeout(() => {
+        if (pendingValueRef.current !== null) {
+          storage.setString(keyRef.current, safeStringify(pendingValueRef.current));
+          pendingValueRef.current = null;
+        }
+        timeoutRef.current = null;
+      }, debounceTime);
+      
       return next;
     });
   }, []);

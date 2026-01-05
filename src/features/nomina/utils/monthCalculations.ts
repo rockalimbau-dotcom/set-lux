@@ -8,7 +8,6 @@ export const getDaysInMonth = (monthKey: string): number => {
   const [year, month] = monthKey.split('-').map(Number);
   const days = new Date(year, month, 0).getDate();
   if ((import.meta as any).env.DEV) {
-    console.debug('[NOMINA.MONTH] getDaysInMonth:', monthKey, '->', days, 'days');
   }
   return days;
 };

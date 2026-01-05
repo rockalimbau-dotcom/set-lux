@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocalStorage } from '@shared/hooks/useLocalStorage';
 import { relabelWeekByCalendar, relabelWeekByCalendarDynamic } from '../../utils/calendar';
 import { syncAllWeeks } from '../../utils/sync';
@@ -37,13 +37,44 @@ export function useWeeksData(
     setIsLoaded(true);
   }, [weeksData]);
 
-  // Sincronizar cambios de semanas de vuelta a weeksData
+  // Sincronizar cambios de semanas de vuelta a weeksData con debounce
+  const prevWeeksRef = useRef<{ pre: AnyRecord[]; pro: AnyRecord[] } | null>(null);
+  
   useEffect(() => {
     if (!isLoaded) return;
-    setWeeksData({ pre: preWeeks, pro: proWeeks });
+    
+    // Evitar escrituras innecesarias comparando con el valor anterior
+    const currentWeeks = { pre: preWeeks, pro: proWeeks };
+    const prevWeeks = prevWeeksRef.current;
+    
+    if (prevWeeks && 
+        prevWeeks.pre.length === currentWeeks.pre.length &&
+        prevWeeks.pro.length === currentWeeks.pro.length &&
+        prevWeeks.pre.every((w, i) => w.id === currentWeeks.pre[i]?.id) &&
+        prevWeeks.pro.every((w, i) => w.id === currentWeeks.pro[i]?.id)) {
+      // No hay cambios significativos, no escribir
+      return;
+    }
+    
+    prevWeeksRef.current = currentWeeks;
+    
+    // Usar debounce más largo para datos grandes
+    const totalSize = preWeeks.length + proWeeks.length;
+    const debounceTime = totalSize > 10 ? 500 : 300;
+    
+    const timeoutId = setTimeout(() => {
+      setWeeksData(currentWeeks);
+    }, debounceTime);
+    
+    return () => clearTimeout(timeoutId);
   }, [preWeeks, proWeeks, isLoaded, setWeeksData]);
 
   // Relabel weeks with holidays
+  const holidayKey = useMemo(
+    () => `${holidayFull.size}_${holidayMD.size}`,
+    [holidayFull, holidayMD]
+  );
+
   useEffect(() => {
     if (!isLoaded) return;
 
@@ -66,18 +97,32 @@ export function useWeeksData(
       ]);
 
       setPreWeeks(prev => {
-        const next = newPreWeeks;
-        return JSON.stringify(next) === JSON.stringify(prev) ? prev : next;
+        // Optimización: comparar solo si hay cambios reales
+        if (prev.length !== newPreWeeks.length) return newPreWeeks;
+        const changed = prev.some((p, i) => {
+          const n = newPreWeeks[i];
+          return !n || p.id !== n.id || p.label !== n.label;
+        });
+        return changed ? newPreWeeks : prev;
       });
 
       setProWeeks(prev => {
-        const next = newProWeeks;
-        return JSON.stringify(next) === JSON.stringify(prev) ? prev : next;
+        if (prev.length !== newProWeeks.length) return newProWeeks;
+        const changed = prev.some((p, i) => {
+          const n = newProWeeks[i];
+          return !n || p.id !== n.id || p.label !== n.label;
+        });
+        return changed ? newProWeeks : prev;
       });
     };
 
-    updateWeeks();
-  }, [isLoaded, holidayFull, holidayMD, preWeeks, proWeeks]);
+    // Usar requestIdleCallback o setTimeout para diferir el trabajo pesado
+    const timeoutId = setTimeout(() => {
+      updateWeeks();
+    }, 0);
+
+    return () => clearTimeout(timeoutId);
+  }, [isLoaded, holidayKey, preWeeks.length, proWeeks.length]);
 
   // Sync weeks with roster
   const rosterKey = useMemo(

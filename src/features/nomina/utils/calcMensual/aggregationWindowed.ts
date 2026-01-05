@@ -70,7 +70,6 @@ function processDayWindowed(
   const tVal = getCellValueCandidates(data, keysToUse, COL_CANDIDATES.transp, iso);
   const tYes = valIsYes(tVal);
   if (tYes) slot.transporte += 1;
-  dbgLog('iso', iso, 'he+', 'ta added', 'noct', nVal, 'noctYes', nYes, 'pen', pVal, 'penYes', pYes, 'transp', tVal, 'transpYes', tYes);
   slot.km += parseNum(getCellValueCandidates(data, keysToUse, COL_CANDIDATES.km, iso));
 
   // Para dietas, usar solo la clave original para evitar "comida" fantasma
@@ -129,7 +128,6 @@ export function aggregateWindowedReport(
       for (const iso of isoDays) {
         // Variantes para todos los NO-REF; REF solo su clave original
         const keysToUse = visibleKey === 'REF' ? [storageKey] : storageKeyVariants(storageKey);
-        dbgLog('window agg roleVis=', visibleKey, 'sk=', storageKey, 'iso=', iso, 'keysToUse=', keysToUse);
         processDayWindowed(slot, data, keysToUse, storageKey, iso);
       }
     }

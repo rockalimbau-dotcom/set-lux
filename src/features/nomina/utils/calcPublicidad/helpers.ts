@@ -100,34 +100,14 @@ export function getCellValueCandidates(
     return 0;
   });
 
-  // Debug: log search process
-  if ((import.meta as any).env.DEV) {
-    console.debug('[NOMINA.PUBLICIDAD] Looking for', columnCandidates, 'on', iso, 'in keys:', prioritizedKeys);
-  }
-
   for (const key of prioritizedKeys) {
     const personData = data[key];
-    if (!personData) {
-      if ((import.meta as any).env.DEV) {
-        console.debug('[NOMINA.PUBLICIDAD] No data for key:', key);
-      }
-      continue;
-    }
-
-    if ((import.meta as any).env.DEV) {
-      console.debug('[NOMINA.PUBLICIDAD] Found data for key:', key, 'columns:', Object.keys(personData));
-    }
+    if (!personData) continue;
 
     // 1) Búsqueda directa
     for (const col of columnCandidates) {
       const colData = personData[col];
-      if ((import.meta as any).env.DEV) {
-        console.debug('[NOMINA.PUBLICIDAD] Checking column:', col, 'data:', colData, 'iso:', iso, 'value:', colData?.[iso]);
-      }
       if (colData && colData[iso] != null && colData[iso] !== '') {
-        if ((import.meta as any).env.DEV) {
-          console.debug('[NOMINA.PUBLICIDAD] Found direct match:', key, col, iso, '=', colData[iso]);
-        }
         return String(colData[iso]);
       }
     }
@@ -144,17 +124,10 @@ export function getCellValueCandidates(
       if (real) {
         const colData = personData[real];
         if (colData && colData[iso] != null && colData[iso] !== '') {
-          if ((import.meta as any).env.DEV) {
-            console.debug('[NOMINA.PUBLICIDAD] Found normalized match:', key, real, iso, '=', colData[iso]);
-          }
           return String(colData[iso]);
         }
       }
     }
-  }
-
-  if ((import.meta as any).env.DEV) {
-    console.debug('[NOMINA.PUBLICIDAD] No match found for', columnCandidates, 'on', iso);
   }
   return undefined;
 }

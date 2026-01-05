@@ -96,11 +96,6 @@ export function useEnrichedRows({
         ? rolePrices.getForRole('REF', baseRoleLabel)
         : rolePrices.getForRole(baseRoleLabel);
 
-      // Debug: log the role prices
-      if ((import.meta as any).env.DEV) {
-        console.debug('[NOMINA.MONTH] Role prices for', baseRoleLabel, ':', pr);
-      }
-
       // Obtener precios efectivos (maneja caso especial de publicidad)
       const effectivePr = getEffectiveRolePrices(pr, projectMode, refuerzoSet, keyNoPR, rolePrices, baseRoleLabel);
 
@@ -117,22 +112,6 @@ export function useEnrichedRows({
       // Obtener datos filtrados
       const filteredRow = getFilteredRowData(r, filteredData, dateFrom, dateTo, refuerzoSet, stripPR);
       const useFilteredData = filteredRow !== null;
-
-      // Debug para verificar las claves
-      if ((import.meta as any).env.DEV && filteredData && dateFrom && dateTo) {
-        console.debug(
-          '[NOMINA.FILTER] r.role:',
-          r.role,
-          'r.name:',
-          r.name,
-          'pKey:',
-          pKey,
-          'filteredRow:',
-          filteredRow,
-          'filteredData keys:',
-          Array.from(filteredData.keys())
-        );
-      }
 
       // Obtener valores con override/filtrado
       // extrasValue tiene lógica especial: es la suma de horasExtra + turnAround si hay filteredRow

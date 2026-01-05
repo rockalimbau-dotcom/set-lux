@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import ReportBlockScheduleRow from '../components/ReportBlockScheduleRow';
@@ -9,12 +9,10 @@ import { DAY_NAMES, CONCEPTS, SI_NO } from '../constants';
 import useAutoCalculations from '../hooks/useAutoCalculations';
 import useCollapsedState from '../hooks/useCollapsedState';
 import useReportData from '../hooks/useReportData';
-import { dayNameFromISO } from '@shared/utils/date';
-import { parseDietas, formatDietas, norm } from '../utils/text';
+import { parseDietas, formatDietas } from '../utils/text';
 import { AnyRecord } from '@shared/types/common';
 import { btnExport } from '@shared/utils/tailwindClasses';
 import {
-  isMemberRefuerzo,
   isPersonScheduledOnBlock,
   blockKeyForPerson,
 } from '../utils/plan';
@@ -26,14 +24,19 @@ import {
   findPrevWorkingContextFactory,
 } from '../utils/runtime';
 import { personaKey, personaRole, personaName } from '../utils/model';
-import { storage } from '@shared/services/localStorage.service';
 import { mondayOf, toISO } from '@shared/utils/date';
 
 import { ReportesSemanaProps } from './ReportesSemana/ReportesSemanaTypes';
 import { useDietasOpciones } from './ReportesSemana/useDietasOpciones';
 import { useWeekData } from './ReportesSemana/useWeekData';
-import { createHorarioHelpers, isWeekend } from './ReportesSemana/horarioHelpers';
-import { defaultExportWeek, handleExportPDF } from './ReportesSemana/exportHelpers';
+import { createHorarioHelpers } from './ReportesSemana/horarioHelpers';
+import { useReportStorageKeys } from './ReportesSemana/useReportStorageKeys';
+import { useFilteredSemana } from './ReportesSemana/useFilteredSemana';
+import { usePersonScheduledChecker } from './ReportesSemana/usePersonScheduledChecker';
+import { useDayNameTranslator } from './ReportesSemana/useDayNameTranslator';
+import { useReportExport } from './ReportesSemana/useReportExport';
+import { useReportCollapsible } from './ReportesSemana/useReportCollapsible';
+import { toDisplayDate } from './ReportesSemana/ReportTableHeadHelpers';
 
 export default function ReportesSemana({
   project,
@@ -66,66 +69,32 @@ export default function ReportesSemana({
 
   const { horarioTexto, horarioPrelight, horarioPickup } = createHorarioHelpers(findWeekAndDay, t);
 
-  const filteredSemana = useMemo(() => {
-    return safeSemana.filter(iso => {
-      const dayLabel = horarioTexto(iso);
-      if (dayLabel === 'DESCANSO' && isWeekend(iso)) {
-        const hasPrelight = horarioPrelight(iso) !== '—';
-        const hasPickup = horarioPickup(iso) !== '—';
-        if (!hasPrelight && !hasPickup) {
-          return false;
-        }
-      }
-      return true;
-    });
-  }, [safeSemana, horarioTexto, horarioPrelight, horarioPickup]);
+  const filteredSemana = useFilteredSemana({
+    safeSemana,
+    horarioTexto,
+    horarioPrelight,
+    horarioPickup,
+  });
 
-  const storageKey = useMemo(() => {
-    const base = project?.id || project?.nombre || 'tmp';
-    const wk = safeSemana.join('_');
-    return `reportes_${base}_${wk}`;
-  }, [project?.id, project?.nombre, safeSemana]);
-
-  const persistBase = useMemo(() => {
-    const base = project?.id || project?.nombre || 'tmp';
-    const wk = safeSemana.join('_');
-    return `repstate_${base}_${wk}`;
-  }, [project?.id, project?.nombre, safeSemana]);
+  const { storageKey, persistBase } = useReportStorageKeys({
+    project,
+    safeSemana,
+  });
 
   const { collapsed, setCollapsed } = useCollapsedState(
     persistBase,
     safePersonas
   );
+  const isPersonScheduledOnBlockFn = usePersonScheduledChecker({
+    findWeekAndDay,
+  });
+
   const { data, setData, setCell } = useReportData(
     storageKey,
     safePersonas,
     [...safeSemana],
     [...CONCEPTS] as any,
-    (iso: string, role: string, name: string, findFn: any) => {
-      const { day } = findFn(iso);
-      if (!day || day.tipo === 'Descanso') return false;
-      if (String(role || '') === 'REF') {
-        const any = (arr: AnyRecord[]) =>
-          (arr || []).some(
-            m =>
-              String(m?.name || '') === String(name || '') &&
-              isMemberRefuerzo(m)
-          );
-        return any(day.team) || any(day.prelight) || any(day.pickup);
-      }
-      const baseRole = String(role || '').replace(/[PR]$/, '');
-      const suffix = /P$/.test(role || '')
-        ? 'prelight'
-        : /R$/.test(role || '')
-          ? 'pickup'
-          : 'team';
-      const list = Array.isArray(day[suffix]) ? day[suffix] : [];
-      return list.some(
-        (m: AnyRecord) =>
-          norm(m?.name) === norm(name) &&
-          (!m?.role || norm(m?.role) === norm(baseRole) || !baseRole)
-      );
-    },
+    isPersonScheduledOnBlockFn,
     findWeekAndDay
   );
 
@@ -159,19 +128,7 @@ export default function ReportesSemana({
     currentData: data,
   });
 
-  const [open, setOpen] = useState<boolean>(() => {
-    try {
-      const val = storage.getJSON<boolean>(`${persistBase}_open`);
-      if (val != null) return val === true;
-    } catch {}
-    return true;
-  });
-
-  useEffect(() => {
-    try {
-      storage.setJSON(`${persistBase}_open`, open);
-    } catch {}
-  }, [open, persistBase]);
+  const { open, setOpen } = useReportCollapsible(persistBase);
 
   const btnExportCls = btnExport;
   const btnExportStyle = {
@@ -180,44 +137,45 @@ export default function ReportesSemana({
     border: '1px solid rgba(255,255,255,0.08)',
   } as React.CSSProperties;
 
-  const handleExportHTML = () => {
-    if (typeof onExportWeekHTML === 'function') return onExportWeekHTML();
-    defaultExportWeek(
-      project,
-      title,
-      safeSemana,
-      (iso: string, index: number) => dayNameFromISO(iso, index, [...DAY_NAMES] as any),
-      horarioTexto,
-      data
-    );
-  };
+  const { handleExportHTML, handleExportPDFAsync } = useReportExport({
+    project,
+    title,
+    safeSemana,
+    horarioTexto,
+    data,
+    onExportWeekHTML,
+    onExportWeekPDF,
+  });
 
-  const handleExportPDFAsync = async () => {
-    await handleExportPDF(
-      project,
-      title,
-      safeSemana,
-      (iso: string, index: number) => dayNameFromISO(iso, index, [...DAY_NAMES] as any),
-      horarioTexto,
-      data,
-      onExportWeekPDF,
-      () => defaultExportWeek(
-        project,
-        title,
-        safeSemana,
-        (iso: string, index: number) => dayNameFromISO(iso, index, [...DAY_NAMES] as any),
-        horarioTexto,
-        data
-      )
-    );
-  };
+  const dayNameTranslator = useDayNameTranslator();
 
   const contentId = 'report-week-content';
   const contentRef = useRef<HTMLDivElement | null>(null);
+  const isInitialMount = useRef(true);
+  const prevOpenRef = useRef(open);
+  
   useEffect(() => {
-    if (open && contentRef.current) {
-      contentRef.current.focus();
+    // Solo hacer focus si el accordion se abre manualmente (no en el montaje inicial)
+    if (open && contentRef.current && !isInitialMount.current && !prevOpenRef.current) {
+      // El accordion se acaba de abrir manualmente
+      // Usar focus sin scroll para evitar que la página se desplace
+      if (!contentRef.current.hasAttribute('tabindex')) {
+        contentRef.current.setAttribute('tabindex', '-1');
+      }
+      // Focus sin scroll usando preventScroll si está disponible
+      try {
+        contentRef.current.focus({ preventScroll: true });
+      } catch {
+        // Fallback: no hacer focus si no se puede prevenir el scroll
+        // Es mejor no hacer focus que causar scroll no deseado
+      }
     }
+    
+    // Marcar que ya no es el montaje inicial después del primer render
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+    }
+    prevOpenRef.current = open;
   }, [open]);
 
   const renderPersonRows = (list: AnyRecord[], block: 'base' | 'pre' | 'pick') => (
@@ -267,27 +225,9 @@ export default function ReportesSemana({
           <table className='min-w-[920px] w-full border-collapse text-sm'>
             <ReportTableHead
               semana={[...filteredSemana]}
-              dayNameFromISO={(iso: string, i: number) => {
-                const dayIndex = dayNameFromISO(iso, i, [...DAY_NAMES] as any);
-                const dayMap: Record<string, string> = {
-                  'Lunes': t('reports.dayNames.monday'),
-                  'Martes': t('reports.dayNames.tuesday'),
-                  'Miércoles': t('reports.dayNames.wednesday'),
-                  'Jueves': t('reports.dayNames.thursday'),
-                  'Viernes': t('reports.dayNames.friday'),
-                  'Sábado': t('reports.dayNames.saturday'),
-                  'Domingo': t('reports.dayNames.sunday'),
-                };
-                return dayMap[dayIndex] || dayIndex;
-              }}
+              dayNameFromISO={dayNameTranslator}
               DAY_NAMES={[...DAY_NAMES] as any}
-              toDisplayDate={(iso: string) => {
-                const [y, m, d] = iso.split('-').map(Number);
-                const dt = new Date(y, m - 1, d);
-                const dd = String(dt.getDate()).padStart(2, '0');
-                const mm = String(dt.getMonth() + 1).padStart(2, '0');
-                return `${dd}/${mm}`;
-              }}
+              toDisplayDate={toDisplayDate}
               horarioTexto={horarioTexto}
             />
 

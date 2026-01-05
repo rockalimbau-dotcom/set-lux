@@ -17,10 +17,7 @@ export function buildReportWeekHTMLForPDF({
   CONCEPTS,
   data,
 }: Omit<BuildReportWeekHTMLParams, 'personaKey' | 'personaRole' | 'personaName'>): string {
-  // Debug: log persona keys
-  const personKeys = Object.keys(data || {});
-  console.log('=== PDF EXPORT DEBUG ===');
-  console.log('Persona keys in PDF export:', personKeys);
+  // Debug removed to improve performance
 
   // Deduplicate data
   const finalData = deduplicateData(data);
@@ -28,10 +25,6 @@ export function buildReportWeekHTMLForPDF({
   // Group and sort persons by block
   const { personsByBlock, finalPersonKeys } = groupAndSortPersonsByBlock(finalData);
 
-  console.log('📋 Sorted person keys by role hierarchy (PDF):', finalPersonKeys.map(k => {
-    const [role] = String(k).split('__');
-    return `${role}`;
-  }));
 
   // Filter days that are not DESCANSO or have data
   const safeSemanaWithData = filterDaysWithData(
@@ -50,7 +43,6 @@ export function buildReportWeekHTMLForPDF({
     finalData
   );
 
-  console.log('📊 Filtered concepts with data (PDF):', conceptosConDatos);
 
   // Generate table headers
   const headDays = generateDaysHeader(safeSemanaWithData, dayNameFromISO, toDisplayDate);

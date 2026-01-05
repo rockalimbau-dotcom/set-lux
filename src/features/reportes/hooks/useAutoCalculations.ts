@@ -126,19 +126,6 @@ export default function useAutoCalculations({
 
         // Calcular nocturnidad
         const noct = end ? calculateNocturnidad(start, end, params) : false;
-        if (debugEnabled && end) {
-          try {
-            console.debug('[noct.check]', {
-              iso,
-              block,
-              start,
-              end,
-              noctIni: params.nocturnoIni,
-              noctFin: params.nocturnoFin,
-              noct,
-            });
-          } catch {}
-        }
         const noctStr = noct ? 'SI' : '';
 
         return {
@@ -194,25 +181,8 @@ export default function useAutoCalculations({
             rowBlock
           );
 
-          if (debugEnabled) {
-            try {
-              console.debug('[work.check]', { iso, rowBlock, role, name, workedThisBlock });
-            } catch {}
-          }
 
           const off = !workedThisBlock;
-
-          if (debugEnabled && off) {
-            try {
-              console.debug('[noct.off]', {
-                iso,
-                rowBlock,
-                role,
-                name,
-                reason: 'not scheduled on this block',
-              });
-            } catch {}
-          }
 
           // Procesar Horas extra
           next[pk]['Horas extra'] = next[pk]['Horas extra'] || {};

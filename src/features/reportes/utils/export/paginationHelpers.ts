@@ -47,14 +47,11 @@ export const calculatePersonsPerPage = (
     
     if (testHeight <= maxPageHeight && availableSpace >= spaceBuffer) {
       optimalPersonsPerPage = testPersons;
-      console.log(`🎯 Auto-fill: Can fit ${testPersons} persons (height: ${testHeight}px, space left: ${availableSpace}px)`);
     } else if (testHeight <= maxPageHeight && availableSpace < spaceBuffer) {
       // We can fit it but would be too tight, stop here
-      console.log(`⚠️ Auto-fill: ${testPersons} persons would fit but too tight (space left: ${availableSpace}px < ${spaceBuffer}px buffer)`);
       break;
     } else {
       // Would exceed page height
-      console.log(`❌ Auto-fill: ${testPersons} persons would exceed page height (${testHeight}px > ${maxPageHeight}px)`);
       break;
     }
   }
@@ -70,7 +67,6 @@ export const calculatePersonsPerPage = (
       const testHeight = estimateContentHeight(testPersons, estimatedConceptsPerPerson);
       if (testHeight <= aggressiveMaxHeight) {
         aggressivePersonsPerPage = testPersons;
-        console.log(`🚀 Aggressive mode: Can fit ${testPersons} persons with few concepts (height: ${testHeight}px)`);
       } else {
         break;
       }
@@ -78,16 +74,11 @@ export const calculatePersonsPerPage = (
     
     if (aggressivePersonsPerPage > personsPerPage) {
       personsPerPage = aggressivePersonsPerPage;
-      console.log(`🚀 Applied aggressive optimization: ${personsPerPage} persons per page`);
     }
   }
   
   const totalPages = Math.ceil(totalPersons / personsPerPage) || 1;
   
-  console.log(`📄 Smart Pagination: ${totalPersons} persons, ${personsPerPage} per page, ${totalPages} pages`);
-  console.log(`📏 Final height for ${personsPerPage} persons: ${estimateContentHeight(personsPerPage, estimatedConceptsPerPerson)}px`);
-  console.log(`🎯 Auto-fill optimization: ${optimalPersonsPerPage !== personsPerPage ? 'Applied' : 'Not needed'}`);
-  console.log(`📊 Estimated concepts per person: ${estimatedConceptsPerPerson} (affects pagination)`);
   
   return { personsPerPage, totalPages };
 };

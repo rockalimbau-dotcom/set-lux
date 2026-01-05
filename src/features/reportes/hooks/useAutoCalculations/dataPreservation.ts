@@ -39,17 +39,6 @@ export function preserveOrRecalculateHorasExtra({
 
   // Cuando cambia horasExtraTipo, SIEMPRE recalcular desde el horario
   if (horasExtraTipoChanged) {
-    if (debugEnabled) {
-      try {
-        console.debug('[horasExtra.recalculated.onTypeChange]', {
-          iso,
-          pk,
-          prevValue: currExtra,
-          newAutoValue: autoExtra,
-          horasExtraTipo,
-        });
-      } catch {}
-    }
     return { value: autoExtra, isManual: false };
   }
 
@@ -59,17 +48,6 @@ export function preserveOrRecalculateHorasExtra({
       const convertedValue = convertHorasExtraToNewFormat(currExtra, horasExtraTipo);
       const finalValue = convertedValue && convertedValue !== '' ? convertedValue : String(currExtra);
 
-      if (debugEnabled) {
-        try {
-          console.debug('[horasExtra.manual.converted]', {
-            iso,
-            pk,
-            original: currExtra,
-            converted: convertedValue,
-            final: finalValue,
-          });
-        } catch {}
-      }
 
       return { value: finalValue, isManual: true };
     } else {
@@ -79,17 +57,6 @@ export function preserveOrRecalculateHorasExtra({
   }
 
   // Si el valor NO es manual Y NO cambió el tipo, usar el nuevo autoExtra
-  if (debugEnabled) {
-    try {
-      console.debug('[horasExtra.auto.recalculated]', {
-        iso,
-        pk,
-        prevValue: currExtra,
-        newAutoValue: autoExtra,
-        horasExtraTipo,
-      });
-    } catch {}
-  }
 
   return { value: autoExtra, isManual: false };
 }

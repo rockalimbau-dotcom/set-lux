@@ -71,7 +71,6 @@ function processDayWindowed(
   const tYes = valIsYes(tVal);
   if (tYes) slot.transporte += 1;
 
-  dbgLog('iso', iso, 'he+', 'ta added', 'noct', nVal, 'noctYes', nYes, 'pen', pVal, 'penYes', pYes, 'transp', tVal, 'transpYes', tYes);
 
   slot.km += parseNum(getCellValueCandidates(data, keysToUse, COL_CANDIDATES.km, iso));
 
@@ -131,7 +130,6 @@ export function aggregateWindowedReport(
       for (const iso of isoDays) {
         // Variantes para todos los NO-REF; REF solo su clave original
         const keysToUse = visibleKey === 'REF' ? [storageKey] : storageKeyVariants(storageKey);
-        dbgLog('window agg roleVis=', visibleKey, 'sk=', storageKey, 'iso=', iso, 'keysToUse=', keysToUse);
         processDayWindowed(slot, data, keysToUse, storageKey, iso);
       }
     }

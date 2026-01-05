@@ -406,6 +406,12 @@ html input[style*="borderWidth"] {
   border-color: #0468BF !important;
 }
 
+/* Badges de roles: texto blanco en modo claro */
+[data-theme='light'] .phase-content span[style*="linear-gradient(135deg,#60A5FA,#0369A1)"] {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
 /* Botón \"+ Añadir rol\" - efecto de iluminación en hover (modo claro) */
 [data-theme='light'] .phase-content button.btn-add-role:hover,
 [data-theme='light'] .phase-content button.btn-add-role:focus {

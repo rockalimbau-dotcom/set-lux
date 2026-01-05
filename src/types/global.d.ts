@@ -43,7 +43,7 @@ declare module '@shared/components' {
   export default _default;
 }
 
-declare module '../features/nomina/components/DietasSummary.jsx' {
+declare module '@features/nomina/components/DietasSummary.jsx' {
   const DietasSummary: React.ComponentType<any>;
   export default DietasSummary;
 }

@@ -76,7 +76,6 @@ function processDay(
   const tVal = getCellValueCandidates(data, keysToUse, COL_CANDIDATES.transp, iso);
   const tYes = valIsYes(tVal);
   if (tYes) slot.transporte += 1;
-  dbgLog('iso', iso, 'he', he, 'ta', ta, 'noct', nVal, 'noctYes', nYes, 'pen', pVal, 'penYes', pYes, 'transp', tVal, 'transpYes', tYes);
   slot.km += parseNum(getCellValueCandidates(data, keysToUse, COL_CANDIDATES.km, iso));
 
   // Para dietas, usar solo la clave original para evitar "comida" fantasma
@@ -119,7 +118,6 @@ export function aggregateReports(
       const slot = ensureSlot(totals, info.roleVisible, info.name);
       for (const iso of days) {
         const keysToUse = getKeysToUse(pk, info.roleVisible);
-        dbgLog('week agg person=', info.name, 'roleVis=', info.roleVisible, 'pk=', pk, 'iso=', iso, 'keysToUse=', keysToUse);
         processDay(slot, data, keysToUse, pk, iso);
       }
     }
