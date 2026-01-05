@@ -1,6 +1,7 @@
 import { Td } from '@shared/components';
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { getRoleBadgeCode } from '@shared/constants/roles';
 import { displayValue, displayMoney } from '../../utils/displayHelpers';
 import WorkedDaysSummary from '../WorkedDaysSummary.tsx';
 import CargaDescargaSummary from '../CargaDescargaSummary.tsx';
@@ -47,7 +48,7 @@ export function MonthSectionPersonRow({
   columnVisibility,
   readOnly = false,
 }: MonthSectionPersonRowProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const rc = (received as any)[pKey] || { ok: false, note: '' };
 
   // Detectar el tema actual
@@ -113,9 +114,9 @@ export function MonthSectionPersonRow({
               WebkitTextFillColor: roleFgColor,
               textFillColor: roleFgColor
             } as React.CSSProperties}
-          >
-            {r.role || '—'}
-          </span>
+            >
+              {getRoleBadgeCode(r.role || '', i18n.language) || '—'}
+            </span>
           <span className='text-xs text-zinc-200'>{r.name}</span>
         </span>
         </div>

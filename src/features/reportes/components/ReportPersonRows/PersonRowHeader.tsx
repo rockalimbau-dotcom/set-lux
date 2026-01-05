@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Td } from '@shared/components';
 import { AnyRecord } from '@shared/types/common';
 import { personaKeyFrom } from './ReportPersonRowsHelpers';
+import { getRoleBadgeCode } from '@shared/constants/roles';
 
 interface PersonRowHeaderProps {
   person: AnyRecord;
@@ -24,6 +26,7 @@ export function PersonRowHeader({
   readOnly,
   t,
 }: PersonRowHeaderProps) {
+  const { i18n } = useTranslation();
   const visualRole = person?.role || '';
   const name = person?.name || '';
   const pKey = personaKeyFrom(visualRole, name, block);
@@ -89,7 +92,7 @@ export function PersonRowHeader({
                 textFillColor: roleFgColor
               } as React.CSSProperties}
             >
-              {visualRole || '—'}
+              {getRoleBadgeCode(visualRole || '', i18n.language) || '—'}
             </span>
             <span className='text-xs text-zinc-200'>{name}</span>
             {visualRole === 'REF' && block && (

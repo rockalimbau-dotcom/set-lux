@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import ChipBase from '@shared/components/Chip';
 import { AnyRecord } from '@shared/types/common';
+import { getRoleBadgeCode } from '@shared/constants/roles';
 import { MemberChipProps } from './WeekCardTableTypes';
 
 export function MemberChip({ role, name, source }: MemberChipProps) {
+  const { i18n } = useTranslation();
+  
   // Detectar el tema actual
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
     if (typeof document !== 'undefined') {
@@ -39,17 +43,7 @@ export function MemberChip({ role, name, source }: MemberChipProps) {
     : 'linear-gradient(135deg,#FDE047,#F59E0B)'; // Color de Eléctrico
   const roleFgColor = theme === 'light' ? 'white' : '#000000'; // Blanco en claro, negro en oscuro
 
-  const roleLabels: AnyRecord = {
-    G: 'G',
-    BB: 'BB',
-    E: 'E',
-    TM: 'TM',
-    FB: 'FB',
-    AUX: 'AUX',
-    M: 'M',
-    REF: 'R',
-  };
-  let label: string = roleLabels[role] || role;
+  let label: string = getRoleBadgeCode(role || '', i18n.language);
   if (role !== 'REF') {
     if (source === 'pre') label = `${label}P`;
     if (source === 'pick') label = `${label}R`;

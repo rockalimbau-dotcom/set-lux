@@ -15,7 +15,7 @@ interface TeamRowProps {
 }
 
 export function TeamRow({ row, onChange, onRemove, canEdit, allowedRoles, groupKey = 'base' }: TeamRowProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const col = (ROLE_COLORS as any)[row.role] || (ROLE_COLORS as any).E;
   const [showConfirmRemove, setShowConfirmRemove] = useState(false);
   
@@ -100,7 +100,7 @@ export function TeamRow({ row, onChange, onRemove, canEdit, allowedRoles, groupK
               } as React.CSSProperties}
               title={row.role}
             >
-              {displayBadge(row.role || '—', groupKey)}
+              {displayBadge(row.role || '—', groupKey, i18n.language)}
             </span>
           </div>
           <div className='sm:w-[220px] w-full relative' ref={dropdownRef}>

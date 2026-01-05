@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { getRoleBadgeCode } from '@shared/constants/roles';
 
 type ChipProps = {
   role?: string;
@@ -48,17 +49,8 @@ export default function Chip({ role, name, onRemove, context, readOnly = false }
   const roleFgColor = theme === 'light' ? 'white' : '#000000'; // Blanco en claro, negro en oscuro
 
   const base = String(role || '').toUpperCase();
-  const roleLabels: Record<string, string> = {
-    G: 'G',
-    BB: 'BB',
-    E: 'E',
-    TM: 'TM',
-    FB: 'FB',
-    AUX: 'AUX',
-    M: 'M',
-    REF: 'R',
-  };
-  let label = roleLabels[base] || base;
+  const { i18n } = useTranslation();
+  let label = getRoleBadgeCode(base, i18n.language);
   if (context === 'prelight') label = `${label}P`;
   if (context === 'pickup') label = `${label}R`;
   return (

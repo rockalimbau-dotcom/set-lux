@@ -1,5 +1,5 @@
 import { AnyRecord } from '@shared/types/common';
-import { roleRank } from '@shared/constants/roles';
+import { roleRank, getRoleBadgeCode } from '@shared/constants/roles';
 
 /**
  * Sort team by role rank and sequence
@@ -45,9 +45,10 @@ export function roleTitleSuffix(groupKey: string): string {
 /**
  * Display badge with group suffix
  */
-export function displayBadge(roleCode: string, groupKey: string): string {
+export function displayBadge(roleCode: string, groupKey: string, language?: string): string {
+  const badgeCode = getRoleBadgeCode(roleCode, language);
   const suf = roleSuffixForGroup(groupKey);
-  return suf ? `${roleCode}${suf}` : roleCode;
+  return suf ? `${badgeCode}${suf}` : badgeCode;
 }
 
 /**

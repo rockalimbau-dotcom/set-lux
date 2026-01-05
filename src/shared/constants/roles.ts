@@ -55,3 +55,40 @@ export const ROLE_CODE_TO_LABEL: Record<RoleCode, string> = {
 
 export const roleLabelFromCode = (code: string): string => 
   ROLE_CODE_TO_LABEL[code as RoleCode] || code || '';
+
+/**
+ * Get role badge code based on language
+ * In English, some roles have different badge codes
+ */
+export const getRoleBadgeCode = (roleCode: string, language?: string): string => {
+  const lang = language || (typeof window !== 'undefined' && (window as any).i18n?.language) || 'es';
+  const base = String(roleCode || '').toUpperCase().replace(/[PR]$/, '');
+  
+  // English badge codes
+  if (lang === 'en' || lang.startsWith('en')) {
+    const englishBadges: Record<string, string> = {
+      'E': 'SP',
+      'TM': 'LCP',
+      'FB': 'DBO',
+      'AUX': 'A',
+      'M': 'T',
+      'BB': 'BBE',
+      'G': 'G',
+      'REF': 'R',
+    };
+    return englishBadges[base] || base;
+  }
+  
+  // Spanish/Catalan badge codes (default)
+  const defaultBadges: Record<string, string> = {
+    'G': 'G',
+    'BB': 'BB',
+    'E': 'E',
+    'TM': 'TM',
+    'FB': 'FB',
+    'AUX': 'AUX',
+    'M': 'M',
+    'REF': 'R',
+  };
+  return defaultBadges[base] || base;
+};
