@@ -15,7 +15,7 @@ type MonthSectionHeaderProps = {
   dateTo: string;
   setDateTo: (value: string) => void;
   dateRangeKey: string;
-  onExportPDF: () => void;
+  onExportPDF: () => void | Promise<void>;
   readOnly?: boolean;
 };
 
@@ -132,8 +132,13 @@ export function MonthSectionHeader({
         <button
           className={btnExportCls}
           style={btnExportStyle}
-          onClick={onExportPDF}
-          title={t('payroll.exportPDF')}
+          onClick={() => {
+            if (!readOnly) {
+              onExportPDF();
+            }
+          }}
+          disabled={readOnly}
+          title={readOnly ? t('conditions.projectClosed') : t('payroll.exportPDF')}
           type='button'
         >
           PDF

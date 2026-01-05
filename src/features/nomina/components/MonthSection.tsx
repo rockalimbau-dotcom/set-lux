@@ -172,12 +172,30 @@ function MonthSection({
     onExport?.(monthKey, selectedEnriched);
   };
   
-  const doExportPDF = () => {
+  const doExportPDF = async () => {
+    if (!onExportPDF) {
+      console.warn('onExportPDF no está definido');
+      return;
+    }
+    
     const selectedEnriched = enriched.filter(r => {
       const pKey = `${r.role}__${r.name}`;
       return isRowSelected(pKey);
     });
-    onExportPDF?.(monthKey, selectedEnriched);
+    
+    // Si no hay filas seleccionadas, exportar todas
+    const rowsToExport = selectedEnriched.length > 0 ? selectedEnriched : enriched;
+    
+    if (!rowsToExport || rowsToExport.length === 0) {
+      console.warn('No hay filas para exportar', { enriched, selectedEnriched, rowsToExport });
+      return;
+    }
+    
+    try {
+      await onExportPDF(monthKey, rowsToExport);
+    } catch (error) {
+      console.error('Error al exportar PDF:', error);
+    }
   };
 
   return (

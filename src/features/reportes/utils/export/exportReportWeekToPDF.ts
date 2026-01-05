@@ -62,11 +62,10 @@ export async function exportReportWeekToPDF(params: BuildPdfParams) {
       tempContainer.style.position = 'absolute';
       tempContainer.style.left = '-9999px';
       tempContainer.style.top = '0';
-      tempContainer.style.width = '1123px';
-      tempContainer.style.height = 'auto';
-      tempContainer.style.minHeight = '794px';
+      tempContainer.style.width = '297mm';
+      tempContainer.style.height = '210mm';
       tempContainer.style.backgroundColor = 'white';
-      tempContainer.style.overflow = 'visible';
+      tempContainer.style.overflow = 'hidden';
       
       // Add to DOM temporarily
       document.body.appendChild(tempContainer);
@@ -74,33 +73,27 @@ export async function exportReportWeekToPDF(params: BuildPdfParams) {
       // Wait for fonts and images to load
       await new Promise(resolve => setTimeout(resolve, 200));
       
-      // Debug: Check if footer exists and is visible
-      const footer = tempContainer.querySelector('.footer') as HTMLElement;
-      if (footer) {
-      } else {
-      }
-      
-      // Convert to canvas with dynamic height to include footer
+      // Convert to canvas with fixed dimensions (igual que nómina)
       const canvas = await html2canvas(tempContainer, {
         scale: 3,
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#ffffff',
         width: 1123,
-        height: tempContainer.scrollHeight + 100,
+        height: 794,
         scrollX: 0,
         scrollY: 0,
         windowWidth: 1123,
-        windowHeight: tempContainer.scrollHeight + 100,
+        windowHeight: 794,
         ignoreElements: () => false,
         onclone: (clonedDoc) => {
+          // Aplicar exactamente la misma lógica que en nómina
           const footer = clonedDoc.querySelector('.footer') as HTMLElement;
           if (footer) {
             footer.style.position = 'relative';
             footer.style.display = 'flex';
             footer.style.visibility = 'visible';
             footer.style.opacity = '1';
-          } else {
           }
         }
       });
@@ -115,7 +108,10 @@ export async function exportReportWeekToPDF(params: BuildPdfParams) {
       
       // Add image to PDF with dynamic height
       const imgData = canvas.toDataURL('image/png');
-      const imgHeight = (canvas.height / canvas.width) * 297;
+      // Convertir altura de píxeles a mm y limitar a 210mm (altura máxima de A4 landscape)
+      const imgHeightMM = (canvas.height / canvas.width) * 297;
+      const maxPageHeightMM = 210;
+      const imgHeight = Math.min(imgHeightMM, maxPageHeightMM);
       pdf.addImage(imgData, 'PNG', 0, 0, 297, imgHeight);
     }
     

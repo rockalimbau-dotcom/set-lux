@@ -8,6 +8,8 @@ import { filterWeekDaysForExport, translateWeekLabel } from './weekProcessingHel
 import { prepareWeekData } from './weekDataHelpers';
 import { generatePDFPageFromHTML } from './pdfGenerationHelpers';
 import { initializeExportHelpers } from './exportInitializationHelpers';
+import { storage } from '@shared/services/localStorage.service';
+import { personaKey } from '../model';
 
 export async function exportReportRangeToPDF(params: ExportReportRangeParams) {
   const {
@@ -93,8 +95,26 @@ export async function exportReportRangeToPDF(params: ExportReportRangeParams) {
       if (filteredWeekDays.length === 0) continue;
 
       // Build personas for this week
+      // Usar todas las personas del rango de fechas, no solo las de esta semana
+      // porque pueden tener datos en días que están en el rango pero en diferentes semanas
       const weekPersonas = weekToPersonas(week);
-      const providedPersonas = weekPersonas || [];
+      // Combinar personas de la semana con todas las personas del rango para asegurar que no se pierdan datos
+      const allPersonasMap = new Map<string, any>();
+      // Primero agregar todas las personas del rango (ya vienen con cargo y nombre)
+      personas.forEach(p => {
+        const key = `${p.cargo || ''}__${p.nombre || ''}`;
+        if (key !== '__') { // Solo agregar si tiene cargo o nombre
+          allPersonasMap.set(key, p);
+        }
+      });
+      // Luego agregar personas específicas de esta semana (por si hay alguna que no esté en el rango general)
+      weekPersonas.forEach(p => {
+        const key = `${p.cargo || ''}__${p.nombre || ''}`;
+        if (key !== '__' && !allPersonasMap.has(key)) {
+          allPersonasMap.set(key, p);
+        }
+      });
+      const providedPersonas = Array.from(allPersonasMap.values());
       
       // Detect prelight and pickup active in this week
       const weekPrelightActive = filteredWeekDays.some(iso => {
@@ -137,17 +157,59 @@ export async function exportReportRangeToPDF(params: ExportReportRangeParams) {
         pickupPeople
       );
 
+      // Preparar datos de la semana usando los 7 días completos (no filtrados)
+      // porque la clave de almacenamiento se crea con los 7 días completos
       const weekData = prepareWeekData({
         project,
-        weekDays: filteredWeekDays,
+        weekDays: weekDays, // Usar los 7 días completos, no filteredWeekDays
         safePersonas,
       });
+      
+      // Filtrar los datos para incluir solo los días que están en filteredWeekDays
+      // pero mantener la estructura completa para todas las personas
+      const filteredWeekData: any = {};
+      safePersonas.forEach(p => {
+        const key = personaKey(p);
+        if (weekData[key]) {
+          filteredWeekData[key] = {};
+          CONCEPTS.forEach(concepto => {
+            if (weekData[key][concepto]) {
+              filteredWeekData[key][concepto] = {};
+              // Solo incluir días que están en filteredWeekDays (días de esta semana en el rango)
+              filteredWeekDays.forEach(day => {
+                // Usar el valor del weekData si existe, o cadena vacía
+                filteredWeekData[key][concepto][day] = weekData[key][concepto][day] !== undefined 
+                  ? weekData[key][concepto][day] 
+                  : '';
+              });
+            } else {
+              // Si no hay datos para este concepto, crear estructura vacía
+              filteredWeekData[key][concepto] = {};
+              filteredWeekDays.forEach(day => {
+                filteredWeekData[key][concepto][day] = '';
+              });
+            }
+          });
+        } else {
+          // Si no hay datos para esta persona, crear estructura completa
+          filteredWeekData[key] = {};
+          CONCEPTS.forEach(concepto => {
+            filteredWeekData[key][concepto] = {};
+            filteredWeekDays.forEach(day => {
+              filteredWeekData[key][concepto][day] = '';
+            });
+          });
+        }
+      });
+      
+      // Usar los datos filtrados para esta semana
+      const finalWeekData = filteredWeekData;
 
       const weekLabel = week.label as string || `Semana ${weekIndex + 1}`;
       const weekTitle = translateWeekLabel(weekLabel);
 
       // Sort person keys by role hierarchy
-      const personKeys = sortPersonKeysByRole(Object.keys(weekData || {}));
+      const personKeys = sortPersonKeysByRole(Object.keys(finalWeekData || {}));
 
       // Calculate pagination per person
       const totalPersons = personKeys.length;
@@ -166,7 +228,7 @@ export async function exportReportRangeToPDF(params: ExportReportRangeParams) {
         
         const pageData: any = {};
         pagePersonKeys.forEach(pk => {
-          pageData[pk] = weekData[pk];
+          pageData[pk] = finalWeekData[pk] || {};
         });
 
         // Generate HTML for this page
@@ -187,6 +249,7 @@ export async function exportReportRangeToPDF(params: ExportReportRangeParams) {
           pageIndex,
         });
         
+        // imgHeight ya está limitado a 210mm en generatePDFPageFromHTML
         pdf.addImage(imgData, 'PNG', 0, 0, 297, imgHeight);
       }
     }

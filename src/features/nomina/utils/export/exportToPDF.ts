@@ -12,6 +12,11 @@ export async function exportToPDF({
   enrichedRows,
   monthLabelEs,
 }: ExportToPDFParams): Promise<boolean> {
+  if (!enrichedRows || !Array.isArray(enrichedRows)) {
+    console.error('exportToPDF: enrichedRows no es un array válido', enrichedRows);
+    return false;
+  }
+  
   console.log('🚀 exportToPDF called with', enrichedRows.length, 'rows');
   try {
     // Group rows by blocks

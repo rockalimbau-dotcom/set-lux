@@ -42,7 +42,12 @@ export function NominaPublicidadContent({
 
   // Export to PDF
   const exportMonthPDF = async (monthKey: string, enrichedRows: any[]) => {
-    const success = await exportToPDF(project, monthKey, enrichedRows, monthLabelEs);
+    const success = await exportToPDF({
+      project,
+      monthKey,
+      enrichedRows,
+      monthLabelEs,
+    });
     if (!success) {
       // Fallback to HTML if PDF fails
       exportMonth(monthKey, enrichedRows);

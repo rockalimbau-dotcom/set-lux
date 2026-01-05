@@ -20,34 +20,39 @@ export const estimateContentHeight = (
 export const calculatePersonsPerPage = (
   totalPersons: number,
   CONCEPTS: string[],
-  maxPageHeight: number = 720,
+  maxPageHeight: number = 794, // 210mm en píxeles a escala 3x (210 * 3.7795 ≈ 794)
   minPersonsPerPage: number = 1
 ): { personsPerPage: number; totalPages: number } => {
   // Estimate concepts per person (average case)
   const estimatedConceptsPerPerson = Math.min(CONCEPTS.length, 3);
   
-  // Start aggressive
-  let personsPerPage = Math.min(15, totalPersons);
+  // Usar un margen de seguridad más conservador (reducir altura máxima disponible)
+  const safetyMargin = 50; // Margen de seguridad en píxeles
+  const effectiveMaxHeight = maxPageHeight - safetyMargin;
+  
+  // Start more conservative
+  let personsPerPage = Math.min(12, totalPersons);
   
   // Dynamic adjustment with estimated concepts
   while (
-    estimateContentHeight(personsPerPage, estimatedConceptsPerPerson) > maxPageHeight &&
+    estimateContentHeight(personsPerPage, estimatedConceptsPerPerson) > effectiveMaxHeight &&
     personsPerPage > minPersonsPerPage
   ) {
     personsPerPage--;
   }
   
   // Auto-fill logic: if we have space, try to add more persons
+  // Pero ser más conservador con el espacio buffer
   let optimalPersonsPerPage = personsPerPage;
-  const spaceBuffer = 20;
+  const spaceBuffer = 40; // Aumentar buffer para evitar cortes
   
   for (let testPersons = personsPerPage + 1; testPersons <= totalPersons; testPersons++) {
     const testHeight = estimateContentHeight(testPersons, estimatedConceptsPerPerson);
-    const availableSpace = maxPageHeight - testHeight;
+    const availableSpace = effectiveMaxHeight - testHeight;
     
-    if (testHeight <= maxPageHeight && availableSpace >= spaceBuffer) {
+    if (testHeight <= effectiveMaxHeight && availableSpace >= spaceBuffer) {
       optimalPersonsPerPage = testPersons;
-    } else if (testHeight <= maxPageHeight && availableSpace < spaceBuffer) {
+    } else if (testHeight <= effectiveMaxHeight && availableSpace < spaceBuffer) {
       // We can fit it but would be too tight, stop here
       break;
     } else {
@@ -59,13 +64,16 @@ export const calculatePersonsPerPage = (
   personsPerPage = optimalPersonsPerPage;
   
   // Additional optimization: if concepts are few, we can be more aggressive
+  // Pero siempre respetar el límite máximo con margen de seguridad
   if (estimatedConceptsPerPerson <= 2) {
-    const aggressiveMaxHeight = 750; // More space when concepts are few
+    const aggressiveMaxHeight = Math.min(750, effectiveMaxHeight); // Usar effectiveMaxHeight con margen
     let aggressivePersonsPerPage = personsPerPage;
+    const aggressiveBuffer = 30; // Buffer más conservador
     
     for (let testPersons = personsPerPage + 1; testPersons <= totalPersons; testPersons++) {
       const testHeight = estimateContentHeight(testPersons, estimatedConceptsPerPerson);
-      if (testHeight <= aggressiveMaxHeight) {
+      const availableSpace = aggressiveMaxHeight - testHeight;
+      if (testHeight <= aggressiveMaxHeight && availableSpace >= aggressiveBuffer) {
         aggressivePersonsPerPage = testPersons;
       } else {
         break;
