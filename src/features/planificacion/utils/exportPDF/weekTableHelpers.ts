@@ -5,7 +5,7 @@ import { esc, getTranslation, translateJornadaType } from './helpers';
 /**
  * Get short day name (first 3 chars, uppercase)
  */
-export function getDayNameShort(index: number): string {
+function getDayNameShort(index: number): string {
   const dayKeys = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
   const dayName = i18n.t(`planning.${dayKeys[index]}`);
   return dayName.substring(0, 3).toUpperCase();
@@ -14,7 +14,7 @@ export function getDayNameShort(index: number): string {
 /**
  * Check if a day has meaningful data
  */
-export function hasMeaningfulData(day: any): boolean {
+function hasMeaningfulData(day: any): boolean {
   if (!day) return false;
   
   const hasTeam = day.team && day.team.length > 0;

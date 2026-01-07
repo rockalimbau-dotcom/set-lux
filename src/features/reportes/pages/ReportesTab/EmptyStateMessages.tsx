@@ -9,7 +9,7 @@ interface EmptyStateMessagesProps {
   hasTeam: boolean;
 }
 
-export function EmptyStateMessages({ projectId, readOnly = false, hasWeeks, hasTeam }: EmptyStateMessagesProps) {
+function EmptyStateMessages({ projectId, readOnly = false, hasWeeks, hasTeam }: EmptyStateMessagesProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   

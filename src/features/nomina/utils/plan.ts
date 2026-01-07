@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { storage } from '@shared/services/localStorage.service';
-import { parseYYYYMMDD, toISO, addDays } from '@shared/utils/date';
+import { parseYYYYMMDD, toYYYYMMDD, addDays } from '@shared/utils/date';
 
 export function usePlanWeeks(project: { id?: string; nombre?: string } | null) {
   const storageKey = useMemo(() => {
@@ -51,7 +51,7 @@ export function buildRefuerzoIndex(weeks: any[]): Set<string> {
 
 export function weekISOdays(week: { startDate: string }): string[] {
   const start = parseYYYYMMDD(week.startDate);
-  return Array.from({ length: 7 }, (_, i) => toISO(addDays(start, i)));
+  return Array.from({ length: 7 }, (_, i) => toYYYYMMDD(addDays(start, i)));
 }
 
 export function weekAllPeopleActive(week: any): { role: string; name: string }[] {

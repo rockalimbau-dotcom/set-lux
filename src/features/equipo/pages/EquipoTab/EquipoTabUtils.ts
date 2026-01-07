@@ -27,7 +27,7 @@ export function safeId(): string {
 /**
  * Get role suffix for group
  */
-export function roleSuffixForGroup(groupKey: string): string {
+function roleSuffixForGroup(groupKey: string): string {
   if (groupKey === 'prelight') return 'P';
   if (groupKey === 'pickup') return 'R';
   return '';
@@ -36,7 +36,7 @@ export function roleSuffixForGroup(groupKey: string): string {
 /**
  * Get role title suffix for group
  */
-export function roleTitleSuffix(groupKey: string): string {
+function roleTitleSuffix(groupKey: string): string {
   if (groupKey === 'prelight') return ' Prelight';
   if (groupKey === 'pickup') return ' Recogida';
   return '';

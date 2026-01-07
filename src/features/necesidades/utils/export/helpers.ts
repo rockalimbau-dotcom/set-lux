@@ -4,7 +4,7 @@ import { DayInfo } from './types';
 /**
  * Pad number to 2 digits
  */
-export const pad2 = (n: number): string => String(n).padStart(2, '0');
+const pad2 = (n: number): string => String(n).padStart(2, '0');
 
 /**
  * Parse YYYY-MM-DD string to Date

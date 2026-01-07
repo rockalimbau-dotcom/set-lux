@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { mondayOf, toISO, defaultWeek } from '@shared/utils/date';
+import { mondayOf, toYYYYMMDD, defaultWeek } from '@shared/utils/date';
 import { storage } from '@shared/services/localStorage.service';
 import {
   collectWeekTeamWithSuffixFactory,
@@ -37,7 +37,7 @@ export function useWeekData(
   const findWeekAndDay = findWeekAndDayFactory(
     getPlanAllWeeks,
     mondayOf,
-    toISO
+    toYYYYMMDD
   );
 
   const weekPrelightActive = useMemo(() => {

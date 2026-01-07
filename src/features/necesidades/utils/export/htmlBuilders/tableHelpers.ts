@@ -11,14 +11,14 @@ import {
 /**
  * Render cell content
  */
-export function renderCell(text: any): string {
+function renderCell(text: any): string {
   return `<div style="white-space:pre-wrap;line-height:1.35">${esc(text || '')}</div>`;
 }
 
 /**
  * Generate field row HTML
  */
-export function fieldRow(
+function fieldRow(
   key: string,
   label: string,
   DAYS: ReturnType<typeof getDays>,
@@ -36,7 +36,7 @@ export function fieldRow(
 /**
  * Generate list row HTML
  */
-export function listRow(
+function listRow(
   label: string,
   listKey: string,
   notesKey: string,

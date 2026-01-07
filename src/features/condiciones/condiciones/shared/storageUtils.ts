@@ -15,7 +15,7 @@ export const loadJSON = (k: string, fallback: any) => {
 /**
  * Guarda un valor JSON en el localStorage
  */
-export const saveJSON = (k: string, v: any) => {
+const saveJSON = (k: string, v: any) => {
   try {
     storage.setJSON(k, v);
   } catch {}

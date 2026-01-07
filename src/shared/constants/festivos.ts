@@ -24,7 +24,7 @@ export const FESTIVOS_CATALUNYA_2025_FALLBACK = [
 /**
  * Obtiene festivos dinámicamente según la localización del usuario
  */
-export async function getDynamicFestivos(year: number = new Date().getFullYear()): Promise<string[]> {
+async function getDynamicFestivos(year: number = new Date().getFullYear()): Promise<string[]> {
   try {
     const { country, region } = readLocationFromSettings();
     console.log(`🎯 Getting dynamic festivos for ${country}${region ? `-${region}` : ''} for year ${year}`);
@@ -71,7 +71,7 @@ export function isFestivo(date: string, festivos: string[] = FESTIVOS_CATALUNYA_
 /**
  * Verifica si una fecha es festiva (versión dinámica)
  */
-export async function isFestivoDynamic(date: string, year?: number): Promise<boolean> {
+async function isFestivoDynamic(date: string, year?: number): Promise<boolean> {
   const festivos = await getDynamicFestivos(year);
   return festivos.includes(date);
 }

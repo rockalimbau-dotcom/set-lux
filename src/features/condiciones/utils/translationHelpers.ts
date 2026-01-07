@@ -11,7 +11,7 @@ export const normalizeText = (text: string): string => {
 /**
  * Función para obtener todos los textos por defecto de todos los idiomas
  */
-export const getAllDefaultTexts = (key: string): string[] => {
+const getAllDefaultTexts = (key: string): string[] => {
   const languages = ['es', 'en', 'ca'];
   return languages.map(lang => {
     try {
@@ -27,7 +27,7 @@ export const getAllDefaultTexts = (key: string): string[] => {
 /**
  * Función para verificar si un texto es un texto por defecto de cualquier idioma
  */
-export const isDefaultText = (currentText: string, translationKey: string): boolean => {
+const isDefaultText = (currentText: string, translationKey: string): boolean => {
   if (!currentText || currentText.trim() === '') return true;
   
   const normalizedCurrent = normalizeText(currentText);
@@ -42,26 +42,26 @@ export const isDefaultText = (currentText: string, translationKey: string): bool
  */
 
 // Funciones comunes a todos los modos
-export const getDefaultTransportes = () => i18n.t('conditions.defaultTransportation');
+const getDefaultTransportes = () => i18n.t('conditions.defaultTransportation');
 export const getDefaultAlojamiento = () => i18n.t('conditions.defaultAccommodation');
 export const getDefaultConvenio = () => i18n.t('conditions.defaultAgreement');
 // Función genérica para prepro (usada en mensual y semanal, no en publicidad)
 export const getDefaultPrepro = () => i18n.t('conditions.defaultPreProduction');
 
 // Funciones específicas por modo
-export const getDefaultLegendMensual = () => i18n.t('conditions.defaultLegendMonthly');
-export const getDefaultHorariosMensual = () => i18n.t('conditions.defaultSchedules');
-export const getDefaultDietasMensual = () => i18n.t('conditions.defaultPerDiems');
-export const getDefaultPreproMensual = () => i18n.t('conditions.defaultPreProduction');
+const getDefaultLegendMensual = () => i18n.t('conditions.defaultLegendMonthly');
+const getDefaultHorariosMensual = () => i18n.t('conditions.defaultSchedules');
+const getDefaultDietasMensual = () => i18n.t('conditions.defaultPerDiems');
+const getDefaultPreproMensual = () => i18n.t('conditions.defaultPreProduction');
 
-export const getDefaultLegendSemanal = () => i18n.t('conditions.defaultLegendWeekly');
-export const getDefaultHorariosSemanal = () => i18n.t('conditions.defaultSchedules');
-export const getDefaultDietasSemanal = () => i18n.t('conditions.defaultPerDiems');
-export const getDefaultPreproSemanal = () => i18n.t('conditions.defaultPreProduction');
+const getDefaultLegendSemanal = () => i18n.t('conditions.defaultLegendWeekly');
+const getDefaultHorariosSemanal = () => i18n.t('conditions.defaultSchedules');
+const getDefaultDietasSemanal = () => i18n.t('conditions.defaultPerDiems');
+const getDefaultPreproSemanal = () => i18n.t('conditions.defaultPreProduction');
 
-export const getDefaultLegendPublicidad = () => i18n.t('conditions.defaultLegendAdvertising');
-export const getDefaultHorariosPublicidad = () => i18n.t('conditions.defaultSchedulesAdvertising');
-export const getDefaultDietasPublicidad = () => i18n.t('conditions.defaultPerDiemsAdvertising');
+const getDefaultLegendPublicidad = () => i18n.t('conditions.defaultLegendAdvertising');
+const getDefaultHorariosPublicidad = () => i18n.t('conditions.defaultSchedulesAdvertising');
+const getDefaultDietasPublicidad = () => i18n.t('conditions.defaultPerDiemsAdvertising');
 
 // Funciones de conveniencia para cada modo
 export const getDefaultsMensual = () => ({

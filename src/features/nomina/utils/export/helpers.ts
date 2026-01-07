@@ -31,7 +31,7 @@ export const displayMoney = (value: number | undefined | null, decimals: number 
 /**
  * Translate diet item names
  */
-export const translateDietItem = (item: string): string => {
+const translateDietItem = (item: string): string => {
   const itemMap: Record<string, string> = {
     'Comida': i18n.t('payroll.dietOptions.lunch'),
     'Cena': i18n.t('payroll.dietOptions.dinner'),
@@ -173,7 +173,7 @@ export const getBlockFromRole = (role: string): 'base' | 'pre' | 'pick' => {
 /**
  * Get base role priority for sorting
  */
-export const getBaseRolePriority = (role: string): number => {
+const getBaseRolePriority = (role: string): number => {
   const baseRole = role.replace(/[PR]$/, '').toUpperCase().trim();
   
   if (baseRole === 'G') return 0;

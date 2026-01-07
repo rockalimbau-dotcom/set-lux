@@ -13,7 +13,7 @@ export function esc(s: any): string {
 /**
  * Translate price header to current language
  */
-export function translateHeader(header: string): string {
+function translateHeader(header: string): string {
   const headerMap: Record<string, string> = {
     'Precio mensual': i18n.t('conditions.priceMonthly'),
     'Precio semanal': i18n.t('conditions.priceWeekly'),
@@ -32,7 +32,7 @@ export function translateHeader(header: string): string {
 /**
  * Translate role name to current language
  */
-export function translateRoleName(roleName: string): string {
+function translateRoleName(roleName: string): string {
   // Mapeo de nombres de roles en español a códigos
   const roleNameToCode: Record<string, string> = {
     'Gaffer': 'G',

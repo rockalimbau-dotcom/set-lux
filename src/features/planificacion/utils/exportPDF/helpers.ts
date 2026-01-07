@@ -4,12 +4,13 @@ import { translateJornadaType as translateJornadaTypeUtil } from '@shared/utils/
 /**
  * Pad number to 2 digits
  */
-export const pad2 = (n: number): string => String(n).padStart(2, '0');
+const pad2 = (n: number): string => String(n).padStart(2, '0');
 
 /**
  * Format date to DD/MM/YYYY
+ * Note: This function is not exported as there's a local version in export.ts
  */
-export const toDDMMYYYY = (d: Date): string =>
+const toDDMMYYYY = (d: Date): string =>
   `${pad2(d.getDate())}/${pad2(d.getMonth() + 1)}/${d.getFullYear()}`;
 
 /**

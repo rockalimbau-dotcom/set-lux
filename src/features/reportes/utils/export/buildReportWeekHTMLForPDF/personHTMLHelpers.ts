@@ -9,7 +9,7 @@ import {
 /**
  * Generate HTML for a person's header row
  */
-export function generatePersonHeader(
+function generatePersonHeader(
   pk: string,
   safeSemanaWithData: string[]
 ): string {
@@ -39,7 +39,7 @@ export function generatePersonHeader(
 /**
  * Format total value for display
  */
-export function formatTotalDisplay(
+function formatTotalDisplay(
   total: any,
   concept: string
 ): string {
@@ -63,7 +63,7 @@ export function formatTotalDisplay(
 /**
  * Format cell value for display
  */
-export function formatCellValue(
+function formatCellValue(
   cellValue: any,
   concept: string
 ): string {
@@ -100,7 +100,7 @@ export function formatCellValue(
 /**
  * Generate HTML for a person's concept rows
  */
-export function generatePersonConceptRows(
+function generatePersonConceptRows(
   pk: string,
   conceptosConDatos: string[],
   safeSemanaWithData: string[],

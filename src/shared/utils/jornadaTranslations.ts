@@ -3,7 +3,7 @@
  * Soporta tanto el contexto de i18n (t) como getTranslation
  */
 
-export type JornadaType = 
+type JornadaType = 
   | 'Rodaje' 
   | 'Oficina' 
   | 'Carga' 

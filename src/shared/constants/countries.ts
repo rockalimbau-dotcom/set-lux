@@ -1,9 +1,9 @@
-export interface Country {
+interface Country {
   code: string;
   name: string;
 }
 
-export interface Region {
+interface Region {
   code: string;
   name: string;
 }

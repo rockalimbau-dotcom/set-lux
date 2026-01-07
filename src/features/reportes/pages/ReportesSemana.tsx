@@ -24,7 +24,7 @@ import {
   findPrevWorkingContextFactory,
 } from '../utils/runtime';
 import { personaKey, personaRole, personaName } from '../utils/model';
-import { mondayOf, toISO } from '@shared/utils/date';
+import { mondayOf, toYYYYMMDD } from '@shared/utils/date';
 
 import { ReportesSemanaProps } from './ReportesSemana/ReportesSemanaTypes';
 import { useDietasOpciones } from './ReportesSemana/useDietasOpciones';
@@ -106,7 +106,7 @@ export default function ReportesSemana({
   const findPrevWorkingContext = findPrevWorkingContextFactory(
     getPlanAllWeeks,
     mondayOf,
-    toISO
+    toYYYYMMDD
   );
 
   useAutoCalculations({

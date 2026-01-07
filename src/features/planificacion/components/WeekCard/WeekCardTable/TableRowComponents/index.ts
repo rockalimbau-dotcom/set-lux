@@ -8,5 +8,5 @@ export { TeamRow } from './TeamRow';
 export { IssuesRow } from './IssuesRow';
 
 // Re-export types
-export type { BaseRowProps, DateRowProps, TeamRowProps } from './TableRowComponentsTypes';
+;
 

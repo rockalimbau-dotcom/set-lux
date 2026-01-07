@@ -4,17 +4,12 @@ export {
   renderWithParams,
   visibleToTemplate,
   restoreStrongTags,
-  renderExportHTML,
+  
   loadJSON,
-  saveJSON,
+  
   TextAreaAuto,
   InfoCard,
   ParamInput,
 } from './shared/index';
 
-export type {
-  TextAreaAutoProps,
-  InfoCardProps,
-  DuoField,
-  ParamInputProps,
-} from './shared/index';
+;

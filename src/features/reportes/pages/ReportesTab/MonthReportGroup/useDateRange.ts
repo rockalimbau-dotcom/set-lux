@@ -1,7 +1,7 @@
 import { useMemo, useEffect } from 'react';
 import { useLocalStorage } from '@shared/hooks/useLocalStorage';
 import { storage } from '@shared/services/localStorage.service';
-import { parseYYYYMMDD, toISO, addDays } from '@shared/utils/date';
+import { parseYYYYMMDD, toYYYYMMDD, addDays } from '@shared/utils/date';
 import { AnyRecord } from '@shared/types/common';
 
 interface UseDateRangeParams {
@@ -98,7 +98,7 @@ export function useDateRange({
     // Calcular el día siguiente
     const currentDate = parseYYYYMMDD(dateTo);
     const nextDate = addDays(currentDate, 1);
-    const nextDateISO = toISO(nextDate);
+    const nextDateISO = toYYYYMMDD(nextDate);
 
     // Encontrar el mes siguiente
     const currentIndex = allMonthKeys.indexOf(monthKey);

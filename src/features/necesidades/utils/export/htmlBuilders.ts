@@ -2,9 +2,9 @@
 export {
   buildNecesidadesHTML,
   buildNecesidadesHTMLForPDF,
-  renderCell,
-  fieldRow,
-  listRow,
-  generateTableBody,
-  generateHeaderRow,
+  
+  
+  
+  
+  
 } from './htmlBuilders/index';

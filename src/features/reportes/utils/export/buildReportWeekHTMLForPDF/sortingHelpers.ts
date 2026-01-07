@@ -3,7 +3,7 @@ import { rolePriorityForReports } from '../dataHelpers';
 /**
  * Get block type from person key (base, pre, pick)
  */
-export function getBlockFromKey(key: string): 'base' | 'pre' | 'pick' {
+function getBlockFromKey(key: string): 'base' | 'pre' | 'pick' {
   if (/\.pre__/.test(key) || /REF\.pre__/.test(key)) return 'pre';
   if (/\.pick__/.test(key) || /REF\.pick__/.test(key)) return 'pick';
   return 'base';
@@ -12,7 +12,7 @@ export function getBlockFromKey(key: string): 'base' | 'pre' | 'pick' {
 /**
  * Get base role (without P or R suffix)
  */
-export function getBaseRole(role: string): string {
+function getBaseRole(role: string): string {
   const r = String(role).toUpperCase().trim();
   if (r === 'REF') return 'REF';
   return r.replace(/[PR]$/, '');
@@ -21,7 +21,7 @@ export function getBaseRole(role: string): string {
 /**
  * Get base role priority
  */
-export function getBaseRolePriority(role: string): number {
+function getBaseRolePriority(role: string): number {
   const baseRole = getBaseRole(role);
   return rolePriorityForReports(baseRole);
 }
@@ -29,7 +29,7 @@ export function getBaseRolePriority(role: string): number {
 /**
  * Sort keys by role hierarchy within a block
  */
-export function sortByRoleHierarchy(
+function sortByRoleHierarchy(
   keys: string[],
   block: 'base' | 'pre' | 'pick'
 ): string[] {

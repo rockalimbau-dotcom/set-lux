@@ -4,7 +4,7 @@ import { Project } from './types';
 /**
  * Helper to get translation for filename
  */
-export const getFilenameTranslation = (key: string, fallback: string): string => {
+const getFilenameTranslation = (key: string, fallback: string): string => {
   const currentLang = i18n?.language || 'es';
   if (i18n?.store?.data?.[currentLang]?.translation) {
     const translations = i18n.store.data[currentLang].translation;

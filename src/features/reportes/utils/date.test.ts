@@ -4,7 +4,7 @@ import {
   toDisplayDate,
   dayNameFromISO,
   mondayOf,
-  toISO,
+  toYYYYMMDD,
   defaultWeek,
 } from '@shared/utils/date';
 
@@ -61,18 +61,18 @@ describe('date utils', () => {
     });
   });
 
-  describe('toISO', () => {
+  describe('toYYYYMMDD', () => {
     it('should format date to ISO string', () => {
       const date = new Date('2024-01-15T00:00:00');
-      expect(toISO(date)).toBe('2024-01-15');
+      expect(toYYYYMMDD(date)).toBe('2024-01-15');
     });
 
     it('should handle different dates', () => {
       const date1 = new Date('2024-12-31T00:00:00');
-      expect(toISO(date1)).toBe('2024-12-31');
+      expect(toYYYYMMDD(date1)).toBe('2024-12-31');
 
       const date2 = new Date('2024-02-29T00:00:00');
-      expect(toISO(date2)).toBe('2024-02-29');
+      expect(toYYYYMMDD(date2)).toBe('2024-02-29');
     });
   });
 

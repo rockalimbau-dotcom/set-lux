@@ -222,7 +222,7 @@ export function hasNocturnidad(
 export function findPrevWorkingContextFactory(
   getPlanAllWeeks: () => { pre?: any[]; pro?: any[] },
   mondayOf: (date: Date) => Date,
-  toISO: (date: Date) => string
+  toYYYYMMDD: (date: Date) => string
 ) {
   return function findPrevWorkingContext(currISO: string): {
     prevEnd: string | null;
@@ -237,7 +237,7 @@ export function findPrevWorkingContextFactory(
     );
 
     const [y, m, d] = String(currISO).split('-').map(Number);
-    const mondayStr = toISO(mondayOf(new Date(y, m - 1, d)));
+    const mondayStr = toYYYYMMDD(mondayOf(new Date(y, m - 1, d)));
     const wIdx = allWeeks.findIndex((w: any) => w.startDate === mondayStr);
     if (wIdx < 0)
       return { prevEnd: null, prevStart: null, prevISO: null, consecDesc: 0 };
@@ -261,7 +261,7 @@ export function findPrevWorkingContextFactory(
 
       const dateObj = new Date(w.startDate);
       dateObj.setDate(dateObj.getDate() + di);
-      const iso = toISO(dateObj);
+      const iso = toYYYYMMDD(dateObj);
 
       if (day.tipo === 'Descanso') {
         consecDesc += 1;

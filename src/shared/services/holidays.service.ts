@@ -3,7 +3,7 @@ import { getRegionalHolidayDates } from '@shared/constants/regional-holidays';
 
 export type Holiday = { date: string; localName?: string; name?: string };
 
-export type HolidaySource = 'calendarific' | 'fallback-local' | 'none';
+type HolidaySource = 'calendarific' | 'fallback-local' | 'none';
 
 export interface HolidayQuery {
   country: string; // ISO 3166-1 alpha-2, e.g., ES, FR
@@ -138,7 +138,7 @@ export async function fetchHolidays(query: HolidayQuery): Promise<FetchResult> {
   return result;
 }
 
-export async function getHolidaySet(query: HolidayQuery): Promise<Set<string>> {
+async function getHolidaySet(query: HolidayQuery): Promise<Set<string>> {
   const { holidays } = await fetchHolidays(query);
   return new Set((holidays || []).map(h => h.date));
 }

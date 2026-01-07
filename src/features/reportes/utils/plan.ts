@@ -89,14 +89,14 @@ export function blockKeyForPerson(
 export function findWeekAndDayFactory(
   getPlanAllWeeks: () => { pre?: any[]; pro?: any[] }, 
   mondayOf: (date: Date) => Date, 
-  toISO: (date: Date) => string
+  toYYYYMMDD: (date: Date) => string
 ) {
   return function findWeekAndDay(iso: string): { week: any; day: any; idx: number } {
     try {
       const { pre, pro } = getPlanAllWeeks();
       const weeks = [...(pre || []), ...(pro || [])];
       const [y, m, d] = iso.split('-').map(Number);
-      const monday = toISO(mondayOf(new Date(y, m - 1, d)));
+      const monday = toYYYYMMDD(mondayOf(new Date(y, m - 1, d)));
       const week = weeks.find((w: any) => w.startDate === monday);
       if (!week) return { week: null, day: null, idx: -1 };
       const js = new Date(y, m - 1, d).getDay();

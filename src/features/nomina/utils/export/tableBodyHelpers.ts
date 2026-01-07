@@ -11,7 +11,7 @@ interface GenerateTableBodyParams {
 /**
  * Group rows by block and sort them
  */
-export function groupRowsByBlock(enrichedRows: any[]) {
+function groupRowsByBlock(enrichedRows: any[]) {
   const rowsByBlock = {
     base: [] as any[],
     pre: [] as any[],
@@ -33,7 +33,7 @@ export function groupRowsByBlock(enrichedRows: any[]) {
 /**
  * Generate block title row HTML
  */
-export function generateBlockTitle(block: 'base' | 'pre' | 'pick', numColumns: number): string {
+function generateBlockTitle(block: 'base' | 'pre' | 'pick', numColumns: number): string {
   const blockConfig = {
     base: {
       label: i18n.t('payroll.teamBase'),

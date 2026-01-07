@@ -15,7 +15,7 @@ export function openPrintWindow(html: string) {
 /**
  * Open PDF window (fallback to HTML print window for now)
  */
-export function openPDFWindow({
+function openPDFWindow({
   project,
   monthKey,
   enrichedRows,

@@ -3,11 +3,5 @@ export { buildNecesidadesHTML } from './buildHTML';
 export { buildNecesidadesHTMLForPDF } from './buildHTMLForPDF';
 
 // Re-export table helpers if needed elsewhere
-export {
-  renderCell,
-  fieldRow,
-  listRow,
-  generateTableBody,
-  generateHeaderRow,
-} from './tableHelpers';
+;
 

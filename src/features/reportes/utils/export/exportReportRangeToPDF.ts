@@ -26,7 +26,7 @@ export async function exportReportRangeToPDF(params: ExportReportRangeParams) {
   } = params;
 
   try {
-    const { toDisplayDate, dayNameFromISO, mondayOf, toISO } = await import('@shared/utils/date');
+    const { toDisplayDate, dayNameFromISO, mondayOf, toYYYYMMDD } = await import('@shared/utils/date');
     const { findWeekAndDayFactory } = await import('../plan');
     const { DAY_NAMES, CONCEPTS } = await import('../../constants');
     const { 
@@ -48,7 +48,7 @@ export async function exportReportRangeToPDF(params: ExportReportRangeParams) {
       }
     };
 
-    const findWeekAndDay = findWeekAndDayFactory(getPlanAllWeeks, mondayOf, toISO);
+    const findWeekAndDay = findWeekAndDayFactory(getPlanAllWeeks, mondayOf, toYYYYMMDD);
 
     const {
       horarioTexto,

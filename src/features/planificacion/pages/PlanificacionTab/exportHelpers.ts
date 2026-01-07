@@ -4,7 +4,7 @@ import { renderExportHTML } from '../../utils/export';
 import { exportToPDF, exportAllToPDF } from '../../utils/exportPDF';
 import { AnyRecord } from '@shared/types/common';
 
-export const openHtmlInNewTab = (title: string, innerHtml: string) => {
+const openHtmlInNewTab = (title: string, innerHtml: string) => {
   const w = typeof window !== 'undefined' ? window.open('', '_blank') : null;
   if (!w) return;
   try {

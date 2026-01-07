@@ -1,4 +1,4 @@
-import { parseYYYYMMDD, toISO, addDays } from '@shared/utils/date';
+import { parseYYYYMMDD, toYYYYMMDD, addDays } from '@shared/utils/date';
 import { AnyRecord } from '@shared/types/common';
 
 /**
@@ -6,7 +6,7 @@ import { AnyRecord } from '@shared/types/common';
  */
 export function weekToSemanasISO(week: AnyRecord): string[] {
   const start = parseYYYYMMDD(week.startDate as string);
-  return Array.from({ length: 7 }, (_, i) => toISO(addDays(start, i)));
+  return Array.from({ length: 7 }, (_, i) => toYYYYMMDD(addDays(start, i)));
 }
 
 /**

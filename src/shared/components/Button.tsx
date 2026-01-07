@@ -1,6 +1,6 @@
 import React from 'react';
 
-export type ButtonVariant = 
+type ButtonVariant = 
   | 'primary' 
   | 'secondary' 
   | 'danger' 
@@ -10,9 +10,9 @@ export type ButtonVariant =
   | 'remove' 
   | 'duplicate';
 
-export type ButtonSize = 'sm' | 'md' | 'lg';
+type ButtonSize = 'sm' | 'md' | 'lg';
 
-export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   children: React.ReactNode;
   variant?: ButtonVariant;
   size?: ButtonSize;
@@ -109,7 +109,7 @@ export default function Button({
 }
 
 // Export variants for easy access
-export const ButtonVariants: Record<string, ButtonVariant> = {
+const ButtonVariants: Record<string, ButtonVariant> = {
   PRIMARY: 'primary',
   SECONDARY: 'secondary',
   DANGER: 'danger',
@@ -120,7 +120,7 @@ export const ButtonVariants: Record<string, ButtonVariant> = {
   DUPLICATE: 'duplicate',
 };
 
-export const ButtonSizes: Record<string, ButtonSize> = {
+const ButtonSizes: Record<string, ButtonSize> = {
   SM: 'sm',
   MD: 'md',
   LG: 'lg',

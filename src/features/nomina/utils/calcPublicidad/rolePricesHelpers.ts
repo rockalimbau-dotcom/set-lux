@@ -19,7 +19,7 @@ export function num(v: unknown): number {
 /**
  * Normalize string for comparison (remove accents, lowercase, remove P/R suffix)
  */
-export function normalizeStr(s: unknown): string {
+function normalizeStr(s: unknown): string {
   return String(s == null ? '' : s)
     .replace(/[PR]$/i, '')
     .toLowerCase()

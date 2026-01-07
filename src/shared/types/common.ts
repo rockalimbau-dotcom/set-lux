@@ -11,7 +11,7 @@ export type AnyRecord = Record<string, any>;
 /**
  * Tipo para objetos de proyecto
  */
-export interface Project {
+interface Project {
   id?: string;
   nombre?: string;
   [key: string]: any;
@@ -20,7 +20,7 @@ export interface Project {
 /**
  * Tipo para semanas de planificación
  */
-export interface Week {
+interface Week {
   id?: string;
   label?: string;
   startDate?: string;
@@ -31,7 +31,7 @@ export interface Week {
 /**
  * Tipo para días de planificación
  */
-export interface Day {
+interface Day {
   name?: string;
   tipo?: string;
   team?: Member[];
@@ -43,7 +43,7 @@ export interface Day {
 /**
  * Tipo para miembros del equipo
  */
-export interface Member {
+interface Member {
   name?: string;
   role?: string;
   [key: string]: any;

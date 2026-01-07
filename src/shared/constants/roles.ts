@@ -1,13 +1,13 @@
 // src/shared/constants/roles.ts
 
-export type RoleCode = 'G' | 'BB' | 'E' | 'TM' | 'FB' | 'AUX' | 'M' | 'REF';
+type RoleCode = 'G' | 'BB' | 'E' | 'TM' | 'FB' | 'AUX' | 'M' | 'REF';
 
-export interface Role {
+interface Role {
   code: RoleCode;
   label: string;
 }
 
-export interface RoleColor {
+interface RoleColor {
   bg: string;
   fg: string;
 }

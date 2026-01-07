@@ -91,7 +91,7 @@ export function valIsYes(v: unknown): boolean {
 /**
  * Check if running in development mode
  */
-export function isDev(): boolean {
+function isDev(): boolean {
   try {
     if ((import.meta as any).env?.DEV) return true;
   } catch {}

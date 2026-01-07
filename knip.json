@@ -1,0 +1,22 @@
+{
+  "$schema": "https://unpkg.com/knip@latest/schema.json",
+  "entry": [
+    "src/main.tsx",
+    "src/app/routes/**/*.tsx"
+  ],
+  "project": [
+    "src/**/*.{js,jsx,ts,tsx}",
+    "*.config.{js,ts}"
+  ],
+  "ignore": [
+    "src/**/*.test.{js,jsx,ts,tsx}",
+    "src/test/**"
+  ],
+  "ignoreDependencies": [
+    "@types/*"
+  ],
+  "vite": {
+    "config": "vite.config.js"
+  }
+}
+

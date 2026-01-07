@@ -1,7 +1,7 @@
 /**
  * Calculate pagination for PDF export
  */
-export interface PaginationResult {
+interface PaginationResult {
   pages: Array<Array<{ type: 'title' | 'row', block?: string, row?: any }>>;
   totalPages: number;
 }

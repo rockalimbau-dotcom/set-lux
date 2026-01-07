@@ -1,4 +1,4 @@
-export const parseNum = (x: any): number => {
+const parseNum = (x: any): number => {
   if (x == null) return NaN;
   let s = String(x)
     .trim()
@@ -20,7 +20,7 @@ export const parseNum = (x: any): number => {
   return Number.isFinite(n) ? n : NaN;
 };
 
-export const fmt = (n: number): string => {
+const fmt = (n: number): string => {
   if (!Number.isFinite(n)) return '';
   if (Math.abs(n % 1) < 1e-9) return String(Math.round(n));
   return n.toFixed(2).replace(/\.?0+$/, '');

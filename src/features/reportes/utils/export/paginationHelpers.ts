@@ -1,7 +1,7 @@
 /**
  * Estimate content height for pagination
  */
-export const estimateContentHeight = (
+const estimateContentHeight = (
   numPersons: number,
   conceptsPerPerson: number,
   headerHeight: number = 80,

@@ -1,4 +1,4 @@
-export function parseNum(input: unknown): number {
+function parseNum(input: unknown): number {
   if (input == null) return NaN;
   let s = String(input)
     .trim()
@@ -14,7 +14,7 @@ export function parseNum(input: unknown): number {
   return isFinite(n) ? n : NaN;
 }
 
-export function fmtMoney(n: number): string {
+function fmtMoney(n: number): string {
   if (!isFinite(n)) return '';
   const r = Math.round(n * 100) / 100;
   if (Number.isInteger(r)) return String(r);

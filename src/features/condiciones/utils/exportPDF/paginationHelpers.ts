@@ -1,7 +1,7 @@
 /**
  * Estimate content height for pagination
  */
-export function estimateContentHeight(numBlocks: number): number {
+function estimateContentHeight(numBlocks: number): number {
   const headerHeight = 120; // Header + info panel + tabla (más conservador)
   const footerHeight = 30; // Footer (más espacio)
   const sectionHeight = 80; // Altura promedio por sección de texto (más conservador)

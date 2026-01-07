@@ -1,6 +1,6 @@
 import React from 'react';
 
-export type TableAlign = 'left' | 'center' | 'right' | 'top' | 'middle' | 'bottom';
+type TableAlign = 'left' | 'center' | 'right' | 'top' | 'middle' | 'bottom';
 export type TableVariant = 'default' | 'wide';
 
 export interface ThProps extends React.ThHTMLAttributes<HTMLTableHeaderCellElement> {
@@ -111,7 +111,7 @@ export function Row({ label, children, className = '', ...rest }: RowProps) {
 }
 
 // Export variants for easy access
-export const TableAlign = {
+const TableAlign = {
   LEFT: 'left' as const,
   CENTER: 'center' as const,
   RIGHT: 'right' as const,

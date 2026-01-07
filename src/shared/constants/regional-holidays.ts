@@ -3,14 +3,14 @@
  * Formato: YYYY-MM-DD
  */
 
-export interface RegionalHoliday {
+interface RegionalHoliday {
   date: string;
   name: string;
   regions: string[];
   type: 'regional' | 'local';
 }
 
-export const SPAIN_REGIONAL_HOLIDAYS: RegionalHoliday[] = [
+const SPAIN_REGIONAL_HOLIDAYS: RegionalHoliday[] = [
   // 2025 - Festivos nacionales que se celebran en todas las regiones
   { date: '2025-01-01', name: 'Año Nuevo', regions: ['ES'], type: 'regional' },
   { date: '2025-01-06', name: 'Reyes', regions: ['ES'], type: 'regional' },
@@ -53,7 +53,7 @@ export const SPAIN_REGIONAL_HOLIDAYS: RegionalHoliday[] = [
 /**
  * Mapeo de códigos de región a nombres
  */
-export const REGION_NAMES: Record<string, string> = {
+const REGION_NAMES: Record<string, string> = {
   'ES': 'España',
   'CT': 'Cataluña',
   'MD': 'Madrid',
@@ -66,7 +66,7 @@ export const REGION_NAMES: Record<string, string> = {
 /**
  * Obtiene festivos regionales para un país y región específicos
  */
-export function getRegionalHolidays(
+function getRegionalHolidays(
   country: string,
   region: string | null,
   year: number

@@ -1,10 +1,10 @@
 import React from 'react';
 
-export type InputVariant = 'default' | 'search' | 'error';
-export type InputSize = 'sm' | 'md' | 'lg';
-export type InputType = 'text' | 'email' | 'password' | 'number' | 'date' | 'time';
+type InputVariant = 'default' | 'search' | 'error';
+type InputSize = 'sm' | 'md' | 'lg';
+type InputType = 'text' | 'email' | 'password' | 'number' | 'date' | 'time';
 
-export interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'> {
+interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'> {
   type?: InputType;
   variant?: InputVariant;
   size?: InputSize;
@@ -86,13 +86,13 @@ export default function Input({
 }
 
 // Export variants for easy access
-export const InputVariants: Record<string, InputVariant> = {
+const InputVariants: Record<string, InputVariant> = {
   DEFAULT: 'default',
   SEARCH: 'search',
   ERROR: 'error',
 };
 
-export const InputSizes: Record<string, InputSize> = {
+const InputSizes: Record<string, InputSize> = {
   SM: 'sm',
   MD: 'md',
   LG: 'lg',

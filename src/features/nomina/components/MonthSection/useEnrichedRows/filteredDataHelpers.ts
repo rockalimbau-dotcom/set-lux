@@ -3,7 +3,7 @@ import { RowIn } from '../MonthSectionTypes';
 /**
  * Get visible role for filtered data lookup
  */
-export function getVisibleRoleForFilter(
+function getVisibleRoleForFilter(
   role: string,
   refuerzoSet: Set<string>,
   keyNoPR: string,

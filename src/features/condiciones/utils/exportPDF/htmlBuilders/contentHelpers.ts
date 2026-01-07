@@ -5,7 +5,7 @@ import { esc } from '../helpers';
 /**
  * Generate blocks HTML from model templates
  */
-export function generateBlocksFromModel(model: any): string {
+function generateBlocksFromModel(model: any): string {
   const blocks = [
     [i18n.t('conditions.legend'), renderWithParams(model.legendTemplate, model.params)],
     [i18n.t('conditions.holidays'), renderWithParams(model.festivosTemplate, model.params)],
