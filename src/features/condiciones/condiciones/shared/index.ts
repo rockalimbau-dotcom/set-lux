@@ -4,6 +4,7 @@ export {
   renderWithParams,
   visibleToTemplate,
   restoreStrongTags,
+  markdownToHtml,
 } from './utils';
 
 ;

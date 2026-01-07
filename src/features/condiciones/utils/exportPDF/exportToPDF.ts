@@ -7,7 +7,7 @@ import {
   getDefaultPrepro,
   getDefaultConvenio,
 } from '../translationHelpers';
-import { renderWithParams, restoreStrongTags } from '../../condiciones/shared';
+import { renderWithParams, restoreStrongTags, markdownToHtml } from '../../condiciones/shared';
 import { buildCondicionesPageHTMLForPDF } from './htmlBuilders';
 import { calculateBlocksPerPage } from './paginationHelpers';
 import { getConditionsLabel } from './helpers';
@@ -79,11 +79,12 @@ export async function exportCondicionesToPDF(
     const convenioText = getDefaultConvenio();
 
     // Calcular paginación con ajuste dinámico
+    // Convertir Markdown a HTML para el PDF
     const blocks = [
-      [i18n.t('conditions.legend'), restoreStrongTags(renderWithParams(model.legendTemplate, model.params))],
+      [i18n.t('conditions.legend'), markdownToHtml(restoreStrongTags(renderWithParams(model.legendTemplate, model.params)))],
       [i18n.t('conditions.holidays'), renderWithParams(festivosText, model.params)],
-      [i18n.t('conditions.schedules'), restoreStrongTags(renderWithParams(model.horariosTemplate, model.params))],
-      [i18n.t('conditions.perDiems'), restoreStrongTags(renderWithParams(model.dietasTemplate, model.params))],
+      [i18n.t('conditions.schedules'), markdownToHtml(restoreStrongTags(renderWithParams(model.horariosTemplate, model.params)))],
+      [i18n.t('conditions.perDiems'), markdownToHtml(restoreStrongTags(renderWithParams(model.dietasTemplate, model.params)))],
       [i18n.t('conditions.transportation'), renderWithParams(model.transportesTemplate, model.params)],
       [i18n.t('conditions.accommodation'), renderWithParams(alojamientoText, model.params)],
       [i18n.t('conditions.preProduction'), renderWithParams(preproText, model.params)],

@@ -60,10 +60,15 @@ export function renderWithParams(tpl: string, params: Record<string, any> = {}):
 
 /**
  * Convierte valores visibles a templates reemplazando valores con marcadores
+ * Asegura que cualquier HTML se convierta a Markdown antes de guardar
  */
 export function visibleToTemplate(visible: string, params: Record<string, any> = {}): string {
   if (!visible) return '';
+  // Convertir cualquier HTML <strong> a Markdown antes de procesar
   let tpl = visible;
+  if (tpl.includes('<strong>')) {
+    tpl = htmlStrongToMarkdown(tpl);
+  }
   const pairs: Array<[any, string]> = [
     [params.semanasMes, '{{SEMANAS_MES}}'],
     [params.diasDiario, '{{DIAS_DIARIO}}'],
@@ -99,44 +104,64 @@ export function visibleToTemplate(visible: string, params: Record<string, any> =
 }
 
 /**
- * Restaura tags <strong> en textos según patrones comunes
+ * Convierte HTML <strong> a Markdown **texto**
+ */
+function htmlStrongToMarkdown(text: string): string {
+  if (!text) return text;
+  // Convertir <strong>texto</strong> a **texto**
+  return text.replace(/<strong>(.*?)<\/strong>/gi, '**$1**');
+}
+
+/**
+ * Convierte Markdown **texto** a HTML <strong>texto</strong>
+ */
+export function markdownToHtml(text: string): string {
+  if (!text) return text;
+  // Convertir **texto** a <strong>texto</strong>
+  return text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+}
+
+/**
+ * Restaura formato en negrita usando Markdown según patrones comunes
  */
 export function restoreStrongTags(text: string): string {
   if (!text) return text;
 
-  // Si ya tiene tags, normalizar "Turn around" y "Nocturnidades" a minúsculas
+  // Si ya tiene HTML <strong>, convertir a Markdown primero
   if (text.includes('<strong>')) {
-    let result = text;
-    result = result.replace(/<strong>(TURN AROUND:)/gi, '<strong>Turn around:');
-    result = result.replace(/<strong>(NOCTURNIDADES:)/gi, '<strong>Nocturnidad:');
-    result = result.replace(/(TURN AROUND:)/gi, 'Turn around:');
-    result = result.replace(/(NOCTURNIDADES:)/gi, 'Nocturnidad:');
-    return result;
+    text = htmlStrongToMarkdown(text);
   }
 
-  // Primero normalizar mayúsculas/minúsculas
+  // Normalizar mayúsculas/minúsculas
   let normalized = text;
   normalized = normalized.replace(/TURN AROUND:/gi, 'Turn around:');
   normalized = normalized.replace(/NOCTURNIDADES:/gi, 'Nocturnidad:');
 
-  // Patrones comunes que deberían estar en negrita
+  // Si ya tiene Markdown **texto**, normalizar
+  if (normalized.includes('**')) {
+    normalized = normalized.replace(/\*\*(TURN AROUND:)\*\*/gi, '**Turn around:**');
+    normalized = normalized.replace(/\*\*(NOCTURNIDADES:)\*\*/gi, '**Nocturnidad:**');
+    return normalized;
+  }
+
+  // Patrones comunes que deberían estar en negrita (usando Markdown)
   const patterns: Array<[RegExp, string]> = [
-    [/^(Tarifa mensual:)/m, '<strong>$1</strong>'],
-    [/^(Tarifa semanal:)/m, '<strong>$1</strong>'],
-    [/^(Precio diario:)/m, '<strong>$1</strong>'],
-    [/^(Precio jornada:)/m, '<strong>$1</strong>'],
-    [/^(Precio refuerzo:)/m, '<strong>$1</strong>'],
-    [/^(Precio Día extra \/ Festivo:)/m, '<strong>$1</strong>'],
-    [/^(Precio Travel Day:)/m, '<strong>$1</strong>'],
-    [/^(Horas extras:)/m, '<strong>$1</strong>'],
-    [/^(Turn around:)/m, '<strong>$1</strong>'],
-    [/^(Nocturnidad:)/m, '<strong>$1</strong>'],
-    [/^(Comida:)/m, '<strong>$1</strong>'],
-    [/^(Cena:)/m, '<strong>$1</strong>'],
-    [/^(Dieta completa sin pernocta:)/m, '<strong>$1</strong>'],
-    [/^(Dieta completa y desayuno:)/m, '<strong>$1</strong>'],
-    [/^(Gastos de bolsillo:)/m, '<strong>$1</strong>'],
-    [/^(Gastos de Bolsillo:)/m, '<strong>Gastos de bolsillo:</strong>'],
+    [/^(Tarifa mensual:)/m, '**$1**'],
+    [/^(Tarifa semanal:)/m, '**$1**'],
+    [/^(Precio diario:)/m, '**$1**'],
+    [/^(Precio jornada:)/m, '**$1**'],
+    [/^(Precio refuerzo:)/m, '**$1**'],
+    [/^(Precio Día extra \/ Festivo:)/m, '**$1**'],
+    [/^(Precio Travel Day:)/m, '**$1**'],
+    [/^(Horas extras:)/m, '**$1**'],
+    [/^(Turn around:)/m, '**$1**'],
+    [/^(Nocturnidad:)/m, '**$1**'],
+    [/^(Comida:)/m, '**$1**'],
+    [/^(Cena:)/m, '**$1**'],
+    [/^(Dieta completa sin pernocta:)/m, '**$1**'],
+    [/^(Dieta completa y desayuno:)/m, '**$1**'],
+    [/^(Gastos de bolsillo:)/m, '**$1**'],
+    [/^(Gastos de Bolsillo:)/m, '**Gastos de bolsillo:**'],
   ];
 
   let result = normalized;

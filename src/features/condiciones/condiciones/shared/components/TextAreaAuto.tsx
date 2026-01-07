@@ -1,5 +1,15 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { marked } from 'marked';
 import { TextAreaAutoProps } from '../types';
+
+/**
+ * Convierte HTML <strong> a Markdown **texto**
+ */
+function htmlStrongToMarkdown(text: string): string {
+  if (!text) return text;
+  // Convertir <strong>texto</strong> a **texto**
+  return text.replace(/<strong>(.*?)<\/strong>/gi, '**$1**');
+}
 
 export function TextAreaAuto({
   value,
@@ -7,12 +17,25 @@ export function TextAreaAuto({
   className = '',
   readOnly = false,
 }: TextAreaAutoProps) {
-  const [v, setV] = useState<string>(value || '');
+  // Convertir cualquier HTML a Markdown al recibir el valor
+  const normalizeValue = (val: string | undefined): string => {
+    if (!val) return '';
+    // Si tiene HTML <strong>, convertir a Markdown
+    if (val.includes('<strong>')) {
+      return htmlStrongToMarkdown(val);
+    }
+    return val;
+  };
+
+  const [v, setV] = useState<string>(() => normalizeValue(value));
   const [isEditing, setIsEditing] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const displayRef = useRef<HTMLDivElement | null>(null);
 
-  useEffect(() => setV(value || ''), [value]);
+  useEffect(() => {
+    const normalized = normalizeValue(value);
+    setV(normalized);
+  }, [value]);
 
   useEffect(() => {
     if (!textareaRef.current || !isEditing) return;
@@ -20,19 +43,24 @@ export function TextAreaAuto({
     textareaRef.current.style.height = textareaRef.current.scrollHeight + 'px';
   }, [v, isEditing]);
 
-  // Si hay HTML tags en el valor, mostrar renderizado; si no, mostrar textarea normal
-  const hasHTML = /<[^>]+>/.test(v);
+  // Detectar si hay Markdown (**texto**)
+  // Ya no detectamos HTML porque siempre lo convertimos a Markdown
+  const hasMarkdown = /\*\*.*?\*\*/.test(v);
+  const hasFormatting = hasMarkdown;
 
-  // Si no hay HTML o está editando, mostrar textarea
-  if (!hasHTML || isEditing) {
+  // Si no hay formato o está editando, mostrar textarea
+  if (!hasFormatting || isEditing) {
     return (
       <textarea
         ref={textareaRef}
         value={v}
         onChange={e => {
           if (readOnly) return;
-          setV(e.target.value);
-          onChange && onChange(e.target.value);
+          const newValue = e.target.value;
+          // Asegurarse de que cualquier HTML se convierta a Markdown antes de guardar
+          const normalizedValue = normalizeValue(newValue);
+          setV(normalizedValue);
+          onChange && onChange(normalizedValue);
         }}
         onBlur={() => {
           if (!readOnly) setIsEditing(false);
@@ -57,17 +85,29 @@ export function TextAreaAuto({
     );
   }
 
-  // Mostrar HTML renderizado
-  // Convertir saltos de línea a <br> para preservar el formato
-  let htmlWithBreaks = v;
-  htmlWithBreaks = htmlWithBreaks.replace(/\n/g, '<br>');
+  // Renderizar Markdown a HTML
+  // Configurar marked para renderizar solo texto inline (sin párrafos)
+  marked.setOptions({
+    breaks: true, // Convertir \n a <br>
+    gfm: true, // GitHub Flavored Markdown
+  });
+
+  // Convertir Markdown a HTML para renderizado
+  let htmlContent = v;
+  if (hasMarkdown) {
+    // Renderizar Markdown
+    htmlContent = marked.parse(v) as string;
+  } else {
+    // Si no tiene formato, solo convertir saltos de línea
+    htmlContent = htmlContent.replace(/\n/g, '<br>');
+  }
 
   return (
     <div
       ref={displayRef}
       onClick={() => !readOnly && setIsEditing(true)}
       onBlur={() => !readOnly && setIsEditing(false)}
-      dangerouslySetInnerHTML={{ __html: htmlWithBreaks }}
+      dangerouslySetInnerHTML={{ __html: htmlContent }}
       className={`w-full leading-relaxed px-3 py-2 rounded-xl bg-neutral-surface border border-neutral-border text-sm transition-colors ${
         readOnly ? 'cursor-not-allowed opacity-50' : 'cursor-text hover:border-brand/50'
       } ${className}`}
