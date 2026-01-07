@@ -57,7 +57,7 @@ export function LoginForm({ login, setLogin, setMode, theme, onSubmit }: LoginFo
         {t('auth.login')}
       </Button>
 
-      <div className='text-center'>
+      {/* <div className='text-center'>
         <button
           type='button'
           onClick={() => setMode('register')}
@@ -67,7 +67,7 @@ export function LoginForm({ login, setLogin, setMode, theme, onSubmit }: LoginFo
           {t('auth.noAccount')}{' '}
           <span className='font-medium hover:underline'>{t('auth.registerLink')}</span>
         </button>
-      </div>
+      </div> */}
     </form>
   );
 }

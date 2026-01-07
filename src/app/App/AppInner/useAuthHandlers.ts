@@ -38,6 +38,17 @@ export function useAuthHandlers({
       e.preventDefault();
       if (!login.user || !login.pass) return;
 
+//AQUI VA EL SUPUESTO REGISTRO DE LA PEÑA QUE QUIERA ENTRAR EN LA DEMO
+
+if(
+  !(login.user === 'admin' && login.pass === '1234') //SI ESTO NO SE CUMPLE, PUES VUELVE, MANERA DE TENER CONTROLADO A LA GENTE QUE TIENE ACCESO
+  && !(login.user === 'nombrepersona-fechafinalizacion' && login.pass === '1234')
+  
+  
+){
+  return;
+}
+
       const derived =
         reg.nombre?.trim() ||
         (login.user.includes('@') ? login.user.split('@')[0] : login.user) ||

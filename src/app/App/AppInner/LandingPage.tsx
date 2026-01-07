@@ -50,7 +50,7 @@ export function LandingPage({
           className='rounded-2xl border border-neutral-border backdrop-blur p-8 shadow-2xl'
           style={{ backgroundColor: 'var(--panel)' }}
         >
-          {mode === 'login' ? (
+          {/* {mode === 'login' ? ( */}
             <LoginForm
               login={login}
               setLogin={setLogin}
@@ -58,7 +58,7 @@ export function LandingPage({
               theme={theme}
               onSubmit={handleLoginSubmit}
             />
-          ) : (
+          {/* ) : (
             <RegisterForm
               reg={reg}
               setReg={setReg}
@@ -69,7 +69,7 @@ export function LandingPage({
               success={success}
               onSubmit={handleRegisterSubmit}
             />
-          )}
+          )} */}
         </div>
 
         <div className='h-10' />
