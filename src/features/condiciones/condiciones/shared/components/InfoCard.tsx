@@ -76,17 +76,17 @@ export function InfoCard({
 
   return (
     <section
-      className={`rounded-2xl border border-neutral-border bg-neutral-panel/90 p-4 transition-colors ${
+      className={`rounded sm:rounded-md md:rounded-lg lg:rounded-xl xl:rounded-2xl border border-neutral-border bg-neutral-panel/90 p-2 sm:p-2.5 md:p-3 lg:p-4 transition-colors ${
         readOnly ? '' : 'hover:border-brand/50'
       }`}
     >
-      <div className='flex items-center justify-between mb-2'>
-        <h4 className='text-brand font-semibold'>{title}</h4>
-        <div className='flex items-center gap-2'>
+      <div className='flex items-center justify-between mb-1 sm:mb-1.5 md:mb-2'>
+        <h4 className='text-brand font-semibold text-xs sm:text-sm md:text-base'>{title}</h4>
+        <div className='flex items-center gap-1 sm:gap-2'>
           {rightAddon}
         </div>
       </div>
-      <TextAreaAuto value={value} onChange={onChange} className='min-h-[140px]' readOnly={readOnly} />
+      <TextAreaAuto value={value} onChange={onChange} className='min-h-[80px] sm:min-h-[100px] md:min-h-[120px] lg:min-h-[140px]' readOnly={readOnly} />
     </section>
   );
 }

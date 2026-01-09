@@ -56,20 +56,20 @@ export function TeamGroup({
     <>
       <section
         id={sectionId}
-        className='rounded-2xl border border-neutral-border bg-neutral-panel/90'
+        className='rounded sm:rounded-md md:rounded-lg lg:rounded-xl xl:rounded-2xl border border-neutral-border bg-neutral-panel/90'
         role='region'
         aria-labelledby={headingId}
       >
-        <div className='flex items-center justify-between px-5 py-4 gap-3'>
-          <h4 id={headingId} className='text-brand font-semibold'>
+        <div className='flex items-center justify-between px-2 py-2 sm:px-3 sm:py-2.5 md:px-4 md:py-3 lg:px-5 lg:py-4 gap-1.5 sm:gap-2 md:gap-3'>
+          <h4 id={headingId} className='text-brand font-semibold text-xs sm:text-sm md:text-base'>
             {title}
           </h4>
-          <div className='flex items-center gap-2'>
+          <div className='flex items-center gap-1 sm:gap-1.5 md:gap-2'>
             {removable && (
               <button
                 onClick={() => canEdit && setShowConfirmRemove(true)}
                 disabled={!canEdit}
-                className={`px-3 py-2 rounded-lg border text-xs border-neutral-border ${!canEdit ? 'opacity-50 cursor-not-allowed' : ''}`}
+                className={`px-1.5 py-1 sm:px-2 sm:py-1.5 md:px-3 md:py-2 rounded sm:rounded-md md:rounded-lg border text-[9px] sm:text-[10px] md:text-xs border-neutral-border whitespace-nowrap ${!canEdit ? 'opacity-50 cursor-not-allowed' : ''}`}
                 aria-label={t('team.removeGroup')}
                 title={!canEdit ? t('conditions.projectClosed') : t('team.removeGroup')}
                 type='button'
@@ -80,7 +80,7 @@ export function TeamGroup({
           <button
             onClick={addRow}
             disabled={!canEdit}
-            className={`px-3 py-2 rounded-lg border text-xs border-neutral-border hover:border-accent ${!canEdit ? 'opacity-50 cursor-not-allowed' : ''}`}
+            className={`px-1.5 py-1 sm:px-2 sm:py-1.5 md:px-3 md:py-2 rounded sm:rounded-md md:rounded-lg border text-[9px] sm:text-[10px] md:text-xs border-neutral-border hover:border-accent whitespace-nowrap ${!canEdit ? 'opacity-50 cursor-not-allowed' : ''}`}
             aria-label={t('team.addMemberTo', { title })}
             title={!canEdit ? t('conditions.projectClosed') : t('team.addMemberTo', { title })}
             type='button'
@@ -90,18 +90,18 @@ export function TeamGroup({
         </div>
       </div>
 
-      <div className='px-5 pb-5'>
+      <div className='px-2 pb-2 sm:px-3 sm:pb-3 md:px-4 md:pb-4 lg:px-5 lg:pb-5'>
         {rows.length === 0 ? (
-          <div className='flex flex-col items-center justify-center py-16 px-8 text-center'>
-            <h2 className='text-3xl font-bold mb-4' style={{color: 'var(--text)'}}>
+          <div className='flex flex-col items-center justify-center py-8 px-4 sm:py-12 sm:px-6 md:py-16 md:px-8 text-center'>
+            <h2 className='text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold mb-2 sm:mb-3 md:mb-4' style={{color: 'var(--text)'}}>
               {t('team.noTeam')}
             </h2>
-            <p className='text-xl max-w-2xl' style={{color: 'var(--text)', opacity: 0.8}}>
+            <p className='text-sm sm:text-base md:text-lg lg:text-xl max-w-2xl' style={{color: 'var(--text)', opacity: 0.8}}>
               {t('team.noTeamMessage')}
             </p>
           </div>
         ) : (
-          <div className='grid gap-2'>
+          <div className='grid gap-1 sm:gap-1.5 md:gap-2'>
             {rows.map((row: AnyRecord) => (
               <TeamRow
                 key={row.id}

@@ -69,11 +69,11 @@ export function PersonRowHeader({
   return (
     <tr>
       <Td className='whitespace-nowrap align-middle' scope='row'>
-        <div className='flex items-center gap-2'>
+        <div className='flex items-center gap-1 sm:gap-1.5 md:gap-2'>
           <button
             onClick={() => !readOnly && setCollapsed(c => ({ ...c, [pKey]: !c[pKey] }))}
             disabled={readOnly}
-            className={`w-6 h-6 rounded-lg border border-neutral-border flex items-center justify-center text-sm hover:border-accent ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+            className={`w-5 h-5 sm:w-6 sm:h-6 rounded sm:rounded-md md:rounded-lg border border-neutral-border flex items-center justify-center text-xs sm:text-sm hover:border-accent ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
             title={readOnly ? t('conditions.projectClosed') : (collapsed[pKey] ? t('reports.expand') : t('reports.collapse'))}
             aria-expanded={!collapsed[pKey]}
             aria-controls={`person-${pKey}-rows`}
@@ -82,9 +82,9 @@ export function PersonRowHeader({
             {collapsed[pKey] ? '+' : '−'}
           </button>
 
-          <span className='inline-flex items-center gap-2 px-2 py-1 rounded-lg border border-neutral-border bg-black/40'>
+          <span className='inline-flex items-center gap-1 sm:gap-1.5 md:gap-2 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded sm:rounded-md md:rounded-lg border border-neutral-border bg-black/40'>
             <span
-              className='inline-flex items-center justify-center w-6 h-5 rounded-md font-bold text-[10px]'
+              className='inline-flex items-center justify-center w-4 h-3.5 sm:w-5 sm:h-4 md:w-6 md:h-5 rounded sm:rounded-md md:rounded-lg font-bold text-[8px] sm:text-[9px] md:text-[10px]'
               style={{ 
                 background: roleBgColor, 
                 color: roleFgColor,
@@ -94,9 +94,9 @@ export function PersonRowHeader({
             >
               {getRoleBadgeCode(visualRole || '', i18n.language) || '—'}
             </span>
-            <span className='text-xs text-zinc-200'>{name}</span>
+            <span className='text-[9px] sm:text-[10px] md:text-xs text-zinc-200'>{name}</span>
             {visualRole === 'REF' && block && (
-              <span className='text-[10px] text-zinc-400 uppercase'>
+              <span className='text-[8px] sm:text-[9px] md:text-[10px] text-zinc-400 uppercase'>
                 · {block}
               </span>
             )}

@@ -50,7 +50,12 @@ const LogoIcon = React.memo(function LogoIcon({ size = 80, onClick, className = 
       width={size}
       height={size}
       className={`object-contain bg-transparent block select-none ${onClick ? 'cursor-pointer' : ''} ${className}`}
-      style={{ backgroundColor: 'transparent', filter: 'drop-shadow(0 0 20px rgba(37,99,235,0.25))' }}
+      style={{ 
+        backgroundColor: 'transparent', 
+        filter: 'drop-shadow(0 0 20px rgba(37,99,235,0.25))',
+        width: size,
+        height: size
+      }}
       draggable={false}
       aria-hidden={!onClick}
       data-testid='logo-icon'

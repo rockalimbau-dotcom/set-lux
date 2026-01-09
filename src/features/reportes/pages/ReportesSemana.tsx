@@ -200,7 +200,7 @@ export default function ReportesSemana({
   );
 
   return (
-    <section className='rounded-2xl border border-neutral-border bg-neutral-panel/90'>
+    <section className='rounded sm:rounded-md md:rounded-lg lg:rounded-xl xl:rounded-2xl border border-neutral-border bg-neutral-panel/90'>
       <ReportWeekHeader
         open={open}
         title={title}
@@ -218,11 +218,11 @@ export default function ReportesSemana({
           id={contentId}
           ref={contentRef}
           tabIndex={-1}
-          className='px-5 pb-5 overflow-x-auto'
+          className='px-3 pb-3 sm:px-4 sm:pb-4 md:px-5 md:pb-5 overflow-x-auto'
           role='region'
           aria-label={t('reports.weekContent')}
         >
-          <table className='min-w-[920px] w-full border-collapse text-sm'>
+          <table className='min-w-[600px] sm:min-w-[720px] md:min-w-[920px] w-full border-collapse text-[9px] sm:text-[10px] md:text-xs lg:text-sm'>
             <ReportTableHead
               semana={[...filteredSemana]}
               dayNameFromISO={dayNameTranslator}

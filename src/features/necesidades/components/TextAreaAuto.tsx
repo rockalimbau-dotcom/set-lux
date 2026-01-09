@@ -50,7 +50,7 @@ export default function TextAreaAuto({ value, onChange, placeholder, readOnly = 
       }}
       disabled={readOnly}
       readOnly={readOnly}
-      className={`w-full min-h-[56px] leading-relaxed whitespace-pre-wrap px-3 py-2 rounded-xl bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm text-left ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+      className={`w-full min-h-[32px] sm:min-h-[40px] md:min-h-[48px] leading-relaxed whitespace-pre-wrap px-1.5 py-1 sm:px-2 sm:py-1.5 md:px-3 md:py-2 rounded sm:rounded-md md:rounded-lg lg:rounded-xl bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-[9px] sm:text-[10px] md:text-xs lg:text-sm text-left ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
       style={{ overflow: 'hidden', resize: 'none' }}
       rows={1}
       onInput={e => {

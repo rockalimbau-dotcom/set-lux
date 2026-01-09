@@ -122,7 +122,7 @@ export default function ProjectDetail({
         t={t}
       />
 
-      <div className='px-6 pb-6'>
+      <div className='px-5 sm:px-6 md:px-7 lg:px-8 xl:px-6 py-1.5 sm:py-2 md:py-3 lg:py-4 pb-4 sm:pb-5 md:pb-6'>
         <div className='max-w-6xl mx-auto'>
           {/* Parrilla de fases (tarjetas) */}
           {activeTab === null && (

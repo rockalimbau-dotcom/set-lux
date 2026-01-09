@@ -47,15 +47,15 @@ export function FormDropdown({
           onMouseEnter={() => setDropdownState(prev => ({ ...prev, isButtonHovered: true }))}
           onMouseLeave={() => setDropdownState(prev => ({ ...prev, isButtonHovered: false }))}
           onBlur={() => setDropdownState(prev => ({ ...prev, isButtonHovered: false }))}
-          className={`w-full px-4 py-3 rounded-xl border focus:outline-none text-sm text-left transition-colors ${
+          className={`w-full px-1.5 py-0.5 sm:px-2 sm:py-1 md:px-2.5 md:py-1.5 lg:px-3 lg:py-2 xl:px-4 xl:py-3 rounded sm:rounded-md md:rounded-lg lg:rounded-xl border focus:outline-none text-[10px] sm:text-[11px] md:text-xs lg:text-sm text-left transition-colors ${
             theme === 'light' ? 'bg-white text-gray-900' : 'bg-black/40 text-zinc-300'
           }`}
           style={{
             ...getBorderStyles(dropdownState.isButtonHovered, theme),
-            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='${theme === 'light' ? '%23111827' : '%23ffffff'}' d='M6 9L1 4h10z'/%3E%3C/svg%3E")`,
+            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='9' viewBox='0 0 12 12'%3E%3Cpath fill='${theme === 'light' ? '%23111827' : '%23ffffff'}' d='M6 9L1 4h10z'/%3E%3C/svg%3E")`,
             backgroundRepeat: 'no-repeat',
-            backgroundPosition: 'right 1rem center',
-            paddingRight: '2.5rem',
+            backgroundPosition: 'right 0.375rem center',
+            paddingRight: '1.5rem',
           }}
         >
           {value}
@@ -80,7 +80,7 @@ export function FormDropdown({
                 onMouseLeave={() =>
                   setDropdownState(prev => ({ ...prev, hoveredOption: null }))
                 }
-                className={`w-full text-left px-4 py-2 text-sm transition-colors ${
+                className={`w-full text-left px-1.5 py-0.5 sm:px-2 sm:py-1 md:px-2.5 md:py-1.5 lg:px-3 lg:py-2 xl:px-4 xl:py-2 text-[10px] sm:text-[11px] md:text-xs lg:text-sm transition-colors ${
                   theme === 'light' ? 'text-gray-900' : 'text-zinc-300'
                 }`}
                 style={{

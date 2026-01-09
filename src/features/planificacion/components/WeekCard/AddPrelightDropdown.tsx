@@ -64,7 +64,7 @@ export function AddPrelightDropdown({
         onMouseEnter={() => !readOnly && setDropdownState(dropdownKey, { isButtonHovered: true })}
         onMouseLeave={() => setDropdownState(dropdownKey, { isButtonHovered: false })}
         onBlur={() => setDropdownState(dropdownKey, { isButtonHovered: false })}
-        className={`w-full px-2 py-1 rounded-lg border focus:outline-none text-sm text-left transition-colors ${
+        className={`w-full px-1 py-0.5 sm:px-1.5 sm:py-1 md:px-2 md:py-1 rounded sm:rounded-md md:rounded-lg border focus:outline-none text-[9px] sm:text-[10px] md:text-xs lg:text-sm text-left transition-colors ${
           theme === 'light' 
             ? 'bg-white text-gray-900' 
             : 'bg-black/40 text-zinc-300'
@@ -77,17 +77,17 @@ export function AddPrelightDropdown({
             : (dropdownState.isButtonHovered && theme === 'dark'
               ? '#fff'
               : 'var(--border)'),
-          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='${theme === 'light' ? '%23111827' : '%23ffffff'}' d='M6 9L1 4h10z'/%3E%3C/svg%3E")`,
+          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath fill='${theme === 'light' ? '%23111827' : '%23ffffff'}' d='M5 7.5L1.25 3.75h7.5z'/%3E%3C/svg%3E")`,
           backgroundRepeat: 'no-repeat',
-          backgroundPosition: 'right 0.5rem center',
-          paddingRight: '2rem',
+          backgroundPosition: 'right 0.4rem sm:right-0.5rem center',
+          paddingRight: '1.5rem sm:1.75rem md:2rem',
         }}
         title={readOnly ? t('conditions.projectClosed') : t('planning.addMember')}
       >
         {t('planning.addMember')}
       </button>
       {dropdownState.isOpen && !readOnly && (
-        <div className={`absolute top-full left-0 mt-1 w-full border border-neutral-border rounded-lg shadow-lg z-50 overflow-y-auto max-h-60 ${
+        <div className={`absolute top-full left-0 mt-0.5 sm:mt-1 w-full border border-neutral-border rounded sm:rounded-md md:rounded-lg shadow-lg z-50 overflow-y-auto max-h-48 sm:max-h-56 md:max-h-60 ${
           theme === 'light' ? 'bg-white' : 'bg-neutral-panel'
         }`}>
           {options.map((p: AnyRecord, ii: number) => {
@@ -113,7 +113,7 @@ export function AddPrelightDropdown({
                 disabled={readOnly}
                 onMouseEnter={() => setDropdownState(dropdownKey, { hoveredOption: optionValue })}
                 onMouseLeave={() => setDropdownState(dropdownKey, { hoveredOption: null })}
-                className={`w-full text-left px-3 py-2 text-sm transition-colors ${
+                className={`w-full text-left px-2 py-1 sm:px-2.5 sm:py-1.5 md:px-3 md:py-2 text-[9px] sm:text-[10px] md:text-xs lg:text-sm transition-colors ${
                   theme === 'light' 
                     ? 'text-gray-900' 
                     : 'text-zinc-300'

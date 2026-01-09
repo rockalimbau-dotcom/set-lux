@@ -78,7 +78,7 @@ function ProjectsScreen({
       />
 
       {/* Barra de búsqueda y filtros */}
-      <div className='px-6 py-4' style={{backgroundColor: 'var(--bg)'}}>
+      <div className='px-5 sm:px-6 md:px-7 lg:px-8 xl:px-6 py-1.5 sm:py-2 md:py-3 lg:py-4' style={{backgroundColor: 'var(--bg)'}}>
         <div className='max-w-6xl mx-auto'>
           <SearchAndFilters
             searchQuery={searchQuery}

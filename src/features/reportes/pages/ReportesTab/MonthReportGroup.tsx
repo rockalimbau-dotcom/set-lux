@@ -54,7 +54,7 @@ function MonthReportGroup({
   });
 
   return (
-    <div className='space-y-4'>
+    <div className='space-y-2 sm:space-y-3 md:space-y-4'>
       {/* Bloque de controles del mes */}
       <MonthReportGroupHeader
         monthName={monthName}

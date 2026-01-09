@@ -23,10 +23,10 @@ function ReportBlockScheduleRow({ label, semana, valueForISO }: Props) {
   return (
     <tr className='schedule-row'>
       <Td className='whitespace-nowrap align-middle bg-white/5' align='middle'>
-        <div className='text-sm font-semibold text-zinc-200 flex items-center'>{translatedLabel}</div>
+        <div className='text-[9px] sm:text-[10px] md:text-xs lg:text-sm font-semibold text-zinc-200 flex items-center'>{translatedLabel}</div>
       </Td>
       {semana.map((iso, i) => (
-        <Td key={`sched_${label}_${iso}`} className='text-sm font-semibold text-center align-middle bg-white/5' align='middle'>
+        <Td key={`sched_${label}_${iso}`} className='text-[9px] sm:text-[10px] md:text-xs lg:text-sm font-semibold text-center align-middle bg-white/5' align='middle'>
           <div className='flex items-center justify-center'>{values[i]}</div>
         </Td>
       ))}

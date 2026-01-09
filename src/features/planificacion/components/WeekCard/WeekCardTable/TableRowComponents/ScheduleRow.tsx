@@ -23,7 +23,7 @@ export function ScheduleRow({
                   start: e.target.value,
                 })
               }
-              className={`flex-1 px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-left ${
+              className={`flex-1 px-1 py-0.5 sm:px-1.5 sm:py-1 md:px-2 md:py-1 rounded sm:rounded-md md:rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-left text-[9px] sm:text-[10px] md:text-xs ${
                 readOnly ? 'opacity-50 cursor-not-allowed' : ''
               }`}
               disabled={readOnly || day.tipo === 'Descanso' || day.tipo === 'Fin'}
@@ -36,7 +36,7 @@ export function ScheduleRow({
               onChange={e =>
                 !readOnly && setDayField(scope, week.id as string, i, { end: e.target.value })
               }
-              className={`flex-1 px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-left ${
+              className={`flex-1 px-1 py-0.5 sm:px-1.5 sm:py-1 md:px-2 md:py-1 rounded sm:rounded-md md:rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-left text-[9px] sm:text-[10px] md:text-xs ${
                 readOnly ? 'opacity-50 cursor-not-allowed' : ''
               }`}
               disabled={readOnly || day.tipo === 'Descanso' || day.tipo === 'Fin'}

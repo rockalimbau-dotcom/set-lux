@@ -76,11 +76,12 @@ export function PickupRow({
   return (
     <Row
       label={
-        <span className='inline-flex items-center gap-2'>
+        <span className='inline-flex items-center gap-1 sm:gap-1.5 md:gap-2'>
           <ToggleIconButton
             isOpen={pickOpen}
             onClick={() => setPickOpen(v => !v)}
             disabled={readOnly}
+            className='w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6'
           />
           {t('planning.pickup')}
         </span>
@@ -96,8 +97,8 @@ export function PickupRow({
         return (
           <Td key={i} align='middle'>
             {pickOpen && (
-              <div className='flex flex-col gap-2'>
-                <div className='flex gap-2 justify-center'>
+              <div className='flex flex-col gap-1 sm:gap-1.5 md:gap-2'>
+                <div className='flex gap-1 sm:gap-1.5 md:gap-2 justify-center'>
                   <input
                     type='time'
                     value={day.pickupStart || ''}
@@ -107,7 +108,7 @@ export function PickupRow({
                         pickupStart: e.target.value,
                       })
                     }
-                    className={`px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm text-left ${
+                    className={`px-1 py-0.5 sm:px-1.5 sm:py-1 md:px-2 md:py-1 rounded sm:rounded-md md:rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-left text-[9px] sm:text-[10px] md:text-xs ${
                       readOnly ? 'opacity-50 cursor-not-allowed' : ''
                     }`}
                     disabled={readOnly || day.tipo === 'Descanso' || day.tipo === 'Fin'}
@@ -123,7 +124,7 @@ export function PickupRow({
                         pickupEnd: e.target.value,
                       })
                     }
-                    className={`px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm text-left ${
+                    className={`px-1 py-0.5 sm:px-1.5 sm:py-1 md:px-2 md:py-1 rounded sm:rounded-md md:rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-left text-[9px] sm:text-[10px] md:text-xs ${
                       readOnly ? 'opacity-50 cursor-not-allowed' : ''
                     }`}
                     disabled={readOnly || day.tipo === 'Descanso' || day.tipo === 'Fin'}
@@ -131,9 +132,9 @@ export function PickupRow({
                     title={readOnly ? t('conditions.projectClosed') : t('planning.endPickup')}
                   />
                 </div>
-                <div className='flex flex-wrap gap-2 justify-center'>
+                <div className='flex flex-wrap gap-1 sm:gap-1.5 md:gap-2 justify-center'>
                   {(day.pickup || []).map((m: AnyRecord, idx: number) => (
-                    <span key={idx} className='inline-flex items-center gap-2'>
+                    <span key={idx} className='inline-flex items-center gap-0.5 sm:gap-1 md:gap-2'>
                       <MemberChip role={m.role} name={m.name} source={m.source} />
                       <Button
                         variant='remove'
@@ -151,7 +152,7 @@ export function PickupRow({
                         }}
                         disabled={readOnly}
                         title={readOnly ? t('conditions.projectClosed') : t('planning.remove')}
-                        className={readOnly ? 'opacity-50 cursor-not-allowed' : ''}
+                        className={`px-1 py-0.5 sm:px-1.5 sm:py-1 text-[9px] sm:text-[10px] md:text-xs ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
                       >
                         ×
                       </Button>

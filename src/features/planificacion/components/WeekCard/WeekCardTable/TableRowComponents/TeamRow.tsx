@@ -36,14 +36,14 @@ export function TeamRow({
         );
         return (
           <Td key={i} align='middle'>
-            <div className='flex flex-wrap gap-2 justify-center'>
+            <div className='flex flex-wrap gap-1 sm:gap-1.5 md:gap-2 justify-center'>
               {(day.team || []).map((m: AnyRecord, idx: number) => (
-                <span key={idx} className='inline-flex items-center gap-2'>
+                <span key={idx} className='inline-flex items-center gap-0.5 sm:gap-1 md:gap-2'>
                   <MemberChip role={m.role} name={m.name} source={m.source} />
                   <Button
                     variant='remove'
                     size='sm'
-                    className={`no-pdf ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    className={`no-pdf px-1 py-0.5 sm:px-1.5 sm:py-1 text-[9px] sm:text-[10px] md:text-xs ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
                     onClick={() => {
                       if (readOnly) return;
                       setMemberToRemove({

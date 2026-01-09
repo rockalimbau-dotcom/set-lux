@@ -113,7 +113,7 @@ export default function ReportesTab({ project, mode = 'semanal', readOnly = fals
   }
 
   return (
-    <div className='space-y-6'>
+    <div className='space-y-2 sm:space-y-3 md:space-y-4 lg:space-y-6'>
       {mode !== 'publicidad' && weeksByMonth ? (
         // Mostrar agrupado por mes con botón PDF y campos de fecha
         Array.from(weeksByMonth.entries()).map(([monthKey, weeks]) => {

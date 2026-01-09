@@ -673,3 +673,34 @@ textarea[readonly]:focus {
   background: transparent !important;
   background-image: none !important;
 }
+
+/* Profile page - Reduce spacing in horizontal orientation only */
+@media (orientation: landscape) and (max-width: 1024px) {
+  .profile-form-container-landscape {
+    padding-top: 0.25rem !important;
+    padding-bottom: 0.25rem !important;
+  }
+}
+
+/* Settings page - Reduce spacing in horizontal orientation only */
+@media (orientation: landscape) and (max-width: 1024px) {
+  .settings-form-container-landscape {
+    padding-top: 0.25rem !important;
+    padding-bottom: 0.25rem !important;
+  }
+}
+
+/* Month Report Header - Layout in row for medium horizontal screens only */
+@media (orientation: landscape) and (min-width: 768px) and (max-width: 1023px) {
+  .month-report-header-container {
+    flex-direction: row !important;
+    align-items: center !important;
+  }
+  .month-report-header-container > div:last-child {
+    width: auto !important;
+    margin-left: auto !important;
+  }
+  .month-report-header-container > div:last-child > button {
+    margin-left: 0 !important;
+  }
+}

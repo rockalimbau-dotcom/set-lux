@@ -29,7 +29,7 @@ export function ProjectDetailContent({
 }: ProjectDetailContentProps) {
   return (
     <div
-      className='phase-content -mt-1 rounded-2xl border border-neutral-border bg-neutral-panel/90 p-5'
+      className='phase-content -mt-1 rounded sm:rounded-md md:rounded-lg lg:rounded-xl xl:rounded-2xl border border-neutral-border bg-neutral-panel/90 p-3 sm:p-4 md:p-5'
       data-readonly={!isActive ? 'true' : 'false'}
       style={{
         borderColor: (document.documentElement.getAttribute('data-theme')||'dark')==='light' ? 'rgba(229,231,235,0.6)' : 'var(--border)'

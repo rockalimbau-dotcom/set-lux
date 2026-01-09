@@ -68,9 +68,9 @@ export function NecesidadesTabContent({
 
   return (
     <>
-      <div className='flex items-center justify-end gap-2'>
+      <div className='flex items-center justify-end gap-2 mb-2 sm:mb-3 md:mb-4'>
         <button
-          className={btnExportCls}
+          className='px-1.5 py-1 sm:px-2 sm:py-1.5 md:px-2.5 md:py-2 rounded sm:rounded-md md:rounded-lg text-[10px] sm:text-xs md:text-sm font-semibold btn-pdf'
           style={btnExportStyle}
           onClick={exportAllNeedsPDF}
           title={t('needs.exportAllWeeksPDF')}

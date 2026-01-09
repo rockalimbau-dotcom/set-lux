@@ -39,7 +39,7 @@ export function EditProjectModalForm({
   const regionLabel = getRegionLabel(form.country, form.region, t);
 
   return (
-    <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+    <div className='grid grid-cols-1 sm:grid-cols-2 gap-1 sm:gap-1.5 md:gap-2 lg:gap-3 xl:gap-4'>
       <FormInput
         label={t('common.project')}
         value={form.nombre}

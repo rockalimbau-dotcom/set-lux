@@ -13,7 +13,7 @@ export function PhaseGrid({ condModeLabel, condTipo, onTabChange }: PhaseGridPro
   const { t } = useTranslation();
 
   return (
-    <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+    <div className='grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5 md:gap-6 lg:gap-4'>
       <PhaseCard
         title={condModeLabel === 'semanales' ? t('conditions.weekly') : condModeLabel === 'mensuales' ? t('conditions.monthly') : t('conditions.advertising')}
         icon={<PhaseIcon name='condiciones' color='#60a5fa' />}

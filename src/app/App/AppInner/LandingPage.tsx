@@ -36,18 +36,18 @@ export function LandingPage({
 }: LandingPageProps) {
   return (
     <div
-      className='min-h-screen flex items-center justify-center'
+      className='min-h-screen flex items-center justify-center px-8 sm:px-10 md:px-12 lg:px-6 py-4 sm:py-5 md:py-6'
       style={{ backgroundColor: 'var(--bg)', color: 'var(--text)' }}
     >
-      <div className='w-full max-w-md landing'>
+      <div className='w-full max-w-[280px] sm:max-w-xs md:max-w-sm lg:max-w-md landing'>
         <BrandHero tagline='All in One' />
 
-        <div className='flex justify-end mb-4'>
+        <div className='flex justify-end mb-3 sm:mb-4'>
           <ThemeToggleButton />
         </div>
 
         <div
-          className='rounded-2xl border border-neutral-border backdrop-blur p-8 shadow-2xl'
+          className='rounded-xl sm:rounded-2xl border border-neutral-border backdrop-blur p-3 sm:p-4 md:p-5 lg:p-6 xl:p-8 shadow-2xl'
           style={{ backgroundColor: 'var(--panel)' }}
         >
           {/* {mode === 'login' ? ( */}
@@ -72,7 +72,7 @@ export function LandingPage({
           )} */}
         </div>
 
-        <div className='h-10' />
+        <div className='h-6 sm:h-8 md:h-10' />
       </div>
     </div>
   );

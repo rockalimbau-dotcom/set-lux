@@ -54,9 +54,9 @@ export default function Chip({ role, name, onRemove, context, readOnly = false }
   if (context === 'prelight') label = `${label}P`;
   if (context === 'pickup') label = `${label}R`;
   return (
-    <span className='inline-flex items-center gap-2 px-2 py-1 rounded-lg border border-neutral-border bg-black/40'>
+    <span className='inline-flex items-center gap-1 sm:gap-1.5 md:gap-2 px-1 py-0.5 sm:px-1.5 sm:py-0.5 md:px-2 md:py-1 rounded sm:rounded-md md:rounded-lg border border-neutral-border bg-black/40'>
       <span
-        className='inline-flex items-center justify-center w-6 h-5 rounded-md font-bold text-[10px]'
+        className='inline-flex items-center justify-center w-4 h-3.5 sm:w-5 sm:h-4 md:w-6 md:h-5 rounded sm:rounded-md font-bold text-[8px] sm:text-[9px] md:text-[10px]'
         style={{ 
           background: roleBgColor, 
           color: roleFgColor,
@@ -66,11 +66,11 @@ export default function Chip({ role, name, onRemove, context, readOnly = false }
       >
         {label || '—'}
       </span>
-      <span className='text-xs text-zinc-200'>{name || '—'}</span>
+      <span className='text-[9px] sm:text-[10px] md:text-xs text-zinc-200'>{name || '—'}</span>
       {!readOnly && (
         <button
           onClick={onRemove}
-          className='text-zinc-400 hover:text-red-500 text-xs'
+          className='text-zinc-400 hover:text-red-500 text-[9px] sm:text-[10px] md:text-xs'
           title={t('needs.remove')}
         >
           ×

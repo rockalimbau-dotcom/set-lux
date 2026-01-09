@@ -36,10 +36,10 @@ export default function CondicionesTab({ project, mode, onChange = () => {}, rea
   const exportLabel = 'PDF';
 
   return (
-    <div className='space-y-6'>
+    <div className='space-y-2 sm:space-y-3 md:space-y-4 lg:space-y-6'>
       <div className='flex items-center justify-end'>
         <button
-          className={btnExportCls}
+          className='px-1.5 py-1 sm:px-2 sm:py-1.5 md:px-2.5 md:py-2 rounded text-[10px] sm:text-xs md:text-sm font-semibold'
           style={btnExportStyle}
           onClick={() => doExport && doExport()}
           title={exportLabel}

@@ -45,7 +45,7 @@ export function WeekCardTable({
 
   return (
     <div className='overflow-x-auto'>
-      <table className='plan min-w-[760px] w-full border-collapse text-sm'>
+      <table className='plan min-w-[600px] sm:min-w-[680px] md:min-w-[760px] w-full border-collapse text-[9px] sm:text-[10px] md:text-xs lg:text-sm'>
         <thead>
           <tr>
             <Th align='left'>{t('planning.row')}</Th>

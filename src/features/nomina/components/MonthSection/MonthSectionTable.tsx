@@ -44,8 +44,8 @@ export function MonthSectionTable({
   const { t } = useTranslation();
 
   return (
-    <div className='px-5 pb-5 overflow-x-auto'>
-      <table className='min-w-[1200px] w-full border-collapse text-sm'>
+    <div className='px-3 pb-3 sm:px-4 sm:pb-4 md:px-5 md:pb-5 overflow-x-auto'>
+      <table className='min-w-[800px] sm:min-w-[1000px] md:min-w-[1200px] w-full border-collapse text-[9px] sm:text-[10px] md:text-xs lg:text-sm'>
         <thead>
           <tr>
             <Th align='center'>
@@ -157,7 +157,7 @@ export function MonthSectionTable({
                 (hasLocalizacionData ? 2 : 0) + // Localización técnica + Total
                 (hasCargaDescargaData ? 2 : 0) // Carga/Descarga + Total
               } align='center' className='text-center'>
-                <div className='text-sm text-zinc-400'>
+                <div className='text-[9px] sm:text-[10px] md:text-xs lg:text-sm text-zinc-400'>
                   {t('payroll.noDataThisMonth')}
                 </div>
               </Td>

@@ -23,11 +23,11 @@ export function ParametersSection({
   const p = params;
 
   return (
-    <section className='rounded-2xl border border-neutral-border bg-neutral-panel/90 p-4'>
-      <div className='flex items-center gap-2 mb-3'>
+    <section className='rounded sm:rounded-md md:rounded-lg lg:rounded-xl xl:rounded-2xl border border-neutral-border bg-neutral-panel/90 p-2 sm:p-2.5 md:p-3 lg:p-4'>
+      <div className='flex items-center gap-1 sm:gap-1.5 md:gap-2 mb-1.5 sm:mb-2 md:mb-3'>
         <button
           onClick={() => setShowParams(v => !v)}
-          className='w-6 h-6 rounded-lg border border-neutral-border flex items-center justify-center text-sm hover:border-accent'
+          className='w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 rounded sm:rounded-md md:rounded-lg border border-neutral-border flex items-center justify-center text-[10px] sm:text-xs md:text-sm hover:border-accent'
           title={showParams ? t('conditions.collapse') : t('conditions.expand')}
           aria-label={t('conditions.calculationParameters')}
           aria-expanded={showParams}
@@ -36,12 +36,12 @@ export function ParametersSection({
         >
           {showParams ? '−' : '+'}
         </button>
-        <h4 className='text-brand font-semibold m-0'>
+        <h4 className='text-brand font-semibold m-0 text-xs sm:text-sm md:text-base'>
           {t('conditions.calculationParameters')}
         </h4>
       </div>
 
-      <div className='text-xs text-zinc-400 mb-3' dangerouslySetInnerHTML={{ __html: t('conditions.amountsCalculatedFrom') }} />
+      <div className='text-[9px] sm:text-[10px] md:text-xs text-zinc-400 mb-1.5 sm:mb-2 md:mb-3' dangerouslySetInnerHTML={{ __html: t('conditions.amountsCalculatedFrom') }} />
 
       {showParams && (
         <div
@@ -50,7 +50,7 @@ export function ParametersSection({
           tabIndex={-1}
           role='region'
           aria-label={t('conditions.parametersAdvertising')}
-          className='grid grid-cols-1 sm:grid-cols-3 gap-3'
+          className='grid grid-cols-1 sm:grid-cols-3 gap-1.5 sm:gap-2 md:gap-3'
         >
           <ParamInput
             label={t('conditions.workDay')}

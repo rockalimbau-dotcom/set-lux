@@ -131,7 +131,7 @@ export default function NecesidadesTab({ project, readOnly = false }: Necesidade
   }
 
   return (
-    <div className='space-y-4'>
+    <div className='space-y-2 sm:space-y-3 md:space-y-4'>
       <NecesidadesTabContent
         weekEntries={weekEntries}
         DAYS={DAYS}

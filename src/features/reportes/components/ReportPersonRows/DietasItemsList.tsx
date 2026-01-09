@@ -22,21 +22,21 @@ export function DietasItemsList({
   const { t } = useTranslation();
 
   return (
-    <div className='flex flex-wrap gap-2 justify-center'>
+    <div className='flex flex-wrap gap-1 sm:gap-1.5 md:gap-2 justify-center'>
       {Array.from(items)
         .filter(it => it !== 'Ticket')
         .map(it => (
           <span
             key={it}
-            className='inline-flex items-center gap-2 px-2 py-1 rounded-lg border border-neutral-border bg-black/40'
+            className='inline-flex items-center gap-1 sm:gap-1.5 md:gap-2 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded sm:rounded-md md:rounded-lg border border-neutral-border bg-black/40'
             title={it}
           >
-            <span className='text-xs text-zinc-200'>
+            <span className='text-[9px] sm:text-[10px] md:text-xs text-zinc-200'>
               {translateDietItem(it, t)}
             </span>
             <button
               type='button'
-              className={`text-zinc-400 hover:text-red-500 text-xs ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+              className={`text-zinc-400 hover:text-red-500 text-[9px] sm:text-[10px] md:text-xs ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
               onClick={() => onRemoveItem(it)}
               disabled={readOnly}
               title={readOnly ? t('conditions.projectClosed') : t('reports.remove')}
@@ -48,10 +48,10 @@ export function DietasItemsList({
 
       {items.has('Ticket') && (
         <span
-          className='inline-flex items-center gap-2 px-2 py-1 rounded-lg border border-neutral-border bg-black/40'
+          className='inline-flex items-center gap-1 sm:gap-1.5 md:gap-2 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded sm:rounded-md md:rounded-lg border border-neutral-border bg-black/40'
           title={t('reports.dietOptions.ticket')}
         >
-          <span className='text-xs text-zinc-200'>
+          <span className='text-[9px] sm:text-[10px] md:text-xs text-zinc-200'>
             {t('reports.dietOptions.ticket')}
           </span>
           <input
@@ -59,7 +59,7 @@ export function DietasItemsList({
             min='0'
             step='0.01'
             placeholder='€'
-            className={`w-24 px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+            className={`w-16 sm:w-20 md:w-24 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded sm:rounded-md md:rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-[9px] sm:text-[10px] md:text-xs lg:text-sm ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
             value={ticket ?? ''}
             onChange={e => onTicketChange((e.target as HTMLInputElement).value)}
             disabled={readOnly}
@@ -68,7 +68,7 @@ export function DietasItemsList({
           />
           <button
             type='button'
-            className={`text-zinc-400 hover:text-red-500 text-xs ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+            className={`text-zinc-400 hover:text-red-500 text-[9px] sm:text-[10px] md:text-xs ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
             onClick={onRemoveTicket}
             disabled={readOnly}
             title={readOnly ? t('conditions.projectClosed') : t('reports.removeTicket')}

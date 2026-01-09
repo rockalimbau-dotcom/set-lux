@@ -31,13 +31,13 @@ export function PricesTable({
 
   return (
     <>
-      <div className='text-xs text-zinc-400 mb-4 flex items-center justify-between'>
-        <span dangerouslySetInnerHTML={{ __html: t('conditions.introduceMonthlyPrice') }} />
-        <div className='relative'>
+      <div className='text-[9px] sm:text-[10px] md:text-xs text-zinc-400 mb-1 sm:mb-1.5 md:mb-2 lg:mb-3 xl:mb-4 flex items-center justify-between gap-1 sm:gap-2'>
+        <span className='flex-1' dangerouslySetInnerHTML={{ __html: t('conditions.introduceMonthlyPrice') }} />
+        <div className='relative flex-shrink-0'>
           {PRICE_ROLES.filter(r => !roles.includes(r)).length === 0 ? (
             <button
               disabled
-              className='px-3 py-1 text-sm bg-gray-500 text-white rounded-lg cursor-not-allowed'
+              className='px-1 py-0.5 sm:px-1.5 sm:py-0.5 md:px-2 md:py-1 lg:px-3 lg:py-1 text-[8px] sm:text-[9px] md:text-[10px] lg:text-xs xl:text-sm bg-gray-500 text-white rounded sm:rounded-md md:rounded-lg cursor-not-allowed whitespace-nowrap'
             >
               {t('conditions.allRoles')}
             </button>
@@ -46,14 +46,14 @@ export function PricesTable({
               <button
                 onClick={() => !readOnly && setShowRoleSelect(!showRoleSelect)}
                 disabled={readOnly}
-                className={`${btnAddRole} ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+                className={`px-1 py-0.5 sm:px-1.5 sm:py-0.5 md:px-2 md:py-1 lg:px-3 lg:py-1 text-[8px] sm:text-[9px] md:text-[10px] lg:text-xs xl:text-sm bg-brand text-white rounded sm:rounded-md md:rounded-lg hover:bg-brand/80 whitespace-nowrap ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
                 title={readOnly ? t('conditions.projectClosed') : t('conditions.addRole')}
               >
                 {t('conditions.addRole')}
               </button>
               {showRoleSelect && (
                 <div 
-                  className='absolute right-0 top-full mt-1 bg-blue-200 border border-blue-300 dark:bg-amber-800 dark:border-amber-600 rounded-lg shadow-lg z-10 min-w-[150px] max-h-60 overflow-y-auto'
+                  className='absolute right-0 top-full mt-0.5 sm:mt-1 bg-blue-200 border border-blue-300 dark:bg-amber-800 dark:border-amber-600 rounded sm:rounded-md md:rounded-lg shadow-lg z-10 min-w-[100px] sm:min-w-[120px] md:min-w-[150px] max-h-40 sm:max-h-48 md:max-h-60 overflow-y-auto'
                   tabIndex={-1}
                   onBlur={(e) => {
                     if (!e.currentTarget.contains(e.relatedTarget as Node)) {
@@ -65,7 +65,7 @@ export function PricesTable({
                     <button
                       key={role}
                       onClick={() => addRole(role)}
-                      className='w-full text-left px-3 py-2 text-sm text-white hover:bg-blue-300 dark:hover:bg-amber-600/40 transition-colors'
+                      className='w-full text-left px-1.5 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-2 text-[8px] sm:text-[9px] md:text-[10px] lg:text-sm text-white hover:bg-blue-300 dark:hover:bg-amber-600/40 transition-colors'
                     >
                       {translateRoleName(role)}
                     </button>
@@ -76,8 +76,8 @@ export function PricesTable({
           )}
         </div>
       </div>
-      <section className='rounded-2xl border border-neutral-border bg-neutral-panel/90 overflow-x-auto'>
-        <table className='min-w-[920px] w-full border-collapse text-sm'>
+      <section className='rounded sm:rounded-md md:rounded-lg lg:rounded-xl xl:rounded-2xl border border-neutral-border bg-neutral-panel/90 overflow-x-auto'>
+        <table className='min-w-[600px] sm:min-w-[720px] md:min-w-[920px] w-full border-collapse text-[9px] sm:text-[10px] md:text-xs lg:text-sm'>
           <thead>
             <tr>
               <Th align='left'>{t('conditions.rolePrice')}</Th>
@@ -90,14 +90,14 @@ export function PricesTable({
             {roles.map((role: string) => (
               <tr key={role} className='relative'>
                 <Td className='font-semibold whitespace-nowrap' align='middle'>
-                  <div className='flex items-center gap-1'>
+                  <div className='flex items-center gap-0.5 sm:gap-1'>
                     <button
                       onClick={() => {
                         if (readOnly) return;
                         setRoleToDelete(role);
                       }}
                       disabled={readOnly}
-                      className={`text-gray-400 hover:text-blue-500 hover:bg-blue-100 dark:hover:text-amber-500 dark:hover:bg-amber-900/20 font-bold text-sm w-6 h-6 flex items-center justify-center rounded transition-all hover:scale-110 ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      className={`text-gray-400 hover:text-blue-500 hover:bg-blue-100 dark:hover:text-amber-500 dark:hover:bg-amber-900/20 font-bold text-[9px] sm:text-[10px] md:text-xs lg:text-sm w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 flex items-center justify-center rounded sm:rounded-md transition-all hover:scale-110 ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
                       title={readOnly ? t('conditions.projectClosed') : t('conditions.deleteRole')}
                     >
                       ✕
@@ -115,7 +115,7 @@ export function PricesTable({
                       step='0.01'
                       disabled={readOnly}
                       readOnly={readOnly}
-                      className={`w-full px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-center ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      className={`w-full px-1 py-0.5 sm:px-1.5 sm:py-1 md:px-2 md:py-1 rounded sm:rounded-md md:rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-center text-[9px] sm:text-[10px] md:text-xs ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
                     />
                   </Td>
                 ))}

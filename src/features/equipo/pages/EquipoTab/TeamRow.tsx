@@ -87,11 +87,11 @@ export function TeamRow({ row, onChange, onRemove, canEdit, allowedRoles, groupK
 
   return (
     <>
-      <div className='rounded-xl border border-neutral-border bg-neutral-surface p-3'>
-        <div className='flex flex-col sm:flex-row sm:items-center sm:gap-3 gap-2'>
-          <div className='sm:w-12 flex sm:justify-start'>
+      <div className='rounded sm:rounded-md md:rounded-lg lg:rounded-xl border border-neutral-border bg-neutral-surface p-1.5 sm:p-2 md:p-2.5 lg:p-3'>
+        <div className='flex flex-col sm:flex-row sm:items-center sm:gap-2 md:gap-3 gap-1.5 sm:gap-2'>
+          <div className='sm:w-10 md:w-12 flex sm:justify-start'>
             <span
-              className='inline-flex items-center justify-center h-8 min-w-10 px-3 rounded-lg font-bold'
+              className='inline-flex items-center justify-center h-6 sm:h-7 md:h-8 min-w-8 sm:min-w-9 md:min-w-10 px-1.5 sm:px-2 md:px-3 rounded sm:rounded-md md:rounded-lg font-bold text-[9px] sm:text-[10px] md:text-xs'
               style={{ 
                 background: roleBgColor, 
                 color: roleFgColor,
@@ -103,7 +103,7 @@ export function TeamRow({ row, onChange, onRemove, canEdit, allowedRoles, groupK
               {displayBadge(row.role || '—', groupKey, i18n.language)}
             </span>
           </div>
-          <div className='sm:w-[220px] w-full relative' ref={dropdownRef}>
+          <div className='sm:w-[180px] md:w-[200px] lg:w-[220px] w-full relative' ref={dropdownRef}>
             <label htmlFor={`role-${row.id}`} className='sr-only'>{t('team.role')}</label>
             <button
               type='button'
@@ -115,7 +115,7 @@ export function TeamRow({ row, onChange, onRemove, canEdit, allowedRoles, groupK
               title={t('team.role')}
               aria-label={t('team.role')}
               id={`role-${row.id}`}
-              className={`w-full min-w-0 px-3 py-2 rounded-lg border focus:outline-none text-sm text-left transition-colors ${
+              className={`w-full min-w-0 px-1.5 py-1 sm:px-2 sm:py-1.5 md:px-3 md:py-2 rounded sm:rounded-md md:rounded-lg border focus:outline-none text-[9px] sm:text-[10px] md:text-xs lg:text-sm text-left transition-colors ${
                 theme === 'light' 
                   ? 'bg-white text-gray-900' 
                   : 'bg-black/40 text-zinc-300'
@@ -128,16 +128,16 @@ export function TeamRow({ row, onChange, onRemove, canEdit, allowedRoles, groupK
                   : (isButtonHovered && theme === 'dark'
                     ? '#fff'
                     : 'var(--border)'),
-                backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='${theme === 'light' ? '%23111827' : '%23ffffff'}' d='M6 9L1 4h10z'/%3E%3C/svg%3E")`,
+                backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath fill='${theme === 'light' ? '%23111827' : '%23ffffff'}' d='M5 7.5L1.25 3.75h7.5z'/%3E%3C/svg%3E")`,
                 backgroundRepeat: 'no-repeat',
-                backgroundPosition: 'right 0.75rem center',
-                paddingRight: '2.5rem',
+                backgroundPosition: 'right 0.5rem center',
+                paddingRight: '1.75rem',
               }}
             >
               {selectedLabel}
             </button>
             {isOpen && canEdit && (
-              <div className={`absolute top-full left-0 mt-1 w-full border border-neutral-border rounded-lg shadow-lg z-50 overflow-y-auto max-h-60 ${
+              <div className={`absolute top-full left-0 mt-0.5 sm:mt-1 w-full border border-neutral-border rounded sm:rounded-md md:rounded-lg shadow-lg z-50 overflow-y-auto max-h-48 sm:max-h-56 md:max-h-60 ${
                 theme === 'light' ? 'bg-white' : 'bg-neutral-panel'
               }`}>
               {allowedRoles.map((r: AnyRecord) => (
@@ -151,7 +151,7 @@ export function TeamRow({ row, onChange, onRemove, canEdit, allowedRoles, groupK
                     }}
                     onMouseEnter={() => setHoveredOption(r.code)}
                     onMouseLeave={() => setHoveredOption(null)}
-                    className={`w-full text-left px-3 py-2 text-sm transition-colors ${
+                    className={`w-full text-left px-2 py-1 sm:px-2.5 sm:py-1.5 md:px-3 md:py-2 text-[9px] sm:text-[10px] md:text-xs lg:text-sm transition-colors ${
                       theme === 'light' 
                         ? 'text-gray-900' 
                         : 'text-zinc-300'
@@ -171,7 +171,7 @@ export function TeamRow({ row, onChange, onRemove, canEdit, allowedRoles, groupK
               </div>
             )}
           </div>
-          <div className='flex-1 min-w-[220px]'>
+          <div className='flex-1 min-w-0 sm:min-w-[180px] md:min-w-[200px] lg:min-w-[220px]'>
             <label htmlFor={`name-${row.id}`} className='sr-only'>{t('team.nameAndSurname')}</label>
             <input
               disabled={!canEdit}
@@ -179,16 +179,16 @@ export function TeamRow({ row, onChange, onRemove, canEdit, allowedRoles, groupK
               value={row.name}
               onChange={e => onChange(row.id, { name: e.target.value })}
               placeholder={t('team.nameAndSurname')}
-              className='w-full min-w-0 px-3 py-2 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm'
+              className='w-full min-w-0 px-1.5 py-1 sm:px-2 sm:py-1.5 md:px-3 md:py-2 rounded sm:rounded-md md:rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-[9px] sm:text-[10px] md:text-xs lg:text-sm'
               aria-label={t('team.nameAndSurname')}
               id={`name-${row.id}`}
             />
           </div>
-          <div className='sm:w-10 flex sm:justify-end'>
+          <div className='sm:w-8 md:w-10 flex sm:justify-end'>
             <button
               onClick={() => canEdit && setShowConfirmRemove(true)}
               disabled={!canEdit}
-              className={`px-2 py-1 rounded-lg border text-xs border-neutral-border ${!canEdit ? 'opacity-50 cursor-not-allowed' : ''}`}
+              className={`px-1.5 py-1 sm:px-2 sm:py-1 rounded sm:rounded-md md:rounded-lg border text-[10px] sm:text-xs border-neutral-border ${!canEdit ? 'opacity-50 cursor-not-allowed' : ''}`}
               style={{
                 ...(canEdit ? {
                   '--hover-border-color': focusColor

@@ -70,7 +70,7 @@ export function TextAreaAuto({
         }}
         disabled={readOnly}
         readOnly={readOnly}
-        className={`w-full leading-relaxed whitespace-pre-wrap px-3 py-2 rounded-xl bg-neutral-surface border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm transition-colors ${
+        className={`w-full leading-relaxed whitespace-pre-wrap px-2 py-1 sm:px-2.5 sm:py-1.5 md:px-3 md:py-2 rounded sm:rounded-md md:rounded-lg lg:rounded-xl bg-neutral-surface border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-[10px] sm:text-xs md:text-sm transition-colors ${
           readOnly ? 'opacity-50 cursor-not-allowed' : 'hover:border-brand/50'
         } ${className}`}
         style={{ height: 'auto', overflow: 'hidden', resize: 'none' }}
@@ -108,10 +108,10 @@ export function TextAreaAuto({
       onClick={() => !readOnly && setIsEditing(true)}
       onBlur={() => !readOnly && setIsEditing(false)}
       dangerouslySetInnerHTML={{ __html: htmlContent }}
-      className={`w-full leading-relaxed px-3 py-2 rounded-xl bg-neutral-surface border border-neutral-border text-sm transition-colors ${
+      className={`w-full leading-relaxed px-2 py-1 sm:px-2.5 sm:py-1.5 md:px-3 md:py-2 rounded sm:rounded-md md:rounded-lg lg:rounded-xl bg-neutral-surface border border-neutral-border text-[10px] sm:text-xs md:text-sm transition-colors ${
         readOnly ? 'cursor-not-allowed opacity-50' : 'cursor-text hover:border-brand/50'
       } ${className}`}
-      style={{ minHeight: '56px', whiteSpace: 'pre-wrap' }}
+      style={{ minHeight: '2.5rem', whiteSpace: 'pre-wrap' }}
     />
   );
 }

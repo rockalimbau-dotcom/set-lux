@@ -16,16 +16,16 @@ export function InfoSections({ model, setText, readOnly }: InfoSectionsProps) {
 
   return (
     <>
-      <section className='rounded-2xl border border-neutral-border bg-neutral-panel/90 p-4'>
-        <div className='flex items-center justify-between mb-2'>
-          <h4 className='text-brand font-semibold'>{t('conditions.calculationLegend')}</h4>
+      <section className='rounded sm:rounded-md md:rounded-lg lg:rounded-xl xl:rounded-2xl border border-neutral-border bg-neutral-panel/90 p-2 sm:p-2.5 md:p-3 lg:p-4'>
+        <div className='flex items-center justify-between mb-1 sm:mb-1.5 md:mb-2'>
+          <h4 className='text-brand font-semibold text-xs sm:text-sm md:text-base'>{t('conditions.calculationLegend')}</h4>
         </div>
         <TextAreaAuto
           value={restoreStrongTags(renderWithParams(model.legendTemplate, model.params))}
           onChange={v =>
             setText('legendTemplate', visibleToTemplate(v, model.params))
           }
-          className='min-h-[180px]'
+          className='min-h-[100px] sm:min-h-[120px] md:min-h-[150px] lg:min-h-[180px]'
           readOnly={readOnly}
         />
       </section>
@@ -115,7 +115,7 @@ export function InfoSections({ model, setText, readOnly }: InfoSectionsProps) {
         onRestore={() => setText('convenioTemplate', defaults.convenio)}
         rightAddon={
           readOnly ? (
-            <span className='text-brand text-sm opacity-50 cursor-not-allowed' title='El proyecto está cerrado'>
+            <span className='text-brand text-[9px] sm:text-[10px] md:text-sm opacity-50 cursor-not-allowed' title='El proyecto está cerrado'>
               BOE
             </span>
           ) : (
@@ -123,7 +123,7 @@ export function InfoSections({ model, setText, readOnly }: InfoSectionsProps) {
               href='https://www.boe.es/diario_boe/txt.php?id=BOE-A-2024-6846'
               target='_blank'
               rel='noreferrer'
-              className='text-brand hover:underline text-sm'
+              className='text-brand hover:underline text-[9px] sm:text-[10px] md:text-sm'
               title={t('conditions.openBOE')}
             >
               BOE

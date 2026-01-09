@@ -28,14 +28,14 @@ export function FilterMenu({
 
   return (
     <div 
-      className='absolute right-0 top-full mt-2 w-56 rounded-xl shadow-lg border border-neutral-border py-2 z-50'
+      className='absolute right-0 top-full mt-2 w-40 sm:w-48 md:w-56 rounded sm:rounded-md md:rounded-lg lg:rounded-xl shadow-lg border border-neutral-border py-1 sm:py-1.5 md:py-2 z-50'
       style={{
         backgroundColor: 'var(--panel)',
         borderColor: isLight ? 'rgba(229,231,235,0.6)' : 'var(--border)'
       }}
     >
-      <div className='px-4 py-2 border-b border-neutral-border' style={{borderColor: isLight ? 'rgba(229,231,235,0.6)' : 'var(--border)'}}>
-        <span className='text-sm font-semibold' style={{color: 'var(--text)'}}>{t('common.status')}</span>
+      <div className='px-2 py-1 sm:px-3 sm:py-1.5 md:px-4 md:py-2 border-b border-neutral-border' style={{borderColor: isLight ? 'rgba(229,231,235,0.6)' : 'var(--border)'}}>
+        <span className='text-xs sm:text-sm font-semibold' style={{color: 'var(--text)'}}>{t('common.status')}</span>
       </div>
       <button
         onClick={() => {
@@ -44,7 +44,7 @@ export function FilterMenu({
         }}
         onMouseEnter={() => onHover('Todos')}
         onMouseLeave={() => onHover(null)}
-        className='w-full text-left px-4 py-2 text-sm transition-colors'
+        className='w-full text-left px-2 py-1 sm:px-3 sm:py-1.5 md:px-4 md:py-2 text-xs sm:text-sm transition-colors'
         style={{
           color: 'var(--text)',
           backgroundColor: hoveredOption === 'Todos' 
@@ -61,7 +61,7 @@ export function FilterMenu({
         }}
         onMouseEnter={() => onHover('Activo')}
         onMouseLeave={() => onHover(null)}
-        className='w-full text-left px-4 py-2 text-sm transition-colors'
+        className='w-full text-left px-2 py-1 sm:px-3 sm:py-1.5 md:px-4 md:py-2 text-xs sm:text-sm transition-colors'
         style={{
           color: hoveredOption === 'Activo' 
             ? (isLight ? '#111827' : 'white')
@@ -80,7 +80,7 @@ export function FilterMenu({
         }}
         onMouseEnter={() => onHover('Cerrado')}
         onMouseLeave={() => onHover(null)}
-        className='w-full text-left px-4 py-2 text-sm transition-colors'
+        className='w-full text-left px-2 py-1 sm:px-3 sm:py-1.5 md:px-4 md:py-2 text-xs sm:text-sm transition-colors'
         style={{
           color: hoveredOption === 'Cerrado' 
             ? (isLight ? '#111827' : 'white')
@@ -93,8 +93,8 @@ export function FilterMenu({
         {filterStatus === 'Cerrado' ? '✓ ' : '  '}{t('common.closed')}
       </button>
       
-      <div className='px-4 py-2 border-t border-neutral-border mt-2' style={{borderColor: isLight ? 'rgba(229,231,235,0.6)' : 'var(--border)'}}>
-        <span className='text-sm font-semibold' style={{color: 'var(--text)'}}>{t('common.type')}</span>
+      <div className='px-2 py-1 sm:px-3 sm:py-1.5 md:px-4 md:py-2 border-t border-neutral-border mt-1 sm:mt-1.5 md:mt-2' style={{borderColor: isLight ? 'rgba(229,231,235,0.6)' : 'var(--border)'}}>
+        <span className='text-xs sm:text-sm font-semibold' style={{color: 'var(--text)'}}>{t('common.type')}</span>
       </div>
       <button
         onClick={() => {
@@ -103,7 +103,7 @@ export function FilterMenu({
         }}
         onMouseEnter={() => onHover('Todos-Tipo')}
         onMouseLeave={() => onHover(null)}
-        className='w-full text-left px-4 py-2 text-sm transition-colors'
+        className='w-full text-left px-2 py-1 sm:px-3 sm:py-1.5 md:px-4 md:py-2 text-xs sm:text-sm transition-colors'
         style={{
           color: hoveredOption === 'Todos-Tipo' 
             ? (isLight ? '#111827' : 'white')
@@ -122,7 +122,7 @@ export function FilterMenu({
         }}
         onMouseEnter={() => onHover('semanal')}
         onMouseLeave={() => onHover(null)}
-        className='w-full text-left px-4 py-2 text-sm transition-colors'
+        className='w-full text-left px-2 py-1 sm:px-3 sm:py-1.5 md:px-4 md:py-2 text-xs sm:text-sm transition-colors'
         style={{
           color: hoveredOption === 'semanal' 
             ? (isLight ? '#111827' : 'white')
@@ -141,7 +141,7 @@ export function FilterMenu({
         }}
         onMouseEnter={() => onHover('mensual')}
         onMouseLeave={() => onHover(null)}
-        className='w-full text-left px-4 py-2 text-sm transition-colors'
+        className='w-full text-left px-2 py-1 sm:px-3 sm:py-1.5 md:px-4 md:py-2 text-xs sm:text-sm transition-colors'
         style={{
           color: hoveredOption === 'mensual' 
             ? (isLight ? '#111827' : 'white')
@@ -160,7 +160,7 @@ export function FilterMenu({
         }}
         onMouseEnter={() => onHover('publicidad')}
         onMouseLeave={() => onHover(null)}
-        className='w-full text-left px-4 py-2 text-sm transition-colors'
+        className='w-full text-left px-2 py-1 sm:px-3 sm:py-1.5 md:px-4 md:py-2 text-xs sm:text-sm transition-colors'
         style={{
           color: hoveredOption === 'publicidad' 
             ? (isLight ? '#111827' : 'white')

@@ -65,7 +65,7 @@ export function NominaPublicidadContent({
   }
 
   return (
-    <div className='space-y-6'>
+    <div className='space-y-2 sm:space-y-3 md:space-y-4 lg:space-y-6'>
       {monthKeys.map((mk, i) => {
         const bucket = monthMap.get(mk)!;
         const weeks = bucket ? Array.from(bucket.weeks) : [];

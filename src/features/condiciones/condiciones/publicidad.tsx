@@ -64,7 +64,7 @@ function CondicionesPublicidad({
   });
 
   return (
-    <div className='space-y-6'>
+    <div className='space-y-2 sm:space-y-3 md:space-y-4 lg:space-y-6'>
       <ParametersSection
         showParams={showParams}
         setShowParams={setShowParams}

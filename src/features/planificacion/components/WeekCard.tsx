@@ -196,7 +196,7 @@ function WeekCard({
   return (
     <div
       id={`wk-${week.id}`}
-      className='wk-card rounded-2xl border border-neutral-border bg-neutral-panel/90'
+      className='wk-card rounded sm:rounded-md md:rounded-lg lg:rounded-xl xl:rounded-2xl border border-neutral-border bg-neutral-panel/90'
     >
       <WeekCardHeader
         weekLabel={translateWeekLabel(week.label)}

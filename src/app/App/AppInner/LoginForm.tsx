@@ -16,8 +16,8 @@ export function LoginForm({ login, setLogin, setMode, theme, onSubmit }: LoginFo
   const { t } = useTranslation();
 
   return (
-    <form className='space-y-6' onSubmit={onSubmit}>
-      <div className='space-y-2'>
+    <form className='space-y-3 sm:space-y-4 md:space-y-5 lg:space-y-6' onSubmit={onSubmit}>
+      <div className='space-y-1.5 sm:space-y-2'>
         <label className='block text-sm font-medium' style={{ color: 'var(--text)' }}>
           {t('auth.user')}
         </label>
@@ -32,7 +32,7 @@ export function LoginForm({ login, setLogin, setMode, theme, onSubmit }: LoginFo
         />
       </div>
 
-      <div className='space-y-2'>
+      <div className='space-y-1.5 sm:space-y-2'>
         <label className='block text-sm font-medium' style={{ color: 'var(--text)' }}>
           {t('auth.password')}
         </label>

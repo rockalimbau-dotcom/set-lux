@@ -56,9 +56,9 @@ export function SearchAndFilters({
   const { t } = useTranslation();
 
   return (
-    <div className='flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4' style={{position: 'relative', zIndex: 1}}>
-      <div className='flex-1 relative'>
-        <div className='absolute left-4 top-1/2 transform -translate-y-1/2 text-zinc-400'>
+    <div className='flex flex-row items-center gap-1.5 sm:gap-2 md:gap-3 lg:gap-4' style={{position: 'relative', zIndex: 1}}>
+      <div className='flex-1 relative min-w-0'>
+        <div className='absolute left-1.5 sm:left-2 md:left-3 lg:left-4 top-1/2 transform -translate-y-1/2 text-zinc-400 text-xs sm:text-sm md:text-base'>
           🔍
         </div>
         <input
@@ -66,7 +66,7 @@ export function SearchAndFilters({
           placeholder={t('common.searchPlaceholder')}
           value={searchQuery}
           onChange={e => onSearchChange(e.target.value)}
-          className='w-full pl-12 pr-4 py-3 rounded-xl border border-neutral-border focus:outline-none focus:ring-1 focus:ring-orange-500 hover:border-[var(--hover-border)]'
+          className='w-full pl-7 sm:pl-8 md:pl-10 lg:pl-12 pr-1.5 sm:pr-2 md:pr-3 lg:pr-4 py-1 sm:py-1.5 md:py-2 lg:py-3 rounded-md sm:rounded-lg md:rounded-xl border border-neutral-border focus:outline-none focus:ring-1 focus:ring-orange-500 hover:border-[var(--hover-border)] text-xs sm:text-sm md:text-base'
           style={{
             backgroundColor: 'var(--panel)',
             color: 'var(--text)',
@@ -74,20 +74,20 @@ export function SearchAndFilters({
           }}
         />
       </div>
-      <div className='relative' ref={filterMenuRef}>
+      <div className='relative flex-shrink-0' ref={filterMenuRef}>
         <button
           onClick={() => {
             onFilterMenuToggle();
             if (sortMenuOpen) onSortMenuToggle();
           }}
-          className='px-4 py-3 rounded-xl border border-neutral-border hover:border-[var(--hover-border)] transition'
+          className='px-1.5 py-1 sm:px-2 sm:py-1.5 md:px-3 md:py-2 lg:px-4 lg:py-3 rounded sm:rounded-md md:rounded-lg lg:rounded-xl border border-neutral-border hover:border-[var(--hover-border)] transition text-[10px] sm:text-xs md:text-sm whitespace-nowrap'
           style={{
             backgroundColor: 'var(--panel)',
             color: 'var(--text)',
             borderColor: isLight ? 'rgba(229,231,235,0.6)' : 'var(--border)'
           }}
         >
-          <span className='flex items-center gap-2'>
+          <span className='flex items-center gap-0.5 sm:gap-1 md:gap-2'>
             🔽 {t('common.filter')}
           </span>
         </button>
@@ -107,20 +107,20 @@ export function SearchAndFilters({
         )}
       </div>
       
-      <div className='relative' ref={sortMenuRef}>
+      <div className='relative flex-shrink-0' ref={sortMenuRef}>
         <button
           onClick={() => {
             onSortMenuToggle();
             if (filterMenuOpen) onFilterMenuToggle();
           }}
-          className='px-4 py-3 rounded-xl border border-neutral-border hover:border-[var(--hover-border)] transition'
+          className='px-1.5 py-1 sm:px-2 sm:py-1.5 md:px-3 md:py-2 lg:px-4 lg:py-3 rounded sm:rounded-md md:rounded-lg lg:rounded-xl border border-neutral-border hover:border-[var(--hover-border)] transition text-[10px] sm:text-xs md:text-sm whitespace-nowrap'
           style={{
             backgroundColor: 'var(--panel)',
             color: 'var(--text)',
             borderColor: isLight ? 'rgba(229,231,235,0.6)' : 'var(--border)'
           }}
         >
-          <span className='flex items-center gap-2'>
+          <span className='flex items-center gap-0.5 sm:gap-1 md:gap-2'>
             ↕️ {t('common.sort')}
           </span>
         </button>

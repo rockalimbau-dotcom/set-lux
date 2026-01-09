@@ -103,11 +103,11 @@ export function MonthSectionPersonRow({
       <Td align='middle' className='text-center'>
         <div className='flex justify-center'>
         <span
-          className='inline-flex items-center gap-2 px-2 py-1 rounded-lg border border-neutral-border bg-black/40'
+          className='inline-flex items-center gap-1 sm:gap-1.5 md:gap-2 px-1 py-0.5 sm:px-1.5 sm:py-0.5 md:px-2 md:py-1 rounded sm:rounded-md md:rounded-lg border border-neutral-border bg-black/40'
           title={`${r.role} - ${r.name}`}
         >
           <span
-            className='inline-flex items-center justify-center w-6 h-5 rounded-md font-bold text-[10px]'
+            className='inline-flex items-center justify-center w-4 h-3.5 sm:w-5 sm:h-4 md:w-6 md:h-5 rounded sm:rounded-md font-bold text-[8px] sm:text-[9px] md:text-[10px]'
             style={{ 
               background: roleBgColor, 
               color: roleFgColor,
@@ -117,7 +117,7 @@ export function MonthSectionPersonRow({
             >
               {getRoleBadgeCode(r.role || '', i18n.language) || '—'}
             </span>
-          <span className='text-xs text-zinc-200'>{r.name}</span>
+          <span className='text-[9px] sm:text-[10px] md:text-xs text-zinc-200'>{r.name}</span>
         </span>
         </div>
       </Td>
@@ -126,7 +126,7 @@ export function MonthSectionPersonRow({
         <Td align='middle' className='text-center'>
           <div className='flex flex-col items-center'>
             {r._worked > 0 && (
-              <div className='text-right font-medium text-zinc-100 mb-1'>{r._worked}</div>
+              <div className='text-right font-medium text-zinc-100 mb-0.5 sm:mb-1 text-[9px] sm:text-[10px] md:text-xs'>{r._worked}</div>
             )}
             {projectMode !== 'publicidad' && (
               <WorkedDaysSummary
@@ -143,9 +143,9 @@ export function MonthSectionPersonRow({
       {hasWorkedDaysData && (
         <Td align='middle' className='text-center'>
           {r._missingPrices?.jornada ? (
-            <span className='text-xs text-zinc-400 italic'>{t('payroll.addPriceInConditions')}</span>
+            <span className='text-[9px] sm:text-[10px] md:text-xs text-zinc-400 italic'>{t('payroll.addPriceInConditions')}</span>
           ) : (
-            displayMoney(r._totalDias, 2)
+            <span className='text-[9px] sm:text-[10px] md:text-xs'>{displayMoney(r._totalDias, 2)}</span>
           )}
         </Td>
       )}
@@ -158,9 +158,9 @@ export function MonthSectionPersonRow({
       {hasLocalizacionData && (
         <Td align='middle' className='text-center'>
           {r._missingPrices?.localizacionTecnica ? (
-            <span className='text-xs text-zinc-400 italic'>{t('payroll.addPriceInConditions')}</span>
+            <span className='text-[9px] sm:text-[10px] md:text-xs text-zinc-400 italic'>{t('payroll.addPriceInConditions')}</span>
           ) : (
-            displayMoney(r._totalLocalizacion, 2)
+            <span className='text-[9px] sm:text-[10px] md:text-xs'>{displayMoney(r._totalLocalizacion, 2)}</span>
           )}
         </Td>
       )}
@@ -169,7 +169,7 @@ export function MonthSectionPersonRow({
         <Td align='middle' className='text-center'>
           <div className='flex flex-col items-center'>
             {(r._cargaDays || 0) + (r._descargaDays || 0) > 0 && (
-              <div className='text-right font-medium text-zinc-100 mb-1'>
+              <div className='text-right font-medium text-zinc-100 mb-0.5 sm:mb-1 text-[9px] sm:text-[10px] md:text-xs'>
                 {(r._cargaDays || 0) + (r._descargaDays || 0)}
               </div>
             )}
@@ -183,31 +183,31 @@ export function MonthSectionPersonRow({
       {hasCargaDescargaData && (
         <Td align='middle' className='text-center'>
           {r._missingPrices?.cargaDescarga ? (
-            <span className='text-xs text-zinc-400 italic'>{t('payroll.addPriceInConditions')}</span>
+            <span className='text-[9px] sm:text-[10px] md:text-xs text-zinc-400 italic'>{t('payroll.addPriceInConditions')}</span>
           ) : (
-            displayMoney(r._totalCargaDescarga, 2)
+            <span className='text-[9px] sm:text-[10px] md:text-xs'>{displayMoney(r._totalCargaDescarga, 2)}</span>
           )}
         </Td>
       )}
 
-      {columnVisibility.holidays && <Td align='middle' className='text-center'>{displayValue(r._holidays)}</Td>}
+      {columnVisibility.holidays && <Td align='middle' className='text-center'><span className='text-[9px] sm:text-[10px] md:text-xs'>{displayValue(r._holidays)}</span></Td>}
       {columnVisibility.holidays && (
         <Td align='middle' className='text-center'>
           {r._missingPrices?.holidayDay ? (
-            <span className='text-xs text-zinc-400 italic'>{t('payroll.addPriceInConditions')}</span>
+            <span className='text-[9px] sm:text-[10px] md:text-xs text-zinc-400 italic'>{t('payroll.addPriceInConditions')}</span>
           ) : (
-            displayMoney(r._totalHolidays, 2)
+            <span className='text-[9px] sm:text-[10px] md:text-xs'>{displayMoney(r._totalHolidays, 2)}</span>
           )}
         </Td>
       )}
 
-      {columnVisibility.travel && <Td align='middle' className='text-center'>{displayValue(r._travel)}</Td>}
+      {columnVisibility.travel && <Td align='middle' className='text-center'><span className='text-[9px] sm:text-[10px] md:text-xs'>{displayValue(r._travel)}</span></Td>}
       {columnVisibility.travel && (
         <Td align='middle' className='text-center'>
           {r._missingPrices?.travelDay ? (
-            <span className='text-xs text-zinc-400 italic'>{t('payroll.addPriceInConditions')}</span>
+            <span className='text-[9px] sm:text-[10px] md:text-xs text-zinc-400 italic'>{t('payroll.addPriceInConditions')}</span>
           ) : (
-            displayMoney(r._totalTravel, 2)
+            <span className='text-[9px] sm:text-[10px] md:text-xs'>{displayMoney(r._totalTravel, 2)}</span>
           )}
         </Td>
       )}
@@ -254,40 +254,40 @@ export function MonthSectionPersonRow({
         </Td>
       )}
 
-      {columnVisibility.transporte && <Td align='middle' className='text-center'>{displayValue(r.transporte)}</Td>}
+      {columnVisibility.transporte && <Td align='middle' className='text-center'><span className='text-[9px] sm:text-[10px] md:text-xs'>{displayValue(r.transporte)}</span></Td>}
       {columnVisibility.transporte && (
         <Td align='middle' className='text-center'>
           {r._missingPrices?.transporte ? (
-            <span className='text-xs text-zinc-400 italic'>{t('payroll.addPriceInConditions')}</span>
+            <span className='text-[9px] sm:text-[10px] md:text-xs text-zinc-400 italic'>{t('payroll.addPriceInConditions')}</span>
           ) : (
-            displayMoney(r._totalTrans, 2)
+            <span className='text-[9px] sm:text-[10px] md:text-xs'>{displayMoney(r._totalTrans, 2)}</span>
           )}
         </Td>
       )}
 
-      {columnVisibility.km && <Td align='middle' className='text-center'>{displayValue(r.km, 1)}</Td>}
+      {columnVisibility.km && <Td align='middle' className='text-center'><span className='text-[9px] sm:text-[10px] md:text-xs'>{displayValue(r.km, 1)}</span></Td>}
       {columnVisibility.km && (
         <Td align='middle' className='text-center'>
           {r._missingPrices?.km ? (
-            <span className='text-xs text-zinc-400 italic'>{t('payroll.addPriceInConditions')}</span>
+            <span className='text-[9px] sm:text-[10px] md:text-xs text-zinc-400 italic'>{t('payroll.addPriceInConditions')}</span>
           ) : (
-            displayMoney(r._totalKm, 2)
+            <span className='text-[9px] sm:text-[10px] md:text-xs'>{displayMoney(r._totalKm, 2)}</span>
           )}
         </Td>
       )}
 
       <Td align='middle' className='text-center font-semibold'>
-        {displayMoney(r._totalBruto, 2)}
+        <span className='text-[9px] sm:text-[10px] md:text-xs'>{displayMoney(r._totalBruto, 2)}</span>
       </Td>
 
       <Td align='middle' className='text-center'>
-        <div className='flex items-center justify-center gap-2'>
+        <div className='flex items-center justify-center gap-1 sm:gap-1.5 md:gap-2'>
           <input
             type='checkbox'
             checked={!!rc.ok}
             onChange={e => !readOnly && setRcv(pKey, { ok: e.target.checked })}
             disabled={readOnly}
-            className={readOnly ? 'opacity-50 cursor-not-allowed' : ''}
+            className={`w-3 h-3 sm:w-4 sm:h-4 ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
             title={readOnly ? t('conditions.projectClosed') : t('payroll.markAsReceived')}
           />
           <input
@@ -297,7 +297,7 @@ export function MonthSectionPersonRow({
             onChange={e => !readOnly && setRcv(pKey, { note: e.target.value })}
             disabled={readOnly}
             readOnly={readOnly}
-            className={`px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-xs ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+            className={`w-16 sm:w-20 md:w-24 px-1 py-0.5 sm:px-1.5 sm:py-1 md:px-2 md:py-1 rounded sm:rounded-md md:rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-[9px] sm:text-[10px] md:text-xs ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
             title={readOnly ? t('conditions.projectClosed') : t('payroll.noteTitle')}
           />
         </div>

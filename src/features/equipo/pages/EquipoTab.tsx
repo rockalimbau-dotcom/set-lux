@@ -58,15 +58,15 @@ function EquipoTab({
   });
 
   return (
-    <div className='space-y-6'>
+    <div className='space-y-2 sm:space-y-3 md:space-y-4 lg:space-y-6'>
       <div className='flex items-center justify-between'>
         <div />
-        <div className='flex items-center gap-2'>
+        <div className='flex items-center gap-1 sm:gap-1.5 md:gap-2'>
           {!groupsEnabled.prelight && (
             <button
               onClick={() => canEdit && enableGroup('prelight')}
               disabled={!canEdit}
-              className={`px-3 py-2 rounded-lg border text-xs border-neutral-border hover:border-accent ${!canEdit ? 'opacity-50 cursor-not-allowed' : ''}`}
+              className={`px-1.5 py-1 sm:px-2 sm:py-1.5 md:px-3 md:py-2 rounded sm:rounded-md md:rounded-lg border text-[9px] sm:text-[10px] md:text-xs border-neutral-border hover:border-accent whitespace-nowrap ${!canEdit ? 'opacity-50 cursor-not-allowed' : ''}`}
               title={!canEdit ? t('conditions.projectClosed') : t('team.addPrelight')}
               aria-label={t('team.addPrelightButton')}
               type='button'
@@ -78,7 +78,7 @@ function EquipoTab({
             <button
               onClick={() => canEdit && enableGroup('pickup')}
               disabled={!canEdit}
-              className={`px-3 py-2 rounded-lg border text-xs border-neutral-border hover:border-accent ${!canEdit ? 'opacity-50 cursor-not-allowed' : ''}`}
+              className={`px-1.5 py-1 sm:px-2 sm:py-1.5 md:px-3 md:py-2 rounded sm:rounded-md md:rounded-lg border text-[9px] sm:text-[10px] md:text-xs border-neutral-border hover:border-accent whitespace-nowrap ${!canEdit ? 'opacity-50 cursor-not-allowed' : ''}`}
               title={!canEdit ? t('conditions.projectClosed') : t('team.addPickup')}
               aria-label={t('team.addPickupButton')}
               type='button'
@@ -136,7 +136,7 @@ function EquipoTab({
         />
       )}
 
-      <p className='text-[11px] text-zinc-500'>
+      <p className='text-[9px] sm:text-[10px] md:text-xs text-zinc-500'>
         <span className='text-brand font-semibold'>{t('team.tip')}</span>{' '}
         <span dangerouslySetInnerHTML={{ __html: t('team.tipMessage') }} />
       </p>

@@ -51,7 +51,7 @@ export function ConceptRow({
   return (
     <tr id={`person-${pKey}-rows`}>
       <Td className='whitespace-nowrap align-middle'>
-        <div className='text-xs text-zinc-300'>{translateConcept(concepto, t)}</div>
+        <div className='text-[9px] sm:text-[10px] md:text-xs text-zinc-300'>{translateConcept(concepto, t)}</div>
       </Td>
 
       {semana.map(fecha => {
@@ -136,7 +136,7 @@ export function ConceptRow({
           <Td key={`${pKey}_${concepto}_${fecha}`} className={`text-center ${cellClasses}`} align='center'>
             <input
               {...numericProps}
-              className={`w-full px-2 py-1 rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-sm text-left ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+              className={`w-full px-1 py-0.5 sm:px-1.5 sm:py-1 md:px-2 md:py-1 rounded sm:rounded-md md:rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-[9px] sm:text-[10px] md:text-xs lg:text-sm text-left ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
               value={val}
               onChange={e =>
                 !readOnly && setCell(pKey, concepto, fecha, (e.target as HTMLInputElement).value)
@@ -184,11 +184,11 @@ function TotalCell({ pKey, concepto, semana, data, parseDietas, horasExtraTipo, 
     if (breakdown.size === 0) return null;
     
     return (
-      <div className='flex flex-wrap gap-1 justify-center'>
+      <div className='flex flex-wrap gap-0.5 sm:gap-1 justify-center'>
         {Array.from(breakdown.entries()).map(([item, count]) => (
           <span
             key={item}
-            className='inline-flex items-center gap-1 px-2 py-1 rounded-lg border border-neutral-border bg-black/40 text-xs'
+            className='inline-flex items-center gap-0.5 sm:gap-1 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded sm:rounded-md md:rounded-lg border border-neutral-border bg-black/40 text-[9px] sm:text-[10px] md:text-xs'
           >
             <span className='text-zinc-400'>x{count}</span>
             <span className='text-zinc-200'>{translateDietItem(item, t)}</span>

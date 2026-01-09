@@ -199,7 +199,7 @@ function MonthSection({
   };
 
   return (
-    <section className='rounded-2xl border border-neutral-border bg-neutral-panel/90'>
+    <section className='rounded sm:rounded-lg md:rounded-xl lg:rounded-2xl border border-neutral-border bg-neutral-panel/90'>
       <MonthSectionHeader
         monthLabel={monthLabelEs(monthKey)}
         open={open}

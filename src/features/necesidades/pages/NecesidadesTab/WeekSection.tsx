@@ -43,25 +43,25 @@ export function WeekSection({
   return (
     <section
       key={wid}
-      className='rounded-2xl border border-neutral-border bg-neutral-panel/90'
+      className='rounded sm:rounded-lg md:rounded-xl lg:rounded-2xl border border-neutral-border bg-neutral-panel/90'
     >
-      <div className='flex items-center justify-between gap-3 px-5 py-4'>
-        <div className='flex items-center gap-3'>
+      <div className='flex items-center justify-between gap-1.5 sm:gap-2 md:gap-3 px-2 py-2 sm:px-3 sm:py-2.5 md:px-4 md:py-3 lg:px-5 lg:py-4'>
+        <div className='flex items-center gap-1.5 sm:gap-2 md:gap-3'>
           <button
             onClick={() => !readOnly && setWeekOpen(wid, !wk.open)}
             disabled={readOnly}
-            className={`w-8 h-8 rounded-lg border border-neutral-border hover:border-[#F59E0B] ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+            className={`w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 rounded sm:rounded-md md:rounded-lg border border-neutral-border hover:border-[#F59E0B] ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
             title={readOnly ? t('conditions.projectClosed') : (wk.open ? t('needs.close') : t('needs.open'))}
           >
             {wk.open ? '−' : '+'}
           </button>
-          <div className='text-brand font-semibold'>
+          <div className='text-brand font-semibold text-xs sm:text-sm md:text-base'>
             {translateWeekLabel(wk.label || t('needs.week'), t)}
           </div>
         </div>
-        <div className='flex items-center gap-2'>
+        <div className='flex items-center gap-1 sm:gap-1.5 md:gap-2'>
           <button
-            className={btnExportCls}
+            className='px-1.5 py-1 sm:px-2 sm:py-1.5 md:px-2.5 md:py-2 rounded sm:rounded-md md:rounded-lg text-[10px] sm:text-xs md:text-sm font-semibold btn-pdf'
             style={btnExportStyle}
             onClick={() => exportWeekPDF(wid)}
             title={t('needs.exportWeekPDF')}
@@ -72,15 +72,15 @@ export function WeekSection({
       </div>
 
       {wk.open && (
-        <div className='overflow-x-auto px-5 pb-5'>
-          <table className='min-w-[1360px] w-full border-collapse text-sm'>
+        <div className='overflow-x-auto px-3 pb-3 sm:px-4 sm:pb-4 md:px-5 md:pb-5'>
+          <table className='min-w-[800px] sm:min-w-[1000px] md:min-w-[1200px] lg:min-w-[1360px] w-full border-collapse text-[9px] sm:text-[10px] md:text-xs lg:text-sm'>
             <thead>
               <tr>
                 <Th>{t('needs.fieldDay')}</Th>
                 {DAYS.map((d, i) => (
                   <Th key={d.key} align='center' className='text-center'>
-                    <div>{d.name}</div>
-                    <div className='text-[11px] text-zinc-400'>
+                    <div className='text-[9px] sm:text-[10px] md:text-xs'>{d.name}</div>
+                    <div className='text-[8px] sm:text-[9px] md:text-[10px] text-zinc-400'>
                       {datesRow[i]}
                     </div>
                   </Th>
