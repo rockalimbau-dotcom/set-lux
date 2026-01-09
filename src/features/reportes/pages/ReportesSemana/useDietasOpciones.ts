@@ -1,13 +1,13 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { DIETAS_OPCIONES, DIETAS_OPCIONES_PUBLICIDAD } from '../../constants';
+import { DIETAS_OPCIONES, DIETAS_OPCIONES_DIARIO } from '../../constants';
 
-export function useDietasOpciones(mode: 'semanal' | 'mensual' | 'publicidad') {
+export function useDietasOpciones(mode: 'semanal' | 'mensual' | 'diario') {
   const { t } = useTranslation();
   
   return useMemo(() => {
-    const baseOptions = mode === 'publicidad' ? DIETAS_OPCIONES_PUBLICIDAD : DIETAS_OPCIONES;
-    const translations = mode === 'publicidad' ? t('reports.dietOptionsAdvertising', { returnObjects: true }) : t('reports.dietOptions', { returnObjects: true });
+    const baseOptions = mode === 'diario' ? DIETAS_OPCIONES_DIARIO : DIETAS_OPCIONES;
+    const translations = mode === 'diario' ? t('reports.dietOptionsAdvertising', { returnObjects: true }) : t('reports.dietOptions', { returnObjects: true });
     return baseOptions.map((opt, idx) => {
       if (idx === 0) return opt; // Empty string
       const key = Object.keys(translations as Record<string, string>)[idx];

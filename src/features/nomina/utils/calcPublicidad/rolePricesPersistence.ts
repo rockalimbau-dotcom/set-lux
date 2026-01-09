@@ -6,7 +6,7 @@ import { storage } from '@shared/services/localStorage.service';
 export function persistDefaultPrices(project: any, priceRows: any) {
   try {
     const baseKey = project?.id || project?.nombre || 'tmp';
-    const condKey = `cond_${baseKey}_publicidad`;
+    const condKey = `cond_${baseKey}_diario`;
     const current = storage.getJSON<any>(condKey) || {};
     storage.setJSON(condKey, {
       ...current,
@@ -24,7 +24,7 @@ export function persistDefaultPrices(project: any, priceRows: any) {
 export function persistDefaultParams(project: any, params: any) {
   try {
     const baseKey = project?.id || project?.nombre || 'tmp';
-    const condKey = `cond_${baseKey}_publicidad`;
+    const condKey = `cond_${baseKey}_diario`;
     const current = storage.getJSON<any>(condKey) || {};
     storage.setJSON(condKey, {
       ...current,

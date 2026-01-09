@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Th, Td } from '@shared/components';
-import { PRICE_HEADERS_PUBLI, PRICE_ROLES_PUBLI } from './publicidadConstants';
+import { PRICE_HEADERS_DIARIO, PRICE_ROLES_DIARIO } from './publicidadConstants';
 import { btnAddRole } from '@shared/utils/tailwindClasses';
 import { AnyRecord } from '@shared/types/common';
 
@@ -61,7 +61,7 @@ export function PricesTable({
                     }
                   }}
                 >
-                  {PRICE_ROLES_PUBLI.filter(r => !roles.includes(r)).map((role: string) => (
+                  {PRICE_ROLES_DIARIO.filter(r => !roles.includes(r)).map((role: string) => (
                     <button
                       key={role}
                       onClick={() => addRole(role)}
@@ -82,7 +82,7 @@ export function PricesTable({
           <thead>
             <tr>
               <Th align='left'>{t('conditions.rolePrice')}</Th>
-              {PRICE_HEADERS_PUBLI.map(col => (
+              {PRICE_HEADERS_DIARIO.map(col => (
                 <Th key={col} align='center'>{translateHeader(col)}</Th>
               ))}
             </tr>
@@ -106,7 +106,7 @@ export function PricesTable({
                     <span>{translateRoleName(role)}</span>
                   </div>
                 </Td>
-                {PRICE_HEADERS_PUBLI.map(h => (
+                {PRICE_HEADERS_DIARIO.map(h => (
                   <Td key={h} align='center'>
                     <input
                       type='number'

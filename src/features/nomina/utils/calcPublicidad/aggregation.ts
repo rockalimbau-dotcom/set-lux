@@ -12,7 +12,7 @@ import {
 import { storageKeyFor, storageKeyVariants, getCellValueCandidates } from './helpers';
 
 /**
- * Aggregate reports for publicidad mode
+ * Aggregate reports for diario mode
  */
 export function aggregateReports(project: any, weeks: any[], filterISO: ((iso: string) => boolean) | null = null) {
   const base = project?.id || project?.nombre || 'tmp';
@@ -62,9 +62,9 @@ export function aggregateReports(project: any, weeks: any[], filterISO: ((iso: s
       const n = p.name || '';
       const vk = visibleRoleFor(r, n, refuerzoSet);
       
-      // REF no se procesa en publicidad (no hay refuerzos)
+      // REF no se procesa en diario (no hay refuerzos)
       if (vk === 'REF') {
-        continue; // En publicidad no hay refuerzos
+        continue; // En diario no hay refuerzos
       }
       
       // Detectar bloque basándose en el sufijo del rol
@@ -122,7 +122,7 @@ export function aggregateReports(project: any, weeks: any[], filterISO: ((iso: s
 }
 
 /**
- * Aggregate windowed report for publicidad mode
+ * Aggregate windowed report for diario mode
  */
 export function aggregateWindowedReport(project: any, weeks: any[], filterISO: (iso: string) => boolean) {
   const base = project?.id || project?.nombre || 'tmp';
@@ -168,9 +168,9 @@ export function aggregateWindowedReport(project: any, weeks: any[], filterISO: (
       const n = p.name || '';
       const vk = visibleRoleFor(r, n, refuerzoSet);
       
-      // REF no se procesa en publicidad (no hay refuerzos)
+      // REF no se procesa en diario (no hay refuerzos)
       if (vk === 'REF') {
-        continue; // En publicidad no hay refuerzos
+        continue; // En diario no hay refuerzos
       }
       
       // Detectar bloque basándose en el sufijo del rol

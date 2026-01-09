@@ -35,7 +35,7 @@ export const validateTeamNames = (team: ProjectTeam | undefined): { role: string
 export const formatMode = (m: string | undefined): string => {
   const v = String(m || '').toLowerCase();
   if (v === 'mensual') return 'mensuales';
-  if (v === 'publicidad') return 'publicidad';
+  if (v === 'diario') return 'diario';
   return 'semanales'; // por defecto
 };
 

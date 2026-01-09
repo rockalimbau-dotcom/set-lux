@@ -1,6 +1,6 @@
 import { useCallback, useEffect } from 'react';
 import { exportCondicionesToPDF } from '../../utils/exportPDF';
-import { PRICE_HEADERS_PUBLI } from './publicidadConstants';
+import { PRICE_HEADERS_DIARIO } from './publicidadConstants';
 import { AnyRecord } from '@shared/types/common';
 
 interface UseExportRegistrationProps {
@@ -23,13 +23,13 @@ export function useExportRegistration({
     try {
       await exportCondicionesToPDF(
         project,
-        'publicidad',
+        'diario',
         model,
-        PRICE_HEADERS_PUBLI,
+        PRICE_HEADERS_DIARIO,
         roles
       );
     } catch (error) {
-      console.error('Error exporting condiciones publicidad PDF:', error);
+      console.error('Error exporting condiciones diario PDF:', error);
       alert('Error al generar el PDF. Por favor, inténtalo de nuevo.');
     }
   }, [project, model, roles]);

@@ -31,7 +31,7 @@ export function ParametersSection({
           title={showParams ? t('conditions.collapse') : t('conditions.expand')}
           aria-label={t('conditions.calculationParameters')}
           aria-expanded={showParams}
-          aria-controls='publicidad-params'
+          aria-controls='diario-params'
           type='button'
         >
           {showParams ? '−' : '+'}
@@ -45,7 +45,7 @@ export function ParametersSection({
 
       {showParams && (
         <div
-          id='publicidad-params'
+          id='diario-params'
           ref={paramsRef}
           tabIndex={-1}
           role='region'

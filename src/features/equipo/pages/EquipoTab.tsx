@@ -27,8 +27,8 @@ function EquipoTab({
 
   // Filtrar roles según el modo del proyecto
   const allowedRoles = useMemo(() => {
-    if (projectMode === 'publicidad') {
-      // En publicidad, excluir Meritorio (M) y Refuerzo (REF)
+    if (projectMode === 'diario') {
+      // En diario, excluir Meritorio (M) y Refuerzo (REF)
       return ROLES.filter(r => r.code !== 'M' && r.code !== 'REF');
     }
     return ROLES;
@@ -36,7 +36,7 @@ function EquipoTab({
 
   // Determinar si mostrar la sección de refuerzos
   const showReinforcements = useMemo(() => {
-    return projectMode !== 'publicidad';
+    return projectMode !== 'diario';
   }, [projectMode]);
 
   // Manage equipo data

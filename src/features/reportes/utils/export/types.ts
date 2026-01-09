@@ -35,7 +35,7 @@ export interface ExportReportRangeParams {
   title: string;
   safeSemana: string[];
   personas: any[];
-  mode: 'semanal' | 'mensual' | 'publicidad';
+  mode: 'semanal' | 'mensual' | 'diario';
   weekToSemanasISO: (week: any) => string[];
   weekToPersonas: (week: any) => any[];
   weeks: any[];

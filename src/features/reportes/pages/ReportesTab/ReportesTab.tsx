@@ -56,7 +56,7 @@ export default function ReportesTab({ project, mode = 'semanal', readOnly = fals
   const condKeys = [
     `cond_${baseId}_semanal`,
     `cond_${baseId}_mensual`,
-    `cond_${baseId}_publicidad`,
+    `cond_${baseId}_diario`,
   ];
 
   // Usar useLocalStorage para cada clave de condiciones y crear un stamp
@@ -77,7 +77,7 @@ export default function ReportesTab({ project, mode = 'semanal', readOnly = fals
 
   // Agrupar semanas por mes (solo para semanal y mensual)
   const weeksByMonth = useMemo(() => {
-    if (mode === 'publicidad') return null;
+    if (mode === 'diario') return null;
     
     const grouped = new Map<string, AnyRecord[]>();
     weeksWithPeople.forEach(week => {
@@ -114,7 +114,7 @@ export default function ReportesTab({ project, mode = 'semanal', readOnly = fals
 
   return (
     <div className='space-y-2 sm:space-y-3 md:space-y-4 lg:space-y-6'>
-      {mode !== 'publicidad' && weeksByMonth ? (
+      {mode !== 'diario' && weeksByMonth ? (
         // Mostrar agrupado por mes con botón PDF y campos de fecha
         Array.from(weeksByMonth.entries()).map(([monthKey, weeks]) => {
           const [year, month] = monthKey.split('-').map(Number);
@@ -147,27 +147,27 @@ export default function ReportesTab({ project, mode = 'semanal', readOnly = fals
           );
         })
       ) : (
-        // Modo publicidad: mostrar semanas sin agrupación
+        // Modo diario: mostrar semanas sin agrupación
         (() => {
-          // Para modo publicidad, usar una clave general
-          const publicidadHorasExtraKey = useMemo(() => {
+          // Para modo diario, usar una clave general
+          const diarioHorasExtraKey = useMemo(() => {
             const base = project?.id || project?.nombre || 'tmp';
-            return `reportes_horasExtra_${base}_${mode}_publicidad`;
+            return `reportes_horasExtra_${base}_${mode}_diario`;
           }, [project?.id, project?.nombre, mode]);
           
-          const horasExtraOpcionesPublicidad = [
+          const horasExtraOpcionesDiario = [
             t('reports.extraHoursNormal'),
             t('reports.extraHoursMinutageFromCut'),
             t('reports.extraHoursMinutageCourtesy'),
           ] as const;
           
-          const [horasExtraTipoPublicidad] = useLocalStorage<string>(
-            publicidadHorasExtraKey,
-            horasExtraOpcionesPublicidad[0]
+          const [horasExtraTipoDiario] = useLocalStorage<string>(
+            diarioHorasExtraKey,
+            horasExtraOpcionesDiario[0]
           );
           
-          // Helper para traducir el valor guardado si está en español (modo publicidad)
-          const translateStoredExtraHoursTypePublicidad = (stored: string): string => {
+          // Helper para traducir el valor guardado si está en español (modo diario)
+          const translateStoredExtraHoursTypeDiario = (stored: string): string => {
             const translations: Record<string, Record<string, string>> = {
               'Hora Extra - Normal': {
                 'es': 'Hora Extra - Normal',
@@ -189,13 +189,13 @@ export default function ReportesTab({ project, mode = 'semanal', readOnly = fals
               return translations[stored][i18n.language];
             }
             // Si ya está traducido, devolverlo tal cual
-            if (horasExtraOpcionesPublicidad.includes(stored as any)) {
+            if (horasExtraOpcionesDiario.includes(stored as any)) {
               return stored;
             }
             return stored;
           };
           
-          const displayedHorasExtraTipoPublicidad = translateStoredExtraHoursTypePublicidad(horasExtraTipoPublicidad);
+          const displayedHorasExtraTipoDiario = translateStoredExtraHoursTypeDiario(horasExtraTipoDiario);
           
           return weeksWithPeople.map(week => (
             <ReportesSemana
@@ -205,7 +205,7 @@ export default function ReportesTab({ project, mode = 'semanal', readOnly = fals
               semana={weekToSemanasISO(week)}
               personas={weekToPersonas(week)}
               mode={mode}
-              horasExtraTipo={displayedHorasExtraTipoPublicidad}
+              horasExtraTipo={displayedHorasExtraTipoDiario}
               readOnly={readOnly}
               planTimesByDate={(iso: string) => {
                 const idx = weekToSemanasISO(week).indexOf(iso);

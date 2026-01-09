@@ -1,5 +1,5 @@
 /**
- * Default price rows for publicidad mode
+ * Default price rows for diario mode
  */
 export const DEFAULT_PRICE_ROWS = {
   'Gaffer': {
@@ -49,7 +49,7 @@ export const DEFAULT_PRICE_ROWS = {
 } as any;
 
 /**
- * Default parameters for publicidad mode
+ * Default parameters for diario mode
  */
 export const DEFAULT_PARAMS = {
   jornadaTrabajo: '10',

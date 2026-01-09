@@ -22,8 +22,8 @@ describe('CondicionesTab (smoke)', () => {
     expect(screen.getByRole('button', { name: /pdf/i })).toBeInTheDocument();
   });
 
-  it('renderiza publicidad y botón PDF', () => {
-    renderTab('publicidad');
+  it('renderiza diario y botón PDF', () => {
+    renderTab('diario');
     expect(screen.getByRole('button', { name: /pdf/i })).toBeInTheDocument();
   });
 

@@ -2,7 +2,7 @@ import { AnyRecord } from '@shared/types/common';
 import { loadJSON } from '../shared';
 import { storage } from '@shared/services/localStorage.service';
 import { DEFAULT_FESTIVOS_TEXT } from '@shared/constants/festivos';
-import { getDefaultsPublicidad } from '../../utils/translationHelpers';
+import { getDefaultsDiario } from '../../utils/translationHelpers';
 
 // Variable global para festivos dinámicos
 let globalDynamicFestivosText = DEFAULT_FESTIVOS_TEXT;
@@ -18,14 +18,14 @@ export const updateDynamicFestivos = async () => {
 };
 
 // Funciones de conveniencia para mantener compatibilidad con el código existente
-const getDefaultLegendPubli = () => getDefaultsPublicidad().legend;
-const getDefaultHorarios = () => getDefaultsPublicidad().horarios;
-const getDefaultDietas = () => getDefaultsPublicidad().dietas;
-const getDefaultTransportes = () => getDefaultsPublicidad().transportes;
-const getDefaultAlojamiento = () => getDefaultsPublicidad().alojamiento;
-const getDefaultConvenio = () => getDefaultsPublicidad().convenio;
+const getDefaultLegendPubli = () => getDefaultsDiario().legend;
+const getDefaultHorarios = () => getDefaultsDiario().horarios;
+const getDefaultDietas = () => getDefaultsDiario().dietas;
+const getDefaultTransportes = () => getDefaultsDiario().transportes;
+const getDefaultAlojamiento = () => getDefaultsDiario().alojamiento;
+const getDefaultConvenio = () => getDefaultsDiario().convenio;
 
-export function loadOrSeedPublicidad(storageKey: string): AnyRecord {
+export function loadOrSeedDiario(storageKey: string): AnyRecord {
   const fallback: AnyRecord = {
     roles: ['Gaffer', 'Eléctrico'],
     prices: {
@@ -190,7 +190,7 @@ export function loadOrSeedPublicidad(storageKey: string): AnyRecord {
 
     return fallback;
   } catch (error) {
-    console.error('Error loading publicidad conditions:', error);
+    console.error('Error loading diario conditions:', error);
     return fallback;
   }
 }

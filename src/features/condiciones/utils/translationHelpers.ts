@@ -45,7 +45,7 @@ const isDefaultText = (currentText: string, translationKey: string): boolean => 
 const getDefaultTransportes = () => i18n.t('conditions.defaultTransportation');
 export const getDefaultAlojamiento = () => i18n.t('conditions.defaultAccommodation');
 export const getDefaultConvenio = () => i18n.t('conditions.defaultAgreement');
-// Función genérica para prepro (usada en mensual y semanal, no en publicidad)
+// Función genérica para prepro (usada en mensual y semanal, no en diario)
 export const getDefaultPrepro = () => i18n.t('conditions.defaultPreProduction');
 
 // Funciones específicas por modo
@@ -59,9 +59,9 @@ const getDefaultHorariosSemanal = () => i18n.t('conditions.defaultSchedules');
 const getDefaultDietasSemanal = () => i18n.t('conditions.defaultPerDiems');
 const getDefaultPreproSemanal = () => i18n.t('conditions.defaultPreProduction');
 
-const getDefaultLegendPublicidad = () => i18n.t('conditions.defaultLegendAdvertising');
-const getDefaultHorariosPublicidad = () => i18n.t('conditions.defaultSchedulesAdvertising');
-const getDefaultDietasPublicidad = () => i18n.t('conditions.defaultPerDiemsAdvertising');
+const getDefaultLegendDiario = () => i18n.t('conditions.defaultLegendAdvertising');
+const getDefaultHorariosDiario = () => i18n.t('conditions.defaultSchedulesAdvertising');
+const getDefaultDietasDiario = () => i18n.t('conditions.defaultPerDiemsAdvertising');
 
 // Funciones de conveniencia para cada modo
 export const getDefaultsMensual = () => ({
@@ -84,10 +84,10 @@ export const getDefaultsSemanal = () => ({
   convenio: getDefaultConvenio(),
 });
 
-export const getDefaultsPublicidad = () => ({
-  legend: getDefaultLegendPublicidad(),
-  horarios: getDefaultHorariosPublicidad(),
-  dietas: getDefaultDietasPublicidad(),
+export const getDefaultsDiario = () => ({
+  legend: getDefaultLegendDiario(),
+  horarios: getDefaultHorariosDiario(),
+  dietas: getDefaultDietasDiario(),
   transportes: getDefaultTransportes(),
   alojamiento: getDefaultAlojamiento(),
   convenio: getDefaultConvenio(),

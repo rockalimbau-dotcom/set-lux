@@ -8,7 +8,7 @@ export function formatMode(m: string | undefined): ProjectMode {
   const v = String(m || '').toLowerCase();
   if (v === 'semanal') return 'semanal';
   if (v === 'mensual') return 'mensual';
-  if (v === 'publicidad') return 'publicidad';
+  if (v === 'diario') return 'diario';
   return 'semanal';
 }
 

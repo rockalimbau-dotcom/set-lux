@@ -20,7 +20,7 @@ describe('planificacion/utils/holidays', () => {
         semanal: {
           festivosDates: ['2023-05-01'],
         },
-        publicidad: {
+        diario: {
           festivosDates: ['2023-08-15'],
         },
       };
@@ -115,7 +115,7 @@ describe('planificacion/utils/holidays', () => {
         semanal: {
           festivosTemplate: 'Año Nuevo: 1/1/23',
         },
-        publicidad: {
+        diario: {
           festivosTemplate: 'Verano: 15-08',
         },
         festivos: 'Día del Trabajo: 1/5',

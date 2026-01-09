@@ -10,7 +10,7 @@ interface UseExportPDFParams {
   allWeeksAvailable: AnyRecord[];
   weekToSemanasISO: (week: AnyRecord) => string[];
   weekToPersonas: (week: AnyRecord) => AnyRecord[];
-  mode: 'semanal' | 'mensual' | 'publicidad';
+  mode: 'semanal' | 'mensual' | 'diario';
 }
 
 /**

@@ -6,14 +6,14 @@ import { parseNum } from '../parse';
 import { stripPR } from '../plan';
 
 /**
- * Get condition parameters for publicidad mode
+ * Get condition parameters for diario mode
  */
 export function getCondParams(project: any) {
   const projectWithMode = {
     ...project,
     conditions: {
       ...project?.conditions,
-      tipo: 'publicidad'
+      tipo: 'diario'
     }
   };
   
@@ -138,7 +138,7 @@ export function getCellValueCandidates(
 export function storageKeyFor(roleCode: string, name: string, block?: string): string {
   const base = stripPR(roleCode || '');
   
-  // En publicidad NO hay refuerzos, pero SÍ hay prelight y pickup
+  // En diario NO hay refuerzos, pero SÍ hay prelight y pickup
   if (block === 'pre') return `${base}.pre__${name || ''}`;
   if (block === 'pick') return `${base}.pick__${name || ''}`;
   

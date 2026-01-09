@@ -6,19 +6,19 @@ import { NominaPublicidadProps, ProjectLike } from './NominaPublicidad/NominaPub
 import { useHasTeam } from './NominaPublicidad/useHasTeam';
 import { EmptyState } from './NominaPublicidad/EmptyState';
 import { useCondSync } from './NominaPublicidad/useCondSync';
-import { makeRolePrices as makeRolePricesPublicidad } from '../utils/calcPublicidad';
+import { makeRolePrices as makeRolePricesDiario } from '../utils/calcPublicidad';
 import { NominaPublicidadContent } from './NominaPublicidad/NominaPublicidadContent';
 
 export default function NominaPublicidad({ project, readOnly = false }: NominaPublicidadProps) {
   const { t } = useTranslation();
 
-  // Asegurar que el proyecto tenga el modo correcto para publicidad
+  // Asegurar que el proyecto tenga el modo correcto para diario
   const projectWithMode = useMemo(
     () => ({
       ...project,
       conditions: {
         ...project?.conditions,
-        tipo: 'publicidad',
+        tipo: 'diario',
       },
     }),
     [project]
@@ -97,9 +97,9 @@ export default function NominaPublicidad({ project, readOnly = false }: NominaPu
   // === Re-render cuando cambian Condiciones publicidad ===
   const condStamp = useCondSync(projectWithMode, baseId);
 
-  // Precios por rol listos - usando funciones específicas de publicidad
+  // Precios por rol listos - usando funciones específicas de diario
   const rolePrices = useMemo(
-    () => makeRolePricesPublicidad(projectWithMode),
+    () => makeRolePricesDiario(projectWithMode),
     [projectWithMode, condStamp]
   );
 

@@ -1,4 +1,4 @@
-export type ProjectMode = 'semanal' | 'mensual' | 'publicidad';
+export type ProjectMode = 'semanal' | 'mensual' | 'diario';
 export type ProjectStatus = 'Activo' | 'Cerrado';
 
 export interface ProjectConditions {

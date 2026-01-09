@@ -17,7 +17,7 @@ type MonthSectionPersonRowProps = {
   isSelected: boolean;
   toggleRowSelection: (key: string) => void;
   setRcv: (key: string, patch: { ok?: boolean; note?: string }) => void;
-  projectMode?: 'semanal' | 'mensual' | 'publicidad';
+  projectMode?: 'semanal' | 'mensual' | 'diario';
   hasWorkedDaysData: boolean;
   hasLocalizacionData: boolean;
   hasCargaDescargaData: boolean;
@@ -128,7 +128,7 @@ export function MonthSectionPersonRow({
             {r._worked > 0 && (
               <div className='text-right font-medium text-zinc-100 mb-0.5 sm:mb-1 text-[9px] sm:text-[10px] md:text-xs'>{r._worked}</div>
             )}
-            {projectMode !== 'publicidad' && (
+            {projectMode !== 'diario' && (
               <WorkedDaysSummary
                 carga={r._carga || 0}
                 descarga={r._descarga || 0}

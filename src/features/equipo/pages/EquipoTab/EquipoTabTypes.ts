@@ -7,7 +7,7 @@ export interface EquipoTabProps {
   readOnly?: boolean;
   allowEditOverride?: boolean;
   storageKey?: string;
-  projectMode?: 'semanal' | 'mensual' | 'publicidad';
+  projectMode?: 'semanal' | 'mensual' | 'diario';
 }
 
 export interface TeamData {

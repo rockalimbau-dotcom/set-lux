@@ -4,7 +4,7 @@ import { calculateTotalDietas, buildDietasLabel, detectMissingPrices } from '../
 import { calculateTotalWorkingDays, determineRoleDisplay } from './rowHelpers';
 import { getEffectiveRolePrices } from './priceHelpers';
 import { getFilteredRowData, getValueWithOverride } from './filteredDataHelpers';
-import { calculatePublicidadTotals, calculateStandardTotals } from './calculationHelpers';
+import { calculateDiarioTotals, calculateStandardTotals } from './calculationHelpers';
 
 interface UseEnrichedRowsProps {
   rows: RowIn[];
@@ -36,7 +36,7 @@ interface UseEnrichedRowsProps {
   filteredData: Map<string, any> | null;
   dateFrom: string;
   dateTo: string;
-  projectMode: 'semanal' | 'mensual' | 'publicidad';
+  projectMode: 'semanal' | 'mensual' | 'diario';
   calculateWorkingDaysInMonthValue: number;
   priceDays: number;
   roleLabelFromCode: (code: string) => string;
@@ -96,7 +96,7 @@ export function useEnrichedRows({
         ? rolePrices.getForRole('REF', baseRoleLabel)
         : rolePrices.getForRole(baseRoleLabel);
 
-      // Obtener precios efectivos (maneja caso especial de publicidad)
+      // Obtener precios efectivos (maneja caso especial de diario)
       const effectivePr = getEffectiveRolePrices(pr, projectMode, refuerzoSet, keyNoPR, rolePrices, baseRoleLabel);
 
       // Determinar role display
@@ -142,7 +142,7 @@ export function useEnrichedRows({
         totalBruto: number;
       };
 
-      if (projectMode === 'publicidad') {
+      if (projectMode === 'diario') {
         const publicidadTotals = calculatePublicidadTotals(
           rodaje,
           oficina,
@@ -160,7 +160,7 @@ export function useEnrichedRows({
           totalDietas,
           effectivePr
         );
-        totals = publicidadTotals;
+        totals = diarioTotals;
       } else {
         const standardTotals = calculateStandardTotals(
           projectMode,
@@ -243,11 +243,11 @@ export function useEnrichedRows({
         _totalTrans: totals.totalTrans,
         _totalKm: totals.totalKm,
         _totalBruto: totals.totalBruto,
-        _totalLocalizacion: projectMode === 'publicidad' ? totals.totalLocalizacion || 0 : 0,
-        _totalCargaDescarga: projectMode === 'publicidad' ? totals.totalCargaDescarga || 0 : 0,
-        _localizarDays: projectMode === 'publicidad' ? (localizar || 0) : 0,
-        _cargaDays: projectMode === 'publicidad' ? (carga || 0) : 0,
-        _descargaDays: projectMode === 'publicidad' ? (descarga || 0) : 0,
+        _totalLocalizacion: projectMode === 'diario' ? totals.totalLocalizacion || 0 : 0,
+        _totalCargaDescarga: projectMode === 'diario' ? totals.totalCargaDescarga || 0 : 0,
+        _localizarDays: projectMode === 'diario' ? (localizar || 0) : 0,
+        _cargaDays: projectMode === 'diario' ? (carga || 0) : 0,
+        _descargaDays: projectMode === 'diario' ? (descarga || 0) : 0,
         _dietasLabel: dietasLabel,
         _pr: effectivePr,
         _missingPrices: missingPrices,

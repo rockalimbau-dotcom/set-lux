@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 
-export function usePublicidadTranslations() {
+export function useDiarioTranslations() {
   const { t } = useTranslation();
   
   // Función helper para traducir headers de precios

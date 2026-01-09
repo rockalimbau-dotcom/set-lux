@@ -87,7 +87,7 @@ export function buildDietasLabel(
  * Detecta qué precios faltan basado en los datos y precios efectivos
  */
 export function detectMissingPrices(
-  projectMode: 'semanal' | 'mensual' | 'publicidad',
+  projectMode: 'semanal' | 'mensual' | 'diario',
   data: {
     workedDays?: number;
     travelDays?: number;
@@ -144,7 +144,7 @@ export function detectMissingPrices(
     dietas?: boolean;
   } = {};
 
-  if (projectMode === 'publicidad') {
+  if (projectMode === 'diario') {
     const rodajeDays = (data.rodaje || 0) + (data.oficina || 0);
     if (rodajeDays > 0 && (effectivePr.jornada || 0) === 0) {
       missingPrices.jornada = true;

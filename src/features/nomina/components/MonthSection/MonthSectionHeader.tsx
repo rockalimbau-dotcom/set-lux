@@ -7,7 +7,7 @@ type MonthSectionHeaderProps = {
   monthLabel: string;
   open: boolean;
   setOpen: (value: boolean | ((prev: boolean) => boolean)) => void;
-  projectMode?: 'semanal' | 'mensual' | 'publicidad';
+  projectMode?: 'semanal' | 'mensual' | 'diario';
   priceDays: number;
   setPriceDays: (value: number | ((prev: number) => number)) => void;
   dateFrom: string;

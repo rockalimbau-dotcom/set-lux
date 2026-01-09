@@ -24,8 +24,8 @@ export function calculateRolePrices({
   const elecRow = pickedElec.row;
 
 
-  // Para publicidad, el divisor de travel puede ser diferente
-  const divTravel = num(p.divTravel) || 2.5; // Publicidad usa divisor 2.5
+  // Para diario, el divisor de travel puede ser diferente
+  const divTravel = num(p.divTravel) || 2.5; // Diario usa divisor 2.5
 
   let jornada, travelDay, horaExtra, holidayDay;
   if (normalized === 'REF') {

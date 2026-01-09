@@ -15,10 +15,10 @@ describe('calcPublicidad - makeRolePrices with holidayDay', () => {
     vi.clearAllMocks();
   });
 
-  it('should include holidayDay price for regular roles in publicidad', () => {
+  it('should include holidayDay price for regular roles in diario', () => {
     const mockProject = {
       id: 'test-project',
-      conditions: { tipo: 'publicidad' },
+      conditions: { tipo: 'diario' },
     };
 
     // Mock the storage to return the conditions data
@@ -53,10 +53,10 @@ describe('calcPublicidad - makeRolePrices with holidayDay', () => {
     expect(gafferPrices.horaExtra).toBe(28);
   });
 
-  it('should include holidayDay price for REF roles in publicidad', () => {
+  it('should include holidayDay price for REF roles in diario', () => {
     const mockProject = {
       id: 'test-project',
-      conditions: { tipo: 'publicidad' },
+      conditions: { tipo: 'diario' },
     };
 
     // Mock the storage to return the conditions data
@@ -90,10 +90,10 @@ describe('calcPublicidad - makeRolePrices with holidayDay', () => {
     expect(refPrices.holidayDay).toBe(245); // Takes from GAFFER row as it's checked first in publicidad
   });
 
-  it('should return 0 for holidayDay when not defined in publicidad', () => {
+  it('should return 0 for holidayDay when not defined in diario', () => {
     const mockProject = {
       id: 'test-project',
-      conditions: { tipo: 'publicidad' },
+      conditions: { tipo: 'diario' },
     };
 
     // Mock the storage to return the conditions data

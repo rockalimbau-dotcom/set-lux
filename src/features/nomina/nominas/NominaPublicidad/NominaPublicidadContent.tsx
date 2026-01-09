@@ -2,11 +2,11 @@ import React from 'react';
 import MonthSection from '../../components/MonthSection.jsx';
 import { ROLE_COLORS, roleLabelFromCode } from '@shared/constants/roles';
 import {
-  makeRolePrices as makeRolePricesPublicidad,
-  aggregateReports as aggregateReportsPublicidad,
-  aggregateWindowedReport as aggregateWindowedReportPublicidad,
-  getOvertimeWindowForPayrollMonth as getOvertimeWindowForPayrollMonthPublicidad,
-  isoInRange as isoInRangePublicidad,
+  makeRolePrices as makeRolePricesDiario,
+  aggregateReports as aggregateReportsDiario,
+  aggregateWindowedReport as aggregateWindowedReportDiario,
+  getOvertimeWindowForPayrollMonth as getOvertimeWindowForPayrollMonthDiario,
+  isoInRange as isoInRangeDiario,
 } from '../../utils/calcPublicidad';
 import { monthLabelEs } from '@shared/utils/date';
 import { calcWorkedBreakdown } from '@shared/utils/calcWorkedBreakdown';
@@ -61,7 +61,7 @@ export function NominaPublicidadContent({
     filterISO: (iso: string) => boolean,
     person: { role: string; name: string }
   ) {
-    return calcWorkedBreakdown(weeks, filterISO, person, 'publicidad');
+    return calcWorkedBreakdown(weeks, filterISO, person, 'diario');
   }
 
   return (
@@ -80,14 +80,14 @@ export function NominaPublicidadContent({
         let windowOverrideMap: Map<string, any> | null = null;
         if (win) {
           const filterWindowISO = (iso: string) => isoInRangePublicidad(iso, win.start, win.end);
-          windowOverrideMap = aggregateWindowedReportPublicidad(
+          windowOverrideMap = aggregateWindowedReportDiario(
             projectWithMode,
             weeks,
             filterWindowISO
           ) as Map<string, any>;
         }
 
-        const baseRows = aggregateReportsPublicidad(projectWithMode, weeks, filterISO);
+        const baseRows = aggregateReportsDiario(projectWithMode, weeks, filterISO);
 
         return (
           <MonthSection
@@ -97,7 +97,7 @@ export function NominaPublicidadContent({
             weeksForMonth={weeks}
             filterISO={filterISO}
             rolePrices={rolePrices}
-            projectMode='publicidad'
+            projectMode='diario'
             defaultOpen={i === 0}
             persistKeyBase={basePersist}
             onExport={exportMonth}

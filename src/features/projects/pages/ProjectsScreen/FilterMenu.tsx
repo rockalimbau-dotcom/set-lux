@@ -155,22 +155,22 @@ export function FilterMenu({
       </button>
       <button
         onClick={() => {
-          onFilterTypeChange('publicidad');
+          onFilterTypeChange('diario');
           onClose();
         }}
-        onMouseEnter={() => onHover('publicidad')}
+        onMouseEnter={() => onHover('diario')}
         onMouseLeave={() => onHover(null)}
         className='w-full text-left px-2 py-1 sm:px-3 sm:py-1.5 md:px-4 md:py-2 text-xs sm:text-sm transition-colors'
         style={{
-          color: hoveredOption === 'publicidad' 
+          color: hoveredOption === 'diario' 
             ? (isLight ? '#111827' : 'white')
             : 'var(--text)',
-          backgroundColor: hoveredOption === 'publicidad' 
+          backgroundColor: hoveredOption === 'diario' 
             ? (isLight ? '#A0D3F2' : focusColor)
             : 'transparent',
         }}
       >
-        {filterType === 'publicidad' ? '✓ ' : '  '}{t('common.advertising')}
+        {filterType === 'diario' ? '✓ ' : '  '}{t('common.advertising')}
       </button>
     </div>
   );

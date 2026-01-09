@@ -23,7 +23,7 @@ export function PhaseGrid({ condModeLabel, condTipo, onTabChange }: PhaseGridPro
       <PhaseCard
         title={t('navigation.team')}
         icon={<PhaseIcon name='equipo' color='#60a5fa' />}
-        desc={condTipo === 'publicidad' ? t('team.descriptionAdvertising') : t('team.description')}
+        desc={condTipo === 'diario' ? t('team.descriptionAdvertising') : t('team.description')}
         onClick={() => onTabChange('equipo')}
       />
 

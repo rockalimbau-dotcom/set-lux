@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { renderWithParams } from '../shared';
-import { normalizeText, getDefaultsPublicidad } from '../../utils/translationHelpers';
+import { normalizeText, getDefaultsDiario } from '../../utils/translationHelpers';
 import { globalDynamicFestivosText, updateDynamicFestivos } from './publicidadData';
 import { AnyRecord } from '@shared/types/common';
 
@@ -32,12 +32,12 @@ export function useLanguageSync({ model, setModel }: UseLanguageSyncProps) {
         const updated = { ...m };
         
         // Get current default texts in the new language
-        const getDefaultLegendPubli = () => getDefaultsPublicidad().legend;
-        const getDefaultHorarios = () => getDefaultsPublicidad().horarios;
-        const getDefaultDietas = () => getDefaultsPublicidad().dietas;
-        const getDefaultTransportes = () => getDefaultsPublicidad().transportes;
-        const getDefaultAlojamiento = () => getDefaultsPublicidad().alojamiento;
-        const getDefaultConvenio = () => getDefaultsPublicidad().convenio;
+        const getDefaultLegendPubli = () => getDefaultsDiario().legend;
+        const getDefaultHorarios = () => getDefaultsDiario().horarios;
+        const getDefaultDietas = () => getDefaultsDiario().dietas;
+        const getDefaultTransportes = () => getDefaultsDiario().transportes;
+        const getDefaultAlojamiento = () => getDefaultsDiario().alojamiento;
+        const getDefaultConvenio = () => getDefaultsDiario().convenio;
         
         const newDefaultLegend = getDefaultLegendPubli();
         const newDefaultHorarios = getDefaultHorarios();

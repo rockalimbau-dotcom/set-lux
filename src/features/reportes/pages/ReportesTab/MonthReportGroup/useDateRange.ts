@@ -8,7 +8,7 @@ interface UseDateRangeParams {
   weeks: AnyRecord[];
   weekToSemanasISO: (week: AnyRecord) => string[];
   project?: { id?: string; nombre?: string };
-  mode: 'semanal' | 'mensual' | 'publicidad';
+  mode: 'semanal' | 'mensual' | 'diario';
   monthKey: string;
   allMonthKeys: string[];
 }

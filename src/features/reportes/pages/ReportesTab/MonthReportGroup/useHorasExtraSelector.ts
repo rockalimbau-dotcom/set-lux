@@ -5,7 +5,7 @@ import { useLocalStorage } from '@shared/hooks/useLocalStorage';
 
 interface UseHorasExtraSelectorParams {
   project?: { id?: string; nombre?: string };
-  mode: 'semanal' | 'mensual' | 'publicidad';
+  mode: 'semanal' | 'mensual' | 'diario';
   monthKey: string;
   readOnly?: boolean;
 }

@@ -1,4 +1,4 @@
-export const PRICE_HEADERS_PUBLI = [
+export const PRICE_HEADERS_DIARIO = [
   'Precio jornada',
   'Precio Día extra/Festivo',
   'Localización técnica',
@@ -7,7 +7,7 @@ export const PRICE_HEADERS_PUBLI = [
   'Horas extras',
 ];
 
-export const PRICE_ROLES_PUBLI = [
+export const PRICE_ROLES_DIARIO = [
   'Gaffer',
   'Best boy',
   'Eléctrico',

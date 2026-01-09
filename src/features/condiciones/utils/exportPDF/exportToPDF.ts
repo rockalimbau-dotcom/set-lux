@@ -229,8 +229,8 @@ export async function exportCondicionesToPDF(
       whichTranslated = getTranslation('common.weekly', 'semanal').toLowerCase();
     } else if (which === 'mensual') {
       whichTranslated = getTranslation('common.monthly', 'mensual').toLowerCase();
-    } else if (which === 'publicidad') {
-      whichTranslated = getTranslation('common.advertising', 'publicidad').toLowerCase();
+    } else if (which === 'diario') {
+      whichTranslated = getTranslation('common.advertising', 'diario').toLowerCase();
     } else {
       whichTranslated = which;
     }

@@ -7,7 +7,7 @@ export interface ReportesSemanaProps {
   title?: string;
   semana?: string[];
   personas?: AnyRecord[];
-  mode?: 'semanal' | 'mensual' | 'publicidad';
+  mode?: 'semanal' | 'mensual' | 'diario';
   horasExtraTipo?: string;
   readOnly?: boolean;
   onExportWeekHTML?: () => void;

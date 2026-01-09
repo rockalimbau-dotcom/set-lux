@@ -3,17 +3,17 @@ import { storage } from '@shared/services/localStorage.service';
 import { loadCondModel } from '../../utils/cond';
 
 /**
- * Hook para sincronizar cambios en condiciones de publicidad
+ * Hook para sincronizar cambios en condiciones de diario
  */
 export function useCondSync(project: any, baseId: string) {
-  const condKeys = [`cond_${baseId}_publicidad`];
+  const condKeys = [`cond_${baseId}_diario`];
 
   const [condStamp, setCondStamp] = useState<string>(() =>
     condKeys.map(k => storage.getString(k) || '').join('|')
   );
 
   useEffect(() => {
-    // Garantizar que exista la clave de condiciones de publicidad en localStorage
+    // Garantizar que exista la clave de condiciones de diario en localStorage
     try {
       const cur = storage.getString(condKeys[0]);
       if (!cur) {

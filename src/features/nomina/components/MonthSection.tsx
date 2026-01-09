@@ -16,7 +16,7 @@ interface MonthSectionProps extends Omit<MonthSectionPropsBase, 'monthKey' | 'ro
   weeksForMonth: any[];
   filterISO: (iso: string) => boolean;
   rolePrices: RolePrices;
-  projectMode?: 'semanal' | 'mensual' | 'publicidad';
+  projectMode?: 'semanal' | 'mensual' | 'diario';
   defaultOpen?: boolean;
   persistKeyBase: string;
   onExport?: (monthKey: string, enrichedRows: any[]) => void;

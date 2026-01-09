@@ -9,7 +9,7 @@ export function formatMode(m: string | undefined, t: (key: string) => string): s
   const v = String(m).toLowerCase();
   if (v === 'semanal') return t('common.weekly');
   if (v === 'mensual') return t('common.monthly');
-  if (v === 'publicidad') return t('common.advertising');
+  if (v === 'diario') return t('common.advertising');
   return '—';
 }
 
@@ -36,13 +36,13 @@ export function getConditionColor(tipo: string, isLight: boolean): string {
     // Tonalidades de naranja en modo claro
     if (v === 'semanal') return '#F2790F';
     if (v === 'mensual') return '#f59e0b';     // amber-500
-    if (v === 'publicidad') return '#fdba74';  // orange-300
+    if (v === 'diario') return '#fdba74';  // orange-300
     return '#a3a3a3';
   }
   // Paleta azul en oscuro
   if (v === 'semanal') return '#1e3a8a';
   if (v === 'mensual') return '#3b82f6';
-  if (v === 'publicidad') return '#60a5fa';
+  if (v === 'diario') return '#60a5fa';
   return '#64748b';
 }
 
@@ -52,8 +52,8 @@ export function getConditionColor(tipo: string, isLight: boolean): string {
 export function getConditionTextColor(tipo: string, isLight: boolean): string {
   const v = tipo?.toLowerCase();
   if (isLight) {
-    // Para fondos claros (mensual y publicidad), usar texto negro
-    if (v === 'mensual' || v === 'publicidad') return '#111827';
+    // Para fondos claros (mensual y diario), usar texto negro
+    if (v === 'mensual' || v === 'diario') return '#111827';
     // Para fondos oscuros (semanal), usar texto blanco
     return '#ffffff';
   }

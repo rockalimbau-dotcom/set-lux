@@ -17,17 +17,17 @@ function normalizeRoleName(roleName: string): string {
 }
 
 /**
- * Get roles in condiciones for publicidad mode
+ * Get roles in condiciones for diario mode
  */
 export function getRolesInCondiciones(project: any): Set<string> {
   const projectWithMode = {
     ...project,
     conditions: {
       ...project?.conditions,
-      tipo: 'publicidad'
+      tipo: 'diario'
     }
   };
-  const model = loadCondModel(projectWithMode, 'publicidad');
+  const model = loadCondModel(projectWithMode, 'diario');
   const priceRows = model?.prices || {};
   return new Set(Object.keys(priceRows).map(r => normalizeRoleName(r)));
 }

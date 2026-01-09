@@ -18,15 +18,16 @@ export function loadCondModel(project: { id?: string; nombre?: string; condition
     `cond_${base}_${mode}`,
     `cond_${base}_mensual`,
     `cond_${base}_semanal`,
-    `cond_${base}_publicidad`,
+    `cond_${base}_diario`,
+    `cond_${base}_publicidad`, // Compatibilidad hacia atrás
   ];
   
   for (const k of keys) {
     try {
       const obj = storage.getJSON<any>(k);
       if (!obj) continue;
-      // Validación extra: para publicidad aseguramos que prices tenga datos reales
-      if (k.endsWith('_publicidad')) {
+      // Validación extra: para diario aseguramos que prices tenga datos reales
+      if (k.endsWith('_diario') || k.endsWith('_publicidad')) {
         const hasPrices = obj?.prices && Object.keys(obj.prices).length > 0;
         if (!hasPrices || !obj.prices['Gaffer'] || !obj.prices['Eléctrico']) {
           const seed = {
@@ -130,7 +131,7 @@ export function loadCondModel(project: { id?: string; nombre?: string; condition
   // sembramos valores por defecto para que Nómina funcione desde el inicio.
   try {
     const targetKey = `cond_${base}_${mode}`;
-    if (mode === 'publicidad') {
+    if (mode === 'diario') {
       const seed = {
         roles: ['Gaffer', 'Eléctrico'],
         prices: {

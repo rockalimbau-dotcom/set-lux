@@ -1,7 +1,7 @@
 /**
- * Calculate totals for publicidad mode
+ * Calculate totals for diario mode
  */
-export function calculatePublicidadTotals(
+export function calculateDiarioTotals(
   rodaje: number | undefined,
   oficina: number | undefined,
   localizar: number | undefined,

@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { renderWithParams, visibleToTemplate, TextAreaAuto, InfoCard, restoreStrongTags } from '../shared';
-import { getDefaultsPublicidad } from '../../utils/translationHelpers';
+import { getDefaultsDiario } from '../../utils/translationHelpers';
 import { globalDynamicFestivosText } from './publicidadData';
 import { AnyRecord } from '@shared/types/common';
 
@@ -12,7 +12,7 @@ interface InfoSectionsProps {
 
 export function InfoSections({ model, setText, readOnly }: InfoSectionsProps) {
   const { t } = useTranslation();
-  const defaults = getDefaultsPublicidad();
+  const defaults = getDefaultsDiario();
 
   return (
     <>

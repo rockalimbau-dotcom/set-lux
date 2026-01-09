@@ -20,7 +20,7 @@ export const DIETAS_OPCIONES: readonly string[] = [
   'Ticket',
 ] as const;
 
-export const DIETAS_OPCIONES_PUBLICIDAD: readonly string[] = [
+export const DIETAS_OPCIONES_DIARIO: readonly string[] = [
   '',
   'Desayuno',
   'Comida',

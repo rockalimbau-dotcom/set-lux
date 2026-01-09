@@ -18,7 +18,7 @@ export function useModelSync({ model, onChange }: UseModelSyncProps) {
   const lastEmittedRef = useRef('');
 
   useEffect(() => {
-    const payload = { publicidad: model };
+    const payload = { diario: model };
     const signature = JSON.stringify(payload);
     if (signature !== lastEmittedRef.current) {
       lastEmittedRef.current = signature;

@@ -5,13 +5,13 @@ import { AnyRecord } from '@shared/types/common';
 
 interface NominaTabProps extends AnyRecord {
   project?: any;
-  mode?: 'semanal' | 'mensual' | 'publicidad';
+  mode?: 'semanal' | 'mensual' | 'diario';
   readOnly?: boolean;
 }
 
 export default function NominaTab({ project, mode, readOnly = false, ...props }: NominaTabProps) {
   // Usar el componente específico según el modo
-  if (mode === 'publicidad') {
+  if (mode === 'diario') {
     return <NominaPublicidad project={project} readOnly={readOnly} {...props} />;
   }
   

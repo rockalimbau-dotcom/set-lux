@@ -7,7 +7,7 @@ export type RolePrices = {
     transporte: number;
     km: number;
     dietas: Record<string, number>;
-    // Campos específicos de publicidad
+    // Campos específicos de diario
     cargaDescarga?: number;
     localizacionTecnica?: number;
     factorHoraExtraFestiva?: number;
@@ -46,7 +46,7 @@ export interface MonthSectionProps {
   weeksForMonth: any[];
   filterISO: (iso: string) => boolean;
   rolePrices: RolePrices;
-  projectMode?: 'semanal' | 'mensual' | 'publicidad';
+  projectMode?: 'semanal' | 'mensual' | 'diario';
   defaultOpen?: boolean;
   persistKeyBase: string;
   onExport?: (monthKey: string, enrichedRows: any[]) => void;

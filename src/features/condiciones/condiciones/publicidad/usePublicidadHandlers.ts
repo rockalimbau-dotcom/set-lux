@@ -1,18 +1,18 @@
 import { useState } from 'react';
 import { AnyRecord } from '@shared/types/common';
-import { PRICE_ROLES_PUBLI } from './publicidadConstants';
+import { PRICE_ROLES_DIARIO } from './publicidadConstants';
 import { computeFromDaily } from './publicidadUtils';
-import { loadOrSeedPublicidad } from './publicidadData';
+import { loadOrSeedDiario } from './publicidadData';
 
-interface UsePublicidadHandlersProps {
+interface UseDiarioHandlersProps {
   model: AnyRecord;
   setModel: (updater: (m: AnyRecord) => AnyRecord) => void;
 }
 
 /**
- * Hook to manage publicidad handlers (prices, roles, etc.)
+ * Hook to manage diario handlers (prices, roles, etc.)
  */
-export function usePublicidadHandlers({ model, setModel }: UsePublicidadHandlersProps) {
+export function useDiarioHandlers({ model, setModel }: UseDiarioHandlersProps) {
   const [roleToDelete, setRoleToDelete] = useState<string | null>(null);
 
   const setPrice = (role: string, header: string, value: string) =>
@@ -35,14 +35,14 @@ export function usePublicidadHandlers({ model, setModel }: UsePublicidadHandlers
     if (!newRole) return;
     
     setModel((m: AnyRecord) => {
-      const currentRoles = m.roles || PRICE_ROLES_PUBLI;
+      const currentRoles = m.roles || PRICE_ROLES_DIARIO;
       if (currentRoles.includes(newRole)) return m;
       
-      // Maintain PRICE_ROLES_PUBLI order
+      // Maintain PRICE_ROLES_DIARIO order
       const nextRoles: string[] = [];
       const currentSet = new Set(currentRoles);
       
-      for (const role of PRICE_ROLES_PUBLI) {
+      for (const role of PRICE_ROLES_DIARIO) {
         if (role === newRole) {
           nextRoles.push(newRole);
         } else if (currentSet.has(role)) {
@@ -50,7 +50,7 @@ export function usePublicidadHandlers({ model, setModel }: UsePublicidadHandlers
         }
       }
       
-      if (!PRICE_ROLES_PUBLI.includes(newRole)) {
+      if (!PRICE_ROLES_DIARIO.includes(newRole)) {
         nextRoles.push(newRole);
       }
       
@@ -58,7 +58,7 @@ export function usePublicidadHandlers({ model, setModel }: UsePublicidadHandlers
       const nextPrices = { ...(m.prices || {}) };
       if (!nextPrices[newRole]) {
         // Load default seed to get initial prices
-        const seed = loadOrSeedPublicidad('__seed__');
+        const seed = loadOrSeedDiario('__seed__');
         if (seed?.prices?.[newRole]) {
           nextPrices[newRole] = { ...seed.prices[newRole] };
         }
@@ -70,7 +70,7 @@ export function usePublicidadHandlers({ model, setModel }: UsePublicidadHandlers
 
   const removeRole = (role: string) => {
     setModel((m: AnyRecord) => {
-      const roles = m.roles || PRICE_ROLES_PUBLI;
+      const roles = m.roles || PRICE_ROLES_DIARIO;
       const nextRoles = roles.filter((r: string) => r !== role);
       const nextPrices = { ...m.prices };
       delete nextPrices[role];

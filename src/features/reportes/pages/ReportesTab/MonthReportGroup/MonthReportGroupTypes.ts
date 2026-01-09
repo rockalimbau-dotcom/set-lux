@@ -8,7 +8,7 @@ export interface MonthReportGroupProps {
   weeks: AnyRecord[];
   allWeeksAvailable: AnyRecord[];
   project?: Project;
-  mode: 'semanal' | 'mensual' | 'publicidad';
+  mode: 'semanal' | 'mensual' | 'diario';
   weekToSemanasISO: (week: AnyRecord) => string[];
   weekToPersonas: (week: AnyRecord) => AnyRecord[];
   allMonthKeys: string[];

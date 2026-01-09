@@ -129,7 +129,7 @@ export function NewProjectModalForm({
         options={[
           { value: 'mensual', label: t('common.monthly') },
           { value: 'semanal', label: t('common.weekly') },
-          { value: 'publicidad', label: t('common.advertising') },
+          { value: 'diario', label: t('common.advertising') },
         ]}
         onChange={value => setForm({ ...form, condicionesTipo: value as ProjectMode })}
         theme={theme}

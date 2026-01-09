@@ -4,7 +4,7 @@ import { RowIn } from '../MonthSectionTypes';
  * Calculate total working days based on project mode
  */
 export function calculateTotalWorkingDays(
-  projectMode: 'semanal' | 'mensual' | 'publicidad',
+  projectMode: 'semanal' | 'mensual' | 'diario',
   calculateWorkingDaysInMonthValue: number,
   workedDays: number,
   rodaje?: number,
@@ -13,7 +13,7 @@ export function calculateTotalWorkingDays(
   if (projectMode === 'mensual') {
     return calculateWorkingDaysInMonthValue;
   }
-  if (projectMode === 'publicidad') {
+  if (projectMode === 'diario') {
     return (rodaje || 0) + (oficina || 0);
   }
   return workedDays;

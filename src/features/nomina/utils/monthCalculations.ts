@@ -18,7 +18,7 @@ export const getDaysInMonth = (monthKey: string): number => {
  * Si se encuentra "Fin" en planificación, el conteo se detiene hasta ese día (sin contarlo)
  */
 export const calculateWorkingDaysInMonth = (
-  projectMode: 'semanal' | 'mensual' | 'publicidad',
+  projectMode: 'semanal' | 'mensual' | 'diario',
   monthKey: string,
   weeksForMonth: any[],
   allWeeks?: any[]

@@ -17,7 +17,7 @@ interface CondParams {
   nocturnoFin: string;
 }
 
-export function readCondParams(project: Project, mode?: 'semanal' | 'mensual' | 'publicidad'): CondParams {
+export function readCondParams(project: Project, mode?: 'semanal' | 'mensual' | 'diario'): CondParams {
   const base = project?.id || project?.nombre || 'tmp';
   
   // Si se especifica un modo, buscar solo ese modo primero
@@ -41,7 +41,7 @@ export function readCondParams(project: Project, mode?: 'semanal' | 'mensual' | 
   }
   
   // Fallback: buscar en todos los modos
-  const keys = [`cond_${base}_semanal`, `cond_${base}_mensual`, `cond_${base}_publicidad`];
+  const keys = [`cond_${base}_semanal`, `cond_${base}_mensual`, `cond_${base}_diario`];
   for (const k of keys) {
     try {
       const obj = storage.getJSON<any>(k);

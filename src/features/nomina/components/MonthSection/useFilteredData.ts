@@ -4,7 +4,7 @@ import { weekISOdays } from '../../utils/plan';
 import { filterWeeksByDateRange } from './MonthSectionUtils';
 
 interface UseFilteredDataProps {
-  projectMode: 'semanal' | 'mensual' | 'publicidad';
+  projectMode: 'semanal' | 'mensual' | 'diario';
   dateFrom: string;
   dateTo: string;
   project?: any;

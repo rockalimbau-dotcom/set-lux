@@ -5,7 +5,7 @@ import { MonthSectionPersonRow } from './MonthSectionPersonRow';
 
 type MonthSectionTableProps = {
   enriched: any[];
-  projectMode?: 'semanal' | 'mensual' | 'publicidad';
+  projectMode?: 'semanal' | 'mensual' | 'diario';
   hasWorkedDaysData: boolean;
   hasLocalizacionData: boolean;
   hasCargaDescargaData: boolean;

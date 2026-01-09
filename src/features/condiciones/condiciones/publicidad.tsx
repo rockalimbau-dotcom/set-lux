@@ -1,10 +1,10 @@
-// condiciones/publicidad.tsx
+// condiciones/diario.tsx
 import { useLocalStorage } from '@shared/hooks/useLocalStorage';
 import { useMemo, useState, memo } from 'react';
 import { createPortal } from 'react-dom';
-import { usePublicidadTranslations } from './publicidad/publicidadHelpers';
-import { loadOrSeedPublicidad } from './publicidad/publicidadData';
-import { PRICE_ROLES_PUBLI } from './publicidad/publicidadConstants';
+import { useDiarioTranslations } from './publicidad/publicidadHelpers';
+import { loadOrSeedDiario } from './publicidad/publicidadData';
+import { PRICE_ROLES_DIARIO } from './publicidad/publicidadConstants';
 import { DeleteRoleConfirmModal } from './publicidad/DeleteRoleConfirmModal';
 import { ParametersSection } from './publicidad/ParametersSection';
 import { PricesTable } from './publicidad/PricesTable';
@@ -27,16 +27,16 @@ function CondicionesPublicidad({
   onRegisterExport?: (fn: () => void) => void;
   readOnly?: boolean;
 }) {
-  const { translateHeader, translateRoleName } = usePublicidadTranslations();
+  const { translateHeader, translateRoleName } = useDiarioTranslations();
   
   const storageKey = useMemo(() => {
     const base = (project as AnyRecord)?.id || (project as AnyRecord)?.nombre || 'tmp';
-    return `cond_${base}_publicidad`;
+    return `cond_${base}_diario`;
   }, [project?.id, project?.nombre]);
 
   const [showParams, setShowParams] = useState(false);
   const [model, setModel] = useLocalStorage<AnyRecord>(storageKey, () =>
-    loadOrSeedPublicidad(storageKey)
+    loadOrSeedDiario(storageKey)
   );
 
   // Custom hooks
@@ -52,9 +52,9 @@ function CondicionesPublicidad({
     removeRole,
     roleToDelete,
     setRoleToDelete,
-  } = usePublicidadHandlers({ model, setModel });
+  } = useDiarioHandlers({ model, setModel });
 
-  const roles = model.roles || PRICE_ROLES_PUBLI;
+  const roles = model.roles || PRICE_ROLES_DIARIO;
 
   useExportRegistration({
     project,

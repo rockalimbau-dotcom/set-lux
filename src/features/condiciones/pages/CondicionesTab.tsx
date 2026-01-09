@@ -18,7 +18,7 @@ export default function CondicionesTab({ project, mode, onChange = () => {}, rea
     const v = (mode || (project as AnyRecord)?.conditions?.tipo || 'semanal')
       .toString()
       .toLowerCase();
-    return v === 'mensual' || v === 'publicidad' ? v : 'semanal';
+    return v === 'mensual' || v === 'diario' ? v : 'semanal';
   }, [mode, (project as AnyRecord)?.conditions?.tipo]);
 
   const [doExport, setDoExport] = useState<null | (() => void)>(() => null);
@@ -67,10 +67,10 @@ export default function CondicionesTab({ project, mode, onChange = () => {}, rea
         />
       )}
 
-      {effectiveMode === 'publicidad' && (
+      {effectiveMode === 'diario' && (
         <CondicionesPublicidad
           project={project}
-          onChange={m => onChange({ publicidad: m, tipo: 'publicidad' })}
+          onChange={m => onChange({ diario: m, tipo: 'diario' })}
           onRegisterExport={fn => setDoExport(() => fn)}
           readOnly={readOnly}
         />

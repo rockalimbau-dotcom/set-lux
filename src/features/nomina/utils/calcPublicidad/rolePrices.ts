@@ -5,19 +5,19 @@ import { persistDefaultPrices, persistDefaultParams } from './rolePricesPersiste
 import { calculateRolePrices } from './rolePricesCalculation';
 
 /**
- * Make role prices function for publicidad mode
+ * Make role prices function for diario mode
  */
 export function makeRolePrices(project: any) {
-  // Forzar el modo a publicidad para que loadCondModel cargue las condiciones correctas
+  // Forzar el modo a diario para que loadCondModel cargue las condiciones correctas
   const projectWithMode = {
     ...project,
     conditions: {
       ...project?.conditions,
-      tipo: 'publicidad'
+      tipo: 'diario'
     }
   };
   
-  const model = loadCondModel(projectWithMode, 'publicidad');
+  const model = loadCondModel(projectWithMode, 'diario');
   let priceRows = model?.prices || {};
   let p = model?.params || {};
 

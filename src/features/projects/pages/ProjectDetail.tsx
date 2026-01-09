@@ -96,7 +96,7 @@ export default function ProjectDetail({
     if (activeTab === 'condiciones') {
       if (condModeLabel === 'semanales') return t('conditions.weekly');
       if (condModeLabel === 'mensuales') return t('conditions.monthly');
-      if (condModeLabel === 'publicidad') return t('conditions.advertising');
+      if (condModeLabel === 'diario') return t('conditions.advertising');
       return `Condiciones ${condModeLabel}`;
     }
     if (activeTab === 'nomina') return t('navigation.payroll');

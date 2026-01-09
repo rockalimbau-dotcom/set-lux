@@ -3,7 +3,7 @@ import { storage } from '@shared/services/localStorage.service';
 
 interface UseDateRangeSyncProps {
   project?: any;
-  projectMode: 'semanal' | 'mensual' | 'publicidad';
+  projectMode: 'semanal' | 'mensual' | 'diario';
   monthKey: string;
 }
 

@@ -1,22 +1,22 @@
 import { RolePrices } from '../MonthSectionTypes';
 
 /**
- * Get effective role prices, handling publicidad mode special case
+ * Get effective role prices, handling diario mode special case
  */
 export function getEffectiveRolePrices(
   pr: any,
-  projectMode: 'semanal' | 'mensual' | 'publicidad',
+  projectMode: 'semanal' | 'mensual' | 'diario',
   refuerzoSet: Set<string>,
   keyNoPR: string,
   rolePrices: RolePrices,
   baseRoleLabel: string
 ): any {
-  // Para publicidad: si el rol no tiene precio jornada (no está en condiciones),
+  // Para diario: si el rol no tiene precio jornada (no está en condiciones),
   // forzar todos los precios a 0 para que no se muestren cantidades
   // pero sí se pueden mostrar días trabajados
-  const hasValidPrices = projectMode === 'publicidad' ? pr.jornada > 0 : true;
+  const hasValidPrices = projectMode === 'diario' ? pr.jornada > 0 : true;
   
-  if (projectMode === 'publicidad' && !hasValidPrices) {
+  if (projectMode === 'diario' && !hasValidPrices) {
     return {
       ...pr,
       jornada: 0,

@@ -11,10 +11,14 @@ interface Conditions {
     festivosDates?: string[];
     festivosTemplate?: string;
   };
-  publicidad?: {
+  diario?: {
     festivosDates?: string[];
     festivosTemplate?: string;
   };
+  publicidad?: {
+    festivosDates?: string[];
+    festivosTemplate?: string;
+  }; // Compatibilidad hacia atrás
   festivosTemplate?: string;
   festivos?: string;
 }
@@ -38,7 +42,8 @@ export function extractHolidaySets(conditions: Conditions): {
     conditions?.festivosDates,
     conditions?.mensual?.festivosDates,
     conditions?.semanal?.festivosDates,
-    conditions?.publicidad?.festivosDates,
+    conditions?.diario?.festivosDates,
+    conditions?.publicidad?.festivosDates, // Compatibilidad hacia atrás
   ].filter(Array.isArray);
 
   for (const arr of explicitArrays) {
@@ -62,7 +67,8 @@ export function extractHolidaySets(conditions: Conditions): {
   const texts = [
     conditions?.mensual?.festivosTemplate,
     conditions?.semanal?.festivosTemplate,
-    conditions?.publicidad?.festivosTemplate,
+    conditions?.diario?.festivosTemplate,
+    conditions?.publicidad?.festivosTemplate, // Compatibilidad hacia atrás
     conditions?.festivosTemplate,
     conditions?.festivos,
   ]

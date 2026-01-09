@@ -71,7 +71,7 @@ describe('nomina/utils/cond', () => {
       const mockProject = {
         id: 'test-project',
         conditions: {
-          tipo: 'publicidad',
+          tipo: 'diario',
         },
       };
 
@@ -164,7 +164,7 @@ describe('nomina/utils/cond', () => {
 
       localStorageMock.getItem.mockReturnValue(JSON.stringify(mockModel));
 
-      const result = loadCondModel(mockProject, 'publicidad');
+      const result = loadCondModel(mockProject, 'diario');
 
       expect(localStorageMock.getItem).toHaveBeenCalledWith(
         'cond_test-project_publicidad'
