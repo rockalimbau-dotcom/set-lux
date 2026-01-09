@@ -45,14 +45,17 @@ export function ProjectCard({ project, onOpen, onEdit, onDelete }: ProjectCardPr
         borderColor: 'var(--border)'
       }}
     >
-      {/* Avatar y nombre del proyecto */}
-      <div className='flex items-start gap-1 sm:gap-1.5 md:gap-2 lg:gap-2.5 xl:gap-4 mb-2 sm:mb-1.5 md:mb-2 lg:mb-2.5 xl:mb-4'>
-        <div 
-          className='w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 lg:w-9 lg:h-9 xl:w-12 xl:h-12 rounded-full flex items-center justify-center font-bold text-[8px] sm:text-[9px] md:text-[10px] lg:text-xs xl:text-base px-0.5 sm:px-1 md:px-1.5 lg:px-2 border border-transparent pointer-events-none'
-          style={{backgroundColor: getAvatarColor(project.nombre), color: '#ffffff'}}
+      {/* Nombre del proyecto */}
+      <div className='mb-2 sm:mb-1.5 md:mb-2 lg:mb-2.5 xl:mb-4'>
+        <h3 
+          className='inline-block font-bold text-[9px] sm:text-[10px] md:text-xs lg:text-sm xl:text-base px-1.5 sm:px-2 md:px-2.5 lg:px-3 xl:px-4 py-0.5 sm:py-1 md:py-1.5 lg:py-2 rounded sm:rounded-md md:rounded-lg pointer-events-none'
+          style={{
+            backgroundColor: getAvatarColor(project.nombre), 
+            color: '#ffffff'
+          }}
         >
           {project.nombre}
-        </div>
+        </h3>
       </div>
 
       {/* Detalles del proyecto */}

@@ -178,6 +178,24 @@ html input[style*="borderWidth"] {
   border-color: #e5e7eb !important;
 }
 
+/* Forzar fondo blanco en inputs dentro de phase-panel (parámetros de cálculo) */
+[data-theme='light'] .phase-content .phase-panel label input,
+[data-theme='light'] .phase-content .phase-panel label input:hover,
+[data-theme='light'] .phase-content .phase-panel label input:focus,
+[data-theme='light'] .phase-content .phase-panel label input[type='number'],
+[data-theme='light'] .phase-content .phase-panel label input[type='number']:hover,
+[data-theme='light'] .phase-content .phase-panel label input[type='number']:focus,
+[data-theme='light'] .phase-content .phase-panel label input[type='time'],
+[data-theme='light'] .phase-content .phase-panel label input[type='time']:hover,
+[data-theme='light'] .phase-content .phase-panel label input[type='time']:focus,
+[data-theme='light'] .phase-content .phase-panel label input[type='text'],
+[data-theme='light'] .phase-content .phase-panel label input[type='text']:hover,
+[data-theme='light'] .phase-content .phase-panel label input[type='text']:focus {
+  background-color: white !important;
+  background: white !important;
+  background-image: none !important;
+}
+
 /* Si hay elementos con bg-neutral-panel dentro de fases, forzarlos a claro */
 [data-theme='light'] .phase-content .bg-neutral-panel {
   background-color: var(--bg) !important;
@@ -635,14 +653,33 @@ textarea[readonly]:focus {
 }
 
 /* Más específico para inputs dentro de labels (ParamInput) - prevenir cualquier cambio de background */
-.phase-content label.space-y-1 input:hover,
-.phase-content label.space-y-1 input:focus,
-.phase-content label input[type='number']:hover,
-.phase-content label input[type='number']:focus,
-.phase-content label input[type='time']:hover,
-.phase-content label input[type='time']:focus,
-.phase-content label input[type='text']:hover,
-.phase-content label input[type='text']:focus {
+/* Modo claro: fondo blanco siempre, incluso en estado normal, hover y focus */
+[data-theme='light'] .phase-content label.space-y-1 input,
+[data-theme='light'] .phase-content label.space-y-1 input:hover,
+[data-theme='light'] .phase-content label.space-y-1 input:focus,
+[data-theme='light'] .phase-content label input[type='number'],
+[data-theme='light'] .phase-content label input[type='number']:hover,
+[data-theme='light'] .phase-content label input[type='number']:focus,
+[data-theme='light'] .phase-content label input[type='time'],
+[data-theme='light'] .phase-content label input[type='time']:hover,
+[data-theme='light'] .phase-content label input[type='time']:focus,
+[data-theme='light'] .phase-content label input[type='text'],
+[data-theme='light'] .phase-content label input[type='text']:hover,
+[data-theme='light'] .phase-content label input[type='text']:focus {
+  background-color: white !important;
+  background: white !important;
+  background-image: none !important;
+}
+
+/* Modo oscuro: fondo transparente siempre */
+[data-theme='dark'] .phase-content label.space-y-1 input:hover,
+[data-theme='dark'] .phase-content label.space-y-1 input:focus,
+[data-theme='dark'] .phase-content label input[type='number']:hover,
+[data-theme='dark'] .phase-content label input[type='number']:focus,
+[data-theme='dark'] .phase-content label input[type='time']:hover,
+[data-theme='dark'] .phase-content label input[type='time']:focus,
+[data-theme='dark'] .phase-content label input[type='text']:hover,
+[data-theme='dark'] .phase-content label input[type='text']:focus {
   background-color: transparent !important;
   background: transparent !important;
   background-image: none !important;
@@ -661,16 +698,20 @@ textarea[readonly]:focus {
   background-image: none !important;
 }
 
+[data-theme='light'] .phase-content label input,
 [data-theme='light'] .phase-content label input:hover,
 [data-theme='light'] .phase-content label input:focus,
+[data-theme='light'] .phase-content label input[type='number'],
 [data-theme='light'] .phase-content label input[type='number']:hover,
 [data-theme='light'] .phase-content label input[type='number']:focus,
+[data-theme='light'] .phase-content label input[type='time'],
 [data-theme='light'] .phase-content label input[type='time']:hover,
 [data-theme='light'] .phase-content label input[type='time']:focus,
+[data-theme='light'] .phase-content label input[type='text'],
 [data-theme='light'] .phase-content label input[type='text']:hover,
 [data-theme='light'] .phase-content label input[type='text']:focus {
-  background-color: transparent !important;
-  background: transparent !important;
+  background-color: white !important;
+  background: white !important;
   background-image: none !important;
 }
 

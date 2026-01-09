@@ -90,6 +90,6 @@ export function getHoverTextColor(theme: 'light' | 'dark', isHovered: boolean): 
   if (isHovered) {
     return theme === 'light' ? '#111827' : 'white';
   }
-  return theme === 'light' ? '#111827' : 'inherit';
+  return theme === 'light' ? '#111827' : '#d1d5db';
 }
 

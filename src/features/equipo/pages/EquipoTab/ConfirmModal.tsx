@@ -42,7 +42,7 @@ export function ConfirmModal({ title, message, onClose, onConfirm }: ConfirmModa
 
   return (
     <div className='fixed inset-0 bg-black/60 grid place-items-center p-6 sm:p-6 md:p-6 z-50 overflow-y-auto'>
-      <div className='w-full max-w-[200px] sm:max-w-[240px] md:max-w-[280px] lg:max-w-xs xl:max-w-sm 2xl:max-w-md rounded sm:rounded-md md:rounded-lg lg:rounded-xl xl:rounded-2xl border border-neutral-border bg-neutral-panel p-2 sm:p-2.5 md:p-3 lg:p-4 xl:p-5 2xl:p-6 my-auto max-h-[75vh] sm:max-h-[80vh] overflow-y-auto'
+      <div className='w-full max-w-[200px] sm:max-w-[240px] md:max-w-[280px] lg:max-w-xs xl:max-w-sm 2xl:max-w-md rounded sm:rounded-md md:rounded-lg lg:rounded-xl xl:rounded-2xl border border-neutral-border p-2 sm:p-2.5 md:p-3 lg:p-4 xl:p-5 2xl:p-6 my-auto max-h-[75vh] sm:max-h-[80vh] overflow-y-auto'
         style={{
           backgroundColor: isLight ? '#ffffff' : 'var(--panel)'
         }}
@@ -84,8 +84,8 @@ export function ConfirmModal({ title, message, onClose, onConfirm }: ConfirmModa
             }}
             className='inline-flex items-center justify-center px-1.5 py-0.5 sm:px-2 sm:py-1 md:px-2.5 md:py-1.5 lg:px-3 lg:py-2 xl:px-4 xl:py-3 rounded sm:rounded-md md:rounded-lg lg:rounded-xl border transition text-[9px] sm:text-[10px] md:text-xs lg:text-sm font-medium hover:border-[var(--hover-border)]'
             style={{
-              borderColor: isLight ? '#F27405' : '#F27405',
-              color: isLight ? '#F27405' : '#F27405',
+              borderColor: isLight ? '#0476D9' : '#F27405',
+              color: isLight ? '#0476D9' : '#F27405',
               backgroundColor: isLight ? '#ffffff' : 'rgba(0,0,0,0.2)'
             }}
             type='button'

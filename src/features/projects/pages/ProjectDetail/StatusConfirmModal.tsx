@@ -77,8 +77,8 @@ export function StatusConfirmModal({ projectName, isClosing, onClose, onConfirm 
             }}
             className='inline-flex items-center justify-center px-1.5 py-0.5 sm:px-2 sm:py-1 md:px-2.5 md:py-1.5 lg:px-3 lg:py-2 xl:px-4 xl:py-3 rounded sm:rounded-md md:rounded-lg lg:rounded-xl border transition text-[9px] sm:text-[10px] md:text-xs lg:text-sm font-medium hover:border-[var(--hover-border)]'
             style={{
-              borderColor: isLight ? '#F27405' : '#F27405',
-              color: isLight ? '#F27405' : '#F27405',
+              borderColor: isLight ? '#0476D9' : '#F27405',
+              color: isLight ? '#0476D9' : '#F27405',
               backgroundColor: isLight ? '#ffffff' : 'rgba(0,0,0,0.2)'
             }}
             type='button'

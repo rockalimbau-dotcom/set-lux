@@ -34,7 +34,7 @@ export function PricesTable({
       <div className='text-[9px] sm:text-[10px] md:text-xs text-zinc-400 mb-1 sm:mb-1.5 md:mb-2 lg:mb-3 xl:mb-4 flex items-center justify-between gap-1 sm:gap-2'>
         <span className='flex-1' dangerouslySetInnerHTML={{ __html: t('conditions.pricesBaseDescription') }} />
         <div className='relative flex-shrink-0'>
-          {PRICE_ROLES_PUBLI.filter(r => !roles.includes(r)).length === 0 ? (
+          {PRICE_ROLES_DIARIO.filter(r => !roles.includes(r)).length === 0 ? (
             <button
               disabled
               className='px-1 py-0.5 sm:px-1.5 sm:py-0.5 md:px-2 md:py-1 lg:px-3 lg:py-1 text-[8px] sm:text-[9px] md:text-[10px] lg:text-xs xl:text-sm bg-gray-500 text-white rounded sm:rounded-md md:rounded-lg cursor-not-allowed whitespace-nowrap'
@@ -47,13 +47,14 @@ export function PricesTable({
                 onClick={() => !readOnly && setShowRoleSelect(!showRoleSelect)}
                 disabled={readOnly}
                 className={`px-1 py-0.5 sm:px-1.5 sm:py-0.5 md:px-2 md:py-1 lg:px-3 lg:py-1 text-[8px] sm:text-[9px] md:text-[10px] lg:text-xs xl:text-sm bg-brand text-white rounded sm:rounded-md md:rounded-lg hover:bg-brand/80 whitespace-nowrap ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+                style={{ color: 'white' }}
                 title={readOnly ? t('conditions.projectClosed') : t('conditions.addRole')}
               >
                 {t('conditions.addRole')}
               </button>
               {showRoleSelect && (
                 <div 
-                  className='absolute right-0 top-full mt-0.5 sm:mt-1 bg-blue-200 border border-blue-300 dark:bg-amber-800 dark:border-amber-600 rounded sm:rounded-md md:rounded-lg shadow-lg z-10 min-w-[100px] sm:min-w-[120px] md:min-w-[150px] max-h-40 sm:max-h-48 md:max-h-60 overflow-y-auto'
+                  className='absolute right-0 top-full mt-0.5 sm:mt-1 bg-white dark:bg-amber-800 border border-neutral-border dark:border-amber-600 rounded sm:rounded-md md:rounded-lg shadow-lg z-10 min-w-[100px] sm:min-w-[120px] md:min-w-[150px] max-h-40 sm:max-h-48 md:max-h-60 overflow-y-auto'
                   tabIndex={-1}
                   onBlur={(e) => {
                     if (!e.currentTarget.contains(e.relatedTarget as Node)) {
@@ -64,8 +65,11 @@ export function PricesTable({
                   {PRICE_ROLES_DIARIO.filter(r => !roles.includes(r)).map((role: string) => (
                     <button
                       key={role}
-                      onClick={() => addRole(role)}
-                      className='w-full text-left px-1.5 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-2 text-[8px] sm:text-[9px] md:text-[10px] lg:text-sm text-white hover:bg-blue-300 dark:hover:bg-amber-600/40 transition-colors'
+                      onClick={() => {
+                        addRole(role);
+                        setShowRoleSelect(false);
+                      }}
+                      className='w-full text-left px-1.5 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-2 text-[8px] sm:text-[9px] md:text-[10px] lg:text-sm text-gray-900 dark:text-white hover:bg-blue-100 dark:hover:bg-amber-600/40 transition-colors'
                     >
                       {translateRoleName(role)}
                     </button>

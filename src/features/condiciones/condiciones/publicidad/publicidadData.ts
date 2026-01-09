@@ -88,7 +88,7 @@ export function loadOrSeedDiario(storageKey: string): AnyRecord {
       factorHoraExtraFestiva: '1.5',
       cortesiaMin: '15',
       taDiario: '10',
-      taFinde: '12',
+      taFinde: '48',
       nocturnidadComplemento: '50',
       nocturnoIni: '02:00',
       nocturnoFin: '06:00',

@@ -191,16 +191,15 @@ export default function ProfilePage() {
                     <button
                       key={option}
                       type='button'
-                      onClick={() => {
+                      onMouseDown={(e) => {
+                        e.preventDefault(); // Prevenir que el botón principal pierda el foco antes de cerrar
                         setRole(option);
                         setRoleDropdownOpen(false);
                         setHoveredRoleOption(null);
                       }}
                       onMouseEnter={() => setHoveredRoleOption(option)}
                       onMouseLeave={() => setHoveredRoleOption(null)}
-                      className={`w-full text-left px-2 py-1 sm:px-2.5 sm:py-1.5 md:px-3 md:py-2 lg:px-3.5 lg:py-2 xl:px-4 xl:py-2 text-[10px] sm:text-xs md:text-sm lg:text-base transition-colors ${
-                        isLight ? 'text-gray-900' : 'text-zinc-300'
-                      }`}
+                      className={`w-full text-left px-2 py-1 sm:px-2.5 sm:py-1.5 md:px-3 md:py-2 lg:px-3.5 lg:py-2 xl:px-4 xl:py-2 text-[10px] sm:text-xs md:text-sm lg:text-base transition-colors`}
                       style={{
                         backgroundColor:
                           hoveredRoleOption === option
@@ -209,7 +208,7 @@ export default function ProfilePage() {
                         color:
                           hoveredRoleOption === option
                             ? (isLight ? '#111827' : 'white')
-                            : 'inherit',
+                            : (isLight ? '#111827' : '#d1d5db'),
                       }}
                     >
                       {option}

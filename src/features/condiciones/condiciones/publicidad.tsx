@@ -12,7 +12,7 @@ import { InfoSections } from './publicidad/InfoSections';
 import { useLanguageSync } from './publicidad/useLanguageSync';
 import { useModelPersistence } from './publicidad/useModelPersistence';
 import { useModelSync } from './publicidad/useModelSync';
-import { usePublicidadHandlers } from './publicidad/usePublicidadHandlers';
+import { useDiarioHandlers } from './publicidad/usePublicidadHandlers';
 import { useExportRegistration } from './publicidad/useExportRegistration';
 import { AnyRecord } from '@shared/types/common';
 

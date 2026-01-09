@@ -70,7 +70,8 @@ export function FormDropdown({
               <button
                 key={option.value}
                 type='button'
-                onClick={() => {
+                onMouseDown={(e) => {
+                  e.preventDefault(); // Prevenir que el botón principal pierda el foco antes de cerrar
                   onChange(option.value);
                   setDropdownState({ isOpen: false, isButtonHovered: false, hoveredOption: null });
                 }}

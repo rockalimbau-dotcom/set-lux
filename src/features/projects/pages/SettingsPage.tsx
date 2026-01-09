@@ -186,24 +186,21 @@ export default function SettingsPage() {
                       <button
                         key={opcion.value}
                         type='button'
-                        onClick={() => {
+                        onMouseDown={(e) => {
+                          e.preventDefault(); // Prevenir que el botón principal pierda el foco antes de cerrar
                           setTheme(opcion.value as 'dark' | 'light');
                           setThemeDropdown({ isOpen: false, isButtonHovered: false, hoveredOption: null });
                         }}
                         onMouseEnter={() => setThemeDropdown(prev => ({ ...prev, hoveredOption: opcion.value }))}
                         onMouseLeave={() => setThemeDropdown(prev => ({ ...prev, hoveredOption: null }))}
-                        className={`w-full text-left px-2 py-1 sm:px-2.5 sm:py-1.5 md:px-3 md:py-2 lg:px-3.5 lg:py-2 xl:px-4 xl:py-2 text-xs sm:text-sm transition-colors ${
-                          currentTheme === 'light' 
-                            ? 'text-gray-900' 
-                            : 'text-zinc-300'
-                        }`}
+                        className={`w-full text-left px-2 py-1 sm:px-2.5 sm:py-1.5 md:px-3 md:py-2 lg:px-3.5 lg:py-2 xl:px-4 xl:py-2 text-xs sm:text-sm transition-colors`}
                         style={{
                           backgroundColor: themeDropdown.hoveredOption === opcion.value 
                             ? (currentTheme === 'light' ? '#A0D3F2' : focusColor)
                             : 'transparent',
                           color: themeDropdown.hoveredOption === opcion.value 
                             ? (currentTheme === 'light' ? '#111827' : 'white')
-                            : 'inherit',
+                            : (currentTheme === 'light' ? '#111827' : '#d1d5db'),
                         }}
                       >
                         {opcion.label}
@@ -252,7 +249,8 @@ export default function SettingsPage() {
                       <button
                         key={opcion}
                         type='button'
-                        onClick={() => {
+                        onMouseDown={(e) => {
+                          e.preventDefault(); // Prevenir que el botón principal pierda el foco antes de cerrar
                           setIdioma(opcion);
                           // Cambiar el idioma de la aplicación inmediatamente
                           changeLanguage(opcion);
@@ -260,18 +258,14 @@ export default function SettingsPage() {
                         }}
                         onMouseEnter={() => setIdiomaDropdown(prev => ({ ...prev, hoveredOption: opcion }))}
                         onMouseLeave={() => setIdiomaDropdown(prev => ({ ...prev, hoveredOption: null }))}
-                        className={`w-full text-left px-2 py-1 sm:px-2.5 sm:py-1.5 md:px-3 md:py-2 lg:px-3.5 lg:py-2 xl:px-4 xl:py-2 text-xs sm:text-sm transition-colors ${
-                          currentTheme === 'light' 
-                            ? 'text-gray-900' 
-                            : 'text-zinc-300'
-                        }`}
+                        className={`w-full text-left px-2 py-1 sm:px-2.5 sm:py-1.5 md:px-3 md:py-2 lg:px-3.5 lg:py-2 xl:px-4 xl:py-2 text-xs sm:text-sm transition-colors`}
                         style={{
                           backgroundColor: idiomaDropdown.hoveredOption === opcion 
                             ? (currentTheme === 'light' ? '#A0D3F2' : focusColor)
                             : 'transparent',
                           color: idiomaDropdown.hoveredOption === opcion 
                             ? (currentTheme === 'light' ? '#111827' : 'white')
-                            : 'inherit',
+                            : (currentTheme === 'light' ? '#111827' : '#d1d5db'),
                         }}
                       >
                         {getLanguageName(opcion)}
