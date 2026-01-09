@@ -5,7 +5,9 @@ import { loadCondModel } from '../cond';
  */
 export function makeRolePrices(project: any) {
   const model = loadCondModel(project);
-  const priceRows = model?.prices || {};
+  const basePriceRows = model?.prices || {};
+  const prelightPriceRows = model?.pricesPrelight || {};
+  const pickupPriceRows = model?.pricesPickup || {};
   const p = model?.params || {};
 
   // Debug removed to improve performance
@@ -34,21 +36,47 @@ export function makeRolePrices(project: any) {
       .replace(/\s+/g, ' ')
       .trim();
 
-  const findPriceRow = (candidates: string[]) => {
+  // Determinar qué tabla de precios usar según el rol
+  const getPriceTable = (roleCode: string): Record<string, any> => {
+    const roleStr = String(roleCode || '');
+    // Detectar si el rol tiene sufijo P (prelight) o R (pickup)
+    const hasP = roleStr.endsWith('P') || roleStr.endsWith('p');
+    const hasR = roleStr.endsWith('R') || roleStr.endsWith('r');
+    
+    if (hasP) {
+      // Si hay tabla de prelight y el rol base existe, usar prelight; si no, usar base
+      const baseRole = roleStr.replace(/[PR]$/i, '');
+      if (prelightPriceRows[baseRole] || Object.keys(prelightPriceRows).some(k => normalizeStr(k) === normalizeStr(baseRole))) {
+        return prelightPriceRows;
+      }
+      return basePriceRows;
+    } else if (hasR) {
+      // Si hay tabla de pickup y el rol base existe, usar pickup; si no, usar base
+      const baseRole = roleStr.replace(/[PR]$/i, '');
+      if (pickupPriceRows[baseRole] || Object.keys(pickupPriceRows).some(k => normalizeStr(k) === normalizeStr(baseRole))) {
+        return pickupPriceRows;
+      }
+      return basePriceRows;
+    }
+    // Sin sufijo, usar tabla base
+    return basePriceRows;
+  };
+
+  const findPriceRow = (candidates: string[], priceTable: Record<string, any>) => {
     // 1) Exactos primero
     for (const cand of candidates) {
-      if (cand && priceRows[cand]) return { row: priceRows[cand], key: cand };
+      if (cand && priceTable[cand]) return { row: priceTable[cand], key: cand };
     }
     // 2) Match insensible a acentos/mayúsculas/sufijo P/R
     const candNorms = candidates.map(c => normalizeStr(c));
-    for (const key of Object.keys(priceRows)) {
+    for (const key of Object.keys(priceTable)) {
       const keyNorm = normalizeStr(key);
-      if (candNorms.includes(keyNorm)) return { row: priceRows[key], key };
+      if (candNorms.includes(keyNorm)) return { row: priceTable[key], key };
     }
     // 3) Intento extra: si keys vienen con sufijo P/R, comparar sin sufijo
-    for (const key of Object.keys(priceRows)) {
+    for (const key of Object.keys(priceTable)) {
       const keyBaseNorm = normalizeStr(String(key).replace(/[PR]$/i, ''));
-      if (candNorms.includes(keyBaseNorm)) return { row: priceRows[key], key };
+      if (candNorms.includes(keyBaseNorm)) return { row: priceTable[key], key };
     }
     return { row: {} as any, key: '' };
   };
@@ -76,11 +104,27 @@ export function makeRolePrices(project: any) {
     const baseNorm =
       String(baseRoleCode || '').replace(/[PR]$/, '') || normalized;
 
-    const pickedRow = findPriceRow([normalized]);
-    const row = pickedRow.row;
-    const pickedBase = findPriceRow([baseNorm]);
-    const baseRow = pickedBase.row;
-    const pickedElec = findPriceRow(['Eléctrico', 'Electrico', 'E']);
+    // Determinar qué tabla usar según el rol
+    const priceTable = getPriceTable(roleCode);
+    const basePriceTable = baseRoleCode ? getPriceTable(baseRoleCode) : priceTable;
+    
+    // Si no encontramos en la tabla específica, usar base como fallback
+    const pickedRow = findPriceRow([normalized], priceTable);
+    let row = pickedRow.row;
+    if (!row || Object.keys(row).length === 0) {
+      const fallbackRow = findPriceRow([normalized], basePriceRows);
+      row = fallbackRow.row;
+    }
+    
+    const pickedBase = findPriceRow([baseNorm], basePriceTable);
+    let baseRow = pickedBase.row;
+    if (!baseRow || Object.keys(baseRow).length === 0) {
+      const fallbackBase = findPriceRow([baseNorm], basePriceRows);
+      baseRow = fallbackBase.row;
+    }
+    
+    // Eléctrico siempre se busca en la tabla base
+    const pickedElec = findPriceRow(['Eléctrico', 'Electrico', 'E'], basePriceRows);
     const elecRow = pickedElec.row;
 
     const divTravel = num(p.divTravel) || 2;

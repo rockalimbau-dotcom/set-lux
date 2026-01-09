@@ -65,7 +65,7 @@ function CondicionesMensual({ project, onChange = () => {}, onRegisterExport, re
 
   useMensualModel({ model, onChange });
 
-  const [roleToDelete, setRoleToDelete] = useState<string | null>(null);
+  const [roleToDelete, setRoleToDelete] = useState<{ sectionKey: 'base' | 'prelight' | 'pickup'; role: string } | null>(null);
 
   const setText = (key: string, value: string) => setModel((m: AnyRecord) => ({ ...m, [key]: value }));
 
@@ -73,6 +73,14 @@ function CondicionesMensual({ project, onChange = () => {}, onRegisterExport, re
     setModel((m: AnyRecord) => ({ ...m, params: { ...(m.params || {}), [key]: value } }));
 
   const { roles, addRole, removeRole, handleRoleChange } = useMensualRoles({ model, setModel });
+  
+  const handleSetRoleToDelete = (sectionKey: 'base' | 'prelight' | 'pickup', role: string | null) => {
+    if (role === null) {
+      setRoleToDelete(null);
+    } else {
+      setRoleToDelete({ sectionKey, role });
+    }
+  };
 
   useMensualExport({ project, model, roles, onRegisterExport });
 
@@ -88,11 +96,12 @@ function CondicionesMensual({ project, onChange = () => {}, onRegisterExport, re
 
       <PricesTable
         model={model}
+        setModel={setModel}
         roles={roles}
         handleRoleChange={handleRoleChange}
         translateHeader={translateHeader}
         translateRoleName={translateRoleName}
-        setRoleToDelete={setRoleToDelete}
+        setRoleToDelete={handleSetRoleToDelete}
         addRole={addRole}
         readOnly={readOnly}
       />
@@ -105,11 +114,12 @@ function CondicionesMensual({ project, onChange = () => {}, onRegisterExport, re
 
       {roleToDelete && typeof document !== 'undefined' && createPortal(
         <DeleteRoleConfirmModal
-          roleName={roleToDelete}
+          roleName={roleToDelete.role}
           onClose={() => setRoleToDelete(null)}
           onConfirm={() => {
             if (roleToDelete) {
-              removeRole(roleToDelete);
+              removeRole(roleToDelete.sectionKey, roleToDelete.role);
+              setRoleToDelete(null);
             }
           }}
         />,

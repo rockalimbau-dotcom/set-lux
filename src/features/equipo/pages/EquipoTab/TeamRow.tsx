@@ -78,7 +78,7 @@ export function TeamRow({ row, onChange, onRemove, canEdit, allowedRoles, groupK
   // Obtener el label del rol seleccionado (traducido)
   const selectedRole = allowedRoles.find((r: AnyRecord) => r.code === row.role);
   const selectedLabel = selectedRole 
-    ? (translateRoleLabel(selectedRole.code, t) || selectedRole.label)
+    ? (translateRoleLabel(selectedRole.code, t, groupKey) || selectedRole.label)
     : '';
 
   const focusColor = theme === 'light' ? '#0476D9' : '#F27405';
@@ -169,7 +169,7 @@ export function TeamRow({ row, onChange, onRemove, canEdit, allowedRoles, groupK
                         : 'inherit',
                     }}
                   >
-                  {translateRoleLabel(r.code, t) || r.label}
+                  {translateRoleLabel(r.code, t, groupKey) || r.label}
                   </button>
               ))}
               </div>

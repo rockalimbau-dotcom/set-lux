@@ -19,7 +19,24 @@ export function useSemanalTranslations() {
   };
 
   // Función helper para traducir nombres de roles
-  const translateRoleName = (roleName: string): string => {
+  const translateRoleName = (roleName: string, sectionKey?: 'base' | 'prelight' | 'pickup'): string => {
+    // Si el nombre del rol empieza con "REF" seguido de un código (REFG, REFBB, etc.), es un refuerzo
+    if (roleName.startsWith('REF') && roleName.length > 3) {
+      const baseCode = roleName.substring(3);
+      const baseTranslationKey = `team.roles.${baseCode}`;
+      const baseTranslated = t(baseTranslationKey);
+      const baseLabel = baseTranslated !== baseTranslationKey ? baseTranslated : baseCode;
+      // Añadir "Refuerzo" antes del nombre del rol base
+      let refuerzoLabel = `Refuerzo ${baseLabel}`;
+      // Añadir sufijo según la sección
+      if (sectionKey === 'prelight') {
+        refuerzoLabel += ' Prelight';
+      } else if (sectionKey === 'pickup') {
+        refuerzoLabel += ' Recogida';
+      }
+      return refuerzoLabel;
+    }
+    
     // Mapeo de nombres de roles en español a códigos
     const roleNameToCode: Record<string, string> = {
       'Gaffer': 'G',
@@ -30,16 +47,27 @@ export function useSemanalTranslations() {
       'Técnico de mesa': 'TM',
       'Finger boy': 'FB',
       'Refuerzo': 'REF',
+      'Rigger': 'RIG',
     };
     
     const roleCode = roleNameToCode[roleName];
+    let translated = roleName;
+    
     if (roleCode) {
       const translationKey = `team.roles.${roleCode}`;
-      const translated = t(translationKey);
-      // Si la traducción existe (no es la clave misma), devolverla; si no, devolver el nombre original
-      return translated !== translationKey ? translated : roleName;
+      const roleTranslated = t(translationKey);
+      // Si la traducción existe (no es la clave misma), usarla; si no, usar el nombre original
+      translated = roleTranslated !== translationKey ? roleTranslated : roleName;
     }
-    return roleName;
+    
+    // Añadir sufijo según la sección
+    if (sectionKey === 'prelight') {
+      return `${translated} Prelight`;
+    } else if (sectionKey === 'pickup') {
+      return `${translated} Recogida`;
+    }
+    
+    return translated;
   };
 
   return { translateHeader, translateRoleName };

@@ -12,12 +12,13 @@ interface UseSemanalHandlersProps {
  * Hook to manage semanal handlers (prices, roles, etc.)
  */
 export function useSemanalHandlers({ model, setModel }: UseSemanalHandlersProps) {
-  const [roleToDelete, setRoleToDelete] = useState<string | null>(null);
+  const [roleToDelete, setRoleToDelete] = useState<{ sectionKey: 'base' | 'prelight' | 'pickup'; role: string } | null>(null);
 
-  const setPrice = (role: string, header: string, value: string) =>
+  const setPrice = (sectionKey: 'base' | 'prelight' | 'pickup', role: string, header: string, value: string) =>
     setModel((m: AnyRecord) => {
-      const next = { ...m, prices: { ...(m.prices || {}) } };
-      next.prices[role] = { ...(next.prices[role] || {}), [header]: value };
+      const priceKey = sectionKey === 'base' ? 'prices' : sectionKey === 'prelight' ? 'pricesPrelight' : 'pricesPickup';
+      const next = { ...m, [priceKey]: { ...(m[priceKey] || {}) } };
+      next[priceKey][role] = { ...(next[priceKey][role] || {}), [header]: value };
       return next;
     });
 
@@ -57,21 +58,33 @@ export function useSemanalHandlers({ model, setModel }: UseSemanalHandlersProps)
     });
   };
 
-  const removeRole = (role: string) => {
+  const removeRole = (sectionKey: 'base' | 'prelight' | 'pickup', role: string) => {
     setModel((m: AnyRecord) => {
-      const roles = m.roles || PRICE_ROLES;
-      const nextRoles = roles.filter((r: string) => r !== role);
-      const nextPrices = { ...m.prices };
-      delete nextPrices[role];
-      return { ...m, roles: nextRoles, prices: nextPrices };
+      if (sectionKey === 'base') {
+        const roles = m.roles || PRICE_ROLES;
+        const nextRoles = roles.filter((r: string) => r !== role);
+        const nextPrices = { ...m.prices };
+        delete nextPrices[role];
+        return { ...m, roles: nextRoles, prices: nextPrices };
+      } else {
+        const priceKey = sectionKey === 'prelight' ? 'pricesPrelight' : 'pricesPickup';
+        const next = { ...m, [priceKey]: { ...(m[priceKey] || {}) } };
+        delete next[priceKey][role];
+        // Si no quedan roles en esta sección, eliminar la sección
+        if (Object.keys(next[priceKey]).length === 0) {
+          delete next[priceKey];
+        }
+        return next;
+      }
     });
   };
 
-  const handlePriceChange = (role: string, header: string, value: string) => {
+  const handlePriceChange = (sectionKey: 'base' | 'prelight' | 'pickup', role: string, header: string, value: string) => {
     if (header === 'Precio semanal') {
       setModel((m: AnyRecord) => {
-        const next = { ...m, prices: { ...(m.prices || {}) } };
-        const row = { ...(next.prices[role] || {}) } as Record<string, string>;
+        const priceKey = sectionKey === 'base' ? 'prices' : sectionKey === 'prelight' ? 'pricesPrelight' : 'pricesPickup';
+        const next = { ...m, [priceKey]: { ...(m[priceKey] || {}) } };
+        const row = { ...(next[priceKey][role] || {}) } as Record<string, string>;
         row['Precio semanal'] = value;
         if (value == null || String(value).trim() === '') {
           row['Precio mensual'] = '';
@@ -89,11 +102,11 @@ export function useSemanalHandlers({ model, setModel }: UseSemanalHandlersProps)
           row['Travel day'] = derived['Travel day'];
           row['Horas extras'] = derived['Horas extras'];
         }
-        next.prices[role] = row;
+        next[priceKey][role] = row;
         return next;
       });
     } else {
-      setPrice(role, header, value);
+      setPrice(sectionKey, role, header, value);
     }
   };
 

@@ -71,6 +71,19 @@ export const baseStyles = `
     box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
     margin-bottom: 15px;
   }
+  .table-container h3 {
+    margin-bottom: 8px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #1e3a8a;
+    padding: 8px 12px 4px 12px;
+  }
+  .table-container table {
+    margin-bottom: 20px;
+  }
+  .table-container table:last-child {
+    margin-bottom: 0;
+  }
   table { 
     width: 100%; 
     border-collapse: collapse; 

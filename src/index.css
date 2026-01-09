@@ -47,6 +47,26 @@ body {
 
 .bg-brand { background-color: var(--brand) !important; }
 
+/* Botón eliminar sección */
+.remove-section-btn {
+  background-color: #B3DDF2 !important; /* azul claro del PDF */
+  color: #111827 !important; /* texto gris oscuro como el PDF */
+  border: none !important;
+}
+
+.remove-section-btn:hover {
+  background-color: #B3DDF2 !important;
+}
+
+[data-theme='dark'] .remove-section-btn {
+  background-color: #FCD34D !important; /* amber-300 - naranja claro */
+  color: #111827 !important;
+}
+
+[data-theme='dark'] .remove-section-btn:hover {
+  background-color: #FCD34D !important;
+}
+
 .text-brand-light { color: var(--accent) !important; }
 
 /* Theme-scoped interactive hover rules */

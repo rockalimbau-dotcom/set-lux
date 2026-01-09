@@ -32,7 +32,37 @@ function translateHeader(header: string): string {
 /**
  * Translate role name to current language
  */
-function translateRoleName(roleName: string): string {
+function translateRoleName(roleName: string, sectionKey?: 'base' | 'prelight' | 'pickup'): string {
+  // Si el nombre del rol empieza con "REF" seguido de un código (REFG, REFBB, etc.), es un refuerzo
+  if (roleName.startsWith('REF') && roleName.length > 3) {
+    // Extraer el código del rol base (G, BB, E, etc.)
+    const baseRoleCode = roleName.substring(3);
+    const roleNameToCode: Record<string, string> = {
+      'G': 'G',
+      'BB': 'BB',
+      'E': 'E',
+      'AUX': 'AUX',
+      'M': 'M',
+      'TM': 'TM',
+      'FB': 'FB',
+    };
+    const code = roleNameToCode[baseRoleCode] || baseRoleCode;
+    const translationKey = `team.roles.${code}`;
+    const baseLabel = i18n.t(translationKey) !== translationKey ? i18n.t(translationKey) : baseRoleCode;
+    
+    // Añadir "Refuerzo" antes del nombre del rol base
+    let refuerzoLabel = `Refuerzo ${baseLabel}`;
+    
+    // Añadir sufijo según la sección
+    if (sectionKey === 'prelight') {
+      refuerzoLabel += ' Prelight';
+    } else if (sectionKey === 'pickup') {
+      refuerzoLabel += ' Recogida';
+    }
+    
+    return refuerzoLabel;
+  }
+  
   // Mapeo de nombres de roles en español a códigos
   const roleNameToCode: Record<string, string> = {
     'Gaffer': 'G',
@@ -50,7 +80,16 @@ function translateRoleName(roleName: string): string {
     const translationKey = `team.roles.${roleCode}`;
     const translated = i18n.t(translationKey);
     // Si la traducción existe (no es la clave misma), devolverla; si no, devolver el nombre original
-    return translated !== translationKey ? translated : roleName;
+    let result = translated !== translationKey ? translated : roleName;
+    
+    // Añadir sufijo según la sección
+    if (sectionKey === 'prelight') {
+      result += ' Prelight';
+    } else if (sectionKey === 'pickup') {
+      result += ' Recogida';
+    }
+    
+    return result;
   }
   return roleName;
 }
@@ -61,11 +100,18 @@ function translateRoleName(roleName: string): string {
 export function filterRolesWithPrices(
   PRICE_ROLES: string[],
   PRICE_HEADERS: string[],
-  model: any
+  model: any,
+  sectionKey: 'base' | 'prelight' | 'pickup' = 'base'
 ): string[] {
+  const prices = sectionKey === 'base' 
+    ? model.prices || {}
+    : sectionKey === 'prelight'
+    ? model.pricesPrelight || {}
+    : model.pricesPickup || {};
+    
   return PRICE_ROLES.filter(role => {
     return PRICE_HEADERS.some(header => {
-      const precio = model.prices?.[role]?.[header];
+      const precio = prices[role]?.[header];
       return precio && precio.toString().trim() !== '';
     });
   });
@@ -77,23 +123,38 @@ export function filterRolesWithPrices(
 export function generatePriceTableHTML(
   rolesConPrecios: string[],
   PRICE_HEADERS: string[],
-  model: any
+  model: any,
+  sectionKey: 'base' | 'prelight' | 'pickup' = 'base',
+  title?: string
 ): string {
-  return `
+  const prices = sectionKey === 'base' 
+    ? model.prices || {}
+    : sectionKey === 'prelight'
+    ? model.pricesPrelight || {}
+    : model.pricesPickup || {};
+  
+  // Filtrar headers: quitar "Precio refuerzo" de prelight y pickup
+  const visibleHeaders = sectionKey === 'base' 
+    ? PRICE_HEADERS 
+    : PRICE_HEADERS.filter(h => h !== 'Precio refuerzo');
+  
+  const titleHTML = title ? `<h3 style="margin-bottom: 8px; font-size: 11px; font-weight: 700; color: #1e3a8a;">${esc(title)}</h3>` : '';
+  
+  return `${titleHTML}
     <table>
       <thead>
         <tr>
           <th>${i18n.t('conditions.rolePrice')}</th>
-          ${PRICE_HEADERS.map(h => `<th>${esc(translateHeader(h))}</th>`).join('')}
+          ${visibleHeaders.map(h => `<th>${esc(translateHeader(h))}</th>`).join('')}
         </tr>
       </thead>
       <tbody>
         ${rolesConPrecios.map(
           role => `
           <tr>
-            <td style="font-weight:600;">${esc(translateRoleName(role))}</td>
-            ${PRICE_HEADERS.map(
-              h => `<td>${esc(model.prices?.[role]?.[h] ?? '')}</td>`
+            <td style="font-weight:600;">${esc(translateRoleName(role, sectionKey))}</td>
+            ${visibleHeaders.map(
+              h => `<td>${esc(prices[role]?.[h] ?? '')}</td>`
             ).join('')}
           </tr>
         `

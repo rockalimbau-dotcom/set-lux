@@ -11,8 +11,8 @@ interface UseMensualRolesProps {
 interface UseMensualRolesReturn {
   roles: string[];
   addRole: (newRole: string) => void;
-  removeRole: (role: string) => void;
-  handleRoleChange: (role: string, header: string, rawVal: string) => void;
+  removeRole: (sectionKey: 'base' | 'prelight' | 'pickup', role: string) => void;
+  handleRoleChange: (sectionKey: 'base' | 'prelight' | 'pickup', role: string, header: string, rawVal: string) => void;
 }
 
 /**
@@ -47,21 +47,33 @@ export function useMensualRoles({ model, setModel }: UseMensualRolesProps): UseM
     });
   };
   
-  const removeRole = (role: string) => {
+  const removeRole = (sectionKey: 'base' | 'prelight' | 'pickup', role: string) => {
     setModel((m: AnyRecord) => {
-      const roles = m.roles || PRICE_ROLES;
-      const nextRoles = roles.filter((r: string) => r !== role);
-      const nextPrices = { ...m.prices };
-      delete nextPrices[role];
-      return { ...m, roles: nextRoles, prices: nextPrices };
+      if (sectionKey === 'base') {
+        const roles = m.roles || PRICE_ROLES;
+        const nextRoles = roles.filter((r: string) => r !== role);
+        const nextPrices = { ...m.prices };
+        delete nextPrices[role];
+        return { ...m, roles: nextRoles, prices: nextPrices };
+      } else {
+        const priceKey = sectionKey === 'prelight' ? 'pricesPrelight' : 'pricesPickup';
+        const next = { ...m, [priceKey]: { ...(m[priceKey] || {}) } };
+        delete next[priceKey][role];
+        // Si no quedan roles en esta sección, eliminar la sección
+        if (Object.keys(next[priceKey]).length === 0) {
+          delete next[priceKey];
+        }
+        return next;
+      }
     });
   };
   
-  const handleRoleChange = (role: string, header: string, rawVal: string) => {
+  const handleRoleChange = (sectionKey: 'base' | 'prelight' | 'pickup', role: string, header: string, rawVal: string) => {
     const val = rawVal;
     setModel((m: AnyRecord) => {
-      const next: AnyRecord = { ...m, prices: { ...(m.prices || {}) } };
-      const row: AnyRecord = { ...(next.prices[role] || {}) };
+      const priceKey = sectionKey === 'base' ? 'prices' : sectionKey === 'prelight' ? 'pricesPrelight' : 'pricesPickup';
+      const next: AnyRecord = { ...m, [priceKey]: { ...(m[priceKey] || {}) } };
+      const row: AnyRecord = { ...(next[priceKey][role] || {}) };
       row[header] = val;
 
       if (header === 'Precio mensual') {
@@ -74,7 +86,7 @@ export function useMensualRoles({ model, setModel }: UseMensualRolesProps): UseM
         row['Horas extras'] = derived['Horas extras'];
       }
 
-      next.prices[role] = row;
+      next[priceKey][role] = row;
       return next;
     });
   };

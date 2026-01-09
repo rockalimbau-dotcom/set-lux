@@ -92,11 +92,31 @@ export function useEnrichedRows({
       const keyNoPR = `${stripPR(r.role)}__${r.name}`;
       const baseRoleCode = stripPR(r.role);
       const baseRoleLabel = roleLabelFromCode(baseRoleCode);
+      
+      // Preservar el sufijo P/R del rol original para determinar qué tabla de precios usar
+      const originalRole = r.role || '';
+      const hasP = originalRole.endsWith('P') || originalRole.endsWith('p');
+      const hasR = originalRole.endsWith('R') || originalRole.endsWith('r');
+      
       // Si el rol empieza con "REF" (REFG, REFBB, etc.) o está en refuerzoSet, usar lógica de refuerzo
       const isRefuerzo = (r.role && r.role.startsWith('REF') && r.role.length > 3) || refuerzoSet.has(keyNoPR);
+      
+      // Construir el rol completo con sufijo para getForRole si es prelight o pickup
+      // getForRole normaliza el rol y busca en las tablas, así que podemos pasar el nombre con sufijo
+      let roleForPriceLookup = baseRoleLabel;
+      if (!isRefuerzo) {
+        if (hasP) {
+          // Añadir sufijo P al nombre del rol (ej: "GafferP")
+          roleForPriceLookup = `${baseRoleLabel}P`;
+        } else if (hasR) {
+          // Añadir sufijo R al nombre del rol (ej: "GafferR")
+          roleForPriceLookup = `${baseRoleLabel}R`;
+        }
+      }
+      
       const pr = isRefuerzo
         ? rolePrices.getForRole('REF', baseRoleLabel)
-        : rolePrices.getForRole(baseRoleLabel);
+        : rolePrices.getForRole(roleForPriceLookup);
 
       // Obtener precios efectivos (maneja caso especial de diario)
       const effectivePr = getEffectiveRolePrices(pr, projectMode, refuerzoSet, keyNoPR, rolePrices, baseRoleLabel);

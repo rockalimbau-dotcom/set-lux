@@ -45,8 +45,16 @@ function CondicionesSemanal({ project, onChange = () => {}, onRegisterExport, re
     addRole,
     removeRole,
     roleToDelete,
-    setRoleToDelete,
+    setRoleToDelete: setRoleToDeleteInternal,
   } = useSemanalHandlers({ model, setModel });
+
+  const setRoleToDelete = (sectionKey: 'base' | 'prelight' | 'pickup', role: string | null) => {
+    if (role) {
+      setRoleToDeleteInternal({ sectionKey, role });
+    } else {
+      setRoleToDeleteInternal(null);
+    }
+  };
 
   const roles = model.roles || PRICE_ROLES;
 
@@ -69,6 +77,7 @@ function CondicionesSemanal({ project, onChange = () => {}, onRegisterExport, re
 
       <PricesTable
         model={model}
+        setModel={setModel}
         roles={roles}
         handlePriceChange={handlePriceChange}
         translateHeader={translateHeader}
@@ -86,11 +95,12 @@ function CondicionesSemanal({ project, onChange = () => {}, onRegisterExport, re
 
       {roleToDelete && typeof document !== 'undefined' && createPortal(
         <DeleteRoleConfirmModal
-          roleName={roleToDelete}
-          onClose={() => setRoleToDelete(null)}
+          roleName={roleToDelete.role}
+          onClose={() => setRoleToDelete(roleToDelete.sectionKey, null)}
           onConfirm={() => {
             if (roleToDelete) {
-              removeRole(roleToDelete);
+              removeRole(roleToDelete.sectionKey, roleToDelete.role);
+              setRoleToDelete(roleToDelete.sectionKey, null);
             }
           }}
         />,

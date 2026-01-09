@@ -13,12 +13,13 @@ interface UseDiarioHandlersProps {
  * Hook to manage diario handlers (prices, roles, etc.)
  */
 export function useDiarioHandlers({ model, setModel }: UseDiarioHandlersProps) {
-  const [roleToDelete, setRoleToDelete] = useState<string | null>(null);
+  const [roleToDelete, setRoleToDelete] = useState<{ sectionKey: 'base' | 'prelight' | 'pickup'; role: string } | null>(null);
 
-  const setPrice = (role: string, header: string, value: string) =>
+  const setPrice = (sectionKey: 'base' | 'prelight' | 'pickup', role: string, header: string, value: string) =>
     setModel((m: AnyRecord) => {
-      const next: AnyRecord = { ...m, prices: { ...(m.prices || {}) } };
-      next.prices[role] = { ...(next.prices[role] || {}), [header]: value };
+      const priceKey = sectionKey === 'base' ? 'prices' : sectionKey === 'prelight' ? 'pricesPrelight' : 'pricesPickup';
+      const next: AnyRecord = { ...m, [priceKey]: { ...(m[priceKey] || {}) } };
+      next[priceKey][role] = { ...(next[priceKey][role] || {}), [header]: value };
       return next;
     });
 
@@ -68,21 +69,33 @@ export function useDiarioHandlers({ model, setModel }: UseDiarioHandlersProps) {
     });
   };
 
-  const removeRole = (role: string) => {
+  const removeRole = (sectionKey: 'base' | 'prelight' | 'pickup', role: string) => {
     setModel((m: AnyRecord) => {
-      const roles = m.roles || PRICE_ROLES_DIARIO;
-      const nextRoles = roles.filter((r: string) => r !== role);
-      const nextPrices = { ...m.prices };
-      delete nextPrices[role];
-      return { ...m, roles: nextRoles, prices: nextPrices };
+      if (sectionKey === 'base') {
+        const roles = m.roles || PRICE_ROLES_DIARIO;
+        const nextRoles = roles.filter((r: string) => r !== role);
+        const nextPrices = { ...m.prices };
+        delete nextPrices[role];
+        return { ...m, roles: nextRoles, prices: nextPrices };
+      } else {
+        const priceKey = sectionKey === 'prelight' ? 'pricesPrelight' : 'pricesPickup';
+        const next = { ...m, [priceKey]: { ...(m[priceKey] || {}) } };
+        delete next[priceKey][role];
+        // Si no quedan roles en esta sección, eliminar la sección
+        if (Object.keys(next[priceKey]).length === 0) {
+          delete next[priceKey];
+        }
+        return next;
+      }
     });
   };
 
-  const handlePriceChange = (role: string, header: string, value: string) => {
+  const handlePriceChange = (sectionKey: 'base' | 'prelight' | 'pickup', role: string, header: string, value: string) => {
     if (header === 'Precio jornada') {
       setModel((m: AnyRecord) => {
-        const next: AnyRecord = { ...m, prices: { ...(m.prices || {}) } };
-        const row: AnyRecord = { ...(next.prices[role] || {}) };
+        const priceKey = sectionKey === 'base' ? 'prices' : sectionKey === 'prelight' ? 'pricesPrelight' : 'pricesPickup';
+        const next: AnyRecord = { ...m, [priceKey]: { ...(m[priceKey] || {}) } };
+        const row: AnyRecord = { ...(next[priceKey][role] || {}) };
         row['Precio jornada'] = value;
 
         if (value == null || String(value).trim() === '') {
@@ -93,11 +106,11 @@ export function useDiarioHandlers({ model, setModel }: UseDiarioHandlersProps) {
           row['Precio Día extra/Festivo'] = derived['Precio Día extra/Festivo'];
           row['Travel day'] = derived['Travel day'];
         }
-        next.prices[role] = row;
+        next[priceKey][role] = row;
         return next;
       });
     } else {
-      setPrice(role, header, value);
+      setPrice(sectionKey, role, header, value);
     }
   };
 

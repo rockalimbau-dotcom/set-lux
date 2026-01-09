@@ -19,7 +19,37 @@ export function useMensualTranslations() {
   };
 
   // Función helper para traducir nombres de roles
-  const translateRoleName = (roleName: string): string => {
+  const translateRoleName = (roleName: string, sectionKey?: 'base' | 'prelight' | 'pickup'): string => {
+    // Si el nombre del rol empieza con "REF" seguido de un código (REFG, REFBB, etc.), es un refuerzo
+    if (roleName.startsWith('REF') && roleName.length > 3) {
+      // Extraer el código del rol base (G, BB, E, etc.)
+      const baseRoleCode = roleName.substring(3);
+      const roleNameToCode: Record<string, string> = {
+        'G': 'G',
+        'BB': 'BB',
+        'E': 'E',
+        'AUX': 'AUX',
+        'M': 'M',
+        'TM': 'TM',
+        'FB': 'FB',
+      };
+      const code = roleNameToCode[baseRoleCode] || baseRoleCode;
+      const translationKey = `team.roles.${code}`;
+      const baseLabel = t(translationKey) !== translationKey ? t(translationKey) : baseRoleCode;
+      
+      // Añadir "Refuerzo" antes del nombre del rol base
+      let refuerzoLabel = `Refuerzo ${baseLabel}`;
+      
+      // Añadir sufijo según la sección
+      if (sectionKey === 'prelight') {
+        refuerzoLabel += ' Prelight';
+      } else if (sectionKey === 'pickup') {
+        refuerzoLabel += ' Recogida';
+      }
+      
+      return refuerzoLabel;
+    }
+    
     // Mapeo de nombres de roles en español a códigos
     const roleNameToCode: Record<string, string> = {
       'Gaffer': 'G',
@@ -37,7 +67,16 @@ export function useMensualTranslations() {
       const translationKey = `team.roles.${roleCode}`;
       const translated = t(translationKey);
       // Si la traducción existe (no es la clave misma), devolverla; si no, devolver el nombre original
-      return translated !== translationKey ? translated : roleName;
+      let result = translated !== translationKey ? translated : roleName;
+      
+      // Añadir sufijo según la sección
+      if (sectionKey === 'prelight') {
+        result += ' Prelight';
+      } else if (sectionKey === 'pickup') {
+        result += ' Recogida';
+      }
+      
+      return result;
     }
     return roleName;
   };

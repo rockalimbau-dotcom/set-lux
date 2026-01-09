@@ -53,6 +53,14 @@ function CondicionesPublicidad({
     roleToDelete,
     setRoleToDelete,
   } = useDiarioHandlers({ model, setModel });
+  
+  const handleSetRoleToDelete = (sectionKey: 'base' | 'prelight' | 'pickup', role: string | null) => {
+    if (role === null) {
+      setRoleToDelete(null);
+    } else {
+      setRoleToDelete({ sectionKey, role });
+    }
+  };
 
   const roles = model.roles || PRICE_ROLES_DIARIO;
 
@@ -75,11 +83,12 @@ function CondicionesPublicidad({
 
       <PricesTable
         model={model}
+        setModel={setModel}
         roles={roles}
         handlePriceChange={handlePriceChange}
         translateHeader={translateHeader}
         translateRoleName={translateRoleName}
-        setRoleToDelete={setRoleToDelete}
+        setRoleToDelete={handleSetRoleToDelete}
         addRole={addRole}
         readOnly={readOnly}
       />
@@ -92,11 +101,12 @@ function CondicionesPublicidad({
 
       {roleToDelete && typeof document !== 'undefined' && createPortal(
         <DeleteRoleConfirmModal
-          roleName={roleToDelete}
+          roleName={roleToDelete.role}
           onClose={() => setRoleToDelete(null)}
           onConfirm={() => {
             if (roleToDelete) {
-              removeRole(roleToDelete);
+              removeRole(roleToDelete.sectionKey, roleToDelete.role);
+              setRoleToDelete(null);
             }
           }}
         />,

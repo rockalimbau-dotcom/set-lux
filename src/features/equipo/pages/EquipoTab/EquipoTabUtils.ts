@@ -72,17 +72,25 @@ export function displayRolesForGroup(roles: AnyRecord[], groupKey: string): AnyR
 /**
  * Translate role label
  */
-export function translateRoleLabel(roleCode: string, t: (key: string) => string): string {
-  // Si el rol tiene prefijo "REF" (refuerzo), traducir solo el rol base sin prefijo "Refuerzo"
+export function translateRoleLabel(roleCode: string, t: (key: string) => string, groupKey?: string): string {
+  // Si el rol tiene prefijo "REF" (refuerzo), traducir el rol base y añadir "Refuerzo" antes
   if (roleCode.startsWith('REF') && roleCode.length > 3) {
     const baseCode = roleCode.substring(3);
     const baseTranslationKey = `team.roles.${baseCode}`;
     const baseTranslated = t(baseTranslationKey);
-    return baseTranslated !== baseTranslationKey ? baseTranslated : baseCode;
+    const baseLabel = baseTranslated !== baseTranslationKey ? baseTranslated : baseCode;
+    // Añadir "Refuerzo" antes del nombre del rol base
+    const refuerzoLabel = `Refuerzo ${baseLabel}`;
+    // Añadir sufijo de grupo si es prelight o pickup
+    const sufTitle = roleTitleSuffix(groupKey || '');
+    return refuerzoLabel + sufTitle;
   }
   const translationKey = `team.roles.${roleCode}`;
   const translated = t(translationKey);
-  return translated !== translationKey ? translated : '';
+  const label = translated !== translationKey ? translated : '';
+  // Añadir sufijo de grupo si es prelight o pickup
+  const sufTitle = roleTitleSuffix(groupKey || '');
+  return label + sufTitle;
 }
 
 /**

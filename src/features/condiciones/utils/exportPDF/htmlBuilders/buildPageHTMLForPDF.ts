@@ -17,8 +17,35 @@ export function buildCondicionesPageHTMLForPDF(
   includeHeader: boolean = true
 ): string {
   const headerTitle = i18n.t('conditions.departmentTitle');
-  const rolesConPrecios = filterRolesWithPrices(PRICE_ROLES, PRICE_HEADERS, model);
-  const table = includeHeader ? generatePriceTableHTML(rolesConPrecios, PRICE_HEADERS, model) : '';
+  
+  // Tabla base
+  const rolesConPreciosBase = filterRolesWithPrices(PRICE_ROLES, PRICE_HEADERS, model, 'base');
+  const tableBase = includeHeader && rolesConPreciosBase.length > 0 
+    ? generatePriceTableHTML(rolesConPreciosBase, PRICE_HEADERS, model, 'base', i18n.t('conditions.baseTeam'))
+    : '';
+  
+  // Tabla prelight (si existe y tiene roles)
+  const hasPrelight = model.pricesPrelight !== undefined;
+  const rolesConPreciosPrelight = hasPrelight 
+    ? filterRolesWithPrices(PRICE_ROLES, PRICE_HEADERS, model, 'prelight')
+    : [];
+  const tablePrelight = includeHeader && rolesConPreciosPrelight.length > 0
+    ? generatePriceTableHTML(rolesConPreciosPrelight, PRICE_HEADERS, model, 'prelight', i18n.t('conditions.prelightTeam'))
+    : '';
+  
+  // Tabla pickup (si existe y tiene roles)
+  const hasPickup = model.pricesPickup !== undefined;
+  const rolesConPreciosPickup = hasPickup
+    ? filterRolesWithPrices(PRICE_ROLES, PRICE_HEADERS, model, 'pickup')
+    : [];
+  const tablePickup = includeHeader && rolesConPreciosPickup.length > 0
+    ? generatePriceTableHTML(rolesConPreciosPickup, PRICE_HEADERS, model, 'pickup', i18n.t('conditions.pickupTeam'))
+    : '';
+  
+  // Combinar todas las tablas
+  const allTables = [tableBase, tablePrelight, tablePickup].filter(t => t).join('');
+  const tablesHTML = allTables ? `<div class="table-container">${allTables}</div>` : '';
+  
   const blocks = generateBlocksHTML(pageBlocks);
   const infoPanel = includeHeader ? generateInfoPanel(project) : '';
   const footer = generateFooter();
@@ -39,9 +66,7 @@ export function buildCondicionesPageHTMLForPDF(
     </div>
     <div class="content">
       ${includeHeader ? `${infoPanel}
-      <div class="table-container">
-        ${table}
-      </div>` : ''}
+      ${tablesHTML}` : ''}
       ${blocks}
     </div>
     ${footer}

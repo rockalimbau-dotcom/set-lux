@@ -9,8 +9,7 @@ import {
 } from '../translationHelpers';
 import { renderWithParams, restoreStrongTags, markdownToHtml } from '../../condiciones/shared';
 import { buildCondicionesPageHTMLForPDF } from './htmlBuilders';
-import { calculateBlocksPerPage } from './paginationHelpers';
-import { getConditionsLabel } from './helpers';
+import { getConditionsLabel, filterRolesWithPrices } from './helpers';
 
 /**
  * Get translation helper
@@ -92,16 +91,93 @@ export async function exportCondicionesToPDF(
     ].filter(([_, content]) => content.trim()); // Solo bloques con contenido
 
     const totalBlocks = blocks.length;
-    const blocksPerPage = calculateBlocksPerPage(totalBlocks);
+    const maxPageHeight = 1123; // Altura total de la página en píxeles (297mm)
     
-    console.log(`🔧 Condiciones PDF: Total blocks: ${totalBlocks}, Blocks per page: ${blocksPerPage}`);
+    console.log(`🔧 Condiciones PDF: Total blocks: ${totalBlocks}`);
     
-    // Procesar en páginas
-    for (let i = 0; i < totalBlocks; i += blocksPerPage) {
-      const pageBlocks = blocks.slice(i, i + blocksPerPage) as [string, string][];
-      const pageNumber = Math.floor(i / blocksPerPage) + 1;
+    // Procesar en páginas con detección dinámica de altura
+    let currentBlockIndex = 0;
+    let pageNumber = 0;
+    let tablesIncluded = false; // Track si las tablas ya se incluyeron
+    
+    while (currentBlockIndex < totalBlocks || !tablesIncluded) {
+      pageNumber++;
+      const includeTables = !tablesIncluded;
       
-      console.log(`🔧 Condiciones PDF: Creating page ${pageNumber} with ${pageBlocks.length} blocks:`, pageBlocks.map(([title]) => title));
+      // Intentar añadir bloques hasta que no quepan más
+      const pageBlocks: [string, string][] = [];
+      
+      // Añadir bloques mientras quepan
+      while (currentBlockIndex < totalBlocks) {
+        const testBlocks = [...pageBlocks, blocks[currentBlockIndex]];
+        const testHTML = buildCondicionesPageHTMLForPDF(
+          project,
+          which,
+          model,
+          PRICE_HEADERS,
+          PRICE_ROLES,
+          testBlocks as [string, string][],
+          includeTables
+        );
+        
+        // Crear contenedor temporal para medir altura
+        const testContainer = document.createElement('div');
+        testContainer.innerHTML = testHTML;
+        testContainer.style.position = 'absolute';
+        testContainer.style.left = '-9999px';
+        testContainer.style.top = '0';
+        testContainer.style.width = '794px';
+        testContainer.style.height = `${maxPageHeight}px`; // Altura fija de página
+        testContainer.style.backgroundColor = 'white';
+        testContainer.style.overflow = 'hidden'; // Hidden para detectar overflow
+        document.body.appendChild(testContainer);
+        
+        // Esperar renderizado
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        // Medir altura del contenido
+        const contentDiv = testContainer.querySelector('.content') as HTMLElement;
+        const headerDiv = testContainer.querySelector('.header') as HTMLElement;
+        const footerDiv = testContainer.querySelector('.footer') as HTMLElement;
+        
+        // Verificar si hay overflow: si scrollHeight > offsetHeight, el contenido no cabe
+        const contentScrollHeight = contentDiv ? contentDiv.scrollHeight : 0;
+        const contentOffsetHeight = contentDiv ? contentDiv.offsetHeight : 0;
+        const hasOverflow = contentScrollHeight > contentOffsetHeight;
+        
+        // Calcular altura total
+        const headerHeight = headerDiv ? headerDiv.offsetHeight : 0;
+        const footerHeight = footerDiv ? footerDiv.offsetHeight : 0;
+        const totalContentHeight = headerHeight + contentScrollHeight + footerHeight;
+        
+        document.body.removeChild(testContainer);
+        
+        // Si el contenido medido cabe en la página (sin overflow), añadir el bloque
+        // Permitir un pequeño margen de error (10px)
+        // Si es el primer bloque y no cabe, incluirlo de todas formas (página propia)
+        const fitsInPage = !hasOverflow && totalContentHeight <= maxPageHeight + 10;
+        
+        if (fitsInPage || pageBlocks.length === 0) {
+          pageBlocks.push(blocks[currentBlockIndex]);
+          currentBlockIndex++;
+        } else {
+          // No cabe, parar y usar los bloques que ya tenemos
+          break;
+        }
+      }
+      
+      // Si aún no incluimos las tablas y no hay más bloques, incluirlas ahora
+      if (!tablesIncluded && currentBlockIndex >= totalBlocks) {
+        // Las tablas irán en esta página o en la siguiente si no caben con los bloques actuales
+        tablesIncluded = true;
+      }
+      
+      // Si no hay bloques y ya incluimos las tablas, salir
+      if (pageBlocks.length === 0 && tablesIncluded) {
+        break;
+      }
+      
+      console.log(`🔧 Condiciones PDF: Creating page ${pageNumber} with ${pageBlocks.length} blocks, tables: ${includeTables}`);
       
       // Crear HTML para esta página
       const pageHTML = buildCondicionesPageHTMLForPDF(
@@ -111,8 +187,13 @@ export async function exportCondicionesToPDF(
         PRICE_HEADERS, 
         PRICE_ROLES, 
         pageBlocks,
-        i === 0 // Primera página incluye header y tabla
+        includeTables
       );
+      
+      // Si incluimos las tablas en esta página, marcarlas como incluidas
+      if (includeTables) {
+        tablesIncluded = true;
+      }
       
       // Verificar que el HTML contiene los tags strong
       if (pageHTML.includes('<strong>')) {
@@ -214,7 +295,7 @@ export async function exportCondicionesToPDF(
 
       const imgData = canvas.toDataURL('image/png');
       
-      if (i > 0) {
+      if (pageNumber > 1) {
         pdf.addPage();
       }
       
