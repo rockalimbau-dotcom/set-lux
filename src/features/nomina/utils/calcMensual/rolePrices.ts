@@ -87,21 +87,42 @@ export function makeRolePrices(project: any) {
     const divTravel = num(p.divTravel) || 3; // Mensual usa divisor 3 en lugar de 2
 
     let jornada, travelDay, horaExtra, holidayDay;
-    if (normalized === 'REF') {
-      const refFromBase = getNumField(baseRow, ['Precio refuerzo', 'Precio Refuerzo', 'Refuerzo']);
-      const baseJornada = getNumField(baseRow, ['Precio jornada', 'Precio Jornada', 'Jornada', 'Precio dia', 'Precio día']);
+    if (normalized === 'REF' || (normalized.startsWith('REF') && normalized.length > 3)) {
+      // Si es REF o REF + rol base (REFG, REFBB, etc.), buscar "Precio refuerzo" en la fila correspondiente
+      let targetRow = baseRow;
+      if (normalized.startsWith('REF') && normalized.length > 3) {
+        // Extraer el rol base (G, BB, E, etc.)
+        const baseRole = normalized.substring(3);
+        const baseRolePicked = findPriceRow([baseRole]);
+        targetRow = baseRolePicked.row;
+        // Si no encontramos la fila del rol base, usar baseRow como fallback
+        if (!targetRow || Object.keys(targetRow).length === 0) {
+          targetRow = baseRow;
+        }
+      } else if (normalized === 'REF' && baseNorm && baseNorm !== 'REF') {
+        // Si es REF con baseRoleCode (ej: getForRole('REF', 'GAFFER')), usar la fila del rol base
+        const baseRolePicked = findPriceRow([baseNorm]);
+        targetRow = baseRolePicked.row;
+        // Si no encontramos la fila del rol base, usar baseRow como fallback
+        if (!targetRow || Object.keys(targetRow).length === 0) {
+          targetRow = baseRow;
+        }
+      }
+      
+      const refFromTarget = getNumField(targetRow, ['Precio refuerzo', 'Precio Refuerzo', 'Refuerzo']);
+      const targetJornada = getNumField(targetRow, ['Precio jornada', 'Precio Jornada', 'Jornada', 'Precio dia', 'Precio día']);
       const elecRef = getNumField(elecRow, ['Precio refuerzo', 'Precio Refuerzo', 'Refuerzo']);
       const elecJor = getNumField(elecRow, ['Precio jornada', 'Precio Jornada', 'Jornada', 'Precio dia', 'Precio día']);
-      jornada = refFromBase || baseJornada || elecRef || elecJor || 0;
-      const travelBase = getNumField(baseRow, ['Travel day', 'Travel Day', 'Travel', 'Día de viaje', 'Dia de viaje', 'Día travel', 'Dia travel', 'TD']);
+      jornada = refFromTarget || targetJornada || elecRef || elecJor || 0;
+      const travelBase = getNumField(targetRow, ['Travel day', 'Travel Day', 'Travel', 'Día de viaje', 'Dia de viaje', 'Día travel', 'Dia travel', 'TD']);
       travelDay = travelBase || (jornada ? jornada / divTravel : 0);
       horaExtra =
         getNumField(elecRow, ['Horas extras', 'Horas Extras', 'Hora extra', 'Horas extra', 'HE', 'Hora Extra']) ||
-        getNumField(baseRow, ['Horas extras', 'Horas Extras', 'Hora extra', 'Horas extra', 'HE', 'Hora Extra']) ||
+        getNumField(targetRow, ['Horas extras', 'Horas Extras', 'Hora extra', 'Horas extra', 'HE', 'Hora Extra']) ||
         0;
       holidayDay = 
         getNumField(elecRow, ['Precio Día extra/Festivo', 'Precio Día extra/festivo', 'Día extra/Festivo', 'Día festivo', 'Festivo']) ||
-        getNumField(baseRow, ['Precio Día extra/Festivo', 'Precio Día extra/festivo', 'Día extra/Festivo', 'Día festivo', 'Festivo']) ||
+        getNumField(targetRow, ['Precio Día extra/Festivo', 'Precio Día extra/festivo', 'Día extra/Festivo', 'Día festivo', 'Festivo']) ||
         0;
     } else {
       jornada = getNumField(row, ['Precio jornada', 'Precio Jornada', 'Jornada', 'Precio dia', 'Precio día']) || 0;

@@ -126,9 +126,13 @@ export function aggregateReports(
   }
 
   return Array.from(totals.values()).sort(
-    (a, b) =>
-      (ROLE_ORDER[a.role] ?? 99) - (ROLE_ORDER[b.role] ?? 99) ||
-      a.name.localeCompare(b.name, 'es')
+    (a, b) => {
+      // Si el rol empieza con REF (REFG, REFBB, etc.), usar orden 7 (igual que REF)
+      const roleA = a.role && a.role.startsWith('REF') && a.role.length > 3 ? 'REF' : a.role;
+      const roleB = b.role && b.role.startsWith('REF') && b.role.length > 3 ? 'REF' : b.role;
+      return (ROLE_ORDER[roleA] ?? 99) - (ROLE_ORDER[roleB] ?? 99) ||
+        a.name.localeCompare(b.name, 'es');
+    }
   );
 }
 

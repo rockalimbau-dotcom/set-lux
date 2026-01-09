@@ -95,7 +95,7 @@ export function PersonRowHeader({
               {getRoleBadgeCode(visualRole || '', i18n.language) || '—'}
             </span>
             <span className='text-[9px] sm:text-[10px] md:text-xs text-zinc-200'>{name}</span>
-            {visualRole === 'REF' && block && (
+            {(visualRole === 'REF' || (visualRole && visualRole.startsWith('REF') && visualRole.length > 3)) && block && (
               <span className='text-[8px] sm:text-[9px] md:text-[10px] text-zinc-400 uppercase'>
                 · {block}
               </span>

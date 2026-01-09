@@ -103,7 +103,8 @@ export function determineRoleForCheck(
   role: string,
   rowBlock: 'base' | 'pre' | 'pick'
 ): string {
-  if (role === 'REF') return 'REF';
+  // Si el rol es REF o empieza con REF (REFG, REFBB, etc.), devolver 'REF'
+  if (role === 'REF' || (role && role.startsWith('REF') && role.length > 3)) return 'REF';
   if (rowBlock === 'pre') return `${role}P`;
   if (rowBlock === 'pick') return `${role}R`;
   return role;

@@ -17,6 +17,10 @@ export function storageKeyFor(roleCode: string, name: string, refuerzoSet: Set<s
  * Get visible role for a role code and name
  */
 export function visibleRoleFor(roleCode: string, name: string, refuerzoSet: Set<string>): string {
+  // Si el rol empieza con "REF" (REFG, REFBB, etc.), tratarlo como refuerzo
+  if (roleCode && roleCode.startsWith('REF') && roleCode.length > 3) {
+    return 'REF';
+  }
   const base = stripPR(roleCode || '');
   const keyNoPR = `${base}__${name || ''}`;
   if (refuerzoSet.has(keyNoPR)) return 'REF';

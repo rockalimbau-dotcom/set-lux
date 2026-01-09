@@ -91,8 +91,10 @@ export function AddPrelightDropdown({
           theme === 'light' ? 'bg-white' : 'bg-neutral-panel'
         }`}>
           {options.map((p: AnyRecord, ii: number) => {
+            // Si el rol es REF o empieza con REF (REFG, REFBB, etc.), no añadir sufijo P
+            const isRefRole = p.role === 'REF' || (p.role && p.role.startsWith('REF') && p.role.length > 3);
             const displayRole =
-              p.source === 'pre' && p.role !== 'REF'
+              p.source === 'pre' && !isRefRole
                 ? `${p.role}P`
                 : p.role;
             const optionValue = `${p.role}::${p.name}::pre`;

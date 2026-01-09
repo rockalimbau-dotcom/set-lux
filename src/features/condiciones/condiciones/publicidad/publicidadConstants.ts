@@ -14,5 +14,6 @@ export const PRICE_ROLES_DIARIO = [
   'Auxiliar',
   'Técnico de mesa',
   'Finger boy',
+  'Rigger',
 ];
 

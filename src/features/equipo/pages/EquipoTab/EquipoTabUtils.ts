@@ -6,8 +6,11 @@ import { roleRank, getRoleBadgeCode } from '@shared/constants/roles';
  */
 export const sortTeam = (arr: AnyRecord[]): AnyRecord[] =>
   [...arr].sort((a, b) => {
-    const ra = roleRank(a.role);
-    const rb = roleRank(b.role);
+    // Si el rol tiene prefijo "REF" (refuerzo), usar el rank del rol base
+    const roleA = a.role?.startsWith('REF') && a.role.length > 3 ? a.role.substring(3) : a.role;
+    const roleB = b.role?.startsWith('REF') && b.role.length > 3 ? b.role.substring(3) : b.role;
+    const ra = roleRank(roleA);
+    const rb = roleRank(roleB);
     if (ra !== rb) return ra - rb;
     const sa = a.seq ?? 0;
     const sb = b.seq ?? 0;
@@ -46,6 +49,12 @@ function roleTitleSuffix(groupKey: string): string {
  * Display badge with group suffix
  */
 export function displayBadge(roleCode: string, groupKey: string, language?: string): string {
+  // Si el rol tiene prefijo "REF" (refuerzo), mostrar "REF" + badge del rol base
+  if (roleCode.startsWith('REF') && roleCode.length > 3) {
+    const baseCode = roleCode.substring(3);
+    const baseBadge = getRoleBadgeCode(baseCode, language);
+    return `REF${baseBadge}`;
+  }
   const badgeCode = getRoleBadgeCode(roleCode, language);
   const suf = roleSuffixForGroup(groupKey);
   return suf ? `${badgeCode}${suf}` : badgeCode;
@@ -64,6 +73,13 @@ export function displayRolesForGroup(roles: AnyRecord[], groupKey: string): AnyR
  * Translate role label
  */
 export function translateRoleLabel(roleCode: string, t: (key: string) => string): string {
+  // Si el rol tiene prefijo "REF" (refuerzo), traducir solo el rol base sin prefijo "Refuerzo"
+  if (roleCode.startsWith('REF') && roleCode.length > 3) {
+    const baseCode = roleCode.substring(3);
+    const baseTranslationKey = `team.roles.${baseCode}`;
+    const baseTranslated = t(baseTranslationKey);
+    return baseTranslated !== baseTranslationKey ? baseTranslated : baseCode;
+  }
   const translationKey = `team.roles.${roleCode}`;
   const translated = t(translationKey);
   return translated !== translationKey ? translated : '';
@@ -79,6 +95,22 @@ export function normalizeInitial(initialTeam: AnyRecord, currentUser: AnyRecord)
   ;['base', 'reinforcements', 'prelight', 'pickup'].forEach((k: string) => {
     model[k] = (model[k] || []).map((r: AnyRecord) => ({ ...r, seq: r.seq ?? seq++ }));
   });
+  
+  // Filtrar REF del equipo base, refuerzos, prelight y pickup - el rol 'REF' ya no se usa
+  if (model.base && Array.isArray(model.base)) {
+    model.base = model.base.filter((r: AnyRecord) => r.role !== 'REF');
+  }
+  // También eliminar cualquier rol 'REF' existente en refuerzos, prelight y pickup
+  if (model.reinforcements && Array.isArray(model.reinforcements)) {
+    model.reinforcements = model.reinforcements.filter((r: AnyRecord) => r.role !== 'REF');
+  }
+  if (model.prelight && Array.isArray(model.prelight)) {
+    model.prelight = model.prelight.filter((r: AnyRecord) => r.role !== 'REF');
+  }
+  if (model.pickup && Array.isArray(model.pickup)) {
+    model.pickup = model.pickup.filter((r: AnyRecord) => r.role !== 'REF');
+  }
+  
   const isBoss = currentUser?.role === 'G' || currentUser?.role === 'BB';
   if ((!model.base || model.base.length === 0) && isBoss && currentUser?.name) {
     model.base = [

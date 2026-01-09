@@ -92,7 +92,9 @@ export function useEnrichedRows({
       const keyNoPR = `${stripPR(r.role)}__${r.name}`;
       const baseRoleCode = stripPR(r.role);
       const baseRoleLabel = roleLabelFromCode(baseRoleCode);
-      const pr = refuerzoSet.has(keyNoPR)
+      // Si el rol empieza con "REF" (REFG, REFBB, etc.) o está en refuerzoSet, usar lógica de refuerzo
+      const isRefuerzo = (r.role && r.role.startsWith('REF') && r.role.length > 3) || refuerzoSet.has(keyNoPR);
+      const pr = isRefuerzo
         ? rolePrices.getForRole('REF', baseRoleLabel)
         : rolePrices.getForRole(baseRoleLabel);
 

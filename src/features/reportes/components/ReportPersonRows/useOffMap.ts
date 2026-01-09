@@ -37,7 +37,7 @@ export function useOffMap({
             visualRole,
             name,
             findWeekAndDay,
-            visualRole === 'REF' ? (block as any) || 'base' : undefined
+            (visualRole === 'REF' || (visualRole && visualRole.startsWith('REF') && visualRole.length > 3)) ? (block as any) || 'base' : undefined
           );
           const key = `${visualRole}_${name}_${fecha}_${block}`;
           map.set(key, !workedThisBlock);

@@ -91,8 +91,10 @@ export function AddPickupDropdown({
           theme === 'light' ? 'bg-white' : 'bg-neutral-panel'
         }`}>
           {options.map((p: AnyRecord, ii: number) => {
+            // Si el rol es REF o empieza con REF (REFG, REFBB, etc.), no añadir sufijo R
+            const isRefRole = p.role === 'REF' || (p.role && p.role.startsWith('REF') && p.role.length > 3);
             const displayRole =
-              p.source === 'pick' && p.role !== 'REF'
+              p.source === 'pick' && !isRefRole
                 ? `${p.role}R`
                 : p.role;
             const optionValue = `${p.role}::${p.name}::pick`;

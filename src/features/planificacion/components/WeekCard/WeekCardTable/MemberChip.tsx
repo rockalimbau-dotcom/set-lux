@@ -44,7 +44,9 @@ export function MemberChip({ role, name, source }: MemberChipProps) {
   const roleFgColor = theme === 'light' ? 'white' : '#000000'; // Blanco en claro, negro en oscuro
 
   let label: string = getRoleBadgeCode(role || '', i18n.language);
-  if (role !== 'REF') {
+  // Si el rol es REF o empieza con REF (REFG, REFBB, etc.), no añadir sufijo P/R
+  const isRefRole = role === 'REF' || (role && role.startsWith('REF') && role.length > 3);
+  if (!isRefRole) {
     if (source === 'pre') label = `${label}P`;
     if (source === 'pick') label = `${label}R`;
   }

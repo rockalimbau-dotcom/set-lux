@@ -86,7 +86,12 @@ export function generateWeekTable({
       key: getTranslation('planning.team', 'Equipo'), 
       getter: (i: number) => {
         const team = (week.days?.[i]?.team || [])
-          .map(m => esc(`${m.role}${m.source === 'pre' ? 'P' : m.source === 'pick' ? 'R' : ''} ${m.name || ''}`.trim()))
+          .map(m => {
+            // Si el rol es REF o empieza con REF (REFG, REFBB, etc.), no añadir sufijo P/R
+            const isRefRole = m.role === 'REF' || (m.role && m.role.startsWith('REF') && m.role.length > 3);
+            const suffix = isRefRole ? '' : (m.source === 'pre' ? 'P' : m.source === 'pick' ? 'R' : '');
+            return esc(`${m.role}${suffix} ${m.name || ''}`.trim());
+          })
           .join('\n');
         return team;
       }
@@ -95,7 +100,12 @@ export function generateWeekTable({
       key: getTranslation('planning.prelight', 'Prelight'), 
       getter: (i: number) => {
         const lst = (week.days?.[i]?.prelight || [])
-          .map(m => esc(`${m.role}${m.source === 'pre' ? 'P' : ''} ${m.name || ''}`.trim()))
+          .map(m => {
+            // Si el rol es REF o empieza con REF (REFG, REFBB, etc.), no añadir sufijo P
+            const isRefRole = m.role === 'REF' || (m.role && m.role.startsWith('REF') && m.role.length > 3);
+            const suffix = isRefRole ? '' : (m.source === 'pre' ? 'P' : '');
+            return esc(`${m.role}${suffix} ${m.name || ''}`.trim());
+          })
           .join('\n');
         const hs = [week.days?.[i]?.prelightStart, week.days?.[i]?.prelightEnd]
           .filter(Boolean)
@@ -113,7 +123,12 @@ export function generateWeekTable({
       key: getTranslation('planning.pickup', 'Recogida'), 
       getter: (i: number) => {
         const lst = (week.days?.[i]?.pickup || [])
-          .map(m => esc(`${m.role}${m.source === 'pick' ? 'R' : ''} ${m.name || ''}`.trim()))
+          .map(m => {
+            // Si el rol es REF o empieza con REF (REFG, REFBB, etc.), no añadir sufijo R
+            const isRefRole = m.role === 'REF' || (m.role && m.role.startsWith('REF') && m.role.length > 3);
+            const suffix = isRefRole ? '' : (m.source === 'pick' ? 'R' : '');
+            return esc(`${m.role}${suffix} ${m.name || ''}`.trim());
+          })
           .join('\n');
         const hs = [week.days?.[i]?.pickupStart, week.days?.[i]?.pickupEnd]
           .filter(Boolean)

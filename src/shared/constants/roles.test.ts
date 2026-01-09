@@ -21,17 +21,18 @@ describe('roles', () => {
         'AUX',
         'M',
         'REF',
+        'RIG',
       ]);
     });
 
-    it('has 8 role codes', () => {
-      expect(ROLE_ORDER).toHaveLength(8);
+    it('has 9 role codes', () => {
+      expect(ROLE_ORDER).toHaveLength(9);
     });
   });
 
   describe('ROLES', () => {
     it('contains all roles with correct structure', () => {
-      expect(ROLES).toHaveLength(8);
+      expect(ROLES).toHaveLength(9);
 
       ROLES.forEach(role => {
         expect(role).toHaveProperty('code');
@@ -43,7 +44,7 @@ describe('roles', () => {
 
     it('has correct role codes', () => {
       const codes = ROLES.map(role => role.code);
-      expect(codes).toEqual(['G', 'BB', 'E', 'TM', 'FB', 'AUX', 'M', 'REF']);
+      expect(codes).toEqual(['G', 'BB', 'E', 'TM', 'FB', 'AUX', 'M', 'REF', 'RIG']);
     });
 
     it('has correct role labels', () => {
@@ -57,6 +58,7 @@ describe('roles', () => {
         'Auxiliar',
         'Meritorio',
         'Refuerzo Eléctrico',
+        'Rigger',
       ]);
     });
   });
@@ -97,6 +99,7 @@ describe('roles', () => {
       expect(roleRank('AUX')).toBe(5);
       expect(roleRank('M')).toBe(6);
       expect(roleRank('REF')).toBe(7);
+      expect(roleRank('RIG')).toBe(8);
     });
 
     it('returns 999 for invalid role codes', () => {
@@ -128,6 +131,7 @@ describe('roles', () => {
       expect(ROLE_CODE_TO_LABEL.TM).toBe('Técnico de mesa');
       expect(ROLE_CODE_TO_LABEL.FB).toBe('Finger boy');
       expect(ROLE_CODE_TO_LABEL.REF).toBe('Refuerzo');
+      expect(ROLE_CODE_TO_LABEL.RIG).toBe('Rigger');
     });
   });
 
@@ -141,6 +145,7 @@ describe('roles', () => {
       expect(roleLabelFromCode('TM')).toBe('Técnico de mesa');
       expect(roleLabelFromCode('FB')).toBe('Finger boy');
       expect(roleLabelFromCode('REF')).toBe('Refuerzo');
+      expect(roleLabelFromCode('RIG')).toBe('Rigger');
     });
 
     it('returns original code for invalid role codes', () => {

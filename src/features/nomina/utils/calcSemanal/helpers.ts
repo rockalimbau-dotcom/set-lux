@@ -131,12 +131,12 @@ export const COL_CANDIDATES = {
  */
 export const ROLE_ORDER: Record<string, number> = { 
   // EQUIPO BASE
-  G: 0, BB: 1, E: 2, TM: 3, FB: 4, AUX: 5, M: 6,
+  G: 0, BB: 1, E: 2, TM: 3, FB: 4, AUX: 5, M: 6, RIG: 7,
   // REFUERZOS
-  REF: 7,
+  REF: 8,
   // EQUIPO PRELIGHT
-  GP: 8, BBP: 9, EP: 10, TMP: 11, FBP: 12, AUXP: 13, MP: 14,
+  GP: 9, BBP: 10, EP: 11, TMP: 12, FBP: 13, AUXP: 14, MP: 15, RIGP: 16,
   // EQUIPO RECOGIDA
-  GR: 15, BBR: 16, ER: 17, TMR: 18, FBR: 19, AUXR: 20, MR: 21
+  GR: 17, BBR: 18, ER: 19, TMR: 20, FBR: 21, AUXR: 22, MR: 23, RIGR: 24
 };
 

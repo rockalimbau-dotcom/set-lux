@@ -91,47 +91,66 @@ function EquipoTab({
 
       <TeamGroup
         title={t('team.baseTeam')}
-        rows={team.base}
-        setRows={(rows: AnyRecord[]) => setTeam(prev => ({ ...prev, base: sortTeam(rows) }))}
+        rows={team.base.filter((r: AnyRecord) => r.role !== 'REF')}
+        setRows={(rows: AnyRecord[]) => {
+          // Filtrar REF del equipo base
+          const filteredRows = rows.filter((r: AnyRecord) => r.role !== 'REF');
+          setTeam(prev => ({ ...prev, base: sortTeam(filteredRows) }));
+        }}
         canEdit={canEdit}
         nextSeq={nextSeq}
-        allowedRoles={allowedRoles}
+        allowedRoles={allowedRoles.filter(r => r.code !== 'REF')}
         groupKey='base'
       />
       {showReinforcements && (
         <TeamGroup
           title={t('team.reinforcements')}
-          rows={team.reinforcements}
-          setRows={(rows: AnyRecord[]) => setTeam(prev => ({ ...prev, reinforcements: sortTeam(rows) }))}
+          rows={team.reinforcements.filter((r: AnyRecord) => r.role !== 'REF')}
+          setRows={(rows: AnyRecord[]) => {
+            // Filtrar REF de refuerzos - el rol 'REF' ya no se usa
+            const filteredRows = rows.filter((r: AnyRecord) => r.role !== 'REF');
+            setTeam(prev => ({ ...prev, reinforcements: sortTeam(filteredRows) }));
+          }}
           canEdit={canEdit}
           nextSeq={nextSeq}
-          allowedRoles={ROLES.filter(r => r.code === 'REF')}
+          allowedRoles={ROLES.filter(r => r.code !== 'AUX' && r.code !== 'M' && r.code !== 'REF').map(r => ({
+            code: `REF${r.code}`,
+            label: r.label
+          }))}
           groupKey='reinforcements'
         />
       )}
       {groupsEnabled.prelight && (
         <TeamGroup
           title={t('team.prelightTeam')}
-          rows={team.prelight}
-          setRows={(rows: AnyRecord[]) => setTeam(prev => ({ ...prev, prelight: sortTeam(rows) }))}
+          rows={team.prelight.filter((r: AnyRecord) => r.role !== 'REF')}
+          setRows={(rows: AnyRecord[]) => {
+            // Filtrar REF de prelight - el rol 'REF' ya no se usa
+            const filteredRows = rows.filter((r: AnyRecord) => r.role !== 'REF');
+            setTeam(prev => ({ ...prev, prelight: sortTeam(filteredRows) }));
+          }}
           canEdit={canEdit}
           nextSeq={nextSeq}
           removable
           onRemoveGroup={() => disableGroup('prelight')}
-          allowedRoles={allowedRoles as any}
+          allowedRoles={allowedRoles.filter(r => r.code !== 'REF') as any}
           groupKey='prelight'
         />
       )}
       {groupsEnabled.pickup && (
         <TeamGroup
           title={t('team.pickupTeam')}
-          rows={team.pickup}
-          setRows={(rows: AnyRecord[]) => setTeam(prev => ({ ...prev, pickup: sortTeam(rows) }))}
+          rows={team.pickup.filter((r: AnyRecord) => r.role !== 'REF')}
+          setRows={(rows: AnyRecord[]) => {
+            // Filtrar REF de pickup - el rol 'REF' ya no se usa
+            const filteredRows = rows.filter((r: AnyRecord) => r.role !== 'REF');
+            setTeam(prev => ({ ...prev, pickup: sortTeam(filteredRows) }));
+          }}
           canEdit={canEdit}
           nextSeq={nextSeq}
           removable
           onRemoveGroup={() => disableGroup('pickup')}
-          allowedRoles={allowedRoles as any}
+          allowedRoles={allowedRoles.filter(r => r.code !== 'REF') as any}
           groupKey='pickup'
         />
       )}

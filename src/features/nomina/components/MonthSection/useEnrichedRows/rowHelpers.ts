@@ -29,8 +29,9 @@ export function determineRoleDisplay(
   workedPre: number,
   workedPick: number
 ): string {
-  if (role === 'REF') {
-    return role;
+  // Si el rol es REF o empieza con REF (REFG, REFBB, etc.), devolver 'REF'
+  if (role === 'REF' || (role && role.startsWith('REF') && role.length > 3)) {
+    return 'REF';
   }
   if (workedPre > 0 && workedBase === 0 && workedPick === 0) {
     return `${baseRoleCode}P`;

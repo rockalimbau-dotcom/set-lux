@@ -335,7 +335,8 @@
       "FB": "Dimmer board operator",
       "AUX": "Assistant",
       "M": "Trainee",
-      "REF": "Electric reinforcement"
+      "REF": "Electric reinforcement",
+      "RIG": "Rigger"
     }
   },
   "needs": {

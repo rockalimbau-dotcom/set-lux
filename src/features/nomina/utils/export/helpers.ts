@@ -198,8 +198,9 @@ export const sortRowsByRole = (rows: any[], block: 'base' | 'pre' | 'pick') => {
     
     // Para bloques pre y pick, separar REF del resto
     if (block === 'pre' || block === 'pick') {
-      const isRefA = roleA === 'REF';
-      const isRefB = roleB === 'REF';
+      // Si el rol es REF o empieza con REF (REFG, REFBB, etc.), tratarlo como refuerzo
+      const isRefA = roleA === 'REF' || (roleA && roleA.startsWith('REF') && roleA.length > 3);
+      const isRefB = roleB === 'REF' || (roleB && roleB.startsWith('REF') && roleB.length > 3);
       
       // REF siempre al final dentro de su bloque
       if (isRefA && !isRefB) return 1;

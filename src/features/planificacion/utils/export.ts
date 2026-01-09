@@ -71,21 +71,23 @@ export function renderExportHTML(
       <tr><th>Localización</th>${dayCells(i => w.days?.[i]?.loc || '')}</tr>
       <tr><th>Equipo</th>${DAYS.map((_, i) => {
         const team = (w.days?.[i]?.team || [])
-          .map(m =>
-            esc(
-              `${m.role}${m.source === 'pre' ? 'P' : m.source === 'pick' ? 'R' : ''} ${m.name || ''}`.trim()
-            )
-          )
+          .map(m => {
+            // Si el rol es REF o empieza con REF (REFG, REFBB, etc.), no añadir sufijo P/R
+            const isRefRole = m.role === 'REF' || (m.role && m.role.startsWith('REF') && m.role.length > 3);
+            const suffix = isRefRole ? '' : (m.source === 'pre' ? 'P' : m.source === 'pick' ? 'R' : '');
+            return esc(`${m.role}${suffix} ${m.name || ''}`.trim());
+          })
           .join(' · ');
         return `<td>${team}</td>`;
       }).join('')}</tr>
       <tr><th>Prelight</th>${DAYS.map((_, i) => {
         const lst = (w.days?.[i]?.prelight || [])
-          .map(m =>
-            esc(
-              `${m.role}${m.source === 'pre' ? 'P' : ''} ${m.name || ''}`.trim()
-            )
-          )
+          .map(m => {
+            // Si el rol es REF o empieza con REF (REFG, REFBB, etc.), no añadir sufijo P
+            const isRefRole = m.role === 'REF' || (m.role && m.role.startsWith('REF') && m.role.length > 3);
+            const suffix = isRefRole ? '' : (m.source === 'pre' ? 'P' : '');
+            return esc(`${m.role}${suffix} ${m.name || ''}`.trim());
+          })
           .join(' · ');
         const hs = [w.days?.[i]?.prelightStart, w.days?.[i]?.prelightEnd]
           .filter(Boolean)
@@ -94,11 +96,12 @@ export function renderExportHTML(
       }).join('')}</tr>
       <tr><th>Recogida</th>${DAYS.map((_, i) => {
         const lst = (w.days?.[i]?.pickup || [])
-          .map(m =>
-            esc(
-              `${m.role}${m.source === 'pick' ? 'R' : ''} ${m.name || ''}`.trim()
-            )
-          )
+          .map(m => {
+            // Si el rol es REF o empieza con REF (REFG, REFBB, etc.), no añadir sufijo R
+            const isRefRole = m.role === 'REF' || (m.role && m.role.startsWith('REF') && m.role.length > 3);
+            const suffix = isRefRole ? '' : (m.source === 'pick' ? 'R' : '');
+            return esc(`${m.role}${suffix} ${m.name || ''}`.trim());
+          })
           .join(' · ');
         const hs = [w.days?.[i]?.pickupStart, w.days?.[i]?.pickupEnd]
           .filter(Boolean)

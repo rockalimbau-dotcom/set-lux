@@ -26,7 +26,7 @@ export function useTeamList(project: Project | null): TeamMember[] {
         unique.push({ role: m.role, name: m.name });
       }
     }
-    const order: Record<string, number> = { G: 0, BB: 1, E: 2, TM: 3, FB: 4, AUX: 5, M: 6, REF: 7 };
+    const order: Record<string, number> = { G: 0, BB: 1, E: 2, TM: 3, FB: 4, AUX: 5, M: 6, RIG: 7, REF: 8 };
     unique.sort(
       (a, b) =>
         (order[a.role] ?? 99) - (order[b.role] ?? 99) ||

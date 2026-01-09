@@ -81,9 +81,14 @@ export function calcWorkedBreakdown(
 
       // Verificar si la persona está trabajando en este día (en team, prelight o pickup)
       let isWorking = false;
-      if (wantedRole === 'REF') {
+      // Si el rol es REF o empieza con REF (REFG, REFBB, etc.), usar lógica de refuerzo
+      if (wantedRole === 'REF' || (wantedRole && wantedRole.startsWith('REF') && wantedRole.length > 3)) {
         const anyRef = (arr: any[]) =>
-          (arr || []).some((m: any) => nameEq(m?.name) && /ref/i.test(String(m?.role || '')));
+          (arr || []).some((m: any) => {
+            const role = String(m?.role || '');
+            const isRefRole = role === 'REF' || (role.startsWith('REF') && role.length > 3) || /ref/i.test(role);
+            return nameEq(m?.name) && isRefRole;
+          });
         isWorking = anyRef(day?.team) || anyRef(day?.prelight) || anyRef(day?.pickup);
       } else {
         const list =

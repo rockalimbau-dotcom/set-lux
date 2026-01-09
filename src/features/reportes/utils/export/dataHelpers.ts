@@ -82,27 +82,30 @@ export const rolePriorityForReports = (role: string = ''): number => {
   if (r === 'FB') return 4;
   if (r === 'AUX') return 5;
   if (r === 'M') return 6;
+  if (r === 'RIG') return 7;
   
   // REFUERZOS
-  if (r === 'REF') return 7;
+  if (r === 'REF' || (r.startsWith('REF') && r.length > 3)) return 8;
   
   // EQUIPO PRELIGHT
-  if (r === 'GP') return 8;
-  if (r === 'BBP') return 9;
-  if (r === 'EP') return 10;
-  if (r === 'TMP') return 11;
-  if (r === 'FBP') return 12;
-  if (r === 'AUXP') return 13;
-  if (r === 'MP') return 14;
+  if (r === 'GP') return 9;
+  if (r === 'BBP') return 10;
+  if (r === 'EP') return 11;
+  if (r === 'TMP') return 12;
+  if (r === 'FBP') return 13;
+  if (r === 'AUXP') return 14;
+  if (r === 'MP') return 15;
+  if (r === 'RIGP') return 16;
   
   // EQUIPO RECOGIDA
-  if (r === 'GR') return 15;
-  if (r === 'BBR') return 16;
-  if (r === 'ER') return 17;
-  if (r === 'TMR') return 18;
-  if (r === 'FBR') return 19;
-  if (r === 'AUXR') return 20;
-  if (r === 'MR') return 21;
+  if (r === 'GR') return 17;
+  if (r === 'BBR') return 18;
+  if (r === 'ER') return 19;
+  if (r === 'TMR') return 20;
+  if (r === 'FBR') return 21;
+  if (r === 'AUXR') return 22;
+  if (r === 'MR') return 23;
+  if (r === 'RIGR') return 24;
   
   // Roles desconocidos al final
   return 1000;

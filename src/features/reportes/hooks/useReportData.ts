@@ -111,10 +111,12 @@ export default function useReportData(
           const tgtBlock = blockOf(k);
           if (tgtBlock !== srcBlock) continue; // sólo mismo bloque
           // Para no-REF, ajustar role con sufijo para que busque en la lista correcta
-          const roleForCheck = r === 'REF'
+          // Si el rol es REF o empieza con REF (REFG, REFBB, etc.), usar 'REF'
+          const isRefRole = r === 'REF' || (r && r.startsWith('REF') && r.length > 3);
+          const roleForCheck = isRefRole
             ? 'REF'
             : (tgtBlock === 'pre' ? `${r}P` : (tgtBlock === 'pick' ? `${r}R` : r));
-          const blockForRef = roleForCheck === 'REF' ? tgtBlock : undefined;
+          const blockForRef = isRefRole ? tgtBlock : undefined;
           if (isPersonScheduledOn(fecha, roleForCheck, n, findWeekAndDay, blockForRef as any)) {
             copy[k] = { ...(copy[k] || {}) };
             copy[k]['Dietas'] = { ...(copy[k]['Dietas'] || {}) };

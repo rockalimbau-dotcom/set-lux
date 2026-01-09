@@ -42,7 +42,9 @@ export function isPersonScheduledOnBlock(
     || (/P$/.test(String(roleLabel || '')) ? BLOCKS.pre
       : /R$/.test(String(roleLabel || '')) ? BLOCKS.pick
       : BLOCKS.base);
-  if (String(roleLabel || '') === 'REF') {
+  // Si el rol es REF o empieza con REF (REFG, REFBB, etc.), usar lógica de refuerzo
+  const roleStr = String(roleLabel || '');
+  if (roleStr === 'REF' || (roleStr.startsWith('REF') && roleStr.length > 3)) {
     return refWorksOnBlock(findWeekAndDayFn, iso, name, block);
   }
 
@@ -118,7 +120,9 @@ export function personWorksOn(
 ): boolean {
   const { day } = findWeekAndDay(iso);
   if (!day || (day.tipo || '') === 'Descanso') return false;
-  if (String(roleLabel || '') === 'REF') {
+  // Si el rol es REF o empieza con REF (REFG, REFBB, etc.), usar lógica de refuerzo
+  const roleStr = String(roleLabel || '');
+  if (roleStr === 'REF' || (roleStr.startsWith('REF') && roleStr.length > 3)) {
     const any = (arr: any[]) =>
       (arr || []).some(
         m => (m.name || '') === (personName || '') && isMemberRefuerzo(m)

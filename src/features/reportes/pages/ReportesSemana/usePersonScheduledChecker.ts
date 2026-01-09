@@ -17,7 +17,9 @@ export function usePersonScheduledChecker({
     () => (iso: string, role: string, name: string, findFn: any) => {
       const { day } = findFn(iso);
       if (!day || day.tipo === 'Descanso') return false;
-      if (String(role || '') === 'REF') {
+      // Si el rol es REF o empieza con REF (REFG, REFBB, etc.), usar lógica de refuerzo
+      const roleStr = String(role || '');
+      if (roleStr === 'REF' || (roleStr.startsWith('REF') && roleStr.length > 3)) {
         const any = (arr: AnyRecord[]) =>
           (arr || []).some(
             m =>

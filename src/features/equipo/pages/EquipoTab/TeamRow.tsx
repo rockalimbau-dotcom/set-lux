@@ -16,7 +16,11 @@ interface TeamRowProps {
 
 export function TeamRow({ row, onChange, onRemove, canEdit, allowedRoles, groupKey = 'base' }: TeamRowProps) {
   const { t, i18n } = useTranslation();
-  const col = (ROLE_COLORS as any)[row.role] || (ROLE_COLORS as any).E;
+  // Si el rol tiene prefijo "REF" (refuerzo), usar el color del rol base
+  const roleCodeForColor = row.role?.startsWith('REF') && row.role.length > 3 
+    ? row.role.substring(3) 
+    : row.role;
+  const col = (ROLE_COLORS as any)[roleCodeForColor] || (ROLE_COLORS as any).E;
   const [showConfirmRemove, setShowConfirmRemove] = useState(false);
   
   // Detectar el tema actual

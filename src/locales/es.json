@@ -335,7 +335,8 @@
       "FB": "Finger Boy",
       "AUX": "Auxiliar",
       "M": "Meritorio",
-      "REF": "Refuerzo Eléctrico"
+      "REF": "Refuerzo Eléctrico",
+      "RIG": "Rigger"
     }
   },
   "needs": {

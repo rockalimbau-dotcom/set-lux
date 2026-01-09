@@ -28,14 +28,35 @@ export function calculateRolePrices({
   const divTravel = num(p.divTravel) || 2.5; // Diario usa divisor 2.5
 
   let jornada, travelDay, horaExtra, holidayDay;
-  if (normalized === 'REF') {
-    const refFromBase = getNumField(baseRow, ['Precio refuerzo', 'Precio Refuerzo', 'Refuerzo']);
+  if (normalized === 'REF' || (normalized.startsWith('REF') && normalized.length > 3)) {
+    // Si es REF o REF + rol base (REFG, REFBB, etc.), buscar "Precio refuerzo" en la fila correspondiente
+    let targetRow = baseRow;
+    if (normalized.startsWith('REF') && normalized.length > 3) {
+      // Extraer el rol base (G, BB, E, etc.)
+      const baseRole = normalized.substring(3);
+      const baseRolePicked = findPriceRow(priceRows, [baseRole]);
+      targetRow = baseRolePicked.row;
+      // Si no encontramos la fila del rol base, usar baseRow como fallback
+      if (!targetRow || Object.keys(targetRow).length === 0) {
+        targetRow = baseRow;
+      }
+    } else if (normalized === 'REF' && baseNorm && baseNorm !== 'REF') {
+      // Si es REF con baseNorm (ej: calculateRolePrices con normalized='REF', baseNorm='GAFFER'), usar la fila del rol base
+      const baseRolePicked = findPriceRow(priceRows, [baseNorm]);
+      targetRow = baseRolePicked.row;
+      // Si no encontramos la fila del rol base, usar baseRow como fallback
+      if (!targetRow || Object.keys(targetRow).length === 0) {
+        targetRow = baseRow;
+      }
+    }
+    
+    const refFromTarget = getNumField(targetRow, ['Precio refuerzo', 'Precio Refuerzo', 'Refuerzo']);
     const refFromElec = getNumField(elecRow, ['Precio refuerzo', 'Precio Refuerzo', 'Refuerzo']);
-    jornada = refFromBase || refFromElec || 0;
+    jornada = refFromTarget || refFromElec || 0;
     travelDay = jornada / divTravel;
-    horaExtra = getNumField(baseRow, ['Horas extras', 'Horas Extras', 'Hora extra', 'Horas extra', 'HE', 'Hora Extra']) ||
+    horaExtra = getNumField(targetRow, ['Horas extras', 'Horas Extras', 'Hora extra', 'Horas extra', 'HE', 'Hora Extra']) ||
                 getNumField(elecRow, ['Horas extras', 'Horas Extras', 'Hora extra', 'Horas extra', 'HE', 'Hora Extra']) || 0;
-    holidayDay = getNumField(baseRow, ['Precio Día extra/Festivo', 'Precio Día extra/festivo', 'Día extra/Festivo', 'Día festivo', 'Festivo']) ||
+    holidayDay = getNumField(targetRow, ['Precio Día extra/Festivo', 'Precio Día extra/festivo', 'Día extra/Festivo', 'Día festivo', 'Festivo']) ||
                  getNumField(elecRow, ['Precio Día extra/Festivo', 'Precio Día extra/festivo', 'Día extra/Festivo', 'Día festivo', 'Festivo']) || 0;
   } else {
     // Fallback: si no encontramos fila directa para el rol, usar la de Eléctrico

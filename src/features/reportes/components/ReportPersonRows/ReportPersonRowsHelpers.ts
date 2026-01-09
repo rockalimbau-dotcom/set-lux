@@ -44,7 +44,8 @@ export const personaKeyFrom = (
   block: 'base' | 'pre' | 'pick' | string
 ): string => {
   const pLike: AnyRecord = { role, name };
-  if (role === 'REF') {
+  // Si el rol es REF o empieza con REF (REFG, REFBB, etc.), usar lógica de refuerzo
+  if (role === 'REF' || (role && role.startsWith('REF') && role.length > 3)) {
     if (block === 'pre') pLike.__block = 'pre';
     if (block === 'pick') pLike.__block = 'pick';
   } else {

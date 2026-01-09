@@ -21,7 +21,15 @@ export function usePlanWeeks(project: { id?: string; nombre?: string } | null) {
   }, [storageKey]);
 }
 
-export const stripPR = (r: string): string => String(r || '').replace(/[PR]$/, '');
+export const stripPR = (r: string): string => {
+  let role = String(r || '');
+  // Quitar prefijo REF si existe (REFG -> G, REFBB -> BB, etc.)
+  if (role.startsWith('REF') && role.length > 3) {
+    role = role.substring(3);
+  }
+  // Quitar sufijo P/R si existe
+  return role.replace(/[PR]$/, '');
+};
 
 export function isMemberRefuerzo(m: { role?: string; name?: string; refuerzo?: boolean } | null) {
   const r = String(m?.role || '');

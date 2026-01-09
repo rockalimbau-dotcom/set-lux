@@ -1,6 +1,6 @@
 // src/shared/constants/roles.ts
 
-type RoleCode = 'G' | 'BB' | 'E' | 'TM' | 'FB' | 'AUX' | 'M' | 'REF';
+type RoleCode = 'G' | 'BB' | 'E' | 'TM' | 'FB' | 'AUX' | 'M' | 'REF' | 'RIG';
 
 interface Role {
   code: RoleCode;
@@ -12,7 +12,7 @@ interface RoleColor {
   fg: string;
 }
 
-export const ROLE_ORDER: RoleCode[] = ['G', 'BB', 'E', 'TM', 'FB', 'AUX', 'M', 'REF'];
+export const ROLE_ORDER: RoleCode[] = ['G', 'BB', 'E', 'TM', 'FB', 'AUX', 'M', 'REF', 'RIG'];
 
 export const ROLES: Role[] = [
   { code: 'G', label: 'Gaffer' },
@@ -23,6 +23,7 @@ export const ROLES: Role[] = [
   { code: 'AUX', label: 'Auxiliar' },
   { code: 'M', label: 'Meritorio' },
   { code: 'REF', label: 'Refuerzo Eléctrico' },
+  { code: 'RIG', label: 'Rigger' },
 ];
 
 export const ROLE_COLORS: Record<RoleCode, RoleColor> = {
@@ -34,6 +35,7 @@ export const ROLE_COLORS: Record<RoleCode, RoleColor> = {
   AUX: { bg: 'linear-gradient(135deg,#E9D5FF,#7C3AED)', fg: '#0b0b0b' },
   M: { bg: 'linear-gradient(135deg,#FDE68A,#D97706)', fg: '#0b0b0b' },
   REF: { bg: 'linear-gradient(135deg,#C7D2FE,#4338CA)', fg: '#0b0b0b' },
+  RIG: { bg: 'linear-gradient(135deg,#FBBF24,#D97706)', fg: '#0b0b0b' },
 };
 
 export const roleRank = (r: string): number => {
@@ -51,6 +53,7 @@ export const ROLE_CODE_TO_LABEL: Record<RoleCode, string> = {
   TM: 'Técnico de mesa',
   FB: 'Finger boy',
   REF: 'Refuerzo',
+  RIG: 'Rigger',
 };
 
 export const roleLabelFromCode = (code: string): string => 
@@ -75,6 +78,7 @@ export const getRoleBadgeCode = (roleCode: string, language?: string): string =>
       'BB': 'BBE',
       'G': 'G',
       'REF': 'R',
+      'RIG': 'RIG',
     };
     return englishBadges[base] || base;
   }
@@ -89,6 +93,7 @@ export const getRoleBadgeCode = (roleCode: string, language?: string): string =>
     'AUX': 'AUX',
     'M': 'M',
     'REF': 'R',
+    'RIG': 'RIG',
   };
   return defaultBadges[base] || base;
 };

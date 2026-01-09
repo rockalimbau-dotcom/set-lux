@@ -115,11 +115,15 @@ export function MonthSectionTable({
         <tbody>
           {enriched.map((r, idx) => {
             const pKey = `${r.role}__${r.name}`;
-            const roleForColor = String(r.role || '').replace(/[PR]$/, '');
+            let roleForColor = String(r.role || '').replace(/[PR]$/, '');
+            // Si el rol empieza con REF (REFG, REFBB, etc.), usar el rol base para el color
+            if (roleForColor.startsWith('REF') && roleForColor.length > 3) {
+              roleForColor = roleForColor.substring(3);
+            }
             const col =
               ROLE_COLORS[roleForColor] ||
               ROLE_COLORS[roleLabelFromCode(roleForColor)] ||
-              (roleForColor === 'REF'
+              (roleForColor === 'REF' || (r.role && r.role.startsWith('REF'))
                 ? { bg: '#F59E0B', fg: '#111' }
                 : { bg: '#444', fg: '#fff' });
 

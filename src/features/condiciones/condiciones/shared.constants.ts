@@ -17,6 +17,7 @@ export const PRICE_ROLES: string[] = [
   'Meritorio',
   'Técnico de mesa',
   'Finger boy',
+  'Rigger',
 ];
 
 
