@@ -20,9 +20,10 @@ export async function generatePDFPageFromHTML({
   tempContainer.style.left = '-9999px';
   tempContainer.style.top = '0';
   tempContainer.style.width = '297mm';
-  tempContainer.style.height = '210mm';
+  // IMPORTANTE: Permitir que el contenedor se expanda para capturar todo el contenido
+  tempContainer.style.minHeight = '210mm';
   tempContainer.style.backgroundColor = 'white';
-  tempContainer.style.overflow = 'hidden';
+  tempContainer.style.overflow = 'visible'; // Cambiar a 'visible' para capturar todo el contenido
 
   document.body.appendChild(tempContainer);
   await new Promise(resolve => setTimeout(resolve, 200));
@@ -33,11 +34,11 @@ export async function generatePDFPageFromHTML({
     allowTaint: true,
     backgroundColor: '#ffffff',
     width: 1123,
-    height: 794,
+    // No limitar height, dejar que html2canvas calcule la altura real del contenido
     scrollX: 0,
     scrollY: 0,
     windowWidth: 1123,
-    windowHeight: 794,
+    // No limitar windowHeight, dejar que se calcule automáticamente
     ignoreElements: () => false,
     onclone: (clonedDoc) => {
       // Aplicar exactamente la misma lógica que en nómina
@@ -58,10 +59,7 @@ export async function generatePDFPageFromHTML({
   // canvas.width = 1123px (297mm), canvas.height en píxeles
   const imgHeightMM = (canvas.height / canvas.width) * 297;
   
-  // Limitar la altura máxima a 210mm (altura de A4 landscape)
-  const maxPageHeightMM = 210;
-  const imgHeight = Math.min(imgHeightMM, maxPageHeightMM);
-  
-  return { imgData, imgHeight };
+  // Retornar la altura real (sin limitar) para que el código de paginación maneje la división
+  return { imgData, imgHeight: imgHeightMM };
 }
 

@@ -2,12 +2,14 @@ import { useMemo, useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import i18n from 'i18next';
 import { useLocalStorage } from '@shared/hooks/useLocalStorage';
+import { storage } from '@shared/services/localStorage.service';
 
 interface UseHorasExtraSelectorParams {
   project?: { id?: string; nombre?: string };
   mode: 'semanal' | 'mensual' | 'diario';
   monthKey: string;
   readOnly?: boolean;
+  allMonthKeys?: string[]; // Claves de todos los meses para sincronizar con el siguiente
 }
 
 /**
@@ -18,6 +20,7 @@ export function useHorasExtraSelector({
   mode,
   monthKey,
   readOnly = false,
+  allMonthKeys = [],
 }: UseHorasExtraSelectorParams) {
   const { t } = useTranslation();
 
@@ -32,10 +35,68 @@ export function useHorasExtraSelector({
     t('reports.extraHoursMinutageCourtesy'),
   ] as const;
 
-  const [horasExtraTipo, setHorasExtraTipo] = useLocalStorage<string>(
+  const [horasExtraTipo, setHorasExtraTipoInternal] = useLocalStorage<string>(
     horasExtraKey,
     horasExtraOpciones[0]
   );
+
+  // Función para obtener la clave del mes siguiente
+  const getNextMonthKey = (currentKey: string): string | null => {
+    if (!allMonthKeys || allMonthKeys.length === 0) return null;
+    const currentIndex = allMonthKeys.indexOf(currentKey);
+    if (currentIndex >= 0 && currentIndex < allMonthKeys.length - 1) {
+      return allMonthKeys[currentIndex + 1];
+    }
+    return null;
+  };
+
+  // Función para sincronizar con el mes siguiente
+  const setHorasExtraTipo = (newValue: string) => {
+    // Actualizar el valor actual
+    setHorasExtraTipoInternal(newValue);
+    
+    // Sincronizar con el mes siguiente si existe
+    const nextMonthKey = getNextMonthKey(monthKey);
+    if (nextMonthKey) {
+      const base = project?.id || project?.nombre || 'tmp';
+      const nextMonthKeyStorage = `reportes_horasExtra_${base}_${mode}_${nextMonthKey}`;
+      // Actualizar el localStorage del mes siguiente usando el servicio storage
+      if (typeof window !== 'undefined') {
+        try {
+          storage.setString(nextMonthKeyStorage, JSON.stringify(newValue));
+          // Disparar un evento storage simulado para que useLocalStorage lo detecte
+          // Nota: storage events solo se disparan entre pestañas, así que usamos un evento personalizado
+          window.dispatchEvent(new CustomEvent('horasExtraSync', {
+            detail: {
+              key: nextMonthKeyStorage,
+              value: newValue,
+            },
+          }));
+        } catch (error) {
+          console.error('Error sincronizando hora extra con mes siguiente:', error);
+        }
+      }
+    }
+  };
+
+  // Escuchar cambios de horas extra desde el mes anterior para sincronizar
+  useEffect(() => {
+    const base = project?.id || project?.nombre || 'tmp';
+    const currentKeyStorage = `reportes_horasExtra_${base}_${mode}_${monthKey}`;
+    
+    const handleHorasExtraSync = (event: CustomEvent) => {
+      // Si el cambio es para este mes (viene del mes anterior), actualizar
+      if (event.detail.key === currentKeyStorage) {
+        setHorasExtraTipoInternal(event.detail.value);
+      }
+    };
+
+    window.addEventListener('horasExtraSync', handleHorasExtraSync as EventListener);
+
+    return () => {
+      window.removeEventListener('horasExtraSync', handleHorasExtraSync as EventListener);
+    };
+  }, [project?.id, project?.nombre, mode, monthKey, setHorasExtraTipoInternal]);
 
   // Helper para traducir el valor guardado si está en español
   const translateStoredExtraHoursType = (stored: string): string => {

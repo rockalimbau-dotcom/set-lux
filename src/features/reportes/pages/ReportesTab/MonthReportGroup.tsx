@@ -40,6 +40,7 @@ function MonthReportGroup({
     mode,
     monthKey,
     readOnly,
+    allMonthKeys,
   });
 
   // Exportación a PDF

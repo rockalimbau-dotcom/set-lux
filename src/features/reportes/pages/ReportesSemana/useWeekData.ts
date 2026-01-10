@@ -7,7 +7,6 @@ import {
   buildPeopleBase,
   buildPeoplePre,
   buildPeoplePick,
-  collectRefNamesForBlock,
 } from '../../utils/derive';
 import { findWeekAndDayFactory } from '../../utils/plan';
 import { AnyRecord } from '@shared/types/common';
@@ -80,17 +79,10 @@ export function useWeekData(
     [weekPickupActive, planKey, JSON.stringify(safeSemana)]
   );
 
-  const refNamesBase = useMemo(
-    () => collectRefNamesForBlock(safeSemana, findWeekAndDay, 'team'),
-    [JSON.stringify(safeSemana), planKey]
-  );
-  const refNamesPre = useMemo(
-    () => collectRefNamesForBlock(safeSemana, findWeekAndDay, 'prelight'),
-    [JSON.stringify(safeSemana), planKey]
-  );
-  const refNamesPick = useMemo(
-    () => collectRefNamesForBlock(safeSemana, findWeekAndDay, 'pickup'),
-    [JSON.stringify(safeSemana), planKey]
+  // IMPORTANTE: Obtener basePeople directamente del plan, igual que prelight y pickup
+  const basePeople = useMemo(
+    () => collectWeekTeamWithSuffix('team', ''),
+    [planKey, JSON.stringify(safeSemana)]
   );
 
   const safePersonas = useMemo(
@@ -111,28 +103,34 @@ export function useWeekData(
     ]
   );
 
-  const peopleBase = useMemo(
-    () => buildPeopleBase(providedPersonas, refNamesBase),
-    [JSON.stringify(providedPersonas), JSON.stringify(refNamesBase)]
-  );
+  const peopleBase = useMemo(() => {
+    // IMPORTANTE: NO usar refNamesBase porque collectWeekTeamWithSuffix ya procesa
+    // TODOS los miembros del equipo base, incluyendo refuerzos. Usar refNamesBase causaría duplicados.
+    // Siempre pasar un Set vacío para refNamesBase
+    return buildPeopleBase(basePeople, new Set<string>());
+  }, [
+    JSON.stringify(basePeople),
+  ]);
 
-  const peoplePre = useMemo(
-    () => buildPeoplePre(weekPrelightActive, prelightPeople, refNamesPre),
-    [
-      weekPrelightActive,
-      JSON.stringify(prelightPeople),
-      JSON.stringify(refNamesPre),
-    ]
-  );
+  const peoplePre = useMemo(() => {
+    // IMPORTANTE: NO usar refNamesPre porque collectWeekTeamWithSuffix ya procesa
+    // TODOS los miembros de prelight, incluyendo refuerzos. Usar refNamesPre causaría duplicados.
+    // Siempre pasar un Set vacío para refNamesPre
+    return buildPeoplePre(weekPrelightActive, prelightPeople, new Set<string>());
+  }, [
+    weekPrelightActive,
+    JSON.stringify(prelightPeople),
+  ]);
 
-  const peoplePick = useMemo(
-    () => buildPeoplePick(weekPickupActive, pickupPeople, refNamesPick),
-    [
-      weekPickupActive,
-      JSON.stringify(pickupPeople),
-      JSON.stringify(refNamesPick),
-    ]
-  );
+  const peoplePick = useMemo(() => {
+    // IMPORTANTE: NO usar refNamesPick porque collectWeekTeamWithSuffix ya procesa
+    // TODOS los miembros de pickup, incluyendo refuerzos. Usar refNamesPick causaría duplicados.
+    // Siempre pasar un Set vacío para refNamesPick
+    return buildPeoplePick(weekPickupActive, pickupPeople, new Set<string>());
+  }, [
+    weekPickupActive,
+    JSON.stringify(pickupPeople),
+  ]);
 
   return {
     safeSemana,

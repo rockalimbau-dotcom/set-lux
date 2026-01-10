@@ -22,8 +22,23 @@ export function buildReportWeekHTMLForPDF({
   // Deduplicate data
   const finalData = deduplicateData(data);
 
-  // Group and sort persons by block
-  const { personsByBlock, finalPersonKeys } = groupAndSortPersonsByBlock(finalData);
+  // IMPORTANTE: Si data tiene bloques pre-agrupados (desde exportReportRangeToPDF),
+  // usar esos bloques directamente para respetar la paginación por bloques
+  let personsByBlock: { base: string[]; pre: string[]; pick: string[] };
+  let finalPersonKeys: string[];
+  
+  if ((data as any).__blocks) {
+    // Usar bloques pre-agrupados de la paginación
+    personsByBlock = (data as any).__blocks;
+    finalPersonKeys = [...personsByBlock.base, ...personsByBlock.pre, ...personsByBlock.pick];
+    // Eliminar la propiedad especial del finalData para no afectar el procesamiento
+    delete finalData.__blocks;
+  } else {
+    // Agrupar normalmente
+    const grouped = groupAndSortPersonsByBlock(finalData);
+    personsByBlock = grouped.personsByBlock;
+    finalPersonKeys = grouped.finalPersonKeys;
+  }
 
 
   // Filter days that are not DESCANSO or have data

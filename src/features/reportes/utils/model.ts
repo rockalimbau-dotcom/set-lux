@@ -2,6 +2,52 @@
 
 export const stripPR = (r: string): string => String(r || '').replace(/[PR]$/, '');
 
+/**
+ * Normalize a persona key by cleaning P/R suffixes from refuerzo roles
+ * This ensures that "REFEP__name" and "REFE__name" are treated as the same key
+ */
+export function normalizePersonaKey(key: string): string {
+  if (!key || typeof key !== 'string') return key;
+  
+  // Parse the key: can be "role__name", "role.pre__name", or "role.pick__name"
+  let role = '';
+  let name = '';
+  let block = '';
+  
+  if (key.includes('.pre__')) {
+    const [rolePart, ...nameParts] = key.split('.pre__');
+    role = rolePart || '';
+    name = nameParts.join('.pre__') || '';
+    block = 'pre';
+  } else if (key.includes('.pick__')) {
+    const [rolePart, ...nameParts] = key.split('.pick__');
+    role = rolePart || '';
+    name = nameParts.join('.pick__') || '';
+    block = 'pick';
+  } else {
+    const [rolePart, ...nameParts] = key.split('__');
+    role = rolePart || '';
+    name = nameParts.join('__') || '';
+    block = 'base';
+  }
+  
+  // For refuerzos, clean all P/R suffixes
+  if (role.startsWith('REF')) {
+    while (role.length > 3 && (role.endsWith('P') || role.endsWith('R'))) {
+      role = role.replace(/[PR]$/, '');
+    }
+  }
+  
+  // Reconstruct the key
+  if (block === 'pre') {
+    return `${role}.pre__${name}`;
+  } else if (block === 'pick') {
+    return `${role}.pick__${name}`;
+  } else {
+    return `${role}__${name}`;
+  }
+}
+
 export function personaRole(p: any): string {
   if (typeof p === 'string') return '';
   if (!p || typeof p !== 'object') return '';
@@ -15,8 +61,23 @@ export function personaName(p: any): string {
 }
 
 export function personaKey(p: any): string {
-  const role = stripPR(personaRole(p) || '');
+  const originalRole = personaRole(p) || '';
   const name = personaName(p) || '';
+  
+  // IMPORTANTE: Para refuerzos (REFG, REFE, REFBB, etc.), mantener código completo sin stripPR
+  // Solo aplicar stripPR a roles normales (G, E, BB, etc.) para quitar sufijos P o R si existen
+  const isRefuerzo = originalRole.startsWith('REF');
+  let role: string;
+  if (isRefuerzo) {
+    // Para refuerzos, eliminar TODOS los sufijos P o R repetidamente (REFEP -> REFE, REFERP -> REFER -> REFE)
+    let cleanRole = originalRole;
+    while (cleanRole.length > 3 && (cleanRole.endsWith('P') || cleanRole.endsWith('R'))) {
+      cleanRole = cleanRole.replace(/[PR]$/, '');
+    }
+    role = cleanRole;
+  } else {
+    role = stripPR(originalRole);
+  }
   
   // Si no hay rol ni nombre, generar una clave única para evitar claves vacías
   if (!role && !name) {
@@ -33,12 +94,14 @@ export function personaKey(p: any): string {
     return `${role}__UNKNOWN`;
   }
   
-  if (role.startsWith('REF')) {
+  // IMPORTANTE: Para refuerzos, mantener código completo (REFE, REFG, etc.) en la clave
+  if (isRefuerzo) {
     const block = (p && (p.__block || p.block)) || '';
-    if (block === 'pre') return `REF.pre__${name}`;
-    if (block === 'pick') return `REF.pick__${name}`;
-    return `REF__${name}`;
+    if (block === 'pre') return `${role}.pre__${name}`; // REFE.pre__name, REFG.pre__name, etc.
+    if (block === 'pick') return `${role}.pick__${name}`; // REFE.pick__name, REFG.pick__name, etc.
+    return `${role}__${name}`; // REFE__name, REFG__name, etc.
   }
+  
   // Roles no-REF: usar bloque explícito si viene marcado; si no, clave base sin PR
   const block = (p && (p.__block || p.block)) || '';
   if (block === 'pre') return `${role}.pre__${name}`;

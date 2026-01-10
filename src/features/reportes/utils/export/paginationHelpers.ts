@@ -27,11 +27,11 @@ export const calculatePersonsPerPage = (
   const estimatedConceptsPerPerson = Math.min(CONCEPTS.length, 3);
   
   // Usar un margen de seguridad más conservador (reducir altura máxima disponible)
-  const safetyMargin = 50; // Margen de seguridad en píxeles
+  const safetyMargin = 80; // Aumentar margen de seguridad para evitar cortes
   const effectiveMaxHeight = maxPageHeight - safetyMargin;
   
-  // Start more conservative
-  let personsPerPage = Math.min(12, totalPersons);
+  // Start more conservative para asegurar que siempre quepa en una página
+  let personsPerPage = Math.min(10, totalPersons);
   
   // Dynamic adjustment with estimated concepts
   while (

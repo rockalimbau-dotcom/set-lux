@@ -1,4 +1,5 @@
 import { parseDietas } from '../text';
+import { norm } from '../text';
 
 /**
  * Helper function to calculate total for a concept
@@ -113,41 +114,117 @@ export const rolePriorityForReports = (role: string = ''): number => {
 
 /**
  * Deduplicate data by role and name
+ * IMPORTANTE: Para refuerzos, detectar duplicados incluso si tienen diferentes formatos (REF vs REFE, REF.pre__ vs REF__)
  */
 export const deduplicateData = (data: any): any => {
-  const roleNameMap = new Map();
+  const roleNameMap = new Map<string, string>(); // key normalizado -> clave original
   const deduplicatedData: any = {};
   
   Object.keys(data || {}).forEach(k => {
-    const [rolePart, ...nameParts] = String(k).split('__');
-    const role = rolePart || '';
-    const name = nameParts.join('__') || '';
-    const key = `${role}__${name}`;
+    // Parsear la clave: puede ser "role__name", "role.pre__name", "role.pick__name"
+    let role = '';
+    let name = '';
+    let block = '';
+    
+    if (k.includes('.pre__')) {
+      const [rolePart, ...nameParts] = k.split('.pre__');
+      role = rolePart || '';
+      name = nameParts.join('.pre__') || '';
+      block = 'pre';
+    } else if (k.includes('.pick__')) {
+      const [rolePart, ...nameParts] = k.split('.pick__');
+      role = rolePart || '';
+      name = nameParts.join('.pick__') || '';
+      block = 'pick';
+    } else {
+      const [rolePart, ...nameParts] = k.split('__');
+      role = rolePart || '';
+      name = nameParts.join('__') || '';
+      block = 'base';
+    }
     
     // Skip completely empty keys (role fantasma)
     if (!role && !name) {
       return;
     }
     
-    if (roleNameMap.has(key)) {
+    // Normalizar nombre para comparación
+    const normalizedName = norm(name);
+    
+    // Para refuerzos, normalizar el rol: REF, REFE, REFG, etc. -> comparar solo por nombre
+    // Si es refuerzo, usar solo el nombre normalizado como clave de deduplicación
+    const isRefuerzo = role === 'REF' || (role.startsWith('REF') && role.length > 3);
+    const dedupKey = isRefuerzo 
+      ? `REF__${normalizedName}` // Todos los refuerzos se agrupan por nombre
+      : `${role}__${normalizedName}`; // Roles normales: rol + nombre
+    
+    if (roleNameMap.has(dedupKey)) {
+      // Duplicado encontrado
+      const originalKey = roleNameMap.get(dedupKey)!;
+      
+      // Para refuerzos, preferir el código completo (REFE) sobre REF genérico
+      if (isRefuerzo) {
+        const originalRole = originalKey.includes('.pre__') 
+          ? originalKey.split('.pre__')[0]
+          : originalKey.includes('.pick__')
+          ? originalKey.split('.pick__')[0]
+          : originalKey.split('__')[0];
+        
+        // Si el original es REF genérico y este es código completo, reemplazar
+        if (originalRole === 'REF' && role !== 'REF' && role.startsWith('REF')) {
+          // Eliminar el original y usar este
+          delete deduplicatedData[originalKey];
+          roleNameMap.set(dedupKey, k);
+          deduplicatedData[k] = data[k];
+          // Merge data del original al nuevo
+          if (data[originalKey]) {
+            Object.keys(data[originalKey] || {}).forEach(concept => {
+              if (!deduplicatedData[k][concept]) {
+                deduplicatedData[k][concept] = {};
+              }
+              Object.keys(data[originalKey][concept] || {}).forEach(date => {
+                if (data[originalKey][concept][date] && !deduplicatedData[k][concept][date]) {
+                  deduplicatedData[k][concept][date] = data[originalKey][concept][date];
+                }
+              });
+            });
+          }
+          return;
+        }
+        // Si este es REF genérico y el original es código completo, ignorar este
+        if (role === 'REF' && originalRole !== 'REF' && originalRole.startsWith('REF')) {
+          // Merge data de este al original
+          if (data[k] && deduplicatedData[originalKey]) {
+            Object.keys(data[k] || {}).forEach(concept => {
+              if (!deduplicatedData[originalKey][concept]) {
+                deduplicatedData[originalKey][concept] = {};
+              }
+              Object.keys(data[k][concept] || {}).forEach(date => {
+                if (data[k][concept][date] && !deduplicatedData[originalKey][concept][date]) {
+                  deduplicatedData[originalKey][concept][date] = data[k][concept][date];
+                }
+              });
+            });
+          }
+          return; // Ignorar este duplicado
+        }
+      }
       
       // Merge data from duplicate into original
-      const originalKey = roleNameMap.get(key);
-      if (data[k] && data[originalKey]) {
-        // Merge concept data
-        Object.keys(data[k]).forEach(concept => {
-          if (!data[originalKey][concept]) {
-            data[originalKey][concept] = {};
+      if (data[k] && deduplicatedData[originalKey]) {
+        Object.keys(data[k] || {}).forEach(concept => {
+          if (!deduplicatedData[originalKey][concept]) {
+            deduplicatedData[originalKey][concept] = {};
           }
-          Object.keys(data[k][concept]).forEach(date => {
-            if (data[k][concept][date] && !data[originalKey][concept][date]) {
-              data[originalKey][concept][date] = data[k][concept][date];
+          Object.keys(data[k][concept] || {}).forEach(date => {
+            if (data[k][concept][date] && !deduplicatedData[originalKey][concept][date]) {
+              deduplicatedData[originalKey][concept][date] = data[k][concept][date];
             }
           });
         });
       }
     } else {
-      roleNameMap.set(key, k);
+      roleNameMap.set(dedupKey, k);
       deduplicatedData[k] = data[k];
     }
   });
@@ -157,11 +234,63 @@ export const deduplicateData = (data: any): any => {
 
 /**
  * Sort person keys by role hierarchy
+ * IMPORTANTE: Mantener refuerzos juntos al final, ordenados por nombre
  */
 export const sortPersonKeysByRole = (personKeys: string[]): string[] => {
   return personKeys.sort((a, b) => {
-    const [roleA] = String(a).split('__');
-    const [roleB] = String(b).split('__');
+    // Parsear roles de las claves (pueden tener formato "role.pre__name" o "role__name")
+    let roleA = '';
+    let roleB = '';
+    
+    if (a.includes('.pre__')) {
+      roleA = a.split('.pre__')[0];
+    } else if (a.includes('.pick__')) {
+      roleA = a.split('.pick__')[0];
+    } else {
+      roleA = a.split('__')[0];
+    }
+    
+    if (b.includes('.pre__')) {
+      roleB = b.split('.pre__')[0];
+    } else if (b.includes('.pick__')) {
+      roleB = b.split('.pick__')[0];
+    } else {
+      roleB = b.split('__')[0];
+    }
+    
+    // Detectar si son refuerzos
+    const isRefA = roleA === 'REF' || (roleA.startsWith('REF') && roleA.length > 3);
+    const isRefB = roleB === 'REF' || (roleB.startsWith('REF') && roleB.length > 3);
+    
+    // REF siempre al final
+    if (isRefA && !isRefB) return 1;
+    if (!isRefA && isRefB) return -1;
+    
+    // Si ambos son REF, ordenar por nombre
+    if (isRefA && isRefB) {
+      let nameA = '';
+      let nameB = '';
+      
+      if (a.includes('.pre__')) {
+        nameA = a.split('.pre__')[1] || '';
+      } else if (a.includes('.pick__')) {
+        nameA = a.split('.pick__')[1] || '';
+      } else {
+        nameA = a.split('__').slice(1).join('__') || '';
+      }
+      
+      if (b.includes('.pre__')) {
+        nameB = b.split('.pre__')[1] || '';
+      } else if (b.includes('.pick__')) {
+        nameB = b.split('.pick__')[1] || '';
+      } else {
+        nameB = b.split('__').slice(1).join('__') || '';
+      }
+      
+      return nameA.localeCompare(nameB);
+    }
+    
+    // Ambos no son REF: ordenar por jerarquía
     const priorityA = rolePriorityForReports(roleA);
     const priorityB = rolePriorityForReports(roleB);
     
@@ -169,11 +298,26 @@ export const sortPersonKeysByRole = (personKeys: string[]): string[] => {
       return priorityA - priorityB;
     }
     
-    // If same priority, sort by name
-    const [, ...namePartsA] = String(a).split('__');
-    const [, ...namePartsB] = String(b).split('__');
-    const nameA = namePartsA.join('__');
-    const nameB = namePartsB.join('__');
+    // Si misma prioridad, ordenar por nombre
+    let nameA = '';
+    let nameB = '';
+    
+    if (a.includes('.pre__')) {
+      nameA = a.split('.pre__')[1] || '';
+    } else if (a.includes('.pick__')) {
+      nameA = a.split('.pick__')[1] || '';
+    } else {
+      nameA = a.split('__').slice(1).join('__') || '';
+    }
+    
+    if (b.includes('.pre__')) {
+      nameB = b.split('.pre__')[1] || '';
+    } else if (b.includes('.pick__')) {
+      nameB = b.split('.pick__')[1] || '';
+    } else {
+      nameB = b.split('__').slice(1).join('__') || '';
+    }
+    
     return nameA.localeCompare(nameB);
   });
 };

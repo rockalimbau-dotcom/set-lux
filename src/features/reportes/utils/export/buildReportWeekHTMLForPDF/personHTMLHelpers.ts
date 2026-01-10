@@ -8,14 +8,58 @@ import {
 
 /**
  * Generate HTML for a person's header row
+ * IMPORTANTE: Convertir formato de roles de "G.pre__" a "GP", "REFE.pre__" a "REFE", etc.
  */
 function generatePersonHeader(
   pk: string,
   safeSemanaWithData: string[]
 ): string {
-  const [rolePart, ...nameParts] = String(pk).split('__');
-  const role = rolePart || '';
-  const name = nameParts.join('__');
+  // El formato del pk es: "role.block__name" donde block puede ser "pre" o "pick"
+  // Ejemplos: "G.pre__Nombre", "REFE.pre__Nombre", "G.pick__Nombre", "G__Nombre" (base)
+  let role = '';
+  let name = '';
+  
+  if (pk.includes('.pre__')) {
+    // Prelight: formato "role.pre__name"
+    const [rolePart, ...nameParts] = pk.split('.pre__');
+    role = rolePart || '';
+    name = nameParts.join('.pre__');
+    
+    // Convertir: G.pre -> GP, E.pre -> EP, REFE.pre -> REFE, REF.pre -> REF, etc.
+    // IMPORTANTE: Todos los refuerzos (REF, REFG, REFE, REFBB, etc.) NO llevan sufijos P o R
+    const isRefuerzo = role.startsWith('REF');
+    if (!isRefuerzo) {
+      // Rol normal: añadir P (G -> GP, E -> EP, etc.)
+      role = `${role}P`;
+    }
+    // Si es refuerzo (REF, REFE, REFG, etc.), mantener sin cambios
+  } else if (pk.includes('.pick__')) {
+    // Pickup: formato "role.pick__name"
+    const [rolePart, ...nameParts] = pk.split('.pick__');
+    role = rolePart || '';
+    name = nameParts.join('.pick__');
+    
+    // Convertir: G.pick -> GR, E.pick -> ER, REFE.pick -> REFE, REF.pick -> REF, etc.
+    // IMPORTANTE: Todos los refuerzos (REF, REFG, REFE, REFBB, etc.) NO llevan sufijos P o R
+    const isRefuerzo = role.startsWith('REF');
+    if (!isRefuerzo) {
+      // Rol normal: añadir R (G -> GR, E -> ER, etc.)
+      role = `${role}R`;
+    }
+    // Si es refuerzo (REF, REFE, REFG, etc.), mantener sin cambios
+  } else {
+    // Base: formato "role__name"
+    const [rolePart, ...nameParts] = pk.split('__');
+    role = rolePart || '';
+    name = nameParts.join('__');
+    // IMPORTANTE: Para refuerzos, eliminar TODOS los sufijos P o R (REFEP -> REFE, REFERP -> REFER -> REFE)
+    if (role.startsWith('REF')) {
+      while (role.length > 3 && (role.endsWith('P') || role.endsWith('R'))) {
+        role = role.replace(/[PR]$/, '');
+      }
+    }
+    // Mantener el rol tal cual (G, E, REFE, REFG, etc.) sin sufijos para refuerzos
+  }
 
   // Skip entries with empty or invalid roles/names
   if (!role && !name) {

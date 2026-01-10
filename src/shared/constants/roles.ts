@@ -62,11 +62,53 @@ export const roleLabelFromCode = (code: string): string =>
 /**
  * Get role badge code based on language
  * In English, some roles have different badge codes
+ * IMPORTANTE: Mantiene sufijos P (prelight) y R (recogida) para mostrar códigos completos
+ * IMPORTANTE: Mantiene prefijo REF para refuerzos (REFG, REFGP, REFGR, etc.)
  */
 export const getRoleBadgeCode = (roleCode: string, language?: string): string => {
   const lang = language || (typeof window !== 'undefined' && (window as any).i18n?.language) || 'es';
-  const base = String(roleCode || '').toUpperCase().replace(/[PR]$/, '');
+  const role = String(roleCode || '').toUpperCase();
   
+  // Detectar si es un refuerzo (REFG, REFBB, REFGP, REFGR, etc.)
+  const isRefuerzo = role.startsWith('REF') && role.length > 3;
+  
+  // Si es refuerzo, mantener el prefijo REF y procesar el resto
+  // IMPORTANTE: Los refuerzos NO llevan sufijos P o R, solo el código base (REFG, REFE, REFBB, etc.)
+  if (isRefuerzo) {
+    const refBase = role.substring(3); // Ej: 'G' de 'REFG', 'E' de 'REFE', 'BB' de 'REFBB'
+    // Los refuerzos no tienen sufijos P o R, así que refBase es directamente el código base
+    const baseCode = refBase;
+    
+    // Mapear código base a badge
+    const baseBadge = getBaseRoleBadge(baseCode, lang);
+    
+    // Para refuerzos, mostrar REF + código base (ej: REFG, REFE, REFBB) - SIN sufijos P o R
+    return `REF${baseBadge}`;
+  }
+  
+  // Si es REF genérico (sin código base), mostrar 'R' o 'REF' según idioma
+  if (role === 'REF') {
+    return lang === 'en' || lang.startsWith('en') ? 'R' : 'REF';
+  }
+  
+  // Para roles normales, detectar si tienen sufijo P o R
+  const hasSuffix = role.endsWith('P') || role.endsWith('R');
+  const base = hasSuffix ? role.slice(0, -1) : role;
+  
+  const baseBadge = getBaseRoleBadge(base, lang);
+  
+  // Si tenía sufijo, mantenerlo (ej: GP, GR)
+  if (hasSuffix) {
+    return role.endsWith('P') ? `${baseBadge}P` : `${baseBadge}R`;
+  }
+  
+  return baseBadge;
+};
+
+/**
+ * Get base role badge code (without suffixes)
+ */
+function getBaseRoleBadge(base: string, lang: string): string {
   // English badge codes
   if (lang === 'en' || lang.startsWith('en')) {
     const englishBadges: Record<string, string> = {
@@ -96,4 +138,4 @@ export const getRoleBadgeCode = (roleCode: string, language?: string): string =>
     'RIG': 'RIG',
   };
   return defaultBadges[base] || base;
-};
+}

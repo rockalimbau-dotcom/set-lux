@@ -77,7 +77,7 @@ export function generateInfoPanel(project: any): string {
       <div class="info-panel">
         <div class="info-item">
           <div class="info-label">${esc(getTranslation('common.productionLabel', 'Producción'))}</div>
-          <div class="info-value">${esc(project?.produccion || '—')}</div>
+          <div class="info-value">${esc(project?.productora || project?.produccion || '—')}</div>
         </div>
         <div class="info-item">
           <div class="info-label">${esc(getTranslation('common.project', 'Proyecto'))}</div>

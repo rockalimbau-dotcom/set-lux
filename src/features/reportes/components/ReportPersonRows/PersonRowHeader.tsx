@@ -66,6 +66,14 @@ export function PersonRowHeader({
     : 'linear-gradient(135deg,#FDE047,#F59E0B)'; // Color de Eléctrico
   const roleFgColor = theme === 'light' ? 'white' : '#000000'; // Blanco en claro, negro en oscuro
 
+  // Calcular el código del badge y determinar si necesita más espacio
+  const roleCode = getRoleBadgeCode(visualRole || '', i18n.language) || '';
+  // Para refuerzos (REFG, REFGP, etc.) y roles con sufijos (GP, GR) usar ancho adaptativo
+  const isLongCode = roleCode.length > 3 || roleCode.startsWith('REF') || roleCode.endsWith('P') || roleCode.endsWith('R');
+  const badgeWidthClass = isLongCode
+    ? 'min-w-[28px] sm:min-w-[32px] md:min-w-[36px] px-2 sm:px-2.5 md:px-3'
+    : 'w-4 sm:w-5 md:w-6';
+
   return (
     <tr>
       <Td className='whitespace-nowrap align-middle' scope='row'>
@@ -84,7 +92,7 @@ export function PersonRowHeader({
 
           <span className='inline-flex items-center gap-1 sm:gap-1.5 md:gap-2 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded sm:rounded-md md:rounded-lg border border-neutral-border bg-black/40'>
             <span
-              className='inline-flex items-center justify-center w-4 h-3.5 sm:w-5 sm:h-4 md:w-6 md:h-5 rounded sm:rounded-md md:rounded-lg font-bold text-[8px] sm:text-[9px] md:text-[10px]'
+              className={`inline-flex items-center justify-center h-3.5 sm:h-4 md:h-5 rounded sm:rounded-md md:rounded-lg font-bold text-[8px] sm:text-[9px] md:text-[10px] ${badgeWidthClass}`}
               style={{ 
                 background: roleBgColor, 
                 color: roleFgColor,
@@ -92,7 +100,7 @@ export function PersonRowHeader({
                 textFillColor: roleFgColor
               } as React.CSSProperties}
             >
-              {getRoleBadgeCode(visualRole || '', i18n.language) || '—'}
+              {roleCode || '—'}
             </span>
             <span className='text-[9px] sm:text-[10px] md:text-xs text-zinc-200'>{name}</span>
             {(visualRole === 'REF' || (visualRole && visualRole.startsWith('REF') && visualRole.length > 3)) && block && (
