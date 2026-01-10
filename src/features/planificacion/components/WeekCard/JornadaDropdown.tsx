@@ -33,7 +33,7 @@ export function JornadaDropdown({
 }: JornadaDropdownProps) {
   const { t } = useTranslation();
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const jornadaOptions = ['Rodaje', 'Oficina', 'Carga', 'Descarga', 'Localizar', 'Travel Day', 'Rodaje Festivo', 'Fin', 'Descanso'];
+  const jornadaOptions = ['Rodaje', 'Oficina', 'Carga', 'Descarga', 'Localizar', 'Travel Day', 'Rodaje Festivo', 'Descanso', 'Fin'];
   
   // Helper function to translate jornada type
   const translateJornadaType = (tipo: string): string => {
@@ -88,8 +88,8 @@ export function JornadaDropdown({
                 : 'var(--border)'),
             backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath fill='${theme === 'light' ? '%23111827' : '%23ffffff'}' d='M5 7.5L1.25 3.75h7.5z'/%3E%3C/svg%3E")`,
             backgroundRepeat: 'no-repeat',
-            backgroundPosition: 'right 0.4rem sm:right-0.5rem center',
-            paddingRight: '1.5rem sm:1.75rem md:2rem',
+            backgroundPosition: 'right 0.4rem center',
+            paddingRight: '1.5rem',
           }}
         >
           {day.tipo ? translateJornadaType(day.tipo) : '\u00A0'}

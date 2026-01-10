@@ -6,6 +6,7 @@ import {
   addProWeekAction,
   duplicateWeekAction,
   rebaseWeeksAround,
+  reorderWeeksAfterDelete,
 } from '../../utils/weekActions';
 import { sortByHierarchy } from '../../utils/sync';
 import { AnyRecord } from '@shared/types/common';
@@ -72,12 +73,32 @@ export const createWeekHandlers = (
     }
   };
 
-  const deleteWeek = (scope: 'pre' | 'pro', weekId: string) => {
+  const deleteWeek = async (scope: 'pre' | 'pro', weekId: string) => {
     if (readOnly) return;
     if (scope === 'pre') {
-      setPreWeeks(prev => prev.filter((w: AnyRecord) => w.id !== weekId));
+      setPreWeeks(prev => {
+        const filtered = prev.filter((w: AnyRecord) => w.id !== weekId);
+        // Reordenar y recalcular fechas después de eliminar
+        const reordered = reorderWeeksAfterDelete(
+          filtered as any,
+          true, // isPre
+          holidayFull,
+          holidayMD
+        );
+        return reordered as any;
+      });
     } else {
-      setProWeeks(prev => prev.filter((w: AnyRecord) => w.id !== weekId));
+      setProWeeks(prev => {
+        const filtered = prev.filter((w: AnyRecord) => w.id !== weekId);
+        // Reordenar y recalcular fechas después de eliminar
+        const reordered = reorderWeeksAfterDelete(
+          filtered as any,
+          false, // isPro
+          holidayFull,
+          holidayMD
+        );
+        return reordered as any;
+      });
     }
   };
 

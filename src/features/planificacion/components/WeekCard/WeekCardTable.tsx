@@ -8,6 +8,7 @@ import {
   DayTypeRow,
   ScheduleRow,
   CutRow,
+  ObservationsRow,
   LocationRow,
   TeamRow,
   IssuesRow,
@@ -96,6 +97,18 @@ export function WeekCardTable({
           />
 
           <CutRow
+            week={week}
+            scope={scope}
+            setDayField={setDayField}
+            getDropdownState={getDropdownState}
+            setDropdownState={setDropdownState}
+            theme={theme}
+            focusColor={focusColor}
+            readOnly={readOnly}
+            t={t}
+          />
+
+          <ObservationsRow
             week={week}
             scope={scope}
             setDayField={setDayField}

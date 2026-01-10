@@ -163,3 +163,51 @@ export const rebaseWeeksAround = (
       .sort((a, b) => parseYYYYMMDD(a.startDate).getTime() - parseYYYYMMDD(b.startDate).getTime());
   return { pre: rebased(preWeeks), pro: rebased(proWeeks) };
 };
+
+/**
+ * Reordena y recalcula las semanas después de eliminar una
+ * - Renombra los labels (Semana 1, Semana 2, etc.)
+ * - Recalcula las fechas para que sean consecutivas
+ */
+export const reorderWeeksAfterDelete = (
+  weeks: Week[],
+  isPre: boolean,
+  holidayFull: Set<string>,
+  holidayMD: Set<string>
+): Week[] => {
+  if (weeks.length === 0) return weeks;
+  
+  // Ordenar por fecha
+  const sorted = [...weeks].sort(
+    (a, b) => parseYYYYMMDD(a.startDate).getTime() - parseYYYYMMDD(b.startDate).getTime()
+  );
+  
+  // Si solo hay una semana, solo actualizar el label
+  if (sorted.length === 1) {
+    const week = sorted[0];
+    const label = isPre
+      ? i18n.t('planning.weekFormatNegative', { number: 1 })
+      : i18n.t('planning.weekFormat', { number: 1 });
+    return [relabelWeekByCalendar({ ...week, label }, week.startDate, holidayFull, holidayMD)];
+  }
+  
+  // Recalcular fechas y labels
+  const firstWeekStart = parseYYYYMMDD(sorted[0].startDate);
+  
+  return sorted.map((week, index) => {
+    const weekNumber = index + 1;
+    const label = isPre
+      ? i18n.t('planning.weekFormatNegative', { number: weekNumber })
+      : i18n.t('planning.weekFormat', { number: weekNumber });
+    
+    // Calcular nueva fecha: primera semana + (índice * 7 días)
+    const newStartDate = toYYYYMMDD(addDays(firstWeekStart, index * 7));
+    
+    return relabelWeekByCalendar(
+      { ...week, label },
+      newStartDate,
+      holidayFull,
+      holidayMD
+    );
+  });
+};

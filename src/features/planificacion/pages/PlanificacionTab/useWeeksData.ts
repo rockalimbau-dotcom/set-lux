@@ -43,17 +43,70 @@ export function useWeeksData(
   useEffect(() => {
     if (!isLoaded) return;
     
-    // Evitar escrituras innecesarias comparando con el valor anterior
+    // Comparar contenido completo para detectar cambios reales
     const currentWeeks = { pre: preWeeks, pro: proWeeks };
     const prevWeeks = prevWeeksRef.current;
     
-    if (prevWeeks && 
-        prevWeeks.pre.length === currentWeeks.pre.length &&
-        prevWeeks.pro.length === currentWeeks.pro.length &&
-        prevWeeks.pre.every((w, i) => w.id === currentWeeks.pre[i]?.id) &&
-        prevWeeks.pro.every((w, i) => w.id === currentWeeks.pro[i]?.id)) {
-      // No hay cambios significativos, no escribir
-      return;
+    if (prevWeeks) {
+      // Comparar estructura y contenido
+      const preChanged = prevWeeks.pre.length !== currentWeeks.pre.length ||
+        prevWeeks.pre.some((w, i) => {
+          const current = currentWeeks.pre[i];
+          if (!current || w.id !== current.id) return true;
+          // Comparar días
+          if ((w.days || []).length !== (current.days || []).length) return true;
+          return (w.days || []).some((d: AnyRecord, di: number) => {
+            const cd = (current.days || [])[di];
+            if (!cd) return true;
+            // Comparar campos importantes
+            return d.tipo !== cd.tipo ||
+              JSON.stringify(d.team || []) !== JSON.stringify(cd.team || []) ||
+              JSON.stringify(d.prelight || []) !== JSON.stringify(cd.prelight || []) ||
+              JSON.stringify(d.pickup || []) !== JSON.stringify(cd.pickup || []) ||
+              d.start !== cd.start ||
+              d.end !== cd.end ||
+              d.cut !== cd.cut ||
+              d.observations !== cd.observations ||
+              d.loc !== cd.loc ||
+              d.issue !== cd.issue ||
+              d.prelightStart !== cd.prelightStart ||
+              d.prelightEnd !== cd.prelightEnd ||
+              d.pickupStart !== cd.pickupStart ||
+              d.pickupEnd !== cd.pickupEnd;
+          });
+        });
+      
+      const proChanged = prevWeeks.pro.length !== currentWeeks.pro.length ||
+        prevWeeks.pro.some((w, i) => {
+          const current = currentWeeks.pro[i];
+          if (!current || w.id !== current.id) return true;
+          // Comparar días
+          if ((w.days || []).length !== (current.days || []).length) return true;
+          return (w.days || []).some((d: AnyRecord, di: number) => {
+            const cd = (current.days || [])[di];
+            if (!cd) return true;
+            // Comparar campos importantes
+            return d.tipo !== cd.tipo ||
+              JSON.stringify(d.team || []) !== JSON.stringify(cd.team || []) ||
+              JSON.stringify(d.prelight || []) !== JSON.stringify(cd.prelight || []) ||
+              JSON.stringify(d.pickup || []) !== JSON.stringify(cd.pickup || []) ||
+              d.start !== cd.start ||
+              d.end !== cd.end ||
+              d.cut !== cd.cut ||
+              d.observations !== cd.observations ||
+              d.loc !== cd.loc ||
+              d.issue !== cd.issue ||
+              d.prelightStart !== cd.prelightStart ||
+              d.prelightEnd !== cd.prelightEnd ||
+              d.pickupStart !== cd.pickupStart ||
+              d.pickupEnd !== cd.pickupEnd;
+          });
+        });
+      
+      if (!preChanged && !proChanged) {
+        // No hay cambios reales, no escribir
+        return;
+      }
     }
     
     prevWeeksRef.current = currentWeeks;
@@ -117,27 +170,55 @@ export function useWeeksData(
     };
 
     // Usar requestIdleCallback o setTimeout para diferir el trabajo pesado
+    // Solo ejecutar cuando cambian los holidays, no cuando cambia la longitud de las semanas
     const timeoutId = setTimeout(() => {
       updateWeeks();
     }, 0);
 
     return () => clearTimeout(timeoutId);
-  }, [isLoaded, holidayKey, preWeeks.length, proWeeks.length]);
+  }, [isLoaded, holidayKey]);
 
-  // Sync weeks with roster
+  // Sync weeks with roster - solo cuando cambia el roster realmente
   const rosterKey = useMemo(
     () => JSON.stringify({ baseRoster, preRoster, pickRoster, refsRoster }),
     [baseRoster, preRoster, pickRoster, refsRoster]
   );
+  
+  const prevRosterKeyRef = useRef<string | null>(null);
 
   useEffect(() => {
-    setPreWeeks(prev =>
-      syncAllWeeks(prev, baseRoster, preRoster, pickRoster, refsRoster)
-    );
-    setProWeeks(prev =>
-      syncAllWeeks(prev, baseRoster, preRoster, pickRoster, refsRoster)
-    );
-  }, [rosterKey]);
+    if (!isLoaded) return;
+    
+    // Solo sincronizar si el roster realmente cambió (no en cada render)
+    const currentRosterKey = rosterKey;
+    const prevRosterKey = prevRosterKeyRef.current;
+    
+    // Si es la primera vez o el roster realmente cambió
+    if (prevRosterKey === null || prevRosterKey !== currentRosterKey) {
+      prevRosterKeyRef.current = currentRosterKey;
+      
+      // Solo sincronizar si el roster cambió (no en la primera carga si ya hay datos)
+      if (prevRosterKey !== null) {
+        // El roster cambió, sincronizar
+        setPreWeeks(prev =>
+          syncAllWeeks(prev, baseRoster, preRoster, pickRoster, refsRoster)
+        );
+        setProWeeks(prev =>
+          syncAllWeeks(prev, baseRoster, preRoster, pickRoster, refsRoster)
+        );
+      } else {
+        // Primera carga: solo sincronizar si no hay datos guardados
+        if ((weeksData.pre || []).length === 0 && (weeksData.pro || []).length === 0) {
+          setPreWeeks(prev =>
+            syncAllWeeks(prev, baseRoster, preRoster, pickRoster, refsRoster)
+          );
+          setProWeeks(prev =>
+            syncAllWeeks(prev, baseRoster, preRoster, pickRoster, refsRoster)
+          );
+        }
+      }
+    }
+  }, [isLoaded, rosterKey, baseRoster, preRoster, pickRoster, refsRoster, weeksData]);
 
   return {
     preWeeks,

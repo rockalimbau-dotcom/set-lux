@@ -21,12 +21,13 @@ function hasMeaningfulData(day: any): boolean {
   const hasPrelight = day.prelight && day.prelight.length > 0;
   const hasPickup = day.pickup && day.pickup.length > 0;
   const hasIssue = day.issue && day.issue.trim() !== '';
+  const hasObservations = day.observations && day.observations.trim() !== '';
   const hasLocation = day.loc && day.loc.trim() !== '' && day.loc !== 'DESCANSO';
   const hasCut = day.cut && day.cut.trim() !== '';
   const hasSchedule = day.start && day.end;
   const isNotDescanso = day.tipo !== 'Descanso';
   
-  return hasTeam || hasPrelight || hasPickup || hasIssue || hasLocation || hasCut || hasSchedule || isNotDescanso;
+  return hasTeam || hasPrelight || hasPickup || hasIssue || hasObservations || hasLocation || hasCut || hasSchedule || isNotDescanso;
 }
 
 interface GenerateWeekTableParams {
@@ -81,6 +82,7 @@ export function generateWeekTable({
   const concepts = [
     { key: getTranslation('planning.dayType', 'Jornada'), getter: (i: number) => translateJornadaType(week.days?.[i]?.tipo || '') },
     { key: getTranslation('planning.cutRow', 'Corte cámara'), getter: (i: number) => week.days?.[i]?.cut || '' },
+    { key: getTranslation('planning.observations', 'Observaciones'), getter: (i: number) => week.days?.[i]?.observations || '' },
     { key: getTranslation('planning.location', 'Localización'), getter: (i: number) => week.days?.[i]?.loc || '' },
     { 
       key: getTranslation('planning.team', 'Equipo'), 
