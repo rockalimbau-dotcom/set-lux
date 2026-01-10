@@ -36,13 +36,76 @@ export function PriceSection({
 
   // Obtener los precios de la sección correspondiente
   const prices = sectionKey === 'base' 
-    ? model.prices || {}
+    ? (model?.prices || {})
     : sectionKey === 'prelight'
-    ? model.pricesPrelight || {}
-    : model.pricesPickup || {};
+    ? (model?.pricesPrelight || {})
+    : (model?.pricesPickup || {});
+
+  // IMPORTANTE: Antes del commit ab1a5e5, PricesTable usaba roles.map() directamente
+  // Para la sección base, SIEMPRE debemos mostrar los roles del equipo base, independientemente de prices
+  // Prioridad: roles prop > model.roles > ['Gaffer', 'Eléctrico']
+  const baseRoles: string[] = (() => {
+    if (sectionKey === 'base') {
+      // Para base, siempre asegurar que hay roles - FALLBACK ABSOLUTO
+      // Verificar que roles tenga elementos, no solo que exista
+      if (roles && Array.isArray(roles) && roles.length > 0) {
+        return roles;
+      }
+      // Si roles está vacío, verificar model.roles
+      if (model?.roles && Array.isArray(model.roles) && model.roles.length > 0) {
+        return model.roles;
+      }
+      // FALLBACK ABSOLUTO: siempre devolver estos roles para base
+      // Esto asegura que la tabla nunca esté vacía (como funcionaba antes con roles.map())
+      return ['Gaffer', 'Eléctrico'];
+    }
+    // Para prelight/pickup, usar roles si están disponibles
+    return (roles && Array.isArray(roles) && roles.length > 0) ? roles : [];
+  })();
+  
+  // Asegurar que baseRoles nunca esté vacío para la sección base (doble verificación)
+  const finalBaseRoles = (sectionKey === 'base' && (!baseRoles || baseRoles.length === 0))
+    ? ['Gaffer', 'Eléctrico']
+    : baseRoles;
+
+  // IMPORTANTE: Antes del commit ab1a5e5, PricesTable usaba roles.map() directamente
+  // Esto significa que siempre mostraba los roles del array roles, independientemente de prices
+  // Para la sección base, debemos usar finalBaseRoles directamente (como antes), no Object.keys(prices)
+  // Para prelight y pickup: mostrar roles que están en prices, pero ordenados según PRICE_ROLES
+  const pricesKeys = Object.keys(prices || {});
+  
+  // Función para ordenar roles según el orden de PRICE_ROLES
+  const sortRolesByPriceRolesOrder = (rolesToSort: string[]): string[] => {
+    const sorted: string[] = [];
+    const rolesSet = new Set(rolesToSort);
+    
+    // Primero añadir roles en el orden de PRICE_ROLES
+    for (const role of PRICE_ROLES) {
+      if (rolesSet.has(role)) {
+        sorted.push(role);
+        rolesSet.delete(role);
+      }
+    }
+    
+    // Luego añadir cualquier rol que no esté en PRICE_ROLES
+    for (const role of rolesToSort) {
+      if (rolesSet.has(role)) {
+        sorted.push(role);
+      }
+    }
+    
+    return sorted;
+  };
+  
+  // Para la sección base: usar finalBaseRoles directamente (como funcionaba antes con roles.map())
+  // Para prelight/pickup: mostrar roles que están en prices, ordenados según PRICE_ROLES
+  const rolesToDisplay = sectionKey === 'base' 
+    ? finalBaseRoles
+    : sortRolesByPriceRolesOrder(pricesKeys);
 
   // Para prelight y pickup, mostrar todos los roles disponibles, no solo los del equipo base
-  const availableRoles = sectionKey === 'base' ? roles : PRICE_ROLES;
+  // Para base, availableRoles son los roles que NO están en el equipo base (para el dropdown)
+  const availableRoles = sectionKey === 'base' ? PRICE_ROLES : PRICE_ROLES;
 
   // Filtrar headers: quitar "Precio refuerzo" de prelight y pickup
   const visibleHeaders = sectionKey === 'base' 
@@ -94,14 +157,27 @@ export function PriceSection({
                 }
               }}
             >
-              {availableRoles.filter((r: string) => !Object.keys(prices).includes(r)).map((role: string) => (
+              {availableRoles.filter((r: string) => {
+                // Para base: mostrar roles que NO están en el equipo base
+                // Para prelight/pickup: mostrar roles que NO están en prices
+                if (sectionKey === 'base') {
+                  return !finalBaseRoles.includes(r);
+                }
+                // Para prelight y pickup, usar Object.keys(prices)
+                return !Object.keys(prices).includes(r);
+              }).map((role: string) => (
                 <button
                   key={role}
                   onMouseDown={(e) => {
                     e.preventDefault();
-                    // Inicializar el rol vacío (no copiar del base)
-                    // Para prelight y pickup, el usuario debe introducir los precios manualmente
-                    handlePriceChange(sectionKey, role, 'Precio semanal', '');
+                    if (sectionKey === 'base') {
+                      // Para la sección base, añadir el rol a model.roles y crear entrada en prices
+                      addRole(role);
+                      handlePriceChange(sectionKey, role, 'Precio semanal', '');
+                    } else {
+                      // Para prelight y pickup, solo crear entrada en prices (no añadir a model.roles)
+                      handlePriceChange(sectionKey, role, 'Precio semanal', '');
+                    }
                     setShowRoleSelect(false);
                   }}
                   className='w-full text-left px-1.5 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-2 text-[8px] sm:text-[9px] md:text-[10px] lg:text-sm text-gray-900 dark:text-white hover:bg-blue-100 dark:hover:bg-amber-600/40 transition-colors'
@@ -126,15 +202,17 @@ export function PriceSection({
             </tr>
           </thead>
           <tbody>
-            {Object.keys(prices).length === 0 ? (
+            {rolesToDisplay.length === 0 ? (
               <tr>
                 <Td colSpan={PRICE_HEADERS.length + 1} align='center' className='text-zinc-400 text-[9px] sm:text-[10px] md:text-xs py-3 sm:py-4 md:py-5'>
                   {t('conditions.noRolesInSection')}
                 </Td>
               </tr>
             ) : (
-              Object.keys(prices).map((role: string) => {
+              rolesToDisplay.map((role: string) => {
                 const hasSemanalValue = prices[role]?.['Precio semanal'];
+                // Para la sección base, si el rol no está en prices pero está en finalBaseRoles, permitir edición
+                const isBaseRoleWithoutPrice = sectionKey === 'base' && !prices[role] && finalBaseRoles.includes(role);
                 
                 return (
                   <tr key={role} className='relative'>
@@ -160,6 +238,11 @@ export function PriceSection({
                     {visibleHeaders.map(h => {
                       const isSemanal = h === 'Precio semanal';
                       const isRefuerzo = h === 'Precio refuerzo';
+                      // Permitir edición si:
+                      // - Es "Precio semanal" (siempre editable para base, o si hay valor semanal)
+                      // - Es "Precio refuerzo" (siempre editable)
+                      // - Hay un valor semanal (para otros campos derivados)
+                      const canEdit = isSemanal || isRefuerzo || hasSemanalValue;
                       
                       return (
                         <Td key={h} align='center'>
@@ -169,10 +252,10 @@ export function PriceSection({
                             onChange={e => !readOnly && handlePriceChange(sectionKey, role, h, (e.target as HTMLInputElement).value)}
                             placeholder={isSemanal ? '€' : ''}
                             step='0.01'
-                            disabled={readOnly || (!isSemanal && !isRefuerzo && !hasSemanalValue)}
+                            disabled={readOnly || (!canEdit)}
                             readOnly={readOnly}
                             className={`w-full px-1 py-0.5 sm:px-1.5 sm:py-1 md:px-2 md:py-1 rounded sm:rounded-md md:rounded-lg border border-neutral-border focus:outline-none focus:ring-1 text-center text-[9px] sm:text-[10px] md:text-xs ${
-                              readOnly || (!isSemanal && !isRefuerzo && !hasSemanalValue)
+                              readOnly || !canEdit
                                 ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 cursor-not-allowed opacity-50' 
                                 : 'dark:bg-transparent'
                             }`}

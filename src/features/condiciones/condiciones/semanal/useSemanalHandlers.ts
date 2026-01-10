@@ -54,7 +54,14 @@ export function useSemanalHandlers({ model, setModel }: UseSemanalHandlersProps)
         nextRoles.push(newRole);
       }
       
-      return { ...m, roles: nextRoles };
+      // IMPORTANTE: Inicializar entrada vacía en prices para el nuevo rol
+      // Esto asegura que el rol aparezca inmediatamente en la tabla
+      const nextPrices = { ...(m.prices || {}) };
+      if (!nextPrices[newRole]) {
+        nextPrices[newRole] = {};
+      }
+      
+      return { ...m, roles: nextRoles, prices: nextPrices };
     });
   };
 

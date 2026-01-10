@@ -1,4 +1,5 @@
 import { loadJSON } from '../shared';
+import { storage } from '@shared/services/localStorage.service';
 import { DEFAULT_FESTIVOS_TEXT } from '@shared/constants/festivos';
 import { getDefaultsSemanal } from '../../utils/translationHelpers';
 
@@ -27,7 +28,10 @@ const getDefaultConvenio = () => getDefaultsSemanal().convenio;
 export function loadOrSeed(storageKey: string) {
   const fallback = {
     roles: ['Gaffer', 'Eléctrico'],
-    prices: {},
+    prices: {
+      'Gaffer': {},
+      'Eléctrico': {},
+    },
     legendTemplate: getDefaultLegend(),
     festivosTemplate: globalDynamicFestivosText,
     horariosTemplate: getDefaultHorarios(),
@@ -60,6 +64,15 @@ export function loadOrSeed(storageKey: string) {
       transporteDia: '12',
     },
   } as any;
+
+  // Si no existe clave aún, persistimos el fallback para que sea "real" desde el inicio
+  // Esto es como funciona en diario y asegura que prices tenga valores desde el inicio
+  try {
+    const exists = storage.getString(storageKey);
+    if (exists == null) {
+      storage.setJSON(storageKey, fallback);
+    }
+  } catch {}
 
   const parsed = loadJSON(storageKey, fallback);
 
@@ -141,10 +154,69 @@ export function loadOrSeed(storageKey: string) {
     parsed.preproTemplate = parsed.preproTemplate ?? getDefaultPrepro();
     parsed.convenioTemplate = parsed.convenioTemplate ?? getDefaultConvenio();
 
+    // Asegurar que roles existe y tiene valores por defecto si está vacío
+    if (!parsed.roles || !Array.isArray(parsed.roles) || parsed.roles.length === 0) {
+      parsed.roles = ['Gaffer', 'Eléctrico'];
+    }
+
+    // Sincronizar roles con prices: inicializar precios vacíos para roles del equipo base que no tienen precios
+    // IMPORTANTE: Esto debe ejecutarse SIEMPRE, incluso si prices ya existe pero está vacío
+    // CRÍTICO: Asegurar que prices tenga entradas para Gaffer y Eléctrico desde el inicio
+    parsed.prices = parsed.prices || {};
+    
+    // Asegurar que prices tenga entradas para todos los roles del equipo base
+    // Si prices está vacío o no tiene entradas para los roles, inicializarlas
+    let needsSync = false;
+    const defaultRoles = ['Gaffer', 'Eléctrico'];
+    
+    // Primero, asegurar que los roles por defecto siempre estén en prices
+    for (const role of defaultRoles) {
+      if (!parsed.prices[role]) {
+        parsed.prices[role] = {};
+        needsSync = true;
+      }
+    }
+    
+    // Luego, asegurar que todos los roles del modelo también estén en prices
+    for (const role of parsed.roles) {
+      if (!parsed.prices[role]) {
+        parsed.prices[role] = {};
+        needsSync = true;
+      }
+    }
+    
+    // Si se hizo alguna sincronización, persistir los cambios
+    if (needsSync) {
+      try {
+        storage.setJSON(storageKey, parsed);
+      } catch {}
+    }
+
     return parsed;
   }
 
-  return fallback;
+  // Sincronizar roles con prices en el fallback también
+  // IMPORTANTE: Asegurar que prices tenga entradas vacías para todos los roles del equipo base
+  const syncedFallback = { ...fallback };
+  if (syncedFallback.roles && Array.isArray(syncedFallback.roles) && syncedFallback.roles.length > 0) {
+    syncedFallback.prices = syncedFallback.prices || {};
+    for (const role of syncedFallback.roles) {
+      if (!syncedFallback.prices[role]) {
+        syncedFallback.prices[role] = {};
+      }
+    }
+  } else {
+    // Si roles no está definido, asegurar que prices tenga los roles por defecto
+    syncedFallback.prices = syncedFallback.prices || {};
+    if (!syncedFallback.prices['Gaffer']) {
+      syncedFallback.prices['Gaffer'] = {};
+    }
+    if (!syncedFallback.prices['Eléctrico']) {
+      syncedFallback.prices['Eléctrico'] = {};
+    }
+  }
+
+  return syncedFallback;
 }
 
 export { globalDynamicFestivosText };

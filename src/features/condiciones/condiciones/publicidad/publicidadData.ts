@@ -185,10 +185,87 @@ export function loadOrSeedDiario(storageKey: string): AnyRecord {
       parsed.alojamientoTemplate = parsed.alojamientoTemplate ?? getDefaultAlojamiento();
       parsed.convenioTemplate = parsed.convenioTemplate ?? getDefaultConvenio();
 
+      // Asegurar que roles existe y tiene valores por defecto si está vacío
+      // IMPORTANTE: Solo Gaffer y Eléctrico deben estar en roles inicialmente
+      // Los demás roles (Best boy, Auxiliar, etc.) tienen precios preestablecidos pero NO están en roles
+      if (!parsed.roles || !Array.isArray(parsed.roles) || parsed.roles.length === 0) {
+        parsed.roles = ['Gaffer', 'Eléctrico'];
+      }
+
+      // Sincronizar roles con prices: inicializar precios vacíos para roles del equipo base que no tienen precios
+      // IMPORTANTE: Esto debe ejecutarse SIEMPRE, incluso si prices ya existe pero está vacío
+      // CRÍTICO: Asegurar que prices tenga entradas para Gaffer y Eléctrico desde el inicio
+      parsed.prices = parsed.prices || {};
+      
+      // Asegurar que prices tenga entradas para todos los roles del equipo base
+      // Si prices está vacío o no tiene entradas para los roles, inicializarlas
+      let needsSync = false;
+      const defaultRoles = ['Gaffer', 'Eléctrico'];
+      
+      // Primero, asegurar que los roles por defecto siempre estén en prices
+      for (const role of defaultRoles) {
+        if (!parsed.prices[role]) {
+          // Si el rol tiene precios preestablecidos en el fallback, usarlos
+          // Si no, inicializar vacío
+          if (fallback.prices && fallback.prices[role]) {
+            parsed.prices[role] = { ...fallback.prices[role] };
+          } else {
+            parsed.prices[role] = {};
+          }
+          needsSync = true;
+        }
+      }
+      
+      // Luego, asegurar que todos los roles del modelo también estén en prices
+      for (const role of parsed.roles) {
+        if (!parsed.prices[role]) {
+          // Si el rol tiene precios preestablecidos en el fallback, usarlos
+          if (fallback.prices && fallback.prices[role]) {
+            parsed.prices[role] = { ...fallback.prices[role] };
+          } else {
+            parsed.prices[role] = {};
+          }
+          needsSync = true;
+        }
+      }
+      
+      // IMPORTANTE: Los precios preestablecidos para otros roles (Best boy, Auxiliar, etc.)
+      // deben mantenerse en prices, pero NO deben estar en roles inicialmente
+      // Esto permite que aparezcan en el dropdown pero no en la tabla base
+      if (fallback.prices) {
+        for (const role of Object.keys(fallback.prices)) {
+          if (!parsed.prices[role]) {
+            parsed.prices[role] = { ...fallback.prices[role] };
+            needsSync = true;
+          }
+        }
+      }
+      
+      // Si se hizo alguna sincronización, persistir los cambios
+      if (needsSync) {
+        try {
+          storage.setJSON(storageKey, parsed);
+        } catch {}
+      }
+
       return parsed;
     }
 
-    return fallback;
+    // Sincronizar roles con prices en el fallback también
+    // IMPORTANTE: Solo Gaffer y Eléctrico deben estar en roles del fallback
+    // Los demás roles tienen precios preestablecidos pero NO están en roles
+    const syncedFallback = { ...fallback };
+    syncedFallback.roles = ['Gaffer', 'Eléctrico']; // Asegurar que solo estos dos estén en roles
+    syncedFallback.prices = syncedFallback.prices || {};
+    
+    // Asegurar que Gaffer y Eléctrico tengan entradas en prices
+    for (const role of syncedFallback.roles) {
+      if (!syncedFallback.prices[role]) {
+        syncedFallback.prices[role] = {};
+      }
+    }
+
+    return syncedFallback;
   } catch (error) {
     console.error('Error loading diario conditions:', error);
     return fallback;

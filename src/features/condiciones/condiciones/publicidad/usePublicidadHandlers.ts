@@ -36,7 +36,12 @@ export function useDiarioHandlers({ model, setModel }: UseDiarioHandlersProps) {
     if (!newRole) return;
     
     setModel((m: AnyRecord) => {
-      const currentRoles = m.roles || PRICE_ROLES_DIARIO;
+      // IMPORTANTE: Usar solo los roles del modelo, no PRICE_ROLES_DIARIO como fallback
+      // Esto asegura que solo los roles añadidos estén en model.roles
+      const currentRoles = (m.roles && Array.isArray(m.roles) && m.roles.length > 0) 
+        ? m.roles 
+        : ['Gaffer', 'Eléctrico'];
+      
       if (currentRoles.includes(newRole)) return m;
       
       // Maintain PRICE_ROLES_DIARIO order
@@ -62,6 +67,9 @@ export function useDiarioHandlers({ model, setModel }: UseDiarioHandlersProps) {
         const seed = loadOrSeedDiario('__seed__');
         if (seed?.prices?.[newRole]) {
           nextPrices[newRole] = { ...seed.prices[newRole] };
+        } else {
+          // Si no hay precios preestablecidos, inicializar vacío
+          nextPrices[newRole] = {};
         }
       }
 
@@ -72,7 +80,10 @@ export function useDiarioHandlers({ model, setModel }: UseDiarioHandlersProps) {
   const removeRole = (sectionKey: 'base' | 'prelight' | 'pickup', role: string) => {
     setModel((m: AnyRecord) => {
       if (sectionKey === 'base') {
-        const roles = m.roles || PRICE_ROLES_DIARIO;
+        // IMPORTANTE: Usar solo los roles del modelo, no PRICE_ROLES_DIARIO como fallback
+        const roles = (m.roles && Array.isArray(m.roles) && m.roles.length > 0) 
+          ? m.roles 
+          : ['Gaffer', 'Eléctrico'];
         const nextRoles = roles.filter((r: string) => r !== role);
         const nextPrices = { ...m.prices };
         delete nextPrices[role];

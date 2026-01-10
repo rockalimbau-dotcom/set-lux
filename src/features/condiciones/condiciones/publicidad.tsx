@@ -1,6 +1,6 @@
 // condiciones/diario.tsx
 import { useLocalStorage } from '@shared/hooks/useLocalStorage';
-import { useMemo, useState, memo } from 'react';
+import { useMemo, useState, useRef, useEffect, memo } from 'react';
 import { createPortal } from 'react-dom';
 import { useDiarioTranslations } from './publicidad/publicidadHelpers';
 import { loadOrSeedDiario } from './publicidad/publicidadData';
@@ -39,6 +39,61 @@ function CondicionesPublicidad({
     loadOrSeedDiario(storageKey)
   );
 
+  // Sincronizar roles con prices inmediatamente después de cargar
+  // IMPORTANTE: Esto debe ejecutarse siempre para asegurar que prices tenga entradas para todos los roles
+  // Similar a como funciona en diario, donde prices siempre tiene valores desde loadOrSeedDiario
+  const syncedKeyRef = useRef<string>('');
+  useEffect(() => {
+    if (!model) return;
+    
+    // Resetear el ref si cambió el storageKey (nuevo proyecto)
+    if (syncedKeyRef.current !== storageKey) {
+      syncedKeyRef.current = storageKey;
+    } else {
+      // Si ya sincronizamos para este storageKey, solo verificar si necesita sincronización
+      // pero no ejecutar de nuevo para evitar loops
+      const currentRoles = model.roles && Array.isArray(model.roles) && model.roles.length > 0 
+        ? model.roles 
+        : ['Gaffer', 'Eléctrico'];
+      
+      const currentPrices = model.prices || {};
+      const allRolesHavePrices = currentRoles.every((role: string) => currentPrices[role] !== undefined);
+      
+      // Si todos los roles tienen precios, no hacer nada
+      if (allRolesHavePrices && currentRoles.length > 0) return;
+    }
+    
+    const currentRoles = model.roles && Array.isArray(model.roles) && model.roles.length > 0 
+      ? model.roles 
+      : ['Gaffer', 'Eléctrico'];
+    
+    const currentPrices = model.prices || {};
+    let needsSync = false;
+    const syncedPrices = { ...currentPrices };
+    
+    // Inicializar precios vacíos para todos los roles del equipo base
+    // Esto es crítico: asegurar que prices tenga entradas para Gaffer y Eléctrico
+    for (const role of currentRoles) {
+      if (!syncedPrices[role]) {
+        syncedPrices[role] = {};
+        needsSync = true;
+      }
+    }
+    
+    // Verificar si roles está vacío o mal formado
+    const needsRolesSync = !model.roles || !Array.isArray(model.roles) || model.roles.length === 0;
+    
+    // Si necesita sincronización, actualizar el modelo
+    if (needsSync || needsRolesSync) {
+      setModel((m: AnyRecord) => ({ 
+        ...m, 
+        roles: currentRoles,
+        prices: syncedPrices 
+      }));
+      syncedKeyRef.current = storageKey;
+    }
+  }, [model, storageKey, setModel]); // Ejecutar cuando cambie el modelo o el proyecto
+
   // Custom hooks
   useLanguageSync({ model, setModel });
   useModelPersistence({ storageKey, model });
@@ -62,7 +117,11 @@ function CondicionesPublicidad({
     }
   };
 
-  const roles = model.roles || PRICE_ROLES_DIARIO;
+  // IMPORTANTE: Solo usar roles del modelo si tiene elementos, sino usar Gaffer y Eléctrico
+  // Esto asegura que la tabla base siempre muestre estos dos roles
+  const roles = (model.roles && Array.isArray(model.roles) && model.roles.length > 0) 
+    ? model.roles 
+    : ['Gaffer', 'Eléctrico'];
 
   useExportRegistration({
     project,
