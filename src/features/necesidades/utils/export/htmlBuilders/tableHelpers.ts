@@ -64,21 +64,45 @@ function listRow(
  */
 export function generateTableBody(
   DAYS: ReturnType<typeof getDays>,
-  valuesByDay: DayValues[]
+  valuesByDay: DayValues[],
+  selectedRowKeys?: string[] // Filas seleccionadas para filtrar qué mostrar
 ): string {
-  return (
-    fieldRow('loc', i18n.t('needs.location'), DAYS, valuesByDay) +
-    fieldRow('seq', i18n.t('needs.sequences'), DAYS, valuesByDay) +
-    listRow(i18n.t('needs.technicalTeam'), 'crewList', 'crewTxt', DAYS, valuesByDay) +
-    fieldRow('needLoc', i18n.t('needs.locationNeeds'), DAYS, valuesByDay) +
-    fieldRow('needProd', i18n.t('needs.productionNeeds'), DAYS, valuesByDay) +
-    fieldRow('needLight', i18n.t('needs.lightNeeds'), DAYS, valuesByDay) +
-    fieldRow('extraMat', i18n.t('needs.extraMaterial'), DAYS, valuesByDay) +
-    fieldRow('precall', i18n.t('needs.precall'), DAYS, valuesByDay) +
-    listRow(i18n.t('needs.prelightTeam'), 'preList', 'preTxt', DAYS, valuesByDay) +
-    listRow(i18n.t('needs.pickupTeam'), 'pickList', 'pickTxt', DAYS, valuesByDay) +
-    fieldRow('obs', i18n.t('needs.observations'), DAYS, valuesByDay)
-  );
+  // Mapeo de fieldKey/listKey a función de generación
+  const rowGenerators: Array<{ key: string; generate: () => string }> = [
+    { key: 'loc', generate: () => fieldRow('loc', i18n.t('needs.location'), DAYS, valuesByDay) },
+    { key: 'seq', generate: () => fieldRow('seq', i18n.t('needs.sequences'), DAYS, valuesByDay) },
+    { key: 'crewList', generate: () => listRow(i18n.t('needs.technicalTeam'), 'crewList', 'crewTxt', DAYS, valuesByDay) },
+    { key: 'needLoc', generate: () => fieldRow('needLoc', i18n.t('needs.locationNeeds'), DAYS, valuesByDay) },
+    { key: 'needProd', generate: () => fieldRow('needProd', i18n.t('needs.productionNeeds'), DAYS, valuesByDay) },
+    { key: 'needLight', generate: () => fieldRow('needLight', i18n.t('needs.lightNeeds'), DAYS, valuesByDay) },
+    { key: 'extraMat', generate: () => fieldRow('extraMat', i18n.t('needs.extraMaterial'), DAYS, valuesByDay) },
+    { key: 'precall', generate: () => fieldRow('precall', i18n.t('needs.precall'), DAYS, valuesByDay) },
+    { key: 'preList', generate: () => listRow(i18n.t('needs.prelightTeam'), 'preList', 'preTxt', DAYS, valuesByDay) },
+    { key: 'pickList', generate: () => listRow(i18n.t('needs.pickupTeam'), 'pickList', 'pickTxt', DAYS, valuesByDay) },
+    { key: 'obs', generate: () => fieldRow('obs', i18n.t('needs.observations'), DAYS, valuesByDay) },
+  ];
+  
+  // Si hay filas seleccionadas, filtrar
+  if (selectedRowKeys && selectedRowKeys.length > 0) {
+    // Extraer los fieldKeys de las claves seleccionadas (formato: weekId_fieldKey)
+    const selectedFields = new Set(
+      selectedRowKeys
+        .map(key => {
+          const parts = key.split('_');
+          return parts.length > 1 ? parts[parts.length - 1] : null;
+        })
+        .filter(Boolean) as string[]
+    );
+    
+    // Generar solo las filas seleccionadas
+    return rowGenerators
+      .filter(row => selectedFields.has(row.key))
+      .map(row => row.generate())
+      .join('');
+  }
+  
+  // Si no hay selección, generar todas las filas
+  return rowGenerators.map(row => row.generate()).join('');
 }
 
 /**

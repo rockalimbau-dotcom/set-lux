@@ -4,6 +4,7 @@ import { AnyRecord } from '@shared/types/common';
 import { btnExport } from '@shared/utils/tailwindClasses';
 import { DayInfo, WeekEntry } from './NecesidadesTabTypes';
 import { WeekSection } from './WeekSection';
+import { useColumnSwap } from '../../hooks/useColumnSwap';
 
 interface NecesidadesTabContentProps {
   weekEntries: WeekEntry[];
@@ -15,6 +16,7 @@ interface NecesidadesTabContentProps {
   setWeekOpen: (weekId: string, isOpen: boolean) => void;
   exportWeekPDF: (weekId: string) => void;
   exportAllNeedsPDF: () => void;
+  swapDays: (weekId1: string, dayIdx1: number, weekId2: string, dayIdx2: number) => void;
 }
 
 export function NecesidadesTabContent({
@@ -27,9 +29,13 @@ export function NecesidadesTabContent({
   setWeekOpen,
   exportWeekPDF,
   exportAllNeedsPDF,
+  swapDays,
 }: NecesidadesTabContentProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  
+  // Hook compartido para gestión de intercambio de columnas
+  const { selectedDay, selectDayForSwap, clearSelection, isDaySelected } = useColumnSwap();
 
   const btnExportCls = btnExport;
   const btnExportStyle = {
@@ -92,6 +98,12 @@ export function NecesidadesTabContent({
               setWeekOpen={setWeekOpen}
               exportWeekPDF={exportWeekPDF}
               readOnly={readOnly}
+              swapDays={swapDays}
+              selectedDayForSwap={selectedDay}
+              selectDayForSwap={selectDayForSwap}
+              clearSelection={clearSelection}
+              isDaySelected={isDaySelected}
+              weekEntries={weekEntries}
             />
           );
         } catch (error) {

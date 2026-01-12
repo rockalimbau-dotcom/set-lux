@@ -95,6 +95,66 @@ export function useNeedsActions({
     }
   }, [readOnly, setNeeds]);
 
-  return { setCell, removeFromList, setWeekOpen };
+  const swapDays = useCallback((
+    weekId1: string,
+    dayIdx1: number,
+    weekId2: string,
+    dayIdx2: number
+  ) => {
+    if (readOnly) return;
+    
+    setNeeds((prev: AnyRecord) => {
+      const w1: AnyRecord = prev[weekId1] || { days: {} };
+      const w2: AnyRecord = prev[weekId2] || { days: {} };
+      
+      const day1: AnyRecord = (w1.days && w1.days[dayIdx1]) || {};
+      const day2: AnyRecord = (w2.days && w2.days[dayIdx2]) || {};
+      
+      // Crear copias profundas de los datos para intercambiar
+      const day1Copy = JSON.parse(JSON.stringify(day1));
+      const day2Copy = JSON.parse(JSON.stringify(day2));
+      
+      // Intercambiar los días
+      const next: AnyRecord = {
+        ...prev,
+        [weekId1]: {
+          ...w1,
+          days: { ...w1.days, [dayIdx1]: day2Copy },
+        },
+        [weekId2]: {
+          ...w2,
+          days: { ...w2.days, [dayIdx2]: day1Copy },
+        },
+      };
+      
+      return next;
+    });
+    
+    // Sincronizar con planificación si es necesario (similar a setCell)
+    setTimeout(() => {
+      try {
+        const planData = storage.getJSON<any>(planKey);
+        if (planData) {
+          const allWeeks = [...(Array.isArray(planData.pre) ? planData.pre : []), ...(Array.isArray(planData.pro) ? planData.pro : [])];
+          const week1 = allWeeks.find((w: AnyRecord) => w.id === weekId1);
+          const week2 = allWeeks.find((w: AnyRecord) => w.id === weekId2);
+          
+          if (week1 && week1.days && week1.days[dayIdx1]) {
+            const day1Data = JSON.parse(JSON.stringify(week1.days[dayIdx1]));
+            if (week2 && week2.days && week2.days[dayIdx2]) {
+              const day2Data = JSON.parse(JSON.stringify(week2.days[dayIdx2]));
+              week1.days[dayIdx1] = day2Data;
+              week2.days[dayIdx2] = day1Data;
+              storage.setJSON(planKey, planData);
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error syncing swap to planificación:', error);
+      }
+    }, 0);
+  }, [readOnly, planKey, setNeeds]);
+
+  return { setCell, removeFromList, setWeekOpen, swapDays };
 }
 

@@ -51,12 +51,26 @@ export default function Chip({ role, name, onRemove, context, readOnly = false }
   const base = String(role || '').toUpperCase();
   const { i18n } = useTranslation();
   let label = getRoleBadgeCode(base, i18n.language);
-  if (context === 'prelight') label = `${label}P`;
-  if (context === 'pickup') label = `${label}R`;
+  
+  // Si el rol es REF o empieza con REF (REFG, REFBB, etc.), no añadir sufijo P/R
+  const isRefRole = base === 'REF' || (base && base.startsWith('REF') && base.length > 3);
+  if (!isRefRole) {
+    if (context === 'prelight') label = `${label}P`;
+    if (context === 'pickup') label = `${label}R`;
+  }
+  
+  // Determinar si el código es largo (REFG, REFBB, GP, GR, etc.)
+  const isLongCode = label.length > 3 || label.startsWith('REF') || label.endsWith('P') || label.endsWith('R');
+  
+  // Clases de ancho adaptativo (igual que en reportes y planificación)
+  const badgeWidthClass = isLongCode
+    ? 'min-w-[28px] sm:min-w-[32px] md:min-w-[36px] px-2 sm:px-2.5 md:px-3'
+    : 'min-w-[20px] sm:min-w-[24px] md:min-w-[28px] px-1.5 sm:px-2 md:px-2.5';
+  
   return (
     <span className='inline-flex items-center gap-1 sm:gap-1.5 md:gap-2 px-1 py-0.5 sm:px-1.5 sm:py-0.5 md:px-2 md:py-1 rounded sm:rounded-md md:rounded-lg border border-neutral-border bg-black/40'>
       <span
-        className='inline-flex items-center justify-center w-4 h-3.5 sm:w-5 sm:h-4 md:w-6 md:h-5 rounded sm:rounded-md font-bold text-[8px] sm:text-[9px] md:text-[10px]'
+        className={`inline-flex items-center justify-center h-3.5 sm:h-4 md:h-5 rounded sm:rounded-md md:rounded-lg font-bold text-[8px] sm:text-[9px] md:text-[10px] ${badgeWidthClass}`}
         style={{ 
           background: roleBgColor, 
           color: roleFgColor,

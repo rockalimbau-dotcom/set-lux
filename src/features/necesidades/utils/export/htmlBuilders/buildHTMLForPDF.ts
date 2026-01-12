@@ -11,13 +11,14 @@ export function buildNecesidadesHTMLForPDF(
   project: any,
   weekLabel: string,
   weekStart: string,
-  valuesByDay: DayValues[]
+  valuesByDay: DayValues[],
+  selectedRowKeys?: string[] // Filas seleccionadas para filtrar qué mostrar
 ): string {
   const monday = parseYYYYMMDD(weekStart);
   const DAYS = getDays();
   const translatedWeekLabel = translateWeekLabel(weekLabel);
   const headerRow = generateHeaderRow(DAYS, monday);
-  const body = generateTableBody(DAYS, valuesByDay);
+  const body = generateTableBody(DAYS, valuesByDay, selectedRowKeys);
 
   const titleSuffix = weekLabel.includes('-')
     ? i18n.t('needs.preproduction')
@@ -46,7 +47,7 @@ export function buildNecesidadesHTMLForPDF(
           <div class="info-panel">
             <div class="info-item">
               <div class="info-label">${i18n.t('needs.productionCompany')}</div>
-              <div class="info-value">${esc(project?.produccion || '—')}</div>
+              <div class="info-value">${esc(project?.productora || project?.produccion || '—')}</div>
             </div>
             <div class="info-item">
               <div class="info-label">${i18n.t('needs.project')}</div>

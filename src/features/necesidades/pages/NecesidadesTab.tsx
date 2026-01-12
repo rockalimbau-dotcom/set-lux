@@ -67,14 +67,14 @@ export default function NecesidadesTab({ project, readOnly = false }: Necesidade
   });
 
   // Actions
-  const { setCell, removeFromList, setWeekOpen } = useNeedsActions({
+  const { setCell, removeFromList, setWeekOpen, swapDays } = useNeedsActions({
     planKey,
     readOnly,
     setNeeds,
   });
 
   // Export functions
-  const exportWeekPDF = async (weekId: string) => {
+  const exportWeekPDF = async (weekId: string, selectedRowKeys?: string[]) => {
     try {
       const w: AnyRecord = needs[weekId];
       if (!w) {
@@ -82,12 +82,61 @@ export default function NecesidadesTab({ project, readOnly = false }: Necesidade
         alert(t('needs.weekNotFound'));
         return;
       }
-      const valuesByDay = Array.from({ length: 7 }).map((_, i) => (w.days as AnyRecord)?.[i] || {});
+      
+      // Mapeo de claves de fila a fieldKey/listKey
+      const rowKeyToFieldKey: Record<string, string> = {
+        [`${weekId}_loc`]: 'loc',
+        [`${weekId}_seq`]: 'seq',
+        [`${weekId}_crewList`]: 'crewList',
+        [`${weekId}_needLoc`]: 'needLoc',
+        [`${weekId}_needProd`]: 'needProd',
+        [`${weekId}_needLight`]: 'needLight',
+        [`${weekId}_extraMat`]: 'extraMat',
+        [`${weekId}_precall`]: 'precall',
+        [`${weekId}_preList`]: 'preList',
+        [`${weekId}_pickList`]: 'pickList',
+        [`${weekId}_obs`]: 'obs',
+      };
+      
+      // Si hay filas seleccionadas, filtrar los datos
+      let valuesByDay = Array.from({ length: 7 }).map((_, i) => (w.days as AnyRecord)?.[i] || {});
+      
+      if (selectedRowKeys && selectedRowKeys.length > 0) {
+        // Obtener los fieldKeys/listKeys seleccionados
+        const selectedFields = selectedRowKeys
+          .map(key => rowKeyToFieldKey[key])
+          .filter(Boolean);
+        
+        // Filtrar los datos para incluir solo las filas seleccionadas
+        valuesByDay = valuesByDay.map(day => {
+          const filteredDay: AnyRecord = {};
+          
+          // Incluir solo los campos seleccionados
+          selectedFields.forEach(fieldKey => {
+            if (fieldKey === 'crewList') {
+              filteredDay.crewList = day.crewList;
+              filteredDay.crewTxt = day.crewTxt;
+            } else if (fieldKey === 'preList') {
+              filteredDay.preList = day.preList;
+              filteredDay.preTxt = day.preTxt;
+            } else if (fieldKey === 'pickList') {
+              filteredDay.pickList = day.pickList;
+              filteredDay.pickTxt = day.pickTxt;
+            } else {
+              filteredDay[fieldKey] = day[fieldKey];
+            }
+          });
+          
+          return filteredDay;
+        });
+      }
+      
       await exportToPDF(
         project,
         w.label || t('needs.week'),
         w.startDate || '',
-        valuesByDay
+        valuesByDay,
+        selectedRowKeys // Pasar las filas seleccionadas para que el HTML solo muestre esas filas
       );
     } catch (error) {
       console.error('Error exporting PDF:', error);
@@ -142,6 +191,7 @@ export default function NecesidadesTab({ project, readOnly = false }: Necesidade
         setWeekOpen={setWeekOpen}
         exportWeekPDF={exportWeekPDF}
         exportAllNeedsPDF={exportAllNeedsPDF}
+        swapDays={swapDays}
       />
     </div>
   );

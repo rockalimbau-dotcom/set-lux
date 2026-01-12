@@ -12,10 +12,11 @@ export async function exportToPDF(
   project: any,
   weekLabel: string,
   weekStart: string,
-  valuesByDay: DayValues[]
+  valuesByDay: DayValues[],
+  selectedRowKeys?: string[] // Filas seleccionadas para filtrar qué mostrar
 ): Promise<void> {
   try {
-    const html = buildNecesidadesHTMLForPDF(project, weekLabel, weekStart, valuesByDay);
+    const html = buildNecesidadesHTMLForPDF(project, weekLabel, weekStart, valuesByDay, selectedRowKeys);
     
     const tempContainer = document.createElement('div');
     tempContainer.innerHTML = html;
