@@ -2,6 +2,7 @@ import { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ParamInput } from '../shared';
 import { AnyRecord } from '@shared/types/common';
+import { useTheme } from '@shared/hooks/useTheme';
 
 interface ParametersSectionProps {
   showParams: boolean;
@@ -19,15 +20,23 @@ export function ParametersSection({
   readOnly,
 }: ParametersSectionProps) {
   const { t } = useTranslation();
+  const theme = useTheme();
   const paramsRef = useRef<HTMLDivElement | null>(null);
   const p = params;
+  
+  const buttonStyle: React.CSSProperties = {
+    background: theme === 'light' ? '#A0D3F2' : '#f59e0b',
+    color: theme === 'light' ? '#111827' : '#FFFFFF',
+    borderColor: theme === 'light' ? '#A0D3F2' : '#f59e0b',
+  };
 
   return (
     <section className='rounded sm:rounded-md md:rounded-lg lg:rounded-xl xl:rounded-2xl border border-neutral-border bg-neutral-panel/90 p-2 sm:p-2.5 md:p-3 lg:p-4 phase-panel'>
       <div className='flex items-center gap-1 sm:gap-1.5 md:gap-2 mb-1.5 sm:mb-2 md:mb-3'>
         <button
           onClick={() => setShowParams(v => !v)}
-          className='w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 rounded sm:rounded-md md:rounded-lg border border-neutral-border flex items-center justify-center text-[10px] sm:text-xs md:text-sm hover:border-accent'
+          className='w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 rounded sm:rounded-md md:rounded-lg border flex items-center justify-center text-[10px] sm:text-xs md:text-sm'
+          style={buttonStyle}
           title={showParams ? t('conditions.collapse') : t('conditions.expand')}
           aria-label={t('conditions.calculationParameters')}
           aria-expanded={showParams}

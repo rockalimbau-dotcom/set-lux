@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Th, Td } from '@shared/components';
 import { PRICE_HEADERS, PRICE_ROLES } from '../shared.constants';
@@ -33,6 +33,32 @@ export function PriceSection({
 }: PriceSectionProps) {
   const { t } = useTranslation();
   const [showRoleSelect, setShowRoleSelect] = useState(false);
+  const dropdownContainerRef = useRef<HTMLDivElement>(null);
+
+  // Cerrar dropdown al hacer clic fuera
+  useEffect(() => {
+    if (!showRoleSelect) return;
+
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Node;
+      if (
+        dropdownContainerRef.current &&
+        !dropdownContainerRef.current.contains(target)
+      ) {
+        setShowRoleSelect(false);
+      }
+    };
+
+    // Usar click en lugar de mousedown y agregar delay
+    const timeoutId = setTimeout(() => {
+      document.addEventListener('click', handleClickOutside, true);
+    }, 150);
+
+    return () => {
+      clearTimeout(timeoutId);
+      document.removeEventListener('click', handleClickOutside, true);
+    };
+  }, [showRoleSelect]);
 
   // Obtener los precios de la sección correspondiente
   const prices = sectionKey === 'base' 
@@ -137,9 +163,12 @@ export function PriceSection({
           <span className='flex-1' dangerouslySetInnerHTML={{ __html: t('conditions.introduceWeeklyPrice') }} />
         )}
         {sectionKey !== 'base' && <span className='flex-1' dangerouslySetInnerHTML={{ __html: t('conditions.introducePricesForSection') }} />}
-        <div className='relative flex-shrink-0'>
+        <div ref={dropdownContainerRef} className='relative flex-shrink-0' style={{ position: 'relative' }}>
           <button
-            onClick={() => !readOnly && setShowRoleSelect(!showRoleSelect)}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (!readOnly) setShowRoleSelect(!showRoleSelect);
+            }}
             disabled={readOnly}
             className={`px-1 py-0.5 sm:px-1.5 sm:py-0.5 md:px-2 md:py-1 lg:px-3 lg:py-1 text-[8px] sm:text-[9px] md:text-[10px] lg:text-xs xl:text-sm bg-brand text-white rounded sm:rounded-md md:rounded-lg hover:bg-brand/80 whitespace-nowrap ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
             style={{ color: 'white' }}
@@ -150,12 +179,8 @@ export function PriceSection({
           {showRoleSelect && (
             <div 
               className='absolute right-0 top-full mt-0.5 sm:mt-1 bg-white dark:bg-amber-800 border border-neutral-border dark:border-amber-600 rounded sm:rounded-md md:rounded-lg shadow-lg z-10 min-w-[100px] sm:min-w-[120px] md:min-w-[150px] max-h-40 sm:max-h-48 md:max-h-60 overflow-y-auto'
+              style={{ position: 'absolute' }}
               tabIndex={-1}
-              onBlur={(e) => {
-                if (!e.currentTarget.contains(e.relatedTarget as Node)) {
-                  setTimeout(() => setShowRoleSelect(false), 200);
-                }
-              }}
             >
               {availableRoles.filter((r: string) => {
                 // Para base: mostrar roles que NO están en el equipo base

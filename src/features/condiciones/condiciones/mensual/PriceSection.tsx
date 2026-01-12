@@ -35,6 +35,34 @@ export function PriceSection({
   const [showRoleSelect, setShowRoleSelect] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
+  const dropdownContainerRef = useRef<HTMLDivElement>(null);
+
+  // Cerrar dropdown al hacer clic fuera
+  useEffect(() => {
+    if (!showRoleSelect) return;
+
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Node;
+      if (
+        dropdownContainerRef.current &&
+        !dropdownContainerRef.current.contains(target) &&
+        buttonRef.current &&
+        !buttonRef.current.contains(target)
+      ) {
+        setShowRoleSelect(false);
+      }
+    };
+
+    // Usar click en lugar de mousedown y agregar delay
+    const timeoutId = setTimeout(() => {
+      document.addEventListener('click', handleClickOutside, true);
+    }, 150);
+
+    return () => {
+      clearTimeout(timeoutId);
+      document.removeEventListener('click', handleClickOutside, true);
+    };
+  }, [showRoleSelect]);
 
   // Obtener los precios de la sección correspondiente
   const prices = sectionKey === 'base' 
@@ -114,14 +142,6 @@ export function PriceSection({
     ? PRICE_HEADERS 
     : PRICE_HEADERS.filter(h => h !== 'Precio refuerzo');
 
-  // Posicionar el dropdown cuando se muestra
-  useEffect(() => {
-    if (showRoleSelect && buttonRef.current && dropdownRef.current) {
-      const buttonRect = buttonRef.current.getBoundingClientRect();
-      dropdownRef.current.style.top = `${buttonRect.bottom + 4}px`;
-      dropdownRef.current.style.right = `${window.innerWidth - buttonRect.right}px`;
-    }
-  }, [showRoleSelect]);
 
   return (
     <div className='space-y-1 sm:space-y-1.5 md:space-y-2' style={{ overflow: 'visible' }}>
@@ -148,9 +168,13 @@ export function PriceSection({
           <span className='flex-1' dangerouslySetInnerHTML={{ __html: t('conditions.introduceMonthlyPrice') }} />
         )}
         {sectionKey !== 'base' && <span className='flex-1' dangerouslySetInnerHTML={{ __html: t('conditions.introducePricesForSection') }} />}
-        <div className='relative flex-shrink-0 z-50'>
+        <div ref={dropdownContainerRef} className='relative flex-shrink-0 z-50' style={{ position: 'relative' }}>
           <button
-            onClick={() => !readOnly && setShowRoleSelect(!showRoleSelect)}
+            ref={buttonRef}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (!readOnly) setShowRoleSelect(!showRoleSelect);
+            }}
             disabled={readOnly}
             className={`px-1 py-0.5 sm:px-1.5 sm:py-0.5 md:px-2 md:py-1 lg:px-3 lg:py-1 text-[8px] sm:text-[9px] md:text-[10px] lg:text-xs xl:text-sm bg-brand text-white rounded sm:rounded-md md:rounded-lg hover:bg-brand/80 whitespace-nowrap ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
             style={{ color: 'white' }}
@@ -160,14 +184,10 @@ export function PriceSection({
           </button>
           {showRoleSelect && (
             <div 
+              ref={dropdownRef}
               className='absolute right-0 top-full mt-0.5 sm:mt-1 bg-white dark:bg-amber-800 border border-neutral-border dark:border-amber-600 rounded sm:rounded-md md:rounded-lg shadow-xl z-[100] min-w-[100px] sm:min-w-[120px] md:min-w-[150px] max-h-40 sm:max-h-48 md:max-h-60 overflow-y-auto'
-              style={{ zIndex: 9999 }}
+              style={{ position: 'absolute', zIndex: 9999 }}
               tabIndex={-1}
-              onBlur={(e) => {
-                if (!e.currentTarget.contains(e.relatedTarget as Node)) {
-                  setTimeout(() => setShowRoleSelect(false), 200);
-                }
-              }}
             >
               {availableRoles.filter((r: string) => {
                 // Para base: mostrar roles que NO están en el equipo base

@@ -7,7 +7,7 @@ export function Footer() {
   
   return (
     <footer 
-      className='fixed bottom-0 left-0 right-0 w-full py-2 border-t border-neutral-border z-10'
+      className='w-full py-2 border-t border-neutral-border'
       style={{
         backgroundColor: 'var(--bg)',
         color: 'var(--text)',

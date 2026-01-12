@@ -31,12 +31,12 @@ export function AddPrelightDropdown({
   focusColor,
   readOnly = false,
 }: AddPrelightDropdownProps) {
-  const { t } = useTranslation();
-  // Verificar primero si debemos renderizar (optimización)
+  // Verificar primero si debemos renderizar (ANTES de todos los hooks)
   if (day.tipo === 'Descanso' || day.tipo === 'Fin') {
     return null;
   }
 
+  const { t } = useTranslation();
   const dropdownRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const [searchQuery, setSearchQuery] = useState('');

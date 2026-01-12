@@ -3,6 +3,7 @@ import { renderWithParams, visibleToTemplate, TextAreaAuto, InfoCard, restoreStr
 import { getDefaultsSemanal } from '../../utils/translationHelpers';
 import { globalDynamicFestivosText } from './semanalData';
 import { AnyRecord } from '@shared/types/common';
+import { useTheme } from '@shared/hooks/useTheme';
 
 interface InfoSectionsProps {
   model: AnyRecord;
@@ -12,7 +13,14 @@ interface InfoSectionsProps {
 
 export function InfoSections({ model, setText, readOnly }: InfoSectionsProps) {
   const { t } = useTranslation();
+  const theme = useTheme();
   const defaults = getDefaultsSemanal();
+  
+  const boeButtonStyle: React.CSSProperties = {
+    background: theme === 'light' ? '#A0D3F2' : '#f59e0b',
+    color: theme === 'light' ? '#111827' : '#FFFFFF',
+    border: '1px solid rgba(255,255,255,0.08)',
+  };
 
   return (
     <>
@@ -99,19 +107,24 @@ export function InfoSections({ model, setText, readOnly }: InfoSectionsProps) {
         onRestore={() => setText('convenioTemplate', defaults.convenio)}
         rightAddon={
           readOnly ? (
-            <span className='text-brand text-[9px] sm:text-[10px] md:text-sm opacity-50 cursor-not-allowed' title='El proyecto está cerrado'>
-              BOE
-            </span>
-          ) : (
-            <a
-              href='https://www.boe.es/diario_boe/txt.php?id=BOE-A-2024-6846'
-              target='_blank'
-              rel='noreferrer'
-              className='text-brand hover:underline text-[9px] sm:text-[10px] md:text-sm'
-              title={t('conditions.openBOE')}
+            <button
+              disabled
+              className='px-1.5 py-1 sm:px-2 sm:py-1.5 md:px-2.5 md:py-2 rounded text-[10px] sm:text-xs md:text-sm font-semibold opacity-50 cursor-not-allowed'
+              style={boeButtonStyle}
+              title='El proyecto está cerrado'
             >
               BOE
-            </a>
+            </button>
+          ) : (
+            <button
+              onClick={() => window.open('https://www.boe.es/diario_boe/txt.php?id=BOE-A-2024-6846', '_blank', 'noopener,noreferrer')}
+              className='px-1.5 py-1 sm:px-2 sm:py-1.5 md:px-2.5 md:py-2 rounded text-[10px] sm:text-xs md:text-sm font-semibold'
+              style={boeButtonStyle}
+              title={t('conditions.openBOE')}
+              type='button'
+            >
+              BOE
+            </button>
           )
         }
       />
