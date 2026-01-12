@@ -1,7 +1,54 @@
 export function parseNum(input: any): number {
   if (input == null || input === '') return NaN;
-  const s = String(input).trim().replace(/\./g, '').replace(',', '.');
-  const n = Number(s);
+  const s = String(input).trim();
+  
+  // Si contiene operadores matemáticos (+, -, *, /), evaluar la expresión
+  if (/[+\-*/]/.test(s)) {
+    try {
+      // Normalizar: reemplazar comas por puntos para decimales
+      // Si tiene comas, asumir formato europeo (puntos = miles, coma = decimal)
+      let normalized = s;
+      
+      if (s.includes(',')) {
+        // Si también tiene puntos, quitar los puntos (separadores de miles)
+        if (s.includes('.')) {
+          normalized = s.replace(/\./g, '').replace(',', '.');
+        } else {
+          // Solo coma, es decimal
+          normalized = s.replace(',', '.');
+        }
+      }
+      
+      // Eliminar espacios
+      const cleaned = normalized.replace(/\s/g, '');
+      
+      // Validar que solo contenga números, operadores básicos y paréntesis
+      if (!/^[\d+\-*/().]+$/.test(cleaned)) {
+        // Si contiene caracteres no permitidos, intentar parsear como número simple
+        return parseNumSimple(s);
+      }
+      
+      // Evaluar la expresión de forma segura usando Function constructor
+      // Esto solo permite expresiones matemáticas básicas, sin acceso a funciones globales
+      const result = Function(`"use strict"; return (${cleaned})`)();
+      return isFinite(result) ? result : NaN;
+    } catch (e) {
+      // Si falla la evaluación, intentar parsear como número simple
+      return parseNumSimple(s);
+    }
+  }
+  
+  // Si no es una expresión, parsear como número simple
+  return parseNumSimple(s);
+}
+
+/**
+ * Parsea un número simple (sin expresiones)
+ */
+function parseNumSimple(s: string): number {
+  // Normalizar: quitar puntos de miles y convertir coma a punto decimal
+  const normalized = s.replace(/\./g, '').replace(',', '.');
+  const n = Number(normalized);
   return isFinite(n) ? n : NaN;
 }
 

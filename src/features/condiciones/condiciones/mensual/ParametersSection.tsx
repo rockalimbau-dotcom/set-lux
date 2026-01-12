@@ -63,6 +63,7 @@ export function ParametersSection({
               <ParamInput
                 label={t('conditions.workDay')}
                 suffix='h'
+                type='text'
                 duo={[
                   {
                     value: p.jornadaTrabajo ?? '9',
