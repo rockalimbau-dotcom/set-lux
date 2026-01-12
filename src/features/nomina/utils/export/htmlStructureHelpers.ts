@@ -46,7 +46,7 @@ export function generateHTMLStructure({
       <div class="info-panel">
         <div class="info-item">
           <div class="info-label">${i18n.t('common.productionLabel')}</div>
-          <div class="info-value">${esc(project?.produccion || '—')}</div>
+          <div class="info-value">${esc(project?.productora || project?.produccion || '—')}</div>
         </div>
         <div class="info-item">
           <div class="info-label">${i18n.t('common.project')}</div>

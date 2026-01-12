@@ -43,6 +43,89 @@ export function MonthSectionTable({
 }: MonthSectionTableProps) {
   const { t } = useTranslation();
 
+  // Calcular número de columnas para colSpan
+  const colSpanCount =
+    2 + // Checkbox, Persona
+    (hasWorkedDaysData ? 2 : 0) + // Días trabajados, Total días
+    (hasLocalizacionData ? 2 : 0) + // Localización técnica, Total
+    (hasCargaDescargaData ? 2 : 0) + // Carga/Descarga, Total
+    (columnVisibility.holidays ? 2 : 0) + // Días festivos, Total
+    (columnVisibility.travel ? 2 : 0) + // Travel Day, Total
+    (columnVisibility.extras ? 2 : 0) + // Horas extra, Total
+    (columnVisibility.dietas ? 2 : 0) + // Dietas, Total
+    (columnVisibility.transporte ? 2 : 0) + // Transportes, Total
+    (columnVisibility.km ? 2 : 0) + // Kilometraje, Total
+    2; // TOTAL BRUTO, Nómina recibida
+
+  // Función para determinar el tipo de equipo de una fila
+  const getTeamType = (r: any): 'base' | 'refuerzos' | 'prelight' | 'recogida' => {
+    const originalRole = (r as any)._originalRole || r.role || '';
+    const role = String(originalRole).toUpperCase();
+    
+    // Refuerzos: empiezan con REF y tienen más de 3 caracteres
+    if (role.startsWith('REF') && role.length > 3) {
+      return 'refuerzos';
+    }
+    
+    // Prelight: termina con P o tiene workedPre > 0
+    if (role.endsWith('P') || (r._workedPre && r._workedPre > 0 && r._workedBase === 0 && r._workedPick === 0)) {
+      return 'prelight';
+    }
+    
+    // Recogida: termina con R o tiene workedPick > 0
+    if (role.endsWith('R') || (r._workedPick && r._workedPick > 0 && r._workedBase === 0 && r._workedPre === 0)) {
+      return 'recogida';
+    }
+    
+    // Base: el resto
+    return 'base';
+  };
+
+  // Agrupar filas por tipo
+  const groupedRows = React.useMemo(() => {
+    const groups: { type: 'base' | 'refuerzos' | 'prelight' | 'recogida'; rows: any[] }[] = [
+      { type: 'base', rows: [] },
+      { type: 'refuerzos', rows: [] },
+      { type: 'prelight', rows: [] },
+      { type: 'recogida', rows: [] },
+    ];
+
+    enriched.forEach(r => {
+      const type = getTeamType(r);
+      const group = groups.find(g => g.type === type);
+      if (group) {
+        group.rows.push(r);
+      }
+    });
+
+    // Filtrar grupos vacíos y mantener el orden
+    return groups.filter(g => g.rows.length > 0);
+  }, [enriched]);
+
+  // Títulos de sección
+  const sectionTitles: Record<string, string> = {
+    base: t('team.baseTeam') || 'Equipo base',
+    refuerzos: t('team.reinforcements') || 'Refuerzos',
+    prelight: t('team.prelightTeam') || 'Equipo prelight',
+    recogida: t('team.pickupTeam') || 'Equipo recogida',
+  };
+
+  // Componente para renderizar fila de título de sección
+  const renderSectionHeader = (title: string) => (
+    <tr key={`section-${title}`}>
+      <Td
+        colSpan={colSpanCount}
+        className='bg-zinc-100/50 dark:bg-zinc-800/50 border-t border-b border-neutral-border'
+      >
+        <div className='px-2 py-1.5 sm:px-3 sm:py-2'>
+          <span className='text-[10px] sm:text-xs md:text-sm font-semibold text-zinc-700 dark:text-zinc-200 uppercase tracking-wide'>
+            {title}
+          </span>
+        </div>
+      </Td>
+    </tr>
+  );
+
   return (
     <div className='px-3 pb-3 sm:px-4 sm:pb-4 md:px-5 md:pb-5 overflow-x-auto'>
       <table className='min-w-[800px] sm:min-w-[1000px] md:min-w-[1200px] w-full border-collapse text-[9px] sm:text-[10px] md:text-xs lg:text-sm'>
@@ -113,40 +196,45 @@ export function MonthSectionTable({
           </tr>
         </thead>
         <tbody>
-          {enriched.map((r, idx) => {
-            const pKey = `${r.role}__${r.name}`;
-            let roleForColor = String(r.role || '').replace(/[PR]$/, '');
-            // Si el rol empieza con REF (REFG, REFBB, etc.), usar el rol base para el color
-            if (roleForColor.startsWith('REF') && roleForColor.length > 3) {
-              roleForColor = roleForColor.substring(3);
-            }
-            const col =
-              ROLE_COLORS[roleForColor] ||
-              ROLE_COLORS[roleLabelFromCode(roleForColor)] ||
-              (roleForColor === 'REF' || (r.role && r.role.startsWith('REF'))
-                ? { bg: '#F59E0B', fg: '#111' }
-                : { bg: '#444', fg: '#fff' });
+          {groupedRows.map((group, groupIdx) => (
+            <React.Fragment key={group.type}>
+              {renderSectionHeader(sectionTitles[group.type])}
+              {group.rows.map((r, idx) => {
+                const pKey = `${r.role}__${r.name}`;
+                let roleForColor = String(r.role || '').replace(/[PR]$/, '');
+                // Si el rol empieza con REF (REFG, REFBB, etc.), usar el rol base para el color
+                if (roleForColor.startsWith('REF') && roleForColor.length > 3) {
+                  roleForColor = roleForColor.substring(3);
+                }
+                const col =
+                  ROLE_COLORS[roleForColor] ||
+                  ROLE_COLORS[roleLabelFromCode(roleForColor)] ||
+                  (roleForColor === 'REF' || (r.role && r.role.startsWith('REF'))
+                    ? { bg: '#F59E0B', fg: '#111' }
+                    : { bg: '#444', fg: '#fff' });
 
-            return (
-              <MonthSectionPersonRow
-                key={idx}
-                row={r}
-                personKey={pKey}
-                roleForColor={roleForColor}
-                col={col}
-                received={received}
-                isSelected={isRowSelected(pKey)}
-                toggleRowSelection={toggleRowSelection}
-                setRcv={setRcv}
-                projectMode={projectMode}
-                hasWorkedDaysData={hasWorkedDaysData}
-                hasLocalizacionData={hasLocalizacionData}
-                hasCargaDescargaData={hasCargaDescargaData}
-                columnVisibility={columnVisibility}
-                readOnly={readOnly}
-              />
-            );
-          })}
+                return (
+                  <MonthSectionPersonRow
+                    key={`${group.type}-${idx}`}
+                    row={r}
+                    personKey={pKey}
+                    roleForColor={roleForColor}
+                    col={col}
+                    received={received}
+                    isSelected={isRowSelected(pKey)}
+                    toggleRowSelection={toggleRowSelection}
+                    setRcv={setRcv}
+                    projectMode={projectMode}
+                    hasWorkedDaysData={hasWorkedDaysData}
+                    hasLocalizacionData={hasLocalizacionData}
+                    hasCargaDescargaData={hasCargaDescargaData}
+                    columnVisibility={columnVisibility}
+                    readOnly={readOnly}
+                  />
+                );
+              })}
+            </React.Fragment>
+          ))}
 
           {enriched.length === 0 && (
             <tr>

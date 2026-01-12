@@ -19,29 +19,52 @@ export async function exportToPDF({
   
   console.log('🚀 exportToPDF called with', enrichedRows.length, 'rows');
   try {
-    // Group rows by blocks
+    // Helper to check if a row is a refuerzo
+    const isRefuerzo = (row: any): boolean => {
+      const originalRole = (row as any)._originalRole || row.role || '';
+      const role = String(originalRole).toUpperCase();
+      return role.startsWith('REF') && role.length > 3;
+    };
+    
+    // Group rows by blocks and separate refuerzos
     const rowsByBlock = {
       base: [] as any[],
+      refuerzos: [] as any[],
       pre: [] as any[],
       pick: [] as any[],
     };
     
     enrichedRows.forEach(row => {
-      const block = getBlockFromRole(row.role);
-      rowsByBlock[block].push(row);
+      if (isRefuerzo(row)) {
+        rowsByBlock.refuerzos.push(row);
+      } else {
+        const block = getBlockFromRole(row.role);
+        rowsByBlock[block].push(row);
+      }
     });
     
     // Create a flat list of grouped rows with section titles
     const groupedRows: Array<{ type: 'title' | 'row', block?: string, row?: any }> = [];
     
+    // Equipo base (sin refuerzos)
     if (rowsByBlock.base.length > 0) {
       groupedRows.push({ type: 'title', block: 'base' });
       rowsByBlock.base.forEach(row => groupedRows.push({ type: 'row', row }));
     }
+    
+    // Refuerzos (separados del equipo base)
+    if (rowsByBlock.refuerzos.length > 0) {
+      groupedRows.push({ type: 'title', block: 'refuerzos' });
+      rowsByBlock.refuerzos.forEach(row => groupedRows.push({ type: 'row', row }));
+    }
+    
+    // Equipo prelight
     if (rowsByBlock.pre.length > 0) {
       groupedRows.push({ type: 'title', block: 'pre' });
       rowsByBlock.pre.forEach(row => groupedRows.push({ type: 'row', row }));
     }
+    
+    // Equipo recogida
     if (rowsByBlock.pick.length > 0) {
       groupedRows.push({ type: 'title', block: 'pick' });
       rowsByBlock.pick.forEach(row => groupedRows.push({ type: 'row', row }));

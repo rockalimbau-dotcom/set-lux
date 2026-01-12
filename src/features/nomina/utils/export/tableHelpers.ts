@@ -53,8 +53,10 @@ export const generateRowDataCells = (
   r: any,
   columnVisibility: ReturnType<typeof getColumnVisibility>
 ): string[] => {
+  // Usar rol original para mostrar REFG, REFBB, etc. en lugar de solo REF
+  const roleForDisplay = (r as any)._originalRole || r.role || '';
   const dataCells = [
-    `<td class="text-left" style="font-weight:600;vertical-align:middle !important;">${esc(r.role)} — ${esc(r.name)}</td>`,
+    `<td class="text-left" style="font-weight:600;vertical-align:middle !important;">${esc(roleForDisplay)} — ${esc(r.name)}</td>`,
     `<td style="text-align:center !important;vertical-align:middle !important;">${generateWorkedDaysText(r) || esc(displayValue(r._worked))}</td>`,
     `<td style="text-align:center !important;vertical-align:middle !important;">${esc(displayMoney(r._totalDias, 2))}</td>`,
   ];
