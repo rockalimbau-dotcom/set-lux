@@ -10,23 +10,28 @@ interface ExtrasSummaryProps {
 
 export default function ExtrasSummary({ horasExtra, turnAround, nocturnidad, penaltyLunch }: ExtrasSummaryProps) {
   const { t } = useTranslation();
-  const totalExtras = horasExtra + turnAround + nocturnidad + penaltyLunch;
+  // Asegurar que todos los valores sean números (igual que nocturnidad)
+  const horasExtraNum = Number(horasExtra) || 0;
+  const turnAroundNum = Number(turnAround) || 0;
+  const nocturnidadNum = Number(nocturnidad) || 0;
+  const penaltyLunchNum = Number(penaltyLunch) || 0;
+  const totalExtras = horasExtraNum + turnAroundNum + nocturnidadNum + penaltyLunchNum;
   const parts: string[] = [];
   
-  if (horasExtra > 0) {
-    parts.push(`${t('payroll.concepts.extraHours')} x${horasExtra}`);
+  if (horasExtraNum > 0) {
+    parts.push(`${t('payroll.concepts.extraHours')} x${horasExtraNum}`);
   }
   
-  if (turnAround > 0) {
-    parts.push(`${t('payroll.concepts.turnAround')} x${turnAround}`);
+  if (turnAroundNum > 0) {
+    parts.push(`${t('payroll.concepts.turnAround')} x${turnAroundNum}`);
   }
   
-  if (nocturnidad > 0) {
-    parts.push(`${t('payroll.concepts.nightShift')} x${nocturnidad}`);
+  if (nocturnidadNum > 0) {
+    parts.push(`${t('payroll.concepts.nightShift')} x${nocturnidadNum}`);
   }
   
-  if (penaltyLunch > 0) {
-    parts.push(`${t('payroll.concepts.penaltyLunch')} x${penaltyLunch}`);
+  if (penaltyLunchNum > 0) {
+    parts.push(`${t('payroll.concepts.penaltyLunch')} x${penaltyLunchNum}`);
   }
   
   // Si no hay ningún extra, no mostrar nada

@@ -15,6 +15,9 @@ export function esc(value: unknown): string {
  */
 export const displayValue = (value: number | undefined | null, decimals: number = 0): string => {
   if (value === null || value === undefined || value === 0) return '';
+  // Si el valor es entero, mostrarlo sin decimales
+  if (value % 1 === 0) return String(value);
+  // Si tiene decimales, mostrar con el número de decimales especificado
   return decimals > 0 ? value.toFixed(decimals) : String(value);
 };
 

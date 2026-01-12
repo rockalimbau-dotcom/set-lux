@@ -146,3 +146,15 @@ export function storageKeyFor(roleCode: string, name: string, block?: string): s
   return `${base}__${name || ''}`;
 }
 
+/**
+ * Check if a value represents "yes"
+ */
+export function valIsYes(v: unknown): boolean {
+  const s = String(v || '')
+    .toUpperCase()
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '')
+    .trim();
+  return s === 'SI' || s === 'YES' || s === 'TRUE' || s === '1';
+}
+

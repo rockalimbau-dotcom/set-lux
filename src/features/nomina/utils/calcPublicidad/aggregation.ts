@@ -9,7 +9,7 @@ import {
   COL_CANDIDATES, 
   ROLE_ORDER 
 } from './aggregationHelpers';
-import { storageKeyFor, storageKeyVariants, getCellValueCandidates } from './helpers';
+import { storageKeyFor, storageKeyVariants, getCellValueCandidates, valIsYes } from './helpers';
 
 /**
  * Aggregate reports for diario mode
@@ -86,11 +86,11 @@ export function aggregateReports(project: any, weeks: any[], filterISO: ((iso: s
         const he = parseHorasExtra(getCellValueCandidates(data, keysToUse, COL_CANDIDATES.extras, iso));
         const ta = parseNum(getCellValueCandidates(data, keysToUse, COL_CANDIDATES.ta, iso));
         const noct = getCellValueCandidates(data, keysToUse, COL_CANDIDATES.noct, iso);
-        const noctYes = noct === 'SI' || noct === 'SÍ' || noct === 'S' || noct === '1' || noct === '1';
+        const noctYes = valIsYes(noct);
         const pen = getCellValueCandidates(data, keysToUse, COL_CANDIDATES.penalty, iso);
-        const penYes = pen === 'SI' || pen === 'SÍ' || pen === 'S' || pen === '1' || pen === '1';
+        const penYes = valIsYes(pen);
         const transp = getCellValueCandidates(data, keysToUse, COL_CANDIDATES.transp, iso);
-        const transpYes = transp === 'SI' || transp === 'SÍ' || transp === 'S' || transp === '1' || transp === '1';
+        const transpYes = valIsYes(transp);
 
         slot.horasExtra += he;
         slot.turnAround += ta;
@@ -199,11 +199,11 @@ export function aggregateWindowedReport(project: any, weeks: any[], filterISO: (
         const he = parseHorasExtra(getCellValueCandidates(data, keysToUse, COL_CANDIDATES.extras, iso));
         const ta = parseNum(getCellValueCandidates(data, keysToUse, COL_CANDIDATES.ta, iso));
         const noct = getCellValueCandidates(data, keysToUse, COL_CANDIDATES.noct, iso);
-        const noctYes = noct === 'SI' || noct === 'SÍ' || noct === 'S' || noct === '1' || noct === '1';
+        const noctYes = valIsYes(noct);
         const pen = getCellValueCandidates(data, keysToUse, COL_CANDIDATES.penalty, iso);
-        const penYes = pen === 'SI' || pen === 'SÍ' || pen === 'S' || pen === '1' || pen === '1';
+        const penYes = valIsYes(pen);
         const transp = getCellValueCandidates(data, keysToUse, COL_CANDIDATES.transp, iso);
-        const transpYes = transp === 'SI' || transp === 'SÍ' || transp === 'S' || transp === '1' || transp === '1';
+        const transpYes = valIsYes(transp);
 
         slot.horasExtra += he;
         slot.turnAround += ta;

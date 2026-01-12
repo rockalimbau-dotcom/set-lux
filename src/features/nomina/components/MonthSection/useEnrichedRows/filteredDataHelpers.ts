@@ -63,8 +63,21 @@ export function getValueWithOverride<T>(
     return ov[key];
   }
   // Then check filtered data
-  if (useFilteredData && filteredRow && typeof filteredRow === 'object' && key in filteredRow && filteredRow[key] !== undefined) {
-    return filteredRow[key];
+  // Si filteredRow tiene la clave y el valor no es undefined, usarlo
+  // Pero si el valor original no es 0 y filteredRow[key] es 0, usar el original
+  // (porque 0 en filteredRow podría significar "no hay datos filtrados" para ese concepto)
+  if (useFilteredData && filteredRow && typeof filteredRow === 'object' && key in filteredRow) {
+    const filteredValue = filteredRow[key];
+    // Si filteredValue es undefined o null, usar el valor original
+    if (filteredValue === undefined || filteredValue === null) {
+      return originalValue;
+    }
+    // Si el valor original no es 0 y filteredValue es 0, usar el original
+    // (esto es especialmente importante para penaltyLunch y otros campos que pueden ser 0 en filteredRow)
+    if (originalValue !== 0 && filteredValue === 0 && typeof originalValue === 'number' && typeof filteredValue === 'number') {
+      return originalValue;
+    }
+    return filteredValue;
   }
   // Fallback to original value
   return originalValue;
