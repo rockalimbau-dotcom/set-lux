@@ -2,15 +2,22 @@ import { RowIn } from '../MonthSectionTypes';
 
 /**
  * Calculate total working days based on project mode
+ * Para refuerzos en modo mensual, usar workedDays (días específicos) en lugar del rango del mes
  */
 export function calculateTotalWorkingDays(
   projectMode: 'semanal' | 'mensual' | 'diario',
   calculateWorkingDaysInMonthValue: number,
   workedDays: number,
   rodaje?: number,
-  oficina?: number
+  oficina?: number,
+  isRefuerzo?: boolean
 ): number {
   if (projectMode === 'mensual') {
+    // Para refuerzos en mensual, usar solo los días específicos donde están marcados
+    if (isRefuerzo) {
+      return workedDays;
+    }
+    // Para roles base, usar el rango desde el primer día trabajado hasta el final del mes
     return calculateWorkingDaysInMonthValue;
   }
   if (projectMode === 'diario') {

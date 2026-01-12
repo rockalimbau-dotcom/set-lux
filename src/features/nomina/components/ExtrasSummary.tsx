@@ -37,10 +37,10 @@ export default function ExtrasSummary({ horasExtra, turnAround, nocturnidad, pen
   return (
     <div>
       {totalExtras > 0 && (
-        <div className='text-center font-medium text-zinc-100 mb-1'>{totalExtras}</div>
+        <div className='text-center font-medium text-zinc-100 mb-1 text-[9px] sm:text-[10px] md:text-xs'>{totalExtras}</div>
       )}
       {parts.length > 0 && (
-        <div className='text-[10px] text-zinc-200 space-y-0.5'>
+        <div className='text-[8px] sm:text-[9px] md:text-[10px] text-zinc-200 space-y-0.5'>
           {parts.map((part, index) => (
             <div key={index}>{part}</div>
           ))}

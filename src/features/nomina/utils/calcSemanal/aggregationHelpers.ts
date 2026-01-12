@@ -17,9 +17,9 @@ export function storageKeyFor(roleCode: string, name: string, refuerzoSet: Set<s
  * Get visible role for a role code and name
  */
 export function visibleRoleFor(roleCode: string, name: string, refuerzoSet: Set<string>): string {
-  // Si el rol empieza con "REF" (REFG, REFBB, etc.), tratarlo como refuerzo
+  // Si el rol empieza con "REF" (REFG, REFBB, etc.), preservar el código completo
   if (roleCode && roleCode.startsWith('REF') && roleCode.length > 3) {
-    return 'REF';
+    return roleCode; // Devolver REFG, REFBB, REFE, etc. en lugar de solo 'REF'
   }
   const base = stripPR(roleCode || '');
   const keyNoPR = `${base}__${name || ''}`;
@@ -42,7 +42,9 @@ export function buildUniqueStorageKeys(
     const r = p.role || '';
     const n = p.name || '';
     const roleVisible = visibleRoleFor(r, n, refuerzoSet);
-    if (roleVisible === 'REF') {
+    // Verificar si es un refuerzo (REF o REFG, REFBB, etc.)
+    const isRef = roleVisible === 'REF' || (roleVisible && roleVisible.startsWith('REF') && roleVisible.length > 3);
+    if (isRef) {
       // Admitimos claves separadas por bloque en Reportes
       const keys = [`REF__${n}`, `REF.pre__${n}`, `REF.pick__${n}`];
       for (const sk of keys) {
@@ -68,6 +70,8 @@ export function getKeysToUse(
   storageKey: string,
   roleVisible: string
 ): string[] {
-  return roleVisible === 'REF' ? [storageKey] : storageKeyVariants(storageKey);
+  // Verificar si es un refuerzo (REF o REFG, REFBB, etc.)
+  const isRef = roleVisible === 'REF' || (roleVisible && roleVisible.startsWith('REF') && roleVisible.length > 3);
+  return isRef ? [storageKey] : storageKeyVariants(storageKey);
 }
 

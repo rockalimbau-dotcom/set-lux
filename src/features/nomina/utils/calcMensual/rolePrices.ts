@@ -106,7 +106,10 @@ export function makeRolePrices(project: any) {
 
     // Determinar qué tabla usar según el rol
     const priceTable = getPriceTable(roleCode);
-    const basePriceTable = baseRoleCode ? getPriceTable(baseRoleCode) : priceTable;
+    // Para refuerzos, siempre usar basePriceRows, no prelight/pickup
+    const basePriceTable = (normalized === 'REF' || (normalized.startsWith('REF') && normalized.length > 3))
+      ? basePriceRows
+      : (baseRoleCode ? getPriceTable(baseRoleCode) : priceTable);
     
     // Si no encontramos en la tabla específica, usar base como fallback
     const pickedRow = findPriceRow([normalized], priceTable);
@@ -116,7 +119,12 @@ export function makeRolePrices(project: any) {
       row = fallbackRow.row;
     }
     
-    const pickedBase = findPriceRow([baseNorm], basePriceTable);
+    // Para refuerzos, siempre buscar baseRow en basePriceRows (tabla base)
+    // Para otros roles, usar basePriceTable que puede ser prelight/pickup
+    const tableForBaseRow = (normalized === 'REF' || (normalized.startsWith('REF') && normalized.length > 3))
+      ? basePriceRows
+      : basePriceTable;
+    const pickedBase = findPriceRow([baseNorm], tableForBaseRow);
     let baseRow = pickedBase.row;
     if (!baseRow || Object.keys(baseRow).length === 0) {
       const fallbackBase = findPriceRow([baseNorm], basePriceRows);
@@ -133,24 +141,25 @@ export function makeRolePrices(project: any) {
     let jornada, travelDay, horaExtra, holidayDay;
     if (normalized === 'REF' || (normalized.startsWith('REF') && normalized.length > 3)) {
       // Si es REF o REF + rol base (REFG, REFBB, etc.), buscar "Precio refuerzo" en la fila correspondiente
-      let targetRow = baseRow;
+      // Para refuerzos, SIEMPRE buscar directamente en basePriceRows, ignorar prelight/pickup
+      let targetRow: any = {};
+      
       if (normalized.startsWith('REF') && normalized.length > 3) {
         // Extraer el rol base (G, BB, E, etc.)
         const baseRole = normalized.substring(3);
-        const baseRolePicked = findPriceRow([baseRole]);
-        targetRow = baseRolePicked.row;
-        // Si no encontramos la fila del rol base, usar baseRow como fallback
-        if (!targetRow || Object.keys(targetRow).length === 0) {
-          targetRow = baseRow;
-        }
+        // Buscar directamente en basePriceRows (tabla base, no prelight/pickup)
+        const baseRolePicked = findPriceRow([baseRole], basePriceRows);
+        targetRow = baseRolePicked.row || {};
       } else if (normalized === 'REF' && baseNorm && baseNorm !== 'REF') {
         // Si es REF con baseRoleCode (ej: getForRole('REF', 'GAFFER')), usar la fila del rol base
-        const baseRolePicked = findPriceRow([baseNorm]);
-        targetRow = baseRolePicked.row;
-        // Si no encontramos la fila del rol base, usar baseRow como fallback
-        if (!targetRow || Object.keys(targetRow).length === 0) {
-          targetRow = baseRow;
-        }
+        // Buscar directamente en basePriceRows (tabla base, no prelight/pickup)
+        const baseRolePicked = findPriceRow([baseNorm], basePriceRows);
+        targetRow = baseRolePicked.row || {};
+      }
+      
+      // Si targetRow está vacío, intentar con baseRow como último recurso
+      if (!targetRow || Object.keys(targetRow).length === 0) {
+        targetRow = baseRow || {};
       }
       
       const refFromTarget = getNumField(targetRow, ['Precio refuerzo', 'Precio Refuerzo', 'Refuerzo']);

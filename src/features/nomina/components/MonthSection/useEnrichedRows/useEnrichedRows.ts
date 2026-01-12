@@ -79,15 +79,6 @@ export function useEnrichedRows({
         rodajeFestivo,
       } = breakdown;
 
-      // Calcular total días trabajados según el modo
-      const totalDiasTrabajados = calculateTotalWorkingDays(
-        projectMode,
-        calculateWorkingDaysInMonthValue,
-        workedDays,
-        rodaje,
-        oficina
-      );
-
       // Obtener precios del rol
       const keyNoPR = `${stripPR(r.role)}__${r.name}`;
       const baseRoleCode = stripPR(r.role);
@@ -100,6 +91,17 @@ export function useEnrichedRows({
       
       // Si el rol empieza con "REF" (REFG, REFBB, etc.) o está en refuerzoSet, usar lógica de refuerzo
       const isRefuerzo = (r.role && r.role.startsWith('REF') && r.role.length > 3) || refuerzoSet.has(keyNoPR);
+
+      // Calcular total días trabajados según el modo
+      // Para refuerzos en mensual, usar solo los días específicos donde están marcados
+      const totalDiasTrabajados = calculateTotalWorkingDays(
+        projectMode,
+        calculateWorkingDaysInMonthValue,
+        workedDays,
+        rodaje,
+        oficina,
+        isRefuerzo
+      );
       
       // Construir el rol completo con sufijo para getForRole si es prelight o pickup
       // getForRole normaliza el rol y busca en las tablas, así que podemos pasar el nombre con sufijo
@@ -114,13 +116,18 @@ export function useEnrichedRows({
         }
       }
       
+      // Para refuerzos, pasar tanto el código como el label para que findPriceRow pueda buscar ambos
+      // Las tablas de precios pueden estar indexadas por nombre completo (Gaffer) o código (G)
       const pr = isRefuerzo
-        ? rolePrices.getForRole('REF', baseRoleLabel)
+        ? rolePrices.getForRole('REF', baseRoleLabel || baseRoleCode)
         : rolePrices.getForRole(roleForPriceLookup);
 
       // Obtener precios efectivos (maneja caso especial de diario)
       const effectivePr = getEffectiveRolePrices(pr, projectMode, refuerzoSet, keyNoPR, rolePrices, baseRoleLabel);
 
+      // Preservar el rol original antes de la transformación para el badge
+      const originalRoleForBadge = r.role || '';
+      
       // Determinar role display
       const roleDisplay = determineRoleDisplay(r.role, baseRoleCode, workedBase, workedPre, workedPick);
 
@@ -165,7 +172,7 @@ export function useEnrichedRows({
       };
 
       if (projectMode === 'diario') {
-        const publicidadTotals = calculatePublicidadTotals(
+        const publicidadTotals = calculateDiarioTotals(
           rodaje,
           oficina,
           localizar,
@@ -182,7 +189,7 @@ export function useEnrichedRows({
           totalDietas,
           effectivePr
         );
-        totals = diarioTotals;
+        totals = publicidadTotals;
       } else {
         const standardTotals = calculateStandardTotals(
           projectMode,
@@ -235,6 +242,7 @@ export function useEnrichedRows({
       return {
         ...r,
         role: roleDisplay,
+        _originalRole: originalRoleForBadge, // Preservar rol original para el badge
         extras: extrasValue,
         horasExtra: horasExtraValue,
         turnAround: turnAroundValue,

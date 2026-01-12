@@ -86,6 +86,16 @@ export function MonthSectionPersonRow({
     : 'linear-gradient(135deg,#FDE047,#F59E0B)'; // Color de Eléctrico
   const roleFgColor = theme === 'light' ? 'white' : '#000000'; // Blanco en claro, negro en oscuro
 
+  // Calcular el código del badge usando el rol original (preservado para REFs)
+  const roleForBadge = (r as any)._originalRole || r.role || '';
+  const roleCode = getRoleBadgeCode(roleForBadge, i18n.language) || '';
+  // Para refuerzos (REFG, REFGP, etc.) y roles con sufijos (GP, GR) usar ancho adaptativo
+  const isLongCode = roleCode.length > 3 || roleCode.startsWith('REF') || roleCode.endsWith('P') || roleCode.endsWith('R');
+  // Aumentar min-w para códigos largos como REFE, REFBB, etc.
+  const badgeWidthClass = isLongCode
+    ? 'min-w-[32px] sm:min-w-[36px] md:min-w-[40px] px-2 sm:px-2.5 md:px-3'
+    : 'w-4 sm:w-5 md:w-6';
+
   return (
     <tr>
       <Td align='middle'>
@@ -100,14 +110,14 @@ export function MonthSectionPersonRow({
           />
         </div>
       </Td>
-      <Td align='middle' className='text-center'>
-        <div className='flex justify-center'>
+      <Td className='whitespace-nowrap align-middle'>
+        <div className='flex items-center gap-1 sm:gap-1.5 md:gap-2'>
         <span
-          className='inline-flex items-center gap-1 sm:gap-1.5 md:gap-2 px-1 py-0.5 sm:px-1.5 sm:py-0.5 md:px-2 md:py-1 rounded sm:rounded-md md:rounded-lg border border-neutral-border bg-black/40'
+          className='inline-flex items-center gap-1 sm:gap-1.5 md:gap-2 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded sm:rounded-md md:rounded-lg border border-neutral-border bg-black/40'
           title={`${r.role} - ${r.name}`}
         >
           <span
-            className='inline-flex items-center justify-center w-4 h-3.5 sm:w-5 sm:h-4 md:w-6 md:h-5 rounded sm:rounded-md font-bold text-[8px] sm:text-[9px] md:text-[10px]'
+            className={`inline-flex items-center justify-center h-3.5 sm:h-4 md:h-5 rounded sm:rounded-md md:rounded-lg font-bold text-[8px] sm:text-[9px] md:text-[10px] ${badgeWidthClass}`}
             style={{ 
               background: roleBgColor, 
               color: roleFgColor,
@@ -115,7 +125,7 @@ export function MonthSectionPersonRow({
               textFillColor: roleFgColor
             } as React.CSSProperties}
             >
-              {getRoleBadgeCode(r.role || '', i18n.language) || '—'}
+              {roleCode || '—'}
             </span>
           <span className='text-[9px] sm:text-[10px] md:text-xs text-zinc-200'>{r.name}</span>
         </span>
@@ -152,7 +162,7 @@ export function MonthSectionPersonRow({
 
       {hasLocalizacionData && (
         <Td align='middle' className='text-center'>
-          {r._localizarDays > 0 ? r._localizarDays : '—'}
+          <span className='text-[9px] sm:text-[10px] md:text-xs'>{r._localizarDays > 0 ? r._localizarDays : '—'}</span>
         </Td>
       )}
       {hasLocalizacionData && (
@@ -227,9 +237,9 @@ export function MonthSectionPersonRow({
       {columnVisibility.extras && (
         <Td align='middle' className='text-center'>
           {r._missingPrices?.horaExtra ? (
-            <span className='text-xs text-zinc-400 italic'>{t('payroll.addPriceInConditions')}</span>
+            <span className='text-[9px] sm:text-[10px] md:text-xs text-zinc-400 italic'>{t('payroll.addPriceInConditions')}</span>
           ) : (
-            displayMoney(r._totalExtras, 2)
+            <span className='text-[9px] sm:text-[10px] md:text-xs'>{displayMoney(r._totalExtras, 2)}</span>
           )}
         </Td>
       )}
@@ -247,9 +257,9 @@ export function MonthSectionPersonRow({
       {columnVisibility.dietas && (
         <Td align='middle' className='text-center'>
           {r._missingPrices?.dietas ? (
-            <span className='text-xs text-zinc-400 italic'>{t('payroll.addPriceInConditions')}</span>
+            <span className='text-[9px] sm:text-[10px] md:text-xs text-zinc-400 italic'>{t('payroll.addPriceInConditions')}</span>
           ) : (
-            displayMoney(r._totalDietas, 2)
+            <span className='text-[9px] sm:text-[10px] md:text-xs'>{displayMoney(r._totalDietas, 2)}</span>
           )}
         </Td>
       )}

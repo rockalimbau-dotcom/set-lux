@@ -4,6 +4,7 @@ interface RolePriceCalculationParams {
   normalized: string;
   baseNorm: string;
   priceRows: any;
+  basePriceRows?: any; // Tabla base para buscar roles base de refuerzos
   p: any;
 }
 
@@ -14,40 +15,105 @@ export function calculateRolePrices({
   normalized,
   baseNorm,
   priceRows,
+  basePriceRows,
   p,
 }: RolePriceCalculationParams) {
+  // Para refuerzos, siempre usar la tabla base para buscar el rol base
+  const rowsForRefuerzo = basePriceRows || priceRows;
+  
   const pickedRow = findPriceRow(priceRows, [normalized]);
   let row = pickedRow.row;
   const pickedBase = findPriceRow(priceRows, [baseNorm]);
   const baseRow = pickedBase.row;
-  const pickedElec = findPriceRow(priceRows, ['Eléctrico', 'Electrico', 'E']);
+  const pickedElec = findPriceRow(rowsForRefuerzo, ['Eléctrico', 'Electrico', 'E']);
   const elecRow = pickedElec.row;
 
 
   // Para diario, el divisor de travel puede ser diferente
   const divTravel = num(p.divTravel) || 2.5; // Diario usa divisor 2.5
 
+  // Helper para crear lista de candidatos de rol (código + label + variantes)
+  const createRoleCandidates = (roleInput: string): string[] => {
+    const candidates = [roleInput];
+    
+    // Mapeo completo de códigos a labels
+    const codeToLabel: Record<string, string> = {
+      'G': 'Gaffer',
+      'BB': 'Best boy',
+      'E': 'Eléctrico',
+      'AUX': 'Auxiliar',
+      'M': 'Meritorio',
+      'TM': 'Técnico de mesa',
+      'FB': 'Finger boy',
+      'RIG': 'Rigger',
+    };
+    
+    // Mapeo completo de labels a códigos (incluyendo variantes)
+    const labelToCode: Record<string, string> = {
+      'Gaffer': 'G',
+      'Best boy': 'BB',
+      'Best Boy': 'BB',
+      'Eléctrico': 'E',
+      'Eléctrico/a': 'E',
+      'Electrico': 'E',
+      'Electrico/a': 'E',
+      'Auxiliar': 'AUX',
+      'Meritorio': 'M',
+      'Técnico de mesa': 'TM',
+      'Tecnico de mesa': 'TM',
+      'Finger boy': 'FB',
+      'Finger Boy': 'FB',
+      'Rigger': 'RIG',
+      // También incluir códigos directos
+      'G': 'G',
+      'BB': 'BB',
+      'E': 'E',
+      'AUX': 'AUX',
+      'M': 'M',
+      'TM': 'TM',
+      'FB': 'FB',
+      'RIG': 'RIG',
+    };
+    
+    // Si es un código, añadir su label
+    const label = codeToLabel[roleInput];
+    if (label && !candidates.includes(label)) {
+      candidates.push(label);
+    }
+    
+    // Si es un label, añadir su código
+    const code = labelToCode[roleInput];
+    if (code && !candidates.includes(code)) {
+      candidates.push(code);
+    }
+    
+    return candidates;
+  };
+
   let jornada, travelDay, horaExtra, holidayDay;
   if (normalized === 'REF' || (normalized.startsWith('REF') && normalized.length > 3)) {
     // Si es REF o REF + rol base (REFG, REFBB, etc.), buscar "Precio refuerzo" en la fila correspondiente
-    let targetRow = baseRow;
+    // Para refuerzos, SIEMPRE buscar directamente en rowsForRefuerzo (basePriceRows), ignorar prelight/pickup
+    let targetRow: any = {};
+    
     if (normalized.startsWith('REF') && normalized.length > 3) {
       // Extraer el rol base (G, BB, E, etc.)
       const baseRole = normalized.substring(3);
-      const baseRolePicked = findPriceRow(priceRows, [baseRole]);
-      targetRow = baseRolePicked.row;
-      // Si no encontramos la fila del rol base, usar baseRow como fallback
-      if (!targetRow || Object.keys(targetRow).length === 0) {
-        targetRow = baseRow;
-      }
+      // Buscar directamente en rowsForRefuerzo (tabla base, no prelight/pickup)
+      const baseRoleCandidates = createRoleCandidates(baseRole);
+      const baseRolePicked = findPriceRow(rowsForRefuerzo, baseRoleCandidates);
+      targetRow = baseRolePicked.row || {};
     } else if (normalized === 'REF' && baseNorm && baseNorm !== 'REF') {
       // Si es REF con baseNorm (ej: calculateRolePrices con normalized='REF', baseNorm='GAFFER'), usar la fila del rol base
-      const baseRolePicked = findPriceRow(priceRows, [baseNorm]);
-      targetRow = baseRolePicked.row;
-      // Si no encontramos la fila del rol base, usar baseRow como fallback
-      if (!targetRow || Object.keys(targetRow).length === 0) {
-        targetRow = baseRow;
-      }
+      // Buscar directamente en rowsForRefuerzo (tabla base, no prelight/pickup)
+      const baseRoleCandidates = createRoleCandidates(baseNorm);
+      const baseRolePicked = findPriceRow(rowsForRefuerzo, baseRoleCandidates);
+      targetRow = baseRolePicked.row || {};
+    }
+    
+    // Si targetRow está vacío, intentar con baseRow como último recurso
+    if (!targetRow || Object.keys(targetRow).length === 0) {
+      targetRow = baseRow || {};
     }
     
     const refFromTarget = getNumField(targetRow, ['Precio refuerzo', 'Precio Refuerzo', 'Refuerzo']);

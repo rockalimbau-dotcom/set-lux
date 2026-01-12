@@ -91,6 +91,7 @@ export function makeRolePrices(project: any) {
       normalized,
       baseNorm,
       priceRows,
+      basePriceRows: fallbackPriceRows, // Pasar tabla base para buscar roles base de refuerzos
       p,
     });
     
@@ -100,6 +101,7 @@ export function makeRolePrices(project: any) {
         normalized,
         baseNorm,
         priceRows: fallbackPriceRows,
+        basePriceRows: fallbackPriceRows,
         p,
       });
       // Solo usar fallback si tiene precios válidos

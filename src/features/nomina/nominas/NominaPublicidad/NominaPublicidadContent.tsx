@@ -74,12 +74,12 @@ export function NominaPublicidadContent({
         const filterISO = (iso: string) => isoSet.has(iso);
 
         // Ventana contable (si está configurada en Condiciones)
-        const win = getOvertimeWindowForPayrollMonthPublicidad(projectWithMode, mk);
+        const win = getOvertimeWindowForPayrollMonthDiario(projectWithMode, mk);
 
         // Si hay ventana contable, agregamos variables en esa ventana:
         let windowOverrideMap: Map<string, any> | null = null;
         if (win) {
-          const filterWindowISO = (iso: string) => isoInRangePublicidad(iso, win.start, win.end);
+          const filterWindowISO = (iso: string) => isoInRangeDiario(iso, win.start, win.end);
           windowOverrideMap = aggregateWindowedReportDiario(
             projectWithMode,
             weeks,

@@ -40,7 +40,7 @@ export default function WorkedDaysSummary({ carga, descarga, localizar, rodaje, 
   }
   
   return (
-    <div className='text-[10px] text-zinc-200 space-y-0.5'>
+    <div className='text-[8px] sm:text-[9px] md:text-[10px] text-zinc-200 space-y-0.5'>
       {parts.map((part, index) => (
         <div key={index}>{part}</div>
       ))}
