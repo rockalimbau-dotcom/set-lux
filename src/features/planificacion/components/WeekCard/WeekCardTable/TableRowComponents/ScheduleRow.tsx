@@ -21,8 +21,8 @@ export function ScheduleRow({
     <Row label={t('planning.schedule')}>
       {week.days.map((day: AnyRecord, i: number) => (
         <Td key={i} align='middle'>
-          <div className='flex gap-1 sm:gap-1.5 md:gap-2 justify-center min-w-0'>
-            <div className='flex-1 relative min-w-0'>
+          <div className='flex gap-2 justify-center'>
+            <div className='flex-1 relative'>
               <input
                 type='time'
                 value={day.start || ''}
@@ -33,7 +33,7 @@ export function ScheduleRow({
                   })
                 }
                 placeholder='--:--'
-                className={`w-full min-w-0 px-0.5 py-0.5 sm:px-1 sm:py-1 md:px-2 md:py-1 rounded sm:rounded-md md:rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-left text-[9px] sm:text-[10px] md:text-xs ${
+                className={`w-full px-1 py-0.5 sm:px-1.5 sm:py-1 md:px-2 md:py-1 rounded sm:rounded-md md:rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-left text-[9px] sm:text-[10px] md:text-xs ${
                   readOnly ? 'opacity-50 cursor-not-allowed' : ''
                 }`}
                 style={
@@ -50,12 +50,12 @@ export function ScheduleRow({
                 title={readOnly ? t('conditions.projectClosed') : t('planning.start')}
               />
               {!isValidTime(day.start) && (
-                <div className='absolute inset-0 flex items-center px-0.5 py-0.5 sm:px-1 sm:py-1 md:px-2 md:py-1 pointer-events-none text-[9px] sm:text-[10px] md:text-xs text-zinc-400'>
+                <div className='absolute inset-0 flex items-center px-1 py-0.5 sm:px-1.5 sm:py-1 md:px-2 md:py-1 pointer-events-none text-[9px] sm:text-[10px] md:text-xs text-zinc-400'>
                   --:--
                 </div>
               )}
             </div>
-            <div className='flex-1 relative min-w-0'>
+            <div className='flex-1 relative'>
               <input
                 type='time'
                 value={day.end || ''}
@@ -63,7 +63,7 @@ export function ScheduleRow({
                   !readOnly && setDayField(scope, week.id as string, i, { end: e.target.value })
                 }
                 placeholder='--:--'
-                className={`w-full min-w-0 px-0.5 py-0.5 sm:px-1 sm:py-1 md:px-2 md:py-1 rounded sm:rounded-md md:rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-left text-[9px] sm:text-[10px] md:text-xs ${
+                className={`w-full px-1 py-0.5 sm:px-1.5 sm:py-1 md:px-2 md:py-1 rounded sm:rounded-md md:rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-left text-[9px] sm:text-[10px] md:text-xs ${
                   readOnly ? 'opacity-50 cursor-not-allowed' : ''
                 }`}
                 style={
@@ -80,7 +80,7 @@ export function ScheduleRow({
                 title={readOnly ? t('conditions.projectClosed') : t('planning.end')}
               />
               {!isValidTime(day.end) && (
-                <div className='absolute inset-0 flex items-center px-0.5 py-0.5 sm:px-1 sm:py-1 md:px-2 md:py-1 pointer-events-none text-[9px] sm:text-[10px] md:text-xs text-zinc-400'>
+                <div className='absolute inset-0 flex items-center px-1 py-0.5 sm:px-1.5 sm:py-1 md:px-2 md:py-1 pointer-events-none text-[9px] sm:text-[10px] md:text-xs text-zinc-400'>
                   --:--
                 </div>
               )}

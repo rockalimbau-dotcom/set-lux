@@ -21,7 +21,7 @@ export function CutRow({
     <Row label={t('planning.cutRow')}>
       {week.days.map((day: AnyRecord, i: number) => (
         <Td key={i} align='middle'>
-          <div className='relative min-w-0'>
+          <div className='relative'>
             <input
               type='time'
               value={day.cut || ''}
@@ -29,7 +29,7 @@ export function CutRow({
                 !readOnly && setDayField(scope, week.id as string, i, { cut: e.target.value })
               }
               placeholder='--:--'
-              className={`w-full min-w-0 px-0.5 py-0.5 sm:px-1 sm:py-1 md:px-2 md:py-1 rounded sm:rounded-md md:rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-left text-[9px] sm:text-[10px] md:text-xs ${
+              className={`w-full px-1 py-0.5 sm:px-1.5 sm:py-1 md:px-2 md:py-1 rounded sm:rounded-md md:rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-left text-[9px] sm:text-[10px] md:text-xs ${
                 readOnly ? 'opacity-50 cursor-not-allowed' : ''
               }`}
               style={
@@ -46,7 +46,7 @@ export function CutRow({
               title={readOnly ? t('conditions.projectClosed') : t('planning.cut')}
             />
             {!isValidTime(day.cut) && (
-              <div className='absolute inset-0 flex items-center px-0.5 py-0.5 sm:px-1 sm:py-1 md:px-2 md:py-1 pointer-events-none text-[9px] sm:text-[10px] md:text-xs text-zinc-400'>
+              <div className='absolute inset-0 flex items-center px-1 py-0.5 sm:px-1.5 sm:py-1 md:px-2 md:py-1 pointer-events-none text-[9px] sm:text-[10px] md:text-xs text-zinc-400'>
                 --:--
               </div>
             )}
