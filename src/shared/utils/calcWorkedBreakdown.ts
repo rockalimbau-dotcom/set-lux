@@ -15,6 +15,8 @@ export interface WorkedBreakdownResult {
   descarga?: number;
   localizar?: number;
   rodajeFestivo?: number;
+  prelight?: number;
+  recogida?: number;
 }
 
 /**
@@ -56,6 +58,8 @@ export function calcWorkedBreakdown(
   let descarga = 0;
   let localizar = 0;
   let rodajeFestivo = 0;
+  let prelight = 0;
+  let recogida = 0;
 
   const nameEq = (s: string) => nameEqUtil(s, person.name || '');
 
@@ -71,13 +75,22 @@ export function calcWorkedBreakdown(
       const iso = isos[idx];
       if (!isWantedISO(iso)) continue;
       
-      // Si encontramos "Fin", detener el conteo (no contar este día ni los siguientes)
+      // Si encontramos "Fin" en el día principal, detener el conteo (no contar este día ni los siguientes)
       if ((day?.tipo || '') === 'Fin') {
         foundFin = true;
         break;
       }
       
-      if ((day?.tipo || '') === 'Descanso') continue;
+      // Determinar el tipo de jornada a usar (prelight/pickup específico o general)
+      let dayTypeForSkip = day?.tipo || '';
+      if (wantedSuffix === 'P' && day?.prelightTipo) {
+        dayTypeForSkip = day.prelightTipo;
+      } else if (wantedSuffix === 'R' && day?.pickupTipo) {
+        dayTypeForSkip = day.pickupTipo;
+      }
+      
+      // Saltar si es Descanso o Fin (usando el tipo específico si existe)
+      if (dayTypeForSkip === 'Descanso' || dayTypeForSkip === 'Fin') continue;
 
       // Verificar si la persona está trabajando en este día (en team, prelight o pickup)
       let isWorking = false;
@@ -107,13 +120,29 @@ export function calcWorkedBreakdown(
       if (!isWorking) continue;
         
       // Contar por tipo de día según planificación
-      const dayType = day?.tipo || '';
+      // Si es prelight o pickup, usar su tipo específico, sino usar el tipo del día principal
+      let dayType = day?.tipo || '';
+      if (wantedSuffix === 'P' && day?.prelightTipo) {
+        dayType = day.prelightTipo;
+      } else if (wantedSuffix === 'R' && day?.pickupTipo) {
+        dayType = day.pickupTipo;
+      }
       
       // Lógica diferente según el modo del proyecto
       if (projectMode === 'publicidad') {
         // En publicidad: solo Rodaje y Oficina cuentan en workedDays
         if (dayType === 'Rodaje') {
           rodaje += 1;
+          workedDays += 1;
+        } else if (dayType === 'Prelight') {
+          prelight += 1;
+          // Prelight se cuenta como rodaje para los cálculos de precio, pero no en las píldoras
+          // No sumar a rodaje aquí, se manejará en los cálculos de precio
+          workedDays += 1;
+        } else if (dayType === 'Recogida') {
+          recogida += 1;
+          // Recogida se cuenta como rodaje para los cálculos de precio, pero no en las píldoras
+          // No sumar a rodaje aquí, se manejará en los cálculos de precio
           workedDays += 1;
         } else if (dayType === 'Oficina') {
           oficina += 1;
@@ -138,6 +167,16 @@ export function calcWorkedBreakdown(
         // En semanal y mensual: todos los tipos cuentan en workedDays excepto Travel Day
         if (dayType === 'Rodaje') {
           rodaje += 1;
+          workedDays += 1;
+        } else if (dayType === 'Prelight') {
+          prelight += 1;
+          // Prelight se cuenta como rodaje para los cálculos de precio, pero no en las píldoras
+          // No sumar a rodaje aquí, se manejará en los cálculos de precio
+          workedDays += 1;
+        } else if (dayType === 'Recogida') {
+          recogida += 1;
+          // Recogida se cuenta como rodaje para los cálculos de precio, pero no en las píldoras
+          // No sumar a rodaje aquí, se manejará en los cálculos de precio
           workedDays += 1;
         } else if (dayType === 'Oficina') {
           oficina += 1;
@@ -181,7 +220,9 @@ export function calcWorkedBreakdown(
       oficina,
       localizar,
       carga,
-      descarga
+      descarga,
+      prelight,
+      recogida
     };
   } else {
     return { 
@@ -197,7 +238,9 @@ export function calcWorkedBreakdown(
       carga,
       descarga,
       localizar,
-      rodajeFestivo
+      rodajeFestivo,
+      prelight,
+      recogida
     };
   }
 }

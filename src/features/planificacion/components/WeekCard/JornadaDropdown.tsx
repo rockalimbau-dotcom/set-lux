@@ -16,6 +16,8 @@ type JornadaDropdownProps = {
   theme: 'dark' | 'light';
   focusColor: string;
   readOnly?: boolean;
+  withoutTd?: boolean;
+  excludeOptions?: string[];
 };
 
 export function JornadaDropdown({
@@ -30,10 +32,13 @@ export function JornadaDropdown({
   theme,
   focusColor,
   readOnly = false,
+  withoutTd = false,
+  excludeOptions = [],
 }: JornadaDropdownProps) {
   const { t } = useTranslation();
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const jornadaOptions = ['Rodaje', 'Oficina', 'Carga', 'Descarga', 'Localizar', 'Travel Day', 'Rodaje Festivo', 'Descanso', 'Fin'];
+  const allJornadaOptions = ['Rodaje', 'Oficina', 'Carga', 'Descarga', 'Localizar', 'Travel Day', 'Prelight', 'Recogida', 'Rodaje Festivo', 'Descanso', 'Fin'];
+  const jornadaOptions = allJornadaOptions.filter(opt => !excludeOptions.includes(opt));
   
   // Helper function to translate jornada type
   const translateJornadaType = (tipo: string): string => {
@@ -61,9 +66,8 @@ export function JornadaDropdown({
     };
   }, [dropdownState.isOpen, dropdownKey, setDropdownState]);
 
-  return (
-    <Td align='middle'>
-      <div className='w-full relative' ref={dropdownRef}>
+  const content = (
+    <div className='w-full relative' ref={dropdownRef}>
         <button
           type='button'
           onClick={() => !readOnly && setDropdownState(dropdownKey, { isOpen: !dropdownState.isOpen })}
@@ -141,6 +145,15 @@ export function JornadaDropdown({
           </div>
         )}
       </div>
+  );
+
+  if (withoutTd) {
+    return content;
+  }
+
+  return (
+    <Td align='middle'>
+      {content}
     </Td>
   );
 }

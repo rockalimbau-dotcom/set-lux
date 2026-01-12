@@ -72,7 +72,11 @@ export function useWeeksData(
               d.prelightStart !== cd.prelightStart ||
               d.prelightEnd !== cd.prelightEnd ||
               d.pickupStart !== cd.pickupStart ||
-              d.pickupEnd !== cd.pickupEnd;
+              d.pickupEnd !== cd.pickupEnd ||
+              d.prelightTipo !== cd.prelightTipo ||
+              d.pickupTipo !== cd.pickupTipo ||
+              d.prelightLoc !== cd.prelightLoc ||
+              d.pickupLoc !== cd.pickupLoc;
           });
         });
       
@@ -99,7 +103,11 @@ export function useWeeksData(
               d.prelightStart !== cd.prelightStart ||
               d.prelightEnd !== cd.prelightEnd ||
               d.pickupStart !== cd.pickupStart ||
-              d.pickupEnd !== cd.pickupEnd;
+              d.pickupEnd !== cd.pickupEnd ||
+              d.prelightTipo !== cd.prelightTipo ||
+              d.pickupTipo !== cd.pickupTipo ||
+              d.prelightLoc !== cd.prelightLoc ||
+              d.pickupLoc !== cd.pickupLoc;
           });
         });
       

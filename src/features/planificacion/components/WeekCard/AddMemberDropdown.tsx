@@ -50,9 +50,10 @@ export function AddMemberDropdown({
     };
 
     if (dropdownState.isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-      // Enfocar el input de búsqueda cuando se abre el dropdown
+      // Usar setTimeout para asegurar que el dropdown se renderice antes de añadir el listener
       setTimeout(() => {
+        document.addEventListener('mousedown', handleClickOutside);
+        // Enfocar el input de búsqueda cuando se abre el dropdown
         searchInputRef.current?.focus();
       }, 0);
     }
@@ -62,8 +63,30 @@ export function AddMemberDropdown({
     };
   }, [dropdownState.isOpen, dropdownKey, setDropdownState]);
 
+  // Cerrar el dropdown y limpiar búsqueda cuando cambia el tipo de jornada
+  const prevTipoRef = useRef(day.tipo);
+  useEffect(() => {
+    if (prevTipoRef.current !== day.tipo && dropdownState.isOpen) {
+      setDropdownState(dropdownKey, { isOpen: false });
+      setSearchQuery('');
+    }
+    prevTipoRef.current = day.tipo;
+  }, [day.tipo, dropdownKey, setDropdownState, dropdownState.isOpen]);
+
+  // Filtrar opciones basándose en el tipo de jornada
+  const jornadaFilteredOptions = options.filter((p: AnyRecord) => {
+    // Si es Oficina o Localizar, solo mostrar Gaffer (G) y Best Boy (BB)
+    if (day.tipo === 'Oficina' || day.tipo === 'Localizar') {
+      const shouldInclude = p.role === 'G' || p.role === 'BB';
+      return shouldInclude;
+    }
+    // Para Rodaje, Carga, Descarga, Travel Day, Prelight y Rodaje Festivo, mostrar todo el equipo base (todos los roles)
+    // Para otros tipos también mostrar todos los roles
+    return true;
+  });
+
   // Filtrar opciones basándose en la búsqueda
-  const filteredOptions = options.filter((p: AnyRecord) => {
+  const filteredOptions = jornadaFilteredOptions.filter((p: AnyRecord) => {
     if (!searchQuery.trim()) return true;
     const query = searchQuery.toLowerCase();
     const name = (p.name || '').toLowerCase();
@@ -75,7 +98,12 @@ export function AddMemberDropdown({
     <div className='no-pdf w-full relative' ref={dropdownRef}>
       <button
         type='button'
-        onClick={() => !readOnly && setDropdownState(dropdownKey, { isOpen: !dropdownState.isOpen })}
+        onClick={(e) => {
+          e.stopPropagation();
+          if (!readOnly) {
+            setDropdownState(dropdownKey, { isOpen: !dropdownState.isOpen });
+          }
+        }}
         onMouseEnter={() => !readOnly && setDropdownState(dropdownKey, { isButtonHovered: true })}
         onMouseLeave={() => setDropdownState(dropdownKey, { isButtonHovered: false })}
         onBlur={() => setDropdownState(dropdownKey, { isButtonHovered: false })}
@@ -103,10 +131,13 @@ export function AddMemberDropdown({
       >
         {t('planning.addMember')}
       </button>
-      {dropdownState.isOpen && (
+      {dropdownState.isOpen && !readOnly && (
         <div className={`absolute top-full left-0 mt-0.5 sm:mt-1 w-full border border-neutral-border rounded sm:rounded-md md:rounded-lg shadow-lg z-50 overflow-hidden flex flex-col max-h-48 sm:max-h-56 md:max-h-60 ${
           theme === 'light' ? 'bg-white' : 'bg-neutral-panel'
-        }`}>
+        }`}
+        onClick={(e) => e.stopPropagation()}
+        onMouseDown={(e) => e.stopPropagation()}
+        >
           {/* Campo de búsqueda */}
           <div className='p-1.5 sm:p-2 border-b border-neutral-border'>
             <input

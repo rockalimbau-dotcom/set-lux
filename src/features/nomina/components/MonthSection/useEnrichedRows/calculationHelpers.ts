@@ -16,7 +16,9 @@ export function calculateDiarioTotals(
   transporteValue: number,
   kmValue: number,
   totalDietas: number,
-  effectivePr: any
+  effectivePr: any,
+  prelight?: number | undefined,
+  recogida?: number | undefined
 ): {
   totalDias: number;
   totalTravel: number;
@@ -28,7 +30,8 @@ export function calculateDiarioTotals(
   totalCargaDescarga: number;
   totalBruto: number;
 } {
-  const rodajeDays = (rodaje || 0) + (oficina || 0);
+  // Para los cálculos de precio, prelight y recogida se cuentan como rodaje
+  const rodajeDays = (rodaje || 0) + (oficina || 0) + (prelight || 0) + (recogida || 0);
   const totalDias = rodajeDays * (effectivePr.jornada || 0);
 
   const localizacionDays = localizar || 0;

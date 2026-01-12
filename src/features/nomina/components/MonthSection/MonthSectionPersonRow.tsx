@@ -145,6 +145,8 @@ export function MonthSectionPersonRow({
                 localizar={r._localizar || 0}
                 rodaje={r._rodaje || 0}
                 oficina={r._oficina || 0}
+                prelight={r._prelight || 0}
+                recogida={r._recogida || 0}
               />
             )}
           </div>

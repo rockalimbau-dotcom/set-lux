@@ -148,6 +148,7 @@ export const createWeekHandlers = (
             [
               'Rodaje',
               'Travel Day',
+              'Prelight',
               'Rodaje Festivo',
               'Carga',
               'Descarga',
@@ -187,6 +188,40 @@ export const createWeekHandlers = (
             next.pickupStart = '';
             next.pickupEnd = '';
           }
+
+          // Si cambia a Oficina o Localizar, filtrar el equipo para dejar solo Gaffer (G) y Best Boy (BB)
+          if (patch.tipo === 'Oficina' || patch.tipo === 'Localizar') {
+            if (next.team && Array.isArray(next.team)) {
+              next.team = next.team.filter((m: AnyRecord) => m.role === 'G' || m.role === 'BB');
+            }
+          }
+
+          // Si cambia de Oficina o Localizar a Rodaje, Carga, Descarga, Travel Day, Prelight o Rodaje Festivo,
+          // añadir los miembros del equipo base que faltan
+          const wasOfficeOrLocation = d.tipo === 'Oficina' || d.tipo === 'Localizar';
+          const needsFullTeam = patch.tipo &&
+            ['Rodaje', 'Carga', 'Descarga', 'Travel Day', 'Prelight', 'Rodaje Festivo'].includes(patch.tipo);
+          
+          if (wasOfficeOrLocation && needsFullTeam && baseRoster && baseRoster.length > 0) {
+            const currentTeam = next.team || [];
+            const currentTeamKeys = new Set(
+              currentTeam.map((m: AnyRecord) => `${m.role}::${m.name}`)
+            );
+            
+            // Añadir miembros del equipo base que no estén ya en el equipo
+            const missingMembers = baseRoster
+              .filter((m: AnyRecord) => {
+                const key = `${m.role}::${m.name}`;
+                return !currentTeamKeys.has(key);
+              })
+              .map((m: AnyRecord) => ({
+                role: m.role,
+                name: m.name,
+              }));
+            
+            next.team = [...currentTeam, ...missingMembers];
+          }
+
           return next;
         });
         return { ...w, days };

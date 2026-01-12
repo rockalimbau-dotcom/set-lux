@@ -5,6 +5,7 @@ import ToggleIconButton from '@shared/components/ToggleIconButton';
 import { AnyRecord } from '@shared/types/common';
 import { AddPickupDropdown } from '../AddPickupDropdown';
 import { MemberChip } from './MemberChip';
+import { JornadaDropdown } from '../JornadaDropdown';
 
 // Helper function to validate if a time string is in valid HH:MM format
 const isValidTime = (time: string | null | undefined): boolean => {
@@ -102,10 +103,44 @@ export function PickupRow({
           ...poolRefs(reinforcements),
         ]);
         const options = missingByPair(day.pickup, pickPool);
+        
+        // Obtener el tipo de jornada de pickup (o el valor por defecto)
+        const pickupTipo = day.pickupTipo || (day.tipo === 'Descanso' || day.tipo === 'Fin' ? day.tipo : 'Descanso');
+        const isPickupRestDay = pickupTipo === 'Descanso' || pickupTipo === 'Fin';
+        
         return (
           <Td key={i} align='middle'>
             {pickOpen && (
               <div className='flex flex-col gap-1 sm:gap-1.5 md:gap-2'>
+                {/* Fila de Jornada */}
+                <div className='w-full'>
+                  <JornadaDropdown
+                    scope={scope}
+                    weekId={week.id as string}
+                    dayIndex={i}
+                    day={{
+                      ...day,
+                      tipo: pickupTipo,
+                    }}
+                    dropdownKey={`pickup_jornada_${week.id}_${i}`}
+                    dropdownState={getDropdownState(`pickup_jornada_${week.id}_${i}`)}
+                    setDropdownState={setDropdownState}
+                    setDayField={(scope, weekId, dayIdx, patch) => {
+                      // Guardar el tipo específico de pickup
+                      const update: AnyRecord = { pickupTipo: patch.tipo };
+                      // Si cambiamos a Descanso o Fin, limpiar la localización de pickup
+                      if (patch.tipo === 'Descanso' || patch.tipo === 'Fin') {
+                        update.pickupLoc = patch.tipo === 'Descanso' ? 'DESCANSO' : 'FIN DEL RODAJE';
+                      }
+                      setDayField(scope, weekId, dayIdx, update);
+                    }}
+                    theme={theme}
+                    focusColor={focusColor}
+                    readOnly={readOnly}
+                    withoutTd={true}
+                    excludeOptions={['Fin']}
+                  />
+                </div>
                 <div className='flex gap-1 sm:gap-1.5 md:gap-2 justify-center'>
                   <div className='relative'>
                     <input
@@ -117,15 +152,8 @@ export function PickupRow({
                           pickupStart: e.target.value,
                         })
                       }
-                      onBlur={e => {
-                        if (!readOnly && e.target.value) {
-                          const normalized = normalizeTime(e.target.value);
-                          if (normalized !== e.target.value) {
-                            setDayField(scope, week.id as string, i, {
-                              pickupStart: normalized,
-                            });
-                          }
-                        }
+                      onBlur={() => {
+                        // El valor ya está normalizado por el input type="time"
                       }}
                       placeholder='--:--'
                       className={`px-1 py-0.5 sm:px-1.5 sm:py-1 md:px-2 md:py-1 rounded sm:rounded-md md:rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-left text-[9px] sm:text-[10px] md:text-xs ${
@@ -140,7 +168,7 @@ export function PickupRow({
                             }
                           : undefined
                       }
-                      disabled={readOnly || day.tipo === 'Descanso' || day.tipo === 'Fin'}
+                      disabled={readOnly || isPickupRestDay}
                       readOnly={readOnly}
                       title={readOnly ? t('conditions.projectClosed') : t('planning.startPickup')}
                     />
@@ -173,7 +201,7 @@ export function PickupRow({
                             }
                           : undefined
                       }
-                      disabled={readOnly || day.tipo === 'Descanso' || day.tipo === 'Fin'}
+                      disabled={readOnly || isPickupRestDay}
                       readOnly={readOnly}
                       title={readOnly ? t('conditions.projectClosed') : t('planning.endPickup')}
                     />
@@ -183,6 +211,33 @@ export function PickupRow({
                       </div>
                     )}
                   </div>
+                </div>
+                {/* Fila de Localización */}
+                <div className='w-full'>
+                  <input
+                    type='text'
+                    placeholder={
+                      pickupTipo === 'Descanso'
+                        ? t('planning.restLocation')
+                        : pickupTipo === 'Fin'
+                          ? t('planning.endLocation')
+                          : t('planning.locationPlaceholder')
+                    }
+                    value={
+                      pickupTipo === 'Descanso' && day.pickupLoc === 'DESCANSO'
+                        ? t('planning.restLocation')
+                        : pickupTipo === 'Fin' && day.pickupLoc === 'FIN DEL RODAJE'
+                          ? t('planning.endLocation')
+                          : day.pickupLoc || ''
+                    }
+                    onChange={e => !readOnly && setDayField(scope, week.id as string, i, { pickupLoc: e.target.value })}
+                    onBlur={e => !readOnly && setDayField(scope, week.id as string, i, { pickupLoc: e.target.value })}
+                    className={`w-full px-1 py-0.5 sm:px-1.5 sm:py-1 md:px-2 md:py-1 rounded sm:rounded-md md:rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-left text-[9px] sm:text-[10px] md:text-xs ${
+                      readOnly ? 'opacity-50 cursor-not-allowed' : ''
+                    }`}
+                    disabled={readOnly || isPickupRestDay}
+                    title={readOnly ? t('conditions.projectClosed') : t('planning.location')}
+                  />
                 </div>
                 <div className='flex flex-wrap gap-1 sm:gap-1.5 md:gap-2 justify-center'>
                   {(day.pickup || []).map((m: AnyRecord, idx: number) => (
@@ -214,7 +269,10 @@ export function PickupRow({
                     scope={scope}
                     weekId={week.id as string}
                     dayIndex={i}
-                    day={day}
+                    day={{
+                      ...day,
+                      tipo: pickupTipo,
+                    }}
                     dropdownKey={`pickup_${week.id}_${i}`}
                     dropdownState={getDropdownState(`pickup_${week.id}_${i}`)}
                     setDropdownState={setDropdownState}
@@ -222,7 +280,7 @@ export function PickupRow({
                     options={options}
                     theme={theme}
                     focusColor={focusColor}
-                    readOnly={readOnly}
+                    readOnly={readOnly || isPickupRestDay}
                   />
                 </div>
               </div>

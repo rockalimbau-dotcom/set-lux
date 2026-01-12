@@ -77,6 +77,8 @@ export function useEnrichedRows({
         descarga,
         localizar,
         rodajeFestivo,
+        prelight,
+        recogida,
       } = breakdown;
 
       // Obtener precios del rol
@@ -187,7 +189,9 @@ export function useEnrichedRows({
           transporteValue,
           kmValue,
           totalDietas,
-          effectivePr
+          effectivePr,
+          prelight,
+          recogida
         );
         totals = publicidadTotals;
       } else {
@@ -265,6 +269,8 @@ export function useEnrichedRows({
         _descarga: descarga,
         _localizar: localizar,
         _rodajeFestivo: rodajeFestivo,
+        _prelight: prelight,
+        _recogida: recogida,
         _totalDias: totals.totalDias,
         _totalTravel: totals.totalTravel,
         _totalHolidays: totals.totalHolidays,

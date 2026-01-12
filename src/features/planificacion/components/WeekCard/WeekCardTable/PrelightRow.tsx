@@ -5,6 +5,7 @@ import ToggleIconButton from '@shared/components/ToggleIconButton';
 import { AnyRecord } from '@shared/types/common';
 import { AddPrelightDropdown } from '../AddPrelightDropdown';
 import { MemberChip } from './MemberChip';
+import { JornadaDropdown } from '../JornadaDropdown';
 
 // Helper function to validate if a time string is in valid HH:MM format
 const isValidTime = (time: string | null | undefined): boolean => {
@@ -102,10 +103,44 @@ export function PrelightRow({
           ...poolRefs(reinforcements),
         ]);
         const options = missingByPair(day.prelight, prePool);
+        
+        // Obtener el tipo de jornada de prelight (o el valor por defecto)
+        const prelightTipo = day.prelightTipo || (day.tipo === 'Descanso' || day.tipo === 'Fin' ? day.tipo : 'Descanso');
+        const isPrelightRestDay = prelightTipo === 'Descanso' || prelightTipo === 'Fin';
+        
         return (
           <Td key={i} align='middle'>
             {preOpen && (
               <div className='flex flex-col gap-1 sm:gap-1.5 md:gap-2'>
+                {/* Fila de Jornada */}
+                <div className='w-full'>
+                  <JornadaDropdown
+                    scope={scope}
+                    weekId={week.id as string}
+                    dayIndex={i}
+                    day={{
+                      ...day,
+                      tipo: prelightTipo,
+                    }}
+                    dropdownKey={`prelight_jornada_${week.id}_${i}`}
+                    dropdownState={getDropdownState(`prelight_jornada_${week.id}_${i}`)}
+                    setDropdownState={setDropdownState}
+                    setDayField={(scope, weekId, dayIdx, patch) => {
+                      // Guardar el tipo específico de prelight
+                      const update: AnyRecord = { prelightTipo: patch.tipo };
+                      // Si cambiamos a Descanso o Fin, limpiar la localización de prelight
+                      if (patch.tipo === 'Descanso' || patch.tipo === 'Fin') {
+                        update.prelightLoc = patch.tipo === 'Descanso' ? 'DESCANSO' : 'FIN DEL RODAJE';
+                      }
+                      setDayField(scope, weekId, dayIdx, update);
+                    }}
+                    theme={theme}
+                    focusColor={focusColor}
+                    readOnly={readOnly}
+                    withoutTd={true}
+                    excludeOptions={['Fin']}
+                  />
+                </div>
                 <div className='flex gap-1 sm:gap-1.5 md:gap-2 justify-center'>
                   <div className='relative'>
                     <input
@@ -117,15 +152,8 @@ export function PrelightRow({
                           prelightStart: e.target.value,
                         })
                       }
-                      onBlur={e => {
-                        if (!readOnly && e.target.value) {
-                          const normalized = normalizeTime(e.target.value);
-                          if (normalized !== e.target.value) {
-                            setDayField(scope, week.id as string, i, {
-                              prelightStart: normalized,
-                            });
-                          }
-                        }
+                      onBlur={() => {
+                        // El valor ya está normalizado por el input type="time"
                       }}
                       placeholder='--:--'
                       className={`px-1 py-0.5 sm:px-1.5 sm:py-1 md:px-2 md:py-1 rounded sm:rounded-md md:rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-left text-[9px] sm:text-[10px] md:text-xs ${
@@ -140,7 +168,7 @@ export function PrelightRow({
                             }
                           : undefined
                       }
-                      disabled={readOnly || day.tipo === 'Descanso' || day.tipo === 'Fin'}
+                      disabled={readOnly || isPrelightRestDay}
                       readOnly={readOnly}
                       title={readOnly ? t('conditions.projectClosed') : t('planning.startPrelight')}
                     />
@@ -173,7 +201,7 @@ export function PrelightRow({
                             }
                           : undefined
                       }
-                      disabled={readOnly || day.tipo === 'Descanso' || day.tipo === 'Fin'}
+                      disabled={readOnly || isPrelightRestDay}
                       readOnly={readOnly}
                       title={readOnly ? t('conditions.projectClosed') : t('planning.endPrelight')}
                     />
@@ -183,6 +211,33 @@ export function PrelightRow({
                       </div>
                     )}
                   </div>
+                </div>
+                {/* Fila de Localización */}
+                <div className='w-full'>
+                  <input
+                    type='text'
+                    placeholder={
+                      prelightTipo === 'Descanso'
+                        ? t('planning.restLocation')
+                        : prelightTipo === 'Fin'
+                          ? t('planning.endLocation')
+                          : t('planning.locationPlaceholder')
+                    }
+                    value={
+                      prelightTipo === 'Descanso' && day.prelightLoc === 'DESCANSO'
+                        ? t('planning.restLocation')
+                        : prelightTipo === 'Fin' && day.prelightLoc === 'FIN DEL RODAJE'
+                          ? t('planning.endLocation')
+                          : day.prelightLoc || ''
+                    }
+                    onChange={e => !readOnly && setDayField(scope, week.id as string, i, { prelightLoc: e.target.value })}
+                    onBlur={e => !readOnly && setDayField(scope, week.id as string, i, { prelightLoc: e.target.value })}
+                    className={`w-full px-1 py-0.5 sm:px-1.5 sm:py-1 md:px-2 md:py-1 rounded sm:rounded-md md:rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-left text-[9px] sm:text-[10px] md:text-xs ${
+                      readOnly ? 'opacity-50 cursor-not-allowed' : ''
+                    }`}
+                    disabled={readOnly || isPrelightRestDay}
+                    title={readOnly ? t('conditions.projectClosed') : t('planning.location')}
+                  />
                 </div>
                 <div className='flex flex-wrap gap-1 sm:gap-1.5 md:gap-2 justify-center'>
                   {(day.prelight || []).map((m: AnyRecord, idx: number) => (
@@ -214,7 +269,10 @@ export function PrelightRow({
                     scope={scope}
                     weekId={week.id as string}
                     dayIndex={i}
-                    day={day}
+                    day={{
+                      ...day,
+                      tipo: prelightTipo,
+                    }}
                     dropdownKey={`prelight_${week.id}_${i}`}
                     dropdownState={getDropdownState(`prelight_${week.id}_${i}`)}
                     setDropdownState={setDropdownState}
@@ -222,7 +280,7 @@ export function PrelightRow({
                     options={options}
                     theme={theme}
                     focusColor={focusColor}
-                    readOnly={readOnly}
+                    readOnly={readOnly || isPrelightRestDay}
                   />
                 </div>
               </div>

@@ -50,7 +50,7 @@ const translateDietItem = (item: string): string => {
 export const generateWorkedDaysText = (r: any): string => {
   const parts: string[] = [];
   
-  // Orden: Localizar, Oficina, Carga, Rodaje, Descarga
+  // Orden: Localizar, Oficina, Carga, Rodaje, Prelight, Recogida, Descarga
   if ((r._localizar || 0) > 0) {
     parts.push(`${i18n.t('payroll.dayTypes.location')} x${r._localizar}`);
   }
@@ -65,6 +65,14 @@ export const generateWorkedDaysText = (r: any): string => {
   
   if ((r._rodaje || 0) > 0) {
     parts.push(`${i18n.t('payroll.dayTypes.shooting')} x${r._rodaje}`);
+  }
+  
+  if ((r._prelight || 0) > 0) {
+    parts.push(`${i18n.t('payroll.dayTypes.prelight', 'Prelight')} x${r._prelight}`);
+  }
+  
+  if ((r._recogida || 0) > 0) {
+    parts.push(`${i18n.t('payroll.dayTypes.pickup', 'Recogida')} x${r._recogida}`);
   }
   
   if ((r._descarga || 0) > 0) {
