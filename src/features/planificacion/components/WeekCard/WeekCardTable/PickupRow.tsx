@@ -6,6 +6,14 @@ import { AnyRecord } from '@shared/types/common';
 import { AddPickupDropdown } from '../AddPickupDropdown';
 import { MemberChip } from './MemberChip';
 
+// Helper function to validate if a time string is in valid HH:MM format
+const isValidTime = (time: string | null | undefined): boolean => {
+  if (!time) return false;
+  // Valid format: HH:MM where HH is 00-23 and MM is 00-59
+  const timeRegex = /^([0-1][0-9]|2[0-3]):[0-5][0-9]$/;
+  return timeRegex.test(time);
+};
+
 interface PickupRowProps {
   week: AnyRecord;
   scope: 'pre' | 'pro';
@@ -99,48 +107,82 @@ export function PickupRow({
             {pickOpen && (
               <div className='flex flex-col gap-1 sm:gap-1.5 md:gap-2'>
                 <div className='flex gap-1 sm:gap-1.5 md:gap-2 justify-center'>
-                  <input
-                    type='time'
-                    value={day.pickupStart || ''}
-                    onChange={e =>
-                      !readOnly &&
-                      setDayField(scope, week.id as string, i, {
-                        pickupStart: e.target.value,
-                      })
-                    }
-                    onBlur={e => {
-                      if (!readOnly && e.target.value) {
-                        const normalized = normalizeTime(e.target.value);
-                        if (normalized !== e.target.value) {
-                          setDayField(scope, week.id as string, i, {
-                            pickupStart: normalized,
-                          });
-                        }
+                  <div className='relative'>
+                    <input
+                      type='time'
+                      value={day.pickupStart || ''}
+                      onChange={e =>
+                        !readOnly &&
+                        setDayField(scope, week.id as string, i, {
+                          pickupStart: e.target.value,
+                        })
                       }
-                    }}
-                    className={`px-1 py-0.5 sm:px-1.5 sm:py-1 md:px-2 md:py-1 rounded sm:rounded-md md:rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-left text-[9px] sm:text-[10px] md:text-xs ${
-                      readOnly ? 'opacity-50 cursor-not-allowed' : ''
-                    }`}
-                    disabled={readOnly || day.tipo === 'Descanso' || day.tipo === 'Fin'}
-                    readOnly={readOnly}
-                    title={readOnly ? t('conditions.projectClosed') : t('planning.startPickup')}
-                  />
-                  <input
-                    type='time'
-                    value={day.pickupEnd || ''}
-                    onChange={e =>
-                      !readOnly &&
-                      setDayField(scope, week.id as string, i, {
-                        pickupEnd: e.target.value,
-                      })
-                    }
-                    className={`px-1 py-0.5 sm:px-1.5 sm:py-1 md:px-2 md:py-1 rounded sm:rounded-md md:rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-left text-[9px] sm:text-[10px] md:text-xs ${
-                      readOnly ? 'opacity-50 cursor-not-allowed' : ''
-                    }`}
-                    disabled={readOnly || day.tipo === 'Descanso' || day.tipo === 'Fin'}
-                    readOnly={readOnly}
-                    title={readOnly ? t('conditions.projectClosed') : t('planning.endPickup')}
-                  />
+                      onBlur={e => {
+                        if (!readOnly && e.target.value) {
+                          const normalized = normalizeTime(e.target.value);
+                          if (normalized !== e.target.value) {
+                            setDayField(scope, week.id as string, i, {
+                              pickupStart: normalized,
+                            });
+                          }
+                        }
+                      }}
+                      placeholder='--:--'
+                      className={`px-1 py-0.5 sm:px-1.5 sm:py-1 md:px-2 md:py-1 rounded sm:rounded-md md:rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-left text-[9px] sm:text-[10px] md:text-xs ${
+                        readOnly ? 'opacity-50 cursor-not-allowed' : ''
+                      }`}
+                      style={
+                        !isValidTime(day.pickupStart)
+                          ? {
+                              color: 'transparent',
+                              WebkitTextFillColor: 'transparent',
+                              caretColor: 'transparent',
+                            }
+                          : undefined
+                      }
+                      disabled={readOnly || day.tipo === 'Descanso' || day.tipo === 'Fin'}
+                      readOnly={readOnly}
+                      title={readOnly ? t('conditions.projectClosed') : t('planning.startPickup')}
+                    />
+                    {!isValidTime(day.pickupStart) && (
+                      <div className='absolute inset-0 flex items-center px-1 py-0.5 sm:px-1.5 sm:py-1 md:px-2 md:py-1 pointer-events-none text-[9px] sm:text-[10px] md:text-xs text-zinc-400'>
+                        --:--
+                      </div>
+                    )}
+                  </div>
+                  <div className='relative'>
+                    <input
+                      type='time'
+                      value={day.pickupEnd || ''}
+                      onChange={e =>
+                        !readOnly &&
+                        setDayField(scope, week.id as string, i, {
+                          pickupEnd: e.target.value,
+                        })
+                      }
+                      placeholder='--:--'
+                      className={`px-1 py-0.5 sm:px-1.5 sm:py-1 md:px-2 md:py-1 rounded sm:rounded-md md:rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-left text-[9px] sm:text-[10px] md:text-xs ${
+                        readOnly ? 'opacity-50 cursor-not-allowed' : ''
+                      }`}
+                      style={
+                        !isValidTime(day.pickupEnd)
+                          ? {
+                              color: 'transparent',
+                              WebkitTextFillColor: 'transparent',
+                              caretColor: 'transparent',
+                            }
+                          : undefined
+                      }
+                      disabled={readOnly || day.tipo === 'Descanso' || day.tipo === 'Fin'}
+                      readOnly={readOnly}
+                      title={readOnly ? t('conditions.projectClosed') : t('planning.endPickup')}
+                    />
+                    {!isValidTime(day.pickupEnd) && (
+                      <div className='absolute inset-0 flex items-center px-1 py-0.5 sm:px-1.5 sm:py-1 md:px-2 md:py-1 pointer-events-none text-[9px] sm:text-[10px] md:text-xs text-zinc-400'>
+                        --:--
+                      </div>
+                    )}
+                  </div>
                 </div>
                 <div className='flex flex-wrap gap-1 sm:gap-1.5 md:gap-2 justify-center'>
                   {(day.pickup || []).map((m: AnyRecord, idx: number) => (
