@@ -72,6 +72,16 @@ export function getValueWithOverride<T>(
     if (filteredValue === undefined || filteredValue === null) {
       return originalValue;
     }
+    // Para Maps (como dietasCount), si el Map filtrado está vacío pero el original tiene datos, usar el original
+    if (originalValue instanceof Map && filteredValue instanceof Map) {
+      if (filteredValue.size === 0 && originalValue.size > 0) {
+        return originalValue;
+      }
+      // Si el Map filtrado tiene datos, usarlo
+      if (filteredValue.size > 0) {
+        return filteredValue as T;
+      }
+    }
     // Si el valor original no es 0 y filteredValue es 0, usar el original
     // (esto es especialmente importante para penaltyLunch y otros campos que pueden ser 0 en filteredRow)
     if (originalValue !== 0 && filteredValue === 0 && typeof originalValue === 'number' && typeof filteredValue === 'number') {

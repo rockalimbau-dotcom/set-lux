@@ -77,9 +77,8 @@ export const translateDietItem = (item: string): string => {
   const itemMap: Record<string, string> = {
     'Comida': getTranslation('reports.dietOptions.lunch', 'Comida'),
     'Cena': getTranslation('reports.dietOptions.dinner', 'Cena'),
-    'Desayuno': getTranslation('reports.dietOptions.breakfast', 'Desayuno'),
     'Dieta sin pernoctar': getTranslation('reports.dietOptions.dietNoOvernight', 'Dieta sin pernoctar'),
-    'Dieta completa + desayuno': getTranslation('reports.dietOptions.dietFullBreakfast', 'Dieta completa + desayuno'),
+    'Dieta con pernocta': getTranslation('reports.dietOptions.dietWithOvernight', 'Dieta con pernocta'),
     'Gastos de bolsillo': getTranslation('reports.dietOptions.pocketExpenses', 'Gastos de bolsillo'),
     'Ticket': getTranslation('reports.dietOptions.ticket', 'Ticket'),
   };

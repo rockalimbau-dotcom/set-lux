@@ -124,7 +124,7 @@ export function makeRolePrices(project: any) {
         Comida: num(p.dietaComida) || 0,
         Cena: num(p.dietaCena) || 0,
         'Dieta sin pernoctar': num(p.dietaSinPernocta) || 0,
-        'Dieta completa + desayuno': num(p.dietaAlojDes) || 0,
+        'Dieta con pernocta': num(p.dietaAlojDes) || 0,
         'Gastos de bolsillo': num(p.gastosBolsillo) || 0,
       },
       // Campos específicos de publicidad

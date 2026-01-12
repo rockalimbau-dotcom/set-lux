@@ -45,8 +45,7 @@ export function calculateTotalDietas(
     cnt('Comida') * (effectivePr.dietas['Comida'] || 0) +
     cnt('Cena') * (effectivePr.dietas['Cena'] || 0) +
     cnt('Dieta sin pernoctar') * (effectivePr.dietas['Dieta sin pernoctar'] || 0) +
-    cnt('Dieta completa + desayuno') *
-      (effectivePr.dietas['Dieta completa + desayuno'] || 0) +
+    cnt('Dieta con pernocta') * (effectivePr.dietas['Dieta con pernocta'] || 0) +
     cnt('Gastos de bolsillo') * (effectivePr.dietas['Gastos de bolsillo'] || 0) +
     (ticketValue || 0)
   );
@@ -62,16 +61,15 @@ export function buildDietasLabel(
   const dietasLabelParts: string[] = [];
   const cnt = (label: string) => dietasMap.get(label) || 0;
   
-  if (cnt('Desayuno')) dietasLabelParts.push(`Desayuno x${cnt('Desayuno')}`);
   if (cnt('Comida')) dietasLabelParts.push(`Comida x${cnt('Comida')}`);
   if (cnt('Cena')) dietasLabelParts.push(`Cena x${cnt('Cena')}`);
   if (cnt('Dieta sin pernoctar'))
     dietasLabelParts.push(
       `Dieta sin pernoctar x${cnt('Dieta sin pernoctar')}`
     );
-  if (cnt('Dieta completa + desayuno'))
+  if (cnt('Dieta con pernocta'))
     dietasLabelParts.push(
-      `Dieta completa + desayuno x${cnt('Dieta completa + desayuno')}`
+      `Dieta con pernocta x${cnt('Dieta con pernocta')}`
     );
   if (cnt('Gastos de bolsillo'))
     dietasLabelParts.push(
@@ -180,18 +178,16 @@ export function detectMissingPrices(
     }
     
     const cnt = (label: string) => (data.dietasMap?.get(label) || 0);
-    const hasDietasData = cnt('Desayuno') > 0 || cnt('Comida') > 0 || cnt('Cena') > 0 || 
-                          cnt('Dieta sin pernoctar') > 0 || cnt('Dieta completa + desayuno') > 0 || 
-                          cnt('Gastos de bolsillo') > 0 || (data.ticketValue || 0) > 0;
+    const hasDietasData = cnt('Comida') > 0 || cnt('Cena') > 0 || 
+                          cnt('Dieta sin pernoctar') > 0 || cnt('Dieta con pernocta') > 0 ||                           cnt('Gastos de bolsillo') > 0 || (data.ticketValue || 0) > 0;
     if (hasDietasData) {
       const totalDietas = calculateTotalDietas(data.dietasMap || new Map(), effectivePr, data.ticketValue || 0);
       if (totalDietas === 0) {
         const allDietasPricesZero = 
-          (effectivePr.dietas['Desayuno'] || 0) === 0 &&
           (effectivePr.dietas['Comida'] || 0) === 0 &&
           (effectivePr.dietas['Cena'] || 0) === 0 &&
           (effectivePr.dietas['Dieta sin pernoctar'] || 0) === 0 &&
-          (effectivePr.dietas['Dieta completa + desayuno'] || 0) === 0 &&
+          ((effectivePr.dietas['Dieta con pernocta'] ||  0) === 0) &&
           (effectivePr.dietas['Gastos de bolsillo'] || 0) === 0;
         if (allDietasPricesZero) {
           missingPrices.dietas = true;
@@ -234,18 +230,16 @@ export function detectMissingPrices(
     }
     
     const cnt = (label: string) => (data.dietasMap?.get(label) || 0);
-    const hasDietasData = cnt('Desayuno') > 0 || cnt('Comida') > 0 || cnt('Cena') > 0 || 
-                          cnt('Dieta sin pernoctar') > 0 || cnt('Dieta completa + desayuno') > 0 || 
-                          cnt('Gastos de bolsillo') > 0 || (data.ticketValue || 0) > 0;
+    const hasDietasData = cnt('Comida') > 0 || cnt('Cena') > 0 || 
+                          cnt('Dieta sin pernoctar') > 0 || cnt('Dieta con pernocta') > 0 ||                           cnt('Gastos de bolsillo') > 0 || (data.ticketValue || 0) > 0;
     if (hasDietasData) {
       const totalDietas = calculateTotalDietas(data.dietasMap || new Map(), effectivePr, data.ticketValue || 0);
       if (totalDietas === 0) {
         const allDietasPricesZero = 
-          (effectivePr.dietas['Desayuno'] || 0) === 0 &&
           (effectivePr.dietas['Comida'] || 0) === 0 &&
           (effectivePr.dietas['Cena'] || 0) === 0 &&
           (effectivePr.dietas['Dieta sin pernoctar'] || 0) === 0 &&
-          (effectivePr.dietas['Dieta completa + desayuno'] || 0) === 0 &&
+          ((effectivePr.dietas['Dieta con pernocta'] ||  0) === 0) &&
           (effectivePr.dietas['Gastos de bolsillo'] || 0) === 0;
         if (allDietasPricesZero) {
           missingPrices.dietas = true;

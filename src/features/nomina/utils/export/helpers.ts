@@ -38,9 +38,8 @@ const translateDietItem = (item: string): string => {
   const itemMap: Record<string, string> = {
     'Comida': i18n.t('payroll.dietOptions.lunch'),
     'Cena': i18n.t('payroll.dietOptions.dinner'),
-    'Desayuno': i18n.t('payroll.dietOptions.breakfast'),
     'Dieta sin pernoctar': i18n.t('payroll.dietOptions.dietNoOvernight'),
-    'Dieta completa + desayuno': i18n.t('payroll.dietOptions.dietFullBreakfast'),
+    'Dieta con pernocta': i18n.t('payroll.dietOptions.dietWithOvernight'),
     'Gastos de bolsillo': i18n.t('payroll.dietOptions.pocketExpenses'),
     'Ticket': i18n.t('payroll.dietOptions.ticket'),
   };
@@ -98,7 +97,7 @@ export const generateDietasText = (r: any): string => {
     'Comida',
     'Cena',
     'Dieta sin pernoctar',
-    'Dieta completa + desayuno',
+    'Dieta con pernocta',
     'Gastos de bolsillo',
     'Ticket',
   ];
@@ -108,7 +107,7 @@ export const generateDietasText = (r: any): string => {
   for (const label of want) {
     if (label === 'Ticket') {
       if (r.ticketTotal > 0) {
-        parts.push(`${translateDietItem('Ticket')} €${r.ticketTotal.toFixed(2)}`);
+        parts.push(`${translateDietItem('Ticket')} ${r.ticketTotal.toFixed(2)}€`);
         totalDietas += 1; // Contar ticket como 1 dieta
       }
     } else {

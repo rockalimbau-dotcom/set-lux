@@ -29,7 +29,7 @@ export function DietasItemsList({
           <span
             key={it}
             className='inline-flex items-center gap-1 sm:gap-1.5 md:gap-2 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded sm:rounded-md md:rounded-lg border border-neutral-border bg-black/40'
-            title={it}
+            title={translateDietItem(it, t)}
           >
             <span className='text-[9px] sm:text-[10px] md:text-xs text-zinc-200'>
               {translateDietItem(it, t)}

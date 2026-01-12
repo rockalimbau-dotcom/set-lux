@@ -12,6 +12,25 @@ interface UseDietasHandlersProps {
   setCell: (pKey: string, concepto: string, fecha: string, value: any) => void;
 }
 
+/**
+ * Convierte una traducción de dieta de vuelta al valor original en español
+ * Esto asegura que siempre se guarde el valor canónico, independientemente del idioma
+ */
+function normalizeDietaToOriginal(translated: string): string {
+  const t = translated.toLowerCase().trim();
+  
+  // Mapeo inverso: traducción -> valor original
+  if (t === 'lunch' || t === 'dinar' || t === 'comida') return 'Comida';
+  if (t === 'dinner' || t === 'sopar' || t === 'cena') return 'Cena';
+  if (t.includes('diet without overnight') || t.includes('dieta sense pernoctar') || t.startsWith('dieta sin')) return 'Dieta sin pernoctar';
+  if (t.includes('diet with overnight') || t.includes('dieta amb pernocta') || t.includes('dieta con pernocta') || t.includes('full diet') || t.includes('dieta completa')) return 'Dieta con pernocta';
+  if (t === 'pocket expenses' || t === 'despeses de butxaca' || t.startsWith('gastos')) return 'Gastos de bolsillo';
+  if (t === 'ticket' || t === 'bitllet') return 'Ticket';
+  
+  // Si no coincide con ninguna traducción, devolver el valor original (por si ya está normalizado)
+  return translated;
+}
+
 interface UseDietasHandlersReturn {
   parsed: { items: Set<string>; ticket: number | null };
   itemToRemove: string | null;
@@ -40,12 +59,17 @@ export function useDietasHandlers({
 
   const handleAddItem = (item: string) => {
     if (readOnly) return;
+    // Normalizar la traducción al valor original antes de guardar
+    const normalizedItem = normalizeDietaToOriginal(item);
     const items = new Set(parsed.items);
-    items.add(item);
-    const newStr = formatDietas(
-      items,
-      items.has('Ticket') ? parsed.ticket : null
-    );
+    const wasAlreadyAdded = items.has(normalizedItem);
+    items.add(normalizedItem);
+    // Si se añade "Ticket" por primera vez, siempre empezar con precio null (individual)
+    // Si ya existía, mantener su precio actual
+    const ticketPrice = items.has('Ticket') 
+      ? (normalizedItem === 'Ticket' && !wasAlreadyAdded ? null : parsed.ticket)
+      : null;
+    const newStr = formatDietas(items, ticketPrice);
     setCell(pKey, concepto, fecha, newStr);
   };
 
@@ -53,7 +77,10 @@ export function useDietasHandlers({
     if (readOnly) return;
     const currentParsed = parseDietas(val);
     const items = new Set(currentParsed.items);
+    
+    // Eliminar el item tal como viene del Set
     items.delete(item);
+    
     const newStr = formatDietas(
       items,
       items.has('Ticket') ? currentParsed.ticket : null

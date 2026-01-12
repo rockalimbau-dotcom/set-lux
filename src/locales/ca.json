@@ -111,7 +111,7 @@
     "registerError": "Si us plau, completa tots els camps.",
     "passwordMismatch": "Les contrasenyes no coincideixen.",
     "daylight": "Daylight",
-    "darklight": "Darklight"
+    "darklight": "Tungsteno"
   },
   "navigation": {
     "planning": "Planificació",
@@ -161,8 +161,8 @@
     "nightShift": "Nocturn (inici / fi)",
     "lunch": "Dinar (€)",
     "dinner": "Sopar (€)",
-    "perDiemNoOvernight": "Dieta s/ pernocta (€)",
-    "accommodationBreakfast": "Allotjament + esmorzar (€)",
+    "perDiemNoOvernight": "Dieta sense pernocta (€)",
+    "accommodationBreakfast": "Dieta amb pernocta (€)",
     "pocketExpenses": "Despeses de butxaca (€)",
     "kilometers": "Quilometratge (€/km)",
     "transportPerDay": "Transport (€/dia)",
@@ -583,21 +583,19 @@
     },
     "dietOptions": {
       "empty": "",
-      "breakfast": "Esmorzar",
       "lunch": "Dinar",
       "dinner": "Sopar",
       "dietNoOvernight": "Dieta sense pernoctar",
-      "dietFullBreakfast": "Dieta completa + esmorzar",
+      "dietWithOvernight": "Dieta amb pernocta",
       "pocketExpenses": "Despeses de butxaca",
       "ticket": "Bitllet"
     },
     "dietOptionsAdvertising": {
       "empty": "",
-      "breakfast": "Esmorzar",
       "lunch": "Dinar",
       "dinner": "Sopar",
       "dietNoOvernight": "Dieta sense pernoctar",
-      "dietFullBreakfast": "Dieta completa + esmorzar",
+      "dietWithOvernight": "Dieta amb pernocta",
       "pocketExpenses": "Despeses de butxaca",
       "ticket": "Bitllet"
     },

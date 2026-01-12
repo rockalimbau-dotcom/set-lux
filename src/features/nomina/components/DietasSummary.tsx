@@ -14,9 +14,8 @@ export default function DietasSummary({ dietasCount, ticketTotal }: DietasSummar
     const itemMap: Record<string, string> = {
       'Comida': t('payroll.dietOptions.lunch'),
       'Cena': t('payroll.dietOptions.dinner'),
-      'Desayuno': t('payroll.dietOptions.breakfast'),
       'Dieta sin pernoctar': t('payroll.dietOptions.dietNoOvernight'),
-      'Dieta completa + desayuno': t('payroll.dietOptions.dietFullBreakfast'),
+      'Dieta con pernocta': t('payroll.dietOptions.dietWithOvernight'),
       'Gastos de bolsillo': t('payroll.dietOptions.pocketExpenses'),
       'Ticket': t('payroll.dietOptions.ticket'),
     };
@@ -27,7 +26,7 @@ export default function DietasSummary({ dietasCount, ticketTotal }: DietasSummar
     'Comida',
     'Cena',
     'Dieta sin pernoctar',
-    'Dieta completa + desayuno',
+    'Dieta con pernocta',
     'Gastos de bolsillo',
     'Ticket',
   ];
@@ -37,7 +36,7 @@ export default function DietasSummary({ dietasCount, ticketTotal }: DietasSummar
   for (const label of want) {
     if (label === 'Ticket') {
       if (ticketTotal > 0) {
-        parts.push(`${translateDietItem('Ticket')} €${ticketTotal.toFixed(2)}`);
+        parts.push(`${translateDietItem('Ticket')} ${ticketTotal.toFixed(2)}€`);
         totalDietas += 1; // Contar ticket como 1 dieta
       }
     } else {

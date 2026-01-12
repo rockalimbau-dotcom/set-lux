@@ -2,6 +2,7 @@ import React from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from './useTheme';
+import { translateDietItem } from './ReportPersonRowsHelpers';
 
 interface DietasRemoveModalProps {
   itemToRemove: string;
@@ -17,6 +18,11 @@ export function DietasRemoveModal({
   const { t } = useTranslation();
   const theme = useTheme();
   const isLight = theme === 'light';
+  
+  // Traducir el nombre del item para mostrar en el modal
+  const displayName = itemToRemove === 'Ticket' 
+    ? t('reports.dietOptions.ticket')
+    : translateDietItem(itemToRemove, t);
 
   if (typeof document === 'undefined') return null;
 
@@ -41,7 +47,7 @@ export function DietasRemoveModal({
           className='text-[9px] sm:text-[10px] md:text-xs lg:text-sm mb-2 sm:mb-3 md:mb-4 lg:mb-5 xl:mb-6' 
           style={{color: isLight ? '#111827' : '#d1d5db'}}
         >
-          ¿Estás seguro de eliminar <strong>{itemToRemove}</strong>?
+          ¿Estás seguro de eliminar <strong>{displayName}</strong>?
         </p>
 
         <div className='flex justify-center gap-1 sm:gap-1.5 md:gap-2 lg:gap-3'>

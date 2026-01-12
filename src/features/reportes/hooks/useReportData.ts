@@ -2,6 +2,7 @@ import { useLocalStorage } from '@shared/hooks/useLocalStorage';
 import { useEffect } from 'react';
 
 import { personaKey, personaRole, personaName } from '../utils/model';
+import { parseDietas, formatDietas } from '../utils/text';
 
 interface Persona {
   [key: string]: any;
@@ -75,6 +76,9 @@ export default function useReportData(
   // La persistencia se maneja automáticamente con useLocalStorage
 
   const setCell = (pKey: string, concepto: string, fecha: string, valor: string) => {
+    // Leer el valor anterior ANTES de actualizar (para detectar eliminaciones)
+    const previousVal = data?.[pKey]?.[concepto]?.[fecha] || '';
+    
     setData((d: ReportData) => {
       const next = { ...d };
       next[pKey] = { ...(next[pKey] || {}) };
@@ -88,6 +92,28 @@ export default function useReportData(
     });
 
     if (concepto === 'Dietas' && valor !== '') {
+      // Parsear el valor de dietas para separar items del precio del ticket
+      const parsed = parseDietas(valor);
+      
+      // Si solo se añadió o modificó "Ticket", NO sincronizar con otras personas
+      // Ticket es completamente individual
+      const onlyTicketChanged = parsed.items.size === 1 && parsed.items.has('Ticket');
+      
+      // Detectar si es una eliminación comparando con el valor anterior
+      const previousParsed = parseDietas(previousVal);
+      // Es una eliminación si el nuevo valor tiene menos items (excluyendo Ticket) que el anterior
+      const previousItemsWithoutTicket = new Set(previousParsed.items);
+      previousItemsWithoutTicket.delete('Ticket');
+      const currentItemsWithoutTicket = new Set(parsed.items);
+      currentItemsWithoutTicket.delete('Ticket');
+      const isRemoval = currentItemsWithoutTicket.size < previousItemsWithoutTicket.size;
+      
+      // NO sincronizar si es una eliminación (solo sincronizar adiciones)
+      if (isRemoval) {
+        // No hacer nada, la eliminación es individual
+        return;
+      }
+      
       const who: { [key: string]: { role: string; name: string } } = {};
       for (const p of safePersonas) {
         const k = personaKey(p);
@@ -116,11 +142,34 @@ export default function useReportData(
           const roleForCheck = isRefRole
             ? 'REF'
             : (tgtBlock === 'pre' ? `${r}P` : (tgtBlock === 'pick' ? `${r}R` : r));
-          const blockForRef = isRefRole ? tgtBlock : undefined;
-          if (isPersonScheduledOn(fecha, roleForCheck, n, findWeekAndDay, blockForRef as any)) {
+          const blockForRef: 'base' | 'pre' | 'pick' | undefined = isRefRole ? tgtBlock : undefined;
+          const isScheduled = isPersonScheduledOn(fecha, roleForCheck, n, findWeekAndDay, blockForRef);
+          if (isScheduled) {
             copy[k] = { ...(copy[k] || {}) };
             copy[k]['Dietas'] = { ...(copy[k]['Dietas'] || {}) };
-            copy[k]['Dietas'][fecha] = valor;
+            
+            const existingVal = copy[k]['Dietas'][fecha] || '';
+            const existingParsed = parseDietas(existingVal);
+            
+            // Si solo se cambió Ticket, NO sincronizar nada (Ticket es individual)
+            if (onlyTicketChanged) {
+              // No hacer nada, mantener el valor existente de la otra persona
+              continue;
+            }
+            
+            // Sincronizar solo los items de dietas (Comida, Cena, etc.), pero NO Ticket
+            // Cada persona debe tener su propio ticket (individual)
+            const syncedItems = new Set(parsed.items);
+            // Excluir Ticket del sincronizado - cada persona mantiene su propio Ticket
+            syncedItems.delete('Ticket');
+            // Si la persona destino ya tenía Ticket, mantenerlo
+            if (existingParsed.items.has('Ticket')) {
+              syncedItems.add('Ticket');
+            }
+            // Mantener el precio del ticket existente de esta persona (o null si no tiene)
+            const ticketPrice = existingParsed.ticket;
+            const syncedValue = formatDietas(syncedItems, ticketPrice);
+            copy[k]['Dietas'][fecha] = syncedValue;
           }
         }
         return copy;

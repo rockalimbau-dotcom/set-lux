@@ -32,7 +32,7 @@ export function getEffectiveRolePrices(
         Comida: 0,
         Cena: 0,
         'Dieta sin pernoctar': 0,
-        'Dieta completa + desayuno': 0,
+        'Dieta con pernocta': 0,
         'Gastos de bolsillo': 0,
       },
     };

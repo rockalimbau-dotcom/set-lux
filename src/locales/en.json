@@ -111,7 +111,7 @@
     "registerError": "Please fill in all fields.",
     "passwordMismatch": "Passwords do not match.",
     "daylight": "Daylight",
-    "darklight": "Darklight"
+    "darklight": "Tungsten"
   },
   "navigation": {
     "planning": "Planning",
@@ -162,7 +162,7 @@
     "lunch": "Lunch (€)",
     "dinner": "Dinner (€)",
     "perDiemNoOvernight": "Diet no overnight (€)",
-    "accommodationBreakfast": "Accommodation + breakfast (€)",
+    "accommodationBreakfast": "Diet with overnight (€)",
     "pocketExpenses": "Pocket expenses (€)",
     "kilometers": "Kilometers (€/km)",
     "transportPerDay": "Transport (€/day)",
@@ -569,21 +569,19 @@
     },
     "dietOptions": {
       "empty": "",
-      "breakfast": "Breakfast",
       "lunch": "Lunch",
       "dinner": "Dinner",
       "dietNoOvernight": "Diet without overnight",
-      "dietFullBreakfast": "Full diet + breakfast",
+      "dietWithOvernight": "Diet with overnight",
       "pocketExpenses": "Pocket expenses",
       "ticket": "Ticket"
     },
     "dietOptionsAdvertising": {
       "empty": "",
-      "breakfast": "Breakfast",
       "lunch": "Lunch",
       "dinner": "Dinner",
       "dietNoOvernight": "Diet without overnight",
-      "dietFullBreakfast": "Full diet + breakfast",
+      "dietWithOvernight": "Diet with overnight",
       "pocketExpenses": "Pocket expenses",
       "ticket": "Ticket"
     },

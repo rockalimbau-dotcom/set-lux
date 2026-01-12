@@ -194,7 +194,7 @@ export function makeRolePrices(project: any) {
         Comida: num(p.dietaComida),
         Cena: num(p.dietaCena),
         'Dieta sin pernoctar': num(p.dietaSinPernocta),
-        'Dieta completa + desayuno': num(p.dietaAlojDes),
+        'Dieta con pernocta': num(p.dietaAlojDes),
         'Gastos de bolsillo': num(p.gastosBolsillo),
       },
     };
