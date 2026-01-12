@@ -67,6 +67,7 @@ function AppInner() {
                 focusColor={focusColor}
                 handleLoginSubmit={handleLoginSubmit}
                 handleRegisterSubmit={handleRegisterSubmit}
+                setError={setError}
               />
             }
           />

@@ -36,7 +36,12 @@ export function useAuthHandlers({
   const handleLoginSubmit = useCallback(
     (e: React.FormEvent) => {
       e.preventDefault();
-      if (!login.user || !login.pass) return;
+      setError('');
+      
+      if (!login.user || !login.pass) {
+        setError(t('auth.loginError'));
+        return;
+      }
 
 //AQUI VA EL SUPUESTO REGISTRO DE LA PEÑA QUE QUIERA ENTRAR EN LA DEMO
 
@@ -46,6 +51,7 @@ if(
   
   
 ){
+  setError(t('auth.invalidCredentials'));
   return;
 }
 
@@ -58,7 +64,7 @@ if(
       setMode('projects');
       navigate('/projects');
     },
-    [login.user, login.pass, reg.nombre, setUserName, setMode, navigate]
+    [login.user, login.pass, reg.nombre, setUserName, setMode, navigate, setError, t]
   );
 
   const handleRegisterSubmit = useCallback(
