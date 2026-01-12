@@ -11,6 +11,21 @@ const isValidTime = (time: string | null | undefined): boolean => {
   return timeRegex.test(time);
 };
 
+// Helper function to format time input while typing
+const formatTimeInput = (value: string): string => {
+  // Remove all non-digit characters
+  const digits = value.replace(/\D/g, '');
+  
+  // Limit to 4 digits
+  const limited = digits.slice(0, 4);
+  
+  // Add colon after 2 digits
+  if (limited.length <= 2) {
+    return limited;
+  }
+  return `${limited.slice(0, 2)}:${limited.slice(2)}`;
+};
+
 export function CutRow({
   week,
   scope,
@@ -31,14 +46,19 @@ export function CutRow({
             <div className='flex justify-center'>
               <div className='relative'>
                 <input
-                  type='time'
+                  type='tel'
+                  pattern='([0-1][0-9]|2[0-3]):[0-5][0-9]'
                   value={day.cut || ''}
-                  onChange={e =>
-                    !readOnly && setDayField(scope, week.id as string, i, { cut: e.target.value })
-                  }
+                  onChange={e => {
+                    if (!readOnly) {
+                      const formatted = formatTimeInput(e.target.value);
+                      setDayField(scope, week.id as string, i, { cut: formatted });
+                    }
+                  }}
                   onFocus={() => setFocusedInputs(prev => ({ ...prev, [cutKey]: true }))}
                   onBlur={() => setFocusedInputs(prev => ({ ...prev, [cutKey]: false }))}
                   placeholder='--:--'
+                  maxLength={5}
                   className={`px-1 py-0.5 sm:px-1.5 sm:py-1 md:px-2 md:py-1 rounded sm:rounded-md md:rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-center text-[9px] sm:text-[10px] md:text-xs ${
                     readOnly ? 'opacity-50 cursor-not-allowed' : ''
                   }`}
