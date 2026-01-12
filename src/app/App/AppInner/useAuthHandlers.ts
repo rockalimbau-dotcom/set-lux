@@ -2,7 +2,6 @@ import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { storage } from '@shared/services/localStorage.service';
-import { changeLanguage } from '@i18n/config';
 import { LoginState, RegisterState } from '../AppTypes';
 import { getDefaultRole } from '../AppHelpers';
 
@@ -48,6 +47,8 @@ export function useAuthHandlers({
 if(
   !(login.user === 'admin' && login.pass === '1234') //SI ESTO NO SE CUMPLE, PUES VUELVE, MANERA DE TENER CONTROLADO A LA GENTE QUE TIENE ACCESO
   && !(login.user === 'nombrepersona-fechafinalizacion' && login.pass === '1234')
+  && !(login.user === 'AinaGraupera-19-01' && login.pass === '1234')
+  && !(login.user === 'JoseCamacho-19-01' && login.pass === '1234')
   
   
 ){
