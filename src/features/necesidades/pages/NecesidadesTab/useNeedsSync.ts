@@ -129,6 +129,8 @@ export function useNeedsSync({
               day.seq = day.seq || '';
               day.needLoc = day.needLoc || '';
               day.needProd = day.needProd || '';
+              day.needTransport = day.needTransport || '';
+              day.needGroups = day.needGroups || '';
               day.needLight = day.needLight || '';
               day.extraMat = day.extraMat || '';
               day.precall = day.precall || '';

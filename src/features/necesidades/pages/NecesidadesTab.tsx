@@ -90,6 +90,8 @@ export default function NecesidadesTab({ project, readOnly = false }: Necesidade
         [`${weekId}_crewList`]: 'crewList',
         [`${weekId}_needLoc`]: 'needLoc',
         [`${weekId}_needProd`]: 'needProd',
+        [`${weekId}_needTransport`]: 'needTransport',
+        [`${weekId}_needGroups`]: 'needGroups',
         [`${weekId}_needLight`]: 'needLight',
         [`${weekId}_extraMat`]: 'extraMat',
         [`${weekId}_precall`]: 'precall',

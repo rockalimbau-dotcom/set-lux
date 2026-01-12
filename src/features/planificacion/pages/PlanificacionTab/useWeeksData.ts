@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocalStorage } from '@shared/hooks/useLocalStorage';
 import { relabelWeekByCalendar, relabelWeekByCalendarDynamic } from '../../utils/calendar';
 import { syncAllWeeks } from '../../utils/sync';
+import { reorderWeeksAfterDelete } from '../../utils/weekActions';
 import { AnyRecord } from '@shared/types/common';
 
 export function useWeeksData(
@@ -30,12 +31,19 @@ export function useWeeksData(
     true
   );
 
-  // Sincronizar semanas desde datos persistidos
+  // Sincronizar semanas desde datos persistidos y reordenar si es necesario
   useEffect(() => {
-    setPreWeeks(weeksData.pre || []);
-    setProWeeks(weeksData.pro || []);
+    const pre = weeksData.pre || [];
+    const pro = weeksData.pro || [];
+    
+    // Reordenar y renombrar semanas si los labels no coinciden con el orden correcto
+    const reorderedPre = reorderWeeksAfterDelete(pre as any, true, holidayFull, holidayMD);
+    const reorderedPro = reorderWeeksAfterDelete(pro as any, false, holidayFull, holidayMD);
+    
+    setPreWeeks(reorderedPre as any);
+    setProWeeks(reorderedPro as any);
     setIsLoaded(true);
-  }, [weeksData]);
+  }, [weeksData, holidayFull, holidayMD]);
 
   // Sincronizar cambios de semanas de vuelta a weeksData con debounce
   const prevWeeksRef = useRef<{ pre: AnyRecord[]; pro: AnyRecord[] } | null>(null);

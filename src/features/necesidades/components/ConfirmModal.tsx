@@ -45,7 +45,8 @@ export function ConfirmModal({ title, message, onClose, onConfirm }: ConfirmModa
       <div 
         className='w-full max-w-[200px] sm:max-w-[240px] md:max-w-[280px] lg:max-w-xs xl:max-w-sm 2xl:max-w-md rounded sm:rounded-md md:rounded-lg lg:rounded-xl xl:rounded-2xl border border-neutral-border p-2 sm:p-2.5 md:p-3 lg:p-4 xl:p-5 2xl:p-6 my-auto max-h-[75vh] sm:max-h-[80vh] overflow-y-auto'
         style={{
-          backgroundColor: '#ffffff'
+          backgroundColor: isLight ? '#ffffff' : 'var(--panel)',
+          background: isLight ? '#ffffff' : 'var(--panel)'
         }}
       >
         <h3 

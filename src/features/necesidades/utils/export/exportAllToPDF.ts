@@ -36,6 +36,8 @@ export async function exportAllToPDF(
         [`${wid}_crewList`]: 'crewList',
         [`${wid}_needLoc`]: 'needLoc',
         [`${wid}_needProd`]: 'needProd',
+        [`${wid}_needTransport`]: 'needTransport',
+        [`${wid}_needGroups`]: 'needGroups',
         [`${wid}_needLight`]: 'needLight',
         [`${wid}_extraMat`]: 'extraMat',
         [`${wid}_precall`]: 'precall',

@@ -177,10 +177,13 @@ export const reorderWeeksAfterDelete = (
 ): Week[] => {
   if (weeks.length === 0) return weeks;
   
-  // Ordenar por fecha
-  const sorted = [...weeks].sort(
-    (a, b) => parseYYYYMMDD(a.startDate).getTime() - parseYYYYMMDD(b.startDate).getTime()
-  );
+  // Ordenar por fecha ascendente (más antigua primero, más reciente último)
+  // Tanto para preproducción como producción, visualmente queremos las antiguas arriba
+  const sorted = [...weeks].sort((a, b) => {
+    const timeA = parseYYYYMMDD(a.startDate).getTime();
+    const timeB = parseYYYYMMDD(b.startDate).getTime();
+    return timeA - timeB;
+  });
   
   // Si solo hay una semana, solo actualizar el label
   if (sorted.length === 1) {
@@ -195,12 +198,15 @@ export const reorderWeeksAfterDelete = (
   const firstWeekStart = parseYYYYMMDD(sorted[0].startDate);
   
   return sorted.map((week, index) => {
-    const weekNumber = index + 1;
+    // Para preproducción: numerar de forma inversa
+    // La más antigua (índice 0) será -4, -3, -2, y la más reciente (última) será -1
+    // Para producción: numerar normalmente (1, 2, 3, 4...)
+    const weekNumber = isPre ? sorted.length - index : index + 1;
     const label = isPre
       ? i18n.t('planning.weekFormatNegative', { number: weekNumber })
       : i18n.t('planning.weekFormat', { number: weekNumber });
     
-    // Calcular nueva fecha: primera semana + (índice * 7 días)
+    // Calcular nueva fecha: primera semana (más antigua) + (índice * 7 días) hacia adelante
     const newStartDate = toYYYYMMDD(addDays(firstWeekStart, index * 7));
     
     return relabelWeekByCalendar(

@@ -37,7 +37,7 @@ export function useNeedsActions({
     });
     
     // Sincronizar con planificación de forma asíncrona para no bloquear el UI
-    if (fieldKey === 'loc') {
+    if (fieldKey === 'loc' || fieldKey === 'crewList' || fieldKey === 'preList' || fieldKey === 'pickList') {
       // Usar setTimeout para hacer la operación pesada de forma asíncrona
       setTimeout(() => {
         try {
@@ -47,13 +47,33 @@ export function useNeedsActions({
             const week = allWeeks.find((w: AnyRecord) => w.id === weekId);
             if (week && week.days && week.days[dayIdx]) {
               // Actualizar en planificación
-              week.days[dayIdx].loc = value;
+              if (fieldKey === 'loc') {
+                week.days[dayIdx].loc = value;
+              } else if (fieldKey === 'crewList') {
+                // Sincronizar crewList a team en planificación
+                week.days[dayIdx].team = Array.isArray(value) ? (value as AnyRecord[]).map(m => ({
+                  role: (m?.role || '').toUpperCase(),
+                  name: (m?.name || '').trim(),
+                })).filter(m => m.role || m.name) : [];
+              } else if (fieldKey === 'preList') {
+                // Sincronizar preList a prelight en planificación
+                week.days[dayIdx].prelight = Array.isArray(value) ? (value as AnyRecord[]).map(m => ({
+                  role: (m?.role || '').toUpperCase(),
+                  name: (m?.name || '').trim(),
+                })).filter(m => m.role || m.name) : [];
+              } else if (fieldKey === 'pickList') {
+                // Sincronizar pickList a pickup en planificación
+                week.days[dayIdx].pickup = Array.isArray(value) ? (value as AnyRecord[]).map(m => ({
+                  role: (m?.role || '').toUpperCase(),
+                  name: (m?.name || '').trim(),
+                })).filter(m => m.role || m.name) : [];
+              }
               // Guardar de vuelta en localStorage
               storage.setJSON(planKey, planData);
             }
           }
         } catch (error) {
-          console.error('Error syncing loc to planificación:', error);
+          console.error(`Error syncing ${fieldKey} to planificación:`, error);
         }
       }, 0);
     }
@@ -75,9 +95,34 @@ export function useNeedsActions({
           days: { ...w.days, [dayIdx]: day },
         },
       };
+      
+      // Sincronizar con planificación
+      setTimeout(() => {
+        try {
+          const planData = storage.getJSON<any>(planKey);
+          if (planData) {
+            const allWeeks = [...(Array.isArray(planData.pre) ? planData.pre : []), ...(Array.isArray(planData.pro) ? planData.pro : [])];
+            const week = allWeeks.find((w: AnyRecord) => w.id === weekId);
+            if (week && week.days && week.days[dayIdx]) {
+              // Mapear listKey de necesidades a planificación
+              const planListKey = listKey === 'crewList' ? 'team' : listKey === 'preList' ? 'prelight' : listKey === 'pickList' ? 'pickup' : listKey;
+              if (planListKey === 'team' || planListKey === 'prelight' || planListKey === 'pickup') {
+                week.days[dayIdx][planListKey] = list.map(m => ({
+                  role: (m?.role || '').toUpperCase(),
+                  name: (m?.name || '').trim(),
+                })).filter(m => m.role || m.name);
+                storage.setJSON(planKey, planData);
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Error syncing removeFromList to planificación:', error);
+        }
+      }, 0);
+      
       return next;
     });
-  }, [readOnly, setNeeds]);
+  }, [readOnly, planKey, setNeeds]);
 
   const setWeekOpen = useCallback((weekId: string, isOpen: boolean) => {
     if (readOnly) return;

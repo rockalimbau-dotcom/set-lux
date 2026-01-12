@@ -309,7 +309,8 @@ export function MonthSectionPersonRow({
             onChange={e => !readOnly && setRcv(pKey, { note: e.target.value })}
             disabled={readOnly}
             readOnly={readOnly}
-            className={`w-16 sm:w-20 md:w-24 px-1 py-0.5 sm:px-1.5 sm:py-1 md:px-2 md:py-1 rounded sm:rounded-md md:rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-[9px] sm:text-[10px] md:text-xs ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+            size={rc.note ? Math.max(10, Math.min(rc.note.length + 2, 30)) : 15}
+            className={`min-w-[60px] max-w-[200px] px-1 py-0.5 sm:px-1.5 sm:py-1 md:px-2 md:py-1 rounded sm:rounded-md md:rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-[9px] sm:text-[10px] md:text-xs ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
             title={readOnly ? t('conditions.projectClosed') : t('payroll.noteTitle')}
           />
         </div>

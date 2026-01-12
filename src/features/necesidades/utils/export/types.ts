@@ -9,6 +9,8 @@ export interface DayValues {
   seq?: string;
   needLoc?: string;
   needProd?: string;
+  needTransport?: string;
+  needGroups?: string;
   needLight?: string;
   extraMat?: string;
   precall?: string;

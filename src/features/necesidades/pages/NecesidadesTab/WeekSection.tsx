@@ -71,6 +71,8 @@ export function WeekSection({
     `${wid}_crewList`, // Technical Team
     `${wid}_needLoc`, // Location Needs
     `${wid}_needProd`, // Production Needs
+    `${wid}_needTransport`, // Transport Needs
+    `${wid}_needGroups`, // Groups Needs
     `${wid}_needLight`, // Light Needs
     `${wid}_extraMat`, // Extra Material
     `${wid}_precall`, // Precall
@@ -290,6 +292,28 @@ export function WeekSection({
                 readOnly={readOnly}
                 rowKey={`${wid}_needProd`}
                 isSelected={isRowSelected(`${wid}_needProd`)}
+                toggleRowSelection={toggleRowSelection}
+              />
+              <FieldRow
+                weekId={wid}
+                weekObj={wk}
+                fieldKey='needTransport'
+                label={t('needs.transportNeeds')}
+                setCell={setCell}
+                readOnly={readOnly}
+                rowKey={`${wid}_needTransport`}
+                isSelected={isRowSelected(`${wid}_needTransport`)}
+                toggleRowSelection={toggleRowSelection}
+              />
+              <FieldRow
+                weekId={wid}
+                weekObj={wk}
+                fieldKey='needGroups'
+                label={t('needs.groupsNeeds')}
+                setCell={setCell}
+                readOnly={readOnly}
+                rowKey={`${wid}_needGroups`}
+                isSelected={isRowSelected(`${wid}_needGroups`)}
                 toggleRowSelection={toggleRowSelection}
               />
               <FieldRow

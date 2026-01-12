@@ -60,6 +60,27 @@ function listRow(
 }
 
 /**
+ * Check if a field row is empty (all days have empty values)
+ */
+function isFieldRowEmpty(key: string, valuesByDay: DayValues[]): boolean {
+  return valuesByDay.every(day => {
+    const value = day[key];
+    return !value || (typeof value === 'string' && value.trim() === '');
+  });
+}
+
+/**
+ * Check if a list row is empty (all days have empty lists and notes)
+ */
+function isListRowEmpty(listKey: string, notesKey: string, valuesByDay: DayValues[]): boolean {
+  return valuesByDay.every(day => {
+    const list = Array.isArray(day[listKey]) ? day[listKey] : [];
+    const notes = day[notesKey] || '';
+    return list.length === 0 && (!notes || (typeof notes === 'string' && notes.trim() === ''));
+  });
+}
+
+/**
  * Generate table body HTML
  */
 export function generateTableBody(
@@ -68,18 +89,20 @@ export function generateTableBody(
   selectedRowKeys?: string[] // Filas seleccionadas para filtrar qué mostrar
 ): string {
   // Mapeo de fieldKey/listKey a función de generación
-  const rowGenerators: Array<{ key: string; generate: () => string }> = [
-    { key: 'loc', generate: () => fieldRow('loc', i18n.t('needs.location'), DAYS, valuesByDay) },
-    { key: 'seq', generate: () => fieldRow('seq', i18n.t('needs.sequences'), DAYS, valuesByDay) },
-    { key: 'crewList', generate: () => listRow(i18n.t('needs.technicalTeam'), 'crewList', 'crewTxt', DAYS, valuesByDay) },
-    { key: 'needLoc', generate: () => fieldRow('needLoc', i18n.t('needs.locationNeeds'), DAYS, valuesByDay) },
-    { key: 'needProd', generate: () => fieldRow('needProd', i18n.t('needs.productionNeeds'), DAYS, valuesByDay) },
-    { key: 'needLight', generate: () => fieldRow('needLight', i18n.t('needs.lightNeeds'), DAYS, valuesByDay) },
-    { key: 'extraMat', generate: () => fieldRow('extraMat', i18n.t('needs.extraMaterial'), DAYS, valuesByDay) },
-    { key: 'precall', generate: () => fieldRow('precall', i18n.t('needs.precall'), DAYS, valuesByDay) },
-    { key: 'preList', generate: () => listRow(i18n.t('needs.prelightTeam'), 'preList', 'preTxt', DAYS, valuesByDay) },
-    { key: 'pickList', generate: () => listRow(i18n.t('needs.pickupTeam'), 'pickList', 'pickTxt', DAYS, valuesByDay) },
-    { key: 'obs', generate: () => fieldRow('obs', i18n.t('needs.observations'), DAYS, valuesByDay) },
+  const rowGenerators: Array<{ key: string; generate: () => string; isEmpty: () => boolean }> = [
+    { key: 'loc', generate: () => fieldRow('loc', i18n.t('needs.location'), DAYS, valuesByDay), isEmpty: () => isFieldRowEmpty('loc', valuesByDay) },
+    { key: 'seq', generate: () => fieldRow('seq', i18n.t('needs.sequences'), DAYS, valuesByDay), isEmpty: () => isFieldRowEmpty('seq', valuesByDay) },
+    { key: 'crewList', generate: () => listRow(i18n.t('needs.technicalTeam'), 'crewList', 'crewTxt', DAYS, valuesByDay), isEmpty: () => isListRowEmpty('crewList', 'crewTxt', valuesByDay) },
+    { key: 'needLoc', generate: () => fieldRow('needLoc', i18n.t('needs.locationNeeds'), DAYS, valuesByDay), isEmpty: () => isFieldRowEmpty('needLoc', valuesByDay) },
+    { key: 'needProd', generate: () => fieldRow('needProd', i18n.t('needs.productionNeeds'), DAYS, valuesByDay), isEmpty: () => isFieldRowEmpty('needProd', valuesByDay) },
+    { key: 'needTransport', generate: () => fieldRow('needTransport', i18n.t('needs.transportNeeds'), DAYS, valuesByDay), isEmpty: () => isFieldRowEmpty('needTransport', valuesByDay) },
+    { key: 'needGroups', generate: () => fieldRow('needGroups', i18n.t('needs.groupsNeeds'), DAYS, valuesByDay), isEmpty: () => isFieldRowEmpty('needGroups', valuesByDay) },
+    { key: 'needLight', generate: () => fieldRow('needLight', i18n.t('needs.lightNeeds'), DAYS, valuesByDay), isEmpty: () => isFieldRowEmpty('needLight', valuesByDay) },
+    { key: 'extraMat', generate: () => fieldRow('extraMat', i18n.t('needs.extraMaterial'), DAYS, valuesByDay), isEmpty: () => isFieldRowEmpty('extraMat', valuesByDay) },
+    { key: 'precall', generate: () => fieldRow('precall', i18n.t('needs.precall'), DAYS, valuesByDay), isEmpty: () => isFieldRowEmpty('precall', valuesByDay) },
+    { key: 'preList', generate: () => listRow(i18n.t('needs.prelightTeam'), 'preList', 'preTxt', DAYS, valuesByDay), isEmpty: () => isListRowEmpty('preList', 'preTxt', valuesByDay) },
+    { key: 'pickList', generate: () => listRow(i18n.t('needs.pickupTeam'), 'pickList', 'pickTxt', DAYS, valuesByDay), isEmpty: () => isListRowEmpty('pickList', 'pickTxt', valuesByDay) },
+    { key: 'obs', generate: () => fieldRow('obs', i18n.t('needs.observations'), DAYS, valuesByDay), isEmpty: () => isFieldRowEmpty('obs', valuesByDay) },
   ];
   
   // Si hay filas seleccionadas, filtrar
@@ -94,15 +117,18 @@ export function generateTableBody(
         .filter(Boolean) as string[]
     );
     
-    // Generar solo las filas seleccionadas
+    // Generar solo las filas seleccionadas que no estén vacías
     return rowGenerators
-      .filter(row => selectedFields.has(row.key))
+      .filter(row => selectedFields.has(row.key) && !row.isEmpty())
       .map(row => row.generate())
       .join('');
   }
   
-  // Si no hay selección, generar todas las filas
-  return rowGenerators.map(row => row.generate()).join('');
+  // Si no hay selección, generar todas las filas que no estén vacías
+  return rowGenerators
+    .filter(row => !row.isEmpty())
+    .map(row => row.generate())
+    .join('');
 }
 
 /**
