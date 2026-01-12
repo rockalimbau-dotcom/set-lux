@@ -50,7 +50,8 @@ export default function AppRouter({
     );
   }
 
-  // Don't show intermediate loader
+  // Don't show intermediate loader - return null to let hydration complete
+  // The redirect below will handle if project is truly not found
   if (isProjectPath && !activeProject) return null;
 
   // Project detail routes

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import { useAuth } from '@app/providers/AuthProvider.tsx';
 import AppRouter from '@app/routes/AppRouter.tsx';
 import { Footer } from '@shared/components/Footer.tsx';
@@ -15,6 +15,9 @@ import { LandingPage } from './AppInner/LandingPage';
 function AppInner() {
   const { mode, setMode, userName, setUserName } = useAuth();
   const { theme, focusColor } = useTheme();
+  const location = useLocation();
+  const mainContentRef = useRef<HTMLElement>(null);
+  const [hasContent, setHasContent] = useState(false);
 
   // Main state
   const [login, setLogin] = useState<LoginState>({ user: '', pass: '' });
@@ -47,9 +50,76 @@ function AppInner() {
     setUserName,
   });
 
+  // Hide footer during initial load until content is ready
+  useEffect(() => {
+    // Always start with footer hidden when route changes
+    setHasContent(false);
+    
+    const checkContent = () => {
+      if (mainContentRef.current) {
+        // Check if main has visible content
+        const mainHeight = mainContentRef.current.scrollHeight;
+        const mainClientHeight = mainContentRef.current.clientHeight;
+        
+        // Check for visible children with actual dimensions
+        const hasVisibleChildren = Array.from(mainContentRef.current.children).some((child: Element) => {
+          const rect = child.getBoundingClientRect();
+          // Element must have both width and height > 0 to be considered visible
+          return rect.width > 0 && rect.height > 0;
+        });
+        
+        // Show footer only when we have substantial content (more than just padding/margins)
+        const hasSubstantialContent = (mainHeight > 100 || mainClientHeight > 100) && hasVisibleChildren;
+        setHasContent(hasSubstantialContent);
+      } else {
+        // If ref not available, keep footer hidden
+        setHasContent(false);
+      }
+    };
+    
+    // Use requestAnimationFrame for immediate check, then multiple timeouts for lazy loading
+    let timer1: NodeJS.Timeout;
+    let timer2: NodeJS.Timeout;
+    let timer3: NodeJS.Timeout;
+    let timer4: NodeJS.Timeout;
+    let timer5: NodeJS.Timeout;
+    
+    requestAnimationFrame(() => {
+      checkContent();
+      timer1 = setTimeout(checkContent, 50);
+      timer2 = setTimeout(checkContent, 150);
+      timer3 = setTimeout(checkContent, 300);
+      timer4 = setTimeout(checkContent, 500);
+      timer5 = setTimeout(checkContent, 800);
+    });
+    
+    // Also use MutationObserver to detect when content is added to DOM
+    let observer: MutationObserver | null = null;
+    if (mainContentRef.current) {
+      observer = new MutationObserver(() => {
+        checkContent();
+      });
+      
+      observer.observe(mainContentRef.current, {
+        childList: true,
+        subtree: true,
+        attributes: false,
+      });
+    }
+    
+    return () => {
+      if (timer1) clearTimeout(timer1);
+      if (timer2) clearTimeout(timer2);
+      if (timer3) clearTimeout(timer3);
+      if (timer4) clearTimeout(timer4);
+      if (timer5) clearTimeout(timer5);
+      if (observer) observer.disconnect();
+    };
+  }, [location.pathname, activeProject]);
+
   return (
     <>
-      <main id='main-content' role='main' className='pb-12'>
+      <main ref={mainContentRef} id='main-content' role='main' className='pb-12'>
         <Routes>
           <Route
             path='/'
@@ -137,7 +207,7 @@ function AppInner() {
           />
         </Routes>
       </main>
-      <Footer />
+      {hasContent && <Footer />}
     </>
   );
 }

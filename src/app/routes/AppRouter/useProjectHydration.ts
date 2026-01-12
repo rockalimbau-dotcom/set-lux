@@ -15,7 +15,8 @@ export function useProjectHydration(
   const params = useParams();
 
   useEffect(() => {
-    if (mode !== 'project') return;
+    // Don't wait for mode to be 'project' - hydrate based on URL params immediately
+    // This prevents blank page when route sync hasn't set mode yet
     if (activeProject) return;
     const pid = params.id;
     if (!pid) return;
@@ -30,6 +31,6 @@ export function useProjectHydration(
       } catch {}
     }
     if (found) setActiveProject(found);
-  }, [mode, activeProject, params.id, projects, setActiveProject]);
+  }, [activeProject, params.id, projects, setActiveProject]);
 }
 
