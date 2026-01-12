@@ -46,8 +46,45 @@ export function parseNum(input: any): number {
  * Parsea un número simple (sin expresiones)
  */
 function parseNumSimple(s: string): number {
-  // Normalizar: quitar puntos de miles y convertir coma a punto decimal
-  const normalized = s.replace(/\./g, '').replace(',', '.');
+  // Normalizar: detectar si el punto es decimal o separador de miles
+  let normalized = s.trim();
+  
+  // Si tiene coma y punto, determinar cuál es el separador decimal
+  if (normalized.includes(',') && normalized.includes('.')) {
+    const lastComma = normalized.lastIndexOf(',');
+    const lastDot = normalized.lastIndexOf('.');
+    // El que está más a la derecha es el separador decimal
+    if (lastComma > lastDot) {
+      // La coma es decimal, quitar puntos (separadores de miles)
+      normalized = normalized.replace(/\./g, '').replace(',', '.');
+    } else {
+      // El punto es decimal, quitar comas (separadores de miles)
+      normalized = normalized.replace(/,/g, '');
+    }
+  } else if (normalized.includes(',')) {
+    // Solo tiene coma, puede ser decimal o separador de miles
+    // Si hay más de 3 dígitos después de la coma, probablemente es separador de miles
+    const parts = normalized.split(',');
+    if (parts.length === 2 && parts[1].length <= 2) {
+      // Probablemente es decimal (ej: "1234,5" o "0,5")
+      normalized = normalized.replace(',', '.');
+    } else {
+      // Probablemente es separador de miles (ej: "1,234")
+      normalized = normalized.replace(/,/g, '');
+    }
+  } else if (normalized.includes('.')) {
+    // Solo tiene punto, puede ser decimal o separador de miles
+    // Si hay más de 3 dígitos después del punto, probablemente es separador de miles
+    const parts = normalized.split('.');
+    if (parts.length === 2 && parts[1].length <= 2) {
+      // Probablemente es decimal (ej: "1234.5" o "0.5"), no hacer nada
+      // normalized ya está bien
+    } else {
+      // Probablemente es separador de miles (ej: "1.234"), quitar puntos
+      normalized = normalized.replace(/\./g, '');
+    }
+  }
+  
   const n = Number(normalized);
   return isFinite(n) ? n : NaN;
 }
