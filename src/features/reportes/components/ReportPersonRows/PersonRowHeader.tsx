@@ -115,9 +115,7 @@ export function PersonRowHeader({
       {semana.map(iso => {
         const key = `${visualRole}_${name}_${iso}_${block}`;
         const offHeader = offMap.get(key) ?? false;
-        const headerCellClasses = offHeader 
-          ? 'bg-orange-900/20 border-orange-800/30' 
-          : '';
+        const headerCellClasses = offHeader ? 'report-off-cell' : '';
         
         return (
           <Td key={`head_${pKey}_${block || 'base'}_${iso}`} className={`text-center ${headerCellClasses}`}> </Td>

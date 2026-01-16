@@ -58,9 +58,7 @@ export function ConceptRow({
         const val = data?.[pKey]?.[concepto]?.[fecha] ?? '';
         const key = `${visualRole}_${name}_${fecha}_${block}`;
         const off = offMap.get(key) ?? false;
-        const cellClasses = off 
-          ? 'bg-orange-900/20 border-orange-800/30' 
-          : '';
+        const cellClasses = off ? 'report-off-cell' : '';
 
         if (concepto === 'Dietas') {
           const dietasDropdownKey = `dietas_${pKey}_${concepto}_${fecha}`;

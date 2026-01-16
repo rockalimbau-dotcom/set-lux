@@ -33,6 +33,25 @@
   color-scheme: light;
 }
 
+[data-theme='dark'] .report-off-cell {
+  background-color: rgba(120, 53, 15, 0.2) !important;
+  border-color: rgba(154, 52, 18, 0.3) !important;
+}
+
+[data-theme='light'] .phase-content td.report-off-cell {
+  background-color: rgba(59, 130, 246, 0.18) !important;
+  border-color: rgba(37, 99, 235, 0.45) !important;
+}
+
+[data-theme='light'] .phase-content td.report-off-cell input,
+[data-theme='light'] .phase-content td.report-off-cell select,
+[data-theme='light'] .phase-content td.report-off-cell textarea,
+[data-theme='light'] .phase-content td.report-off-cell button,
+[data-theme='light'] .phase-content td.report-off-cell [class*='bg-white'] {
+  background-color: rgba(219, 234, 254, 0.6) !important;
+  border-color: rgba(59, 130, 246, 0.45) !important;
+}
+
 body {
   background-color: var(--bg) !important;
   color: var(--text) !important;
