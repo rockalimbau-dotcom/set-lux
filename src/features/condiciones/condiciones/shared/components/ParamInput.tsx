@@ -22,24 +22,9 @@ export function ParamInput({
             type={inputType}
             inputMode={inputType === 'text' && !label.toLowerCase().includes('nocturno') ? 'decimal' : undefined}
             pattern={inputType === 'text' && !label.toLowerCase().includes('nocturno') ? '[0-9]*[.,]?[0-9]*' : undefined}
-            className={`w-[55px] sm:w-[65px] md:w-[75px] lg:w-[85px] px-1.5 py-1 sm:px-2 sm:py-1.5 md:px-2.5 md:py-2 rounded sm:rounded-md text-[10px] sm:text-xs md:text-sm bg-white dark:bg-transparent border border-neutral-border focus:outline-none focus:ring-1 focus:ring-accent text-right transition-colors ${
+            className={`w-[55px] sm:w-[65px] md:w-[75px] lg:w-[85px] px-1.5 py-1 sm:px-2 sm:py-1.5 md:px-2.5 md:py-2 rounded sm:rounded-md text-[10px] sm:text-xs md:text-sm bg-transparent border border-neutral-border focus:outline-none focus:ring-1 focus:ring-accent text-right transition-colors ${
               readOnly ? 'opacity-50 cursor-not-allowed' : 'hover:border-accent'
             }`}
-            style={{ backgroundColor: 'white' }}
-            onMouseEnter={(e) => {
-              if (!readOnly) {
-                const target = e.target as HTMLInputElement;
-                target.style.backgroundColor = 'white';
-                target.style.background = 'white';
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!readOnly) {
-                const target = e.target as HTMLInputElement;
-                target.style.backgroundColor = 'white';
-                target.style.background = 'white';
-              }
-            }}
             value={duo[0].value ? String(duo[0].value).replace('.', ',') : ''}
             onChange={e => {
               if (!readOnly) {
@@ -93,24 +78,9 @@ export function ParamInput({
             type={inputType}
             inputMode={inputType === 'text' && !label.toLowerCase().includes('nocturno') ? 'decimal' : undefined}
             pattern={inputType === 'text' && !label.toLowerCase().includes('nocturno') ? '[0-9]*[.,]?[0-9]*' : undefined}
-            className={`w-[55px] sm:w-[65px] md:w-[75px] lg:w-[85px] px-1.5 py-1 sm:px-2 sm:py-1.5 md:px-2.5 md:py-2 rounded sm:rounded-md text-[10px] sm:text-xs md:text-sm bg-white dark:bg-transparent border border-neutral-border focus:outline-none focus:ring-1 focus:ring-accent text-right transition-colors ${
+            className={`w-[55px] sm:w-[65px] md:w-[75px] lg:w-[85px] px-1.5 py-1 sm:px-2 sm:py-1.5 md:px-2.5 md:py-2 rounded sm:rounded-md text-[10px] sm:text-xs md:text-sm bg-transparent border border-neutral-border focus:outline-none focus:ring-1 focus:ring-accent text-right transition-colors ${
               readOnly ? 'opacity-50 cursor-not-allowed' : 'hover:border-accent'
             }`}
-            style={{ backgroundColor: 'white' }}
-            onMouseEnter={(e) => {
-              if (!readOnly) {
-                const target = e.target as HTMLInputElement;
-                target.style.backgroundColor = 'white';
-                target.style.background = 'white';
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!readOnly) {
-                const target = e.target as HTMLInputElement;
-                target.style.backgroundColor = 'white';
-                target.style.background = 'white';
-              }
-            }}
             value={duo[1].value ? String(duo[1].value).replace('.', ',') : ''}
             onChange={e => {
               if (!readOnly) {
@@ -173,15 +143,9 @@ export function ParamInput({
             type={inputType}
             inputMode={inputType === 'text' && !label.toLowerCase().includes('nocturno') ? 'decimal' : undefined}
             pattern={inputType === 'text' && !label.toLowerCase().includes('nocturno') ? '[0-9]*[.,]?[0-9]*' : undefined}
-            className={`w-[55px] sm:w-[65px] md:w-[75px] lg:w-[85px] px-1.5 py-1 sm:px-2 sm:py-1.5 md:px-2.5 md:py-2 rounded sm:rounded-md text-[10px] sm:text-xs md:text-sm bg-white dark:bg-transparent border border-neutral-border focus:outline-none focus:ring-1 focus:ring-accent text-right transition-colors ${
+            className={`w-[55px] sm:w-[65px] md:w-[75px] lg:w-[85px] px-1.5 py-1 sm:px-2 sm:py-1.5 md:px-2.5 md:py-2 rounded sm:rounded-md text-[10px] sm:text-xs md:text-sm bg-transparent border border-neutral-border focus:outline-none focus:ring-1 focus:ring-accent text-right transition-colors ${
               readOnly ? 'opacity-50 cursor-not-allowed' : 'hover:border-accent'
             }`}
-          style={{ backgroundColor: 'white' }}
-          onMouseEnter={(e) => {
-            if (!readOnly) {
-              (e.target as HTMLInputElement).style.backgroundColor = 'white';
-            }
-          }}
           value={value ? String(value).replace('.', ',') : ''}
           onChange={e => {
             if (!readOnly && onChange) {

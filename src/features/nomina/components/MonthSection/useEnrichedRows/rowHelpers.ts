@@ -10,6 +10,8 @@ export function calculateTotalWorkingDays(
   workedDays: number,
   rodaje?: number,
   oficina?: number,
+  prelight?: number,
+  recogida?: number,
   isRefuerzo?: boolean
 ): number {
   if (projectMode === 'mensual') {
@@ -21,7 +23,7 @@ export function calculateTotalWorkingDays(
     return calculateWorkingDaysInMonthValue;
   }
   if (projectMode === 'diario') {
-    return (rodaje || 0) + (oficina || 0);
+    return (rodaje || 0) + (oficina || 0) + (prelight || 0) + (recogida || 0);
   }
   return workedDays;
 }

@@ -102,6 +102,8 @@ export function useEnrichedRows({
         workedDays,
         rodaje,
         oficina,
+        prelight,
+        recogida,
         isRefuerzo
       );
       

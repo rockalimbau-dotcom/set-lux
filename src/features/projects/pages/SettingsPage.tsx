@@ -67,7 +67,7 @@ export default function SettingsPage() {
     setIdioma(profile.idioma || 'Español');
   }, []);
 
-  // Apply live preview to body when theme changes (local preview only)
+  // Apply live preview to body when theme changes (and persist theme)
   useEffect(() => {
     // Set attribute for global theming
     document.documentElement.setAttribute('data-theme', theme);
@@ -75,11 +75,17 @@ export default function SettingsPage() {
     try {
       localStorage.setItem('theme', theme);
     } catch {}
+    // Keep settings_v1 in sync so theme persists across sessions
+    try {
+      const s = storage.getJSON<any>('settings_v1') || {};
+      storage.setJSON('settings_v1', { ...s, theme });
+    } catch {}
   }, [theme]);
 
 
   const save = () => {
-    storage.setJSON('settings_v1', { theme });
+    const s = storage.getJSON<any>('settings_v1') || {};
+    storage.setJSON('settings_v1', { ...s, theme });
     // Guardar idioma en el perfil (aunque ya se haya cambiado, lo guardamos para persistencia)
     const profile = storage.getJSON<any>('profile_v1') || {};
     storage.setJSON('profile_v1', { ...profile, idioma: idioma });

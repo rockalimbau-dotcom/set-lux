@@ -35,11 +35,12 @@ export function useTheme() {
     };
   }, [currentTheme]);
 
-  // Initialize theme from localStorage or system preference
+  // Initialize theme from storage/localStorage
   useEffect(() => {
     try {
+      const s = storage.getJSON<any>('settings_v1') || {};
       const saved = (typeof localStorage !== 'undefined' && localStorage.getItem('theme')) || '';
-      const initial = (saved === 'light' || saved === 'dark' ? saved : 'light') as 'light' | 'dark';
+      const initial = ((saved === 'light' || saved === 'dark') ? saved : (s.theme === 'light' || s.theme === 'dark' ? s.theme : 'light')) as 'light' | 'dark';
       setCurrentTheme(initial);
       const root = document.documentElement;
       root.setAttribute('data-theme', initial);
@@ -47,6 +48,11 @@ export function useTheme() {
       const body = document.body as any;
       body.style.backgroundColor = 'var(--bg)';
       body.style.color = 'var(--text)';
+      // Keep storages in sync
+      try {
+        localStorage.setItem('theme', initial);
+        storage.setJSON('settings_v1', { ...s, theme: initial });
+      } catch {}
     } catch {}
   }, []);
 

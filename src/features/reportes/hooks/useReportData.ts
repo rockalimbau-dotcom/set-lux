@@ -58,6 +58,9 @@ export default function useReportData(
   useEffect(() => {
     setData((prev: ReportData) => {
       const next = { ...(prev || {}) };
+      const allowedKeys = new Set(
+        (safePersonas || []).map(p => personaKey(p))
+      );
       for (const p of safePersonas) {
         const key = personaKey(p);
         next[key] = next[key] || {};
@@ -66,6 +69,12 @@ export default function useReportData(
           for (const f of safeSemana) {
             if (!(f in next[key][c])) next[key][c][f] = '';
           }
+        }
+      }
+      // Remove data for people no longer in the team/planning
+      for (const key of Object.keys(next)) {
+        if (!allowedKeys.has(key)) {
+          delete next[key];
         }
       }
       return next;

@@ -38,6 +38,21 @@ class RootErrorBoundary extends React.Component<
   }
 }
 
+// Apply theme on load based on saved settings (before render)
+try {
+  const s = storage.getJSON<any>('settings_v1') || {};
+  const localTheme = typeof localStorage !== 'undefined' ? localStorage.getItem('theme') : null;
+  const theme = (localTheme || s.theme || 'light') as 'light' | 'dark';
+  document.documentElement.setAttribute('data-theme', theme);
+  // Keep storages in sync
+  try {
+    localStorage.setItem('theme', theme);
+    storage.setJSON('settings_v1', { ...s, theme });
+  } catch {}
+} catch {
+  document.documentElement.setAttribute('data-theme', 'light');
+}
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
   // En desarrollo, StrictMode dobla efectos; si te molesta, puedes quitarlo.
   // <React.StrictMode>
@@ -48,13 +63,4 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   // </React.StrictMode>
 );
 
-// Apply theme on load based on saved settings
-try {
-  const s = storage.getJSON<any>('settings_v1') || {};
-  // Check both settings_v1 and localStorage
-  const localTheme = typeof localStorage !== 'undefined' && localStorage.getItem('theme');
-  const theme = s.theme || localTheme || 'light';
-  document.documentElement.setAttribute('data-theme', theme);
-} catch {
-  document.documentElement.setAttribute('data-theme', 'light');
-}
+// Theme already applied above
