@@ -139,3 +139,13 @@ function getBaseRoleBadge(base: string, lang: string): string {
   };
   return defaultBadges[base] || base;
 }
+
+/**
+ * Apply gender-specific badge overrides (BB -> BG, FB -> FG)
+ */
+export const applyGenderToBadge = (badge: string, gender?: string): string => {
+  if (gender !== 'female') return badge;
+  return badge
+    .replace(/BB([PR])?$/, (_m, suf) => `BG${suf || ''}`)
+    .replace(/FB([PR])?$/, (_m, suf) => `FG${suf || ''}`);
+};

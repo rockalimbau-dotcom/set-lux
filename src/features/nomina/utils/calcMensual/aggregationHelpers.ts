@@ -34,14 +34,15 @@ export function visibleRoleFor(roleCode: string, name: string, refuerzoSet: Set<
 export function buildUniqueStorageKeys(
   week: any,
   refuerzoSet: Set<string>
-): Map<string, { roleVisible: string; name: string }> {
+): Map<string, { roleVisible: string; name: string; gender?: 'male' | 'female' | 'neutral' }> {
   const rawPeople = weekAllPeopleActive(week);
-  const uniqStorageKeys = new Map<string, { roleVisible: string; name: string }>();
+  const uniqStorageKeys = new Map<string, { roleVisible: string; name: string; gender?: 'male' | 'female' | 'neutral' }>();
 
   for (const p of rawPeople) {
     const r = p.role || '';
     const n = p.name || '';
     const roleVisible = visibleRoleFor(r, n, refuerzoSet);
+    const gender = (p as any)?.gender;
     // Verificar si es un refuerzo (REF o REFG, REFBB, etc.)
     const isRef = roleVisible === 'REF' || (roleVisible && roleVisible.startsWith('REF') && roleVisible.length > 3);
     if (isRef) {
@@ -49,13 +50,13 @@ export function buildUniqueStorageKeys(
       const keys = [`REF__${n}`, `REF.pre__${n}`, `REF.pick__${n}`];
       for (const sk of keys) {
         if (!uniqStorageKeys.has(sk)) {
-          uniqStorageKeys.set(sk, { roleVisible, name: n });
+          uniqStorageKeys.set(sk, { roleVisible, name: n, gender });
         }
       }
     } else {
       const storageKey = storageKeyFor(r, n, refuerzoSet);
       if (!uniqStorageKeys.has(storageKey)) {
-        uniqStorageKeys.set(storageKey, { roleVisible, name: n });
+        uniqStorageKeys.set(storageKey, { roleVisible, name: n, gender });
       }
     }
   }

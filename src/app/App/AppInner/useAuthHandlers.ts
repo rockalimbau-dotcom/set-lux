@@ -46,9 +46,9 @@ export function useAuthHandlers({
 
 if(
   !(login.user === 'admin' && login.pass === '1234') //SI ESTO NO SE CUMPLE, PUES VUELVE, MANERA DE TENER CONTROLADO A LA GENTE QUE TIENE ACCESO
-  && !(login.user === 'nombrepersona-fechafinalizacion' && login.pass === '1234')
   && !(login.user === 'AinaGraupera-19-01' && login.pass === '1234')
   && !(login.user === 'JoseCamacho-19-01' && login.pass === '1234')
+  && !(login.user === 'OriolMonguilod-19-01' && login.pass === '1234')
   
   
 ){
@@ -93,6 +93,7 @@ if(
         email: reg.email,
         role: reg.rol,
         idioma: reg.idioma,
+        gender: 'neutral',
       });
 
       setSuccess(t('auth.registerSuccess'));

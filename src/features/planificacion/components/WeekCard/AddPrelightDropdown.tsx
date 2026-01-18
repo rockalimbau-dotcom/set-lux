@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AnyRecord } from '@shared/types/common';
+import { getRoleBadgeCode, applyGenderToBadge } from '@shared/constants/roles';
 
 type AddPrelightDropdownProps = {
   scope: 'pre' | 'pro';
@@ -36,7 +37,7 @@ export function AddPrelightDropdown({
     return null;
   }
 
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const dropdownRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -134,10 +135,11 @@ export function AddPrelightDropdown({
               filteredOptions.map((p: AnyRecord, ii: number) => {
                 // Si el rol es REF o empieza con REF (REFG, REFBB, etc.), no añadir sufijo P
                 const isRefRole = p.role === 'REF' || (p.role && p.role.startsWith('REF') && p.role.length > 3);
-                const displayRole =
-                  p.source === 'pre' && !isRefRole
-                    ? `${p.role}P`
-                    : p.role;
+                let badge = getRoleBadgeCode(p.role || '', i18n.language);
+                if (p.source === 'pre' && !isRefRole) {
+                  badge = `${badge}P`;
+                }
+                const displayRole = applyGenderToBadge(badge, p.gender);
                 const optionValue = `${p.role}::${p.name}::pre`;
                 return (
                   <button
@@ -149,6 +151,7 @@ export function AddPrelightDropdown({
                       addMemberTo(scope, weekId, dayIndex, 'prelight', {
                         role,
                         name,
+                        gender: p.gender,
                         source,
                       });
                       setDropdownState(dropdownKey, { isOpen: false, hoveredOption: null });

@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AnyRecord } from '@shared/types/common';
+import { getRoleBadgeCode, applyGenderToBadge } from '@shared/constants/roles';
 
 type AddMemberDropdownProps = {
   scope: 'pre' | 'pro';
@@ -36,7 +37,7 @@ export function AddMemberDropdown({
     return null;
   }
 
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const dropdownRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -163,7 +164,10 @@ export function AddMemberDropdown({
                 No se encontraron resultados
               </div>
             ) : (
-              filteredOptions.map((p: AnyRecord, ii: number) => (
+              filteredOptions.map((p: AnyRecord, ii: number) => {
+                const badgeRaw = getRoleBadgeCode(p.role || '', i18n.language);
+                const badgeDisplay = applyGenderToBadge(badgeRaw, p.gender);
+                return (
             <button
               key={`${p.role}-${p.name}-${ii}`}
               type='button'
@@ -173,6 +177,7 @@ export function AddMemberDropdown({
                 addMemberTo(scope, weekId, dayIndex, 'team', {
                   role,
                   name,
+                  gender: p.gender,
                 });
                 setDropdownState(dropdownKey, { isOpen: false, hoveredOption: null });
                 setSearchQuery('');
@@ -194,9 +199,10 @@ export function AddMemberDropdown({
                   : 'inherit',
               }}
             >
-              {p.role} · {p.name}
+              {badgeDisplay} · {p.name}
             </button>
-              ))
+                );
+              })
             )}
           </div>
         </div>

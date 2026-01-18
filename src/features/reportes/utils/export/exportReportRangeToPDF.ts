@@ -121,6 +121,14 @@ export async function exportReportRangeToPDF(params: ExportReportRangeParams) {
         }
       });
       const providedPersonas = Array.from(allPersonasMap.values());
+      const genderMap: Record<string, string> = {};
+      providedPersonas.forEach(p => {
+        const key = normalizePersonaKey(personaKey(p));
+        const gender = (p as any)?.gender;
+        if (key && gender) {
+          genderMap[key] = gender;
+        }
+      });
       
       // Detect prelight and pickup active in this week
       // Primero verificar en el plan
@@ -432,6 +440,7 @@ export async function exportReportRangeToPDF(params: ExportReportRangeParams) {
         pagePersonKeys.forEach(pk => {
           pageData[pk] = finalWeekData[pk] || {};
         });
+        pageData.__genderMap = genderMap;
 
         // Generate HTML for this page
         const html = buildReportWeekHTMLForPDF({

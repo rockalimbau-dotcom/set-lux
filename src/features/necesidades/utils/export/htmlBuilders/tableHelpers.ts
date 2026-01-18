@@ -1,4 +1,5 @@
 import i18n from '../../../../../i18n/config';
+import { getRoleBadgeCode, applyGenderToBadge } from '@shared/constants/roles';
 import { DayValues } from '../types';
 import {
   esc,
@@ -49,8 +50,13 @@ function listRow(
     const chips = list
       .map(m => {
         const role = (m?.role || '').toUpperCase();
+        const isRefRole = role === 'REF' || (role && role.startsWith('REF') && role.length > 3);
+        const suffix = !isRefRole && listKey === 'preList' ? 'P' : !isRefRole && listKey === 'pickList' ? 'R' : '';
+        const baseBadge = getRoleBadgeCode(role, i18n.language);
+        const badgeWithSuffix = isRefRole ? baseBadge : `${baseBadge}${suffix}`;
+        const badgeDisplay = applyGenderToBadge(badgeWithSuffix, m?.gender);
         const name = m?.name || '';
-        return `<div>• ${esc(role ? `${role}: ` : '')}${esc(name)}</div>`;
+        return `<div>• ${esc(badgeDisplay ? `${badgeDisplay}: ` : '')}${esc(name)}</div>`;
       })
       .join('');
     const block = `${chips}${notes ? `<hr style="margin:6px 0;border:none;border-top:1px solid #ddd;"/>` : ''}${renderCell(notes)}`;

@@ -11,6 +11,7 @@ import useCollapsedState from '../hooks/useCollapsedState';
 import useReportData from '../hooks/useReportData';
 import { parseDietas, formatDietas } from '../utils/text';
 import { AnyRecord } from '@shared/types/common';
+import { storage } from '@shared/services/localStorage.service';
 import { btnExport } from '@shared/utils/tailwindClasses';
 import {
   isPersonScheduledOnBlock,
@@ -23,7 +24,7 @@ import {
   calcHorasExtraMin,
   findPrevWorkingContextFactory,
 } from '../utils/runtime';
-import { personaKey, personaRole, personaName } from '../utils/model';
+import { personaKey, personaRole, personaName, stripPR } from '../utils/model';
 import { mondayOf, toYYYYMMDD } from '@shared/utils/date';
 
 import { ReportesSemanaProps } from './ReportesSemana/ReportesSemanaTypes';
@@ -52,6 +53,50 @@ export default function ReportesSemana({
   const { t } = useTranslation();
   
   const providedPersonas = Array.isArray(personas) ? personas : [];
+  const personasWithGender = useMemo(() => {
+    const keys: string[] = [];
+    if (project?.id || project?.nombre) {
+      const pid = project?.id || project?.nombre;
+      keys.push(`team_${pid}`);
+      keys.push(`setlux_equipo_${pid}`);
+    }
+    keys.push('setlux_equipo_global_v2');
+
+    let saved: AnyRecord | null = null;
+    for (const k of keys) {
+      try {
+        const obj = storage.getJSON<AnyRecord>(k);
+        if (obj) {
+          saved = obj;
+          break;
+        }
+      } catch {}
+    }
+
+    const roster = saved || {};
+    const map = new Map<string, string>();
+    const push = (m?: AnyRecord) => {
+      if (!m) return;
+      const role = m.role || '';
+      const name = m.name || '';
+      if (!role || !name) return;
+      map.set(`${role}__${name}`, m.gender || 'neutral');
+    };
+
+    (roster.base || []).forEach(push);
+    (roster.prelight || []).forEach(push);
+    (roster.pickup || []).forEach(push);
+    (roster.reinforcements || []).forEach(push);
+
+    return providedPersonas.map(p => {
+      const role = personaRole(p);
+      const name = personaName(p);
+      const baseRole = role.startsWith('REF') ? role : stripPR(role);
+      const key = `${baseRole}__${name}`;
+      const gender = (p as AnyRecord)?.gender || map.get(key);
+      return gender ? { ...p, gender } : p;
+    });
+  }, [project?.id, project?.nombre, providedPersonas]);
   
   const {
     safeSemana,
@@ -63,7 +108,7 @@ export default function ReportesSemana({
     peoplePre,
     peoplePick,
     safePersonas,
-  } = useWeekData(project, semana, providedPersonas);
+  } = useWeekData(project, semana, personasWithGender);
 
   const dietasOpciones = useDietasOpciones(mode);
 
@@ -96,6 +141,26 @@ export default function ReportesSemana({
     [...CONCEPTS] as any,
     isPersonScheduledOnBlockFn,
     findWeekAndDay
+  );
+
+  const exportGenderMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    (safePersonas || []).forEach(p => {
+      const key = personaKey(p);
+      const gender = (p as AnyRecord)?.gender;
+      if (key && gender) {
+        map[key] = gender;
+      }
+    });
+    return map;
+  }, [safePersonas]);
+
+  const exportData = useMemo(
+    () => ({
+      ...data,
+      __genderMap: exportGenderMap,
+    }),
+    [data, exportGenderMap]
   );
 
   const params = useMemo(
@@ -142,7 +207,7 @@ export default function ReportesSemana({
     title,
     safeSemana,
     horarioTexto,
-    data,
+    data: exportData,
     onExportWeekHTML,
     onExportWeekPDF,
   });

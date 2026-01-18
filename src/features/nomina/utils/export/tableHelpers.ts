@@ -1,4 +1,5 @@
 import i18n from '../../../../i18n/config';
+import { applyGenderToBadge } from '@shared/constants/roles';
 import { esc, displayValue, displayMoney, generateWorkedDaysText, generateExtrasText, generateDietasText, generateCargaDescargaText, getColumnVisibility } from './helpers';
 
 /**
@@ -65,8 +66,9 @@ export const generateRowDataCells = (
 ): string[] => {
   // Usar rol original para mostrar REFG, REFBB, etc. en lugar de solo REF
   const roleForDisplay = (r as any)._originalRole || r.role || '';
+  const roleDisplay = applyGenderToBadge(String(roleForDisplay), (r as any).gender);
   const dataCells = [
-    `<td class="text-left" style="font-weight:600;vertical-align:middle !important;">${esc(roleForDisplay)} — ${esc(r.name)}</td>`,
+    `<td class="text-left" style="font-weight:600;vertical-align:middle !important;">${esc(roleDisplay)} — ${esc(r.name)}</td>`,
     `<td style="text-align:center !important;vertical-align:middle !important;">${generateWorkedDaysText(r) || esc(displayValue(r._worked))}</td>`,
     `<td style="text-align:center !important;vertical-align:middle !important;">${esc(displayMoney(r._totalDias, 2))}</td>`,
   ];

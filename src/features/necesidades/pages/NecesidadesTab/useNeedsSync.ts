@@ -96,6 +96,7 @@ export function useNeedsSync({
                     .map(m => ({
                       role: (m?.role || '').toUpperCase(),
                       name: (m?.name || '').trim(),
+                      gender: m?.gender,
                     }))
                     .filter(m => m.role || m.name)
                 : [];
@@ -106,6 +107,7 @@ export function useNeedsSync({
                     .map(m => ({
                       role: (m?.role || '').toUpperCase(),
                       name: (m?.name || '').trim(),
+                      gender: m?.gender,
                     }))
                     .filter(m => m.role || m.name)
                 : [];
@@ -116,6 +118,7 @@ export function useNeedsSync({
                     .map(m => ({
                       role: (m?.role || '').toUpperCase(),
                       name: (m?.name || '').trim(),
+                      gender: m?.gender,
                     }))
                     .filter(m => m.role || m.name)
                 : [];
@@ -224,14 +227,17 @@ export function useNeedsSync({
               team: Array.isArray(d.team) ? d.team.map((m: AnyRecord) => ({
                 role: m?.role || '',
                 name: m?.name || '',
+                gender: m?.gender,
               })) : [],
               prelight: Array.isArray(d.prelight) ? d.prelight.map((m: AnyRecord) => ({
                 role: m?.role || '',
                 name: m?.name || '',
+                gender: m?.gender,
               })) : [],
               pickup: Array.isArray(d.pickup) ? d.pickup.map((m: AnyRecord) => ({
                 role: m?.role || '',
                 name: m?.name || '',
+                gender: m?.gender,
               })) : [],
               loc: d.loc || '',
             })) : [],

@@ -51,7 +51,7 @@ describe('ProjectsScreen', () => {
   it('displays user name and welcome message', () => {
     render(<ProjectsScreen {...mockProps} />);
     expect(screen.getByText('Test User')).toBeInTheDocument();
-    expect(screen.getByText(/Bienvenido,/)).toBeInTheDocument();
+    expect(screen.getByText(/bienvenida/i)).toBeInTheDocument();
     expect(screen.getByText(/✨/)).toBeInTheDocument();
   });
 

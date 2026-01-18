@@ -1,4 +1,6 @@
 import { parseDietas } from '../text';
+import i18n from '../../../../i18n/config';
+import { getRoleBadgeCode, applyGenderToBadge } from '@shared/constants/roles';
 import { BuildReportWeekHTMLParams } from './types';
 import { esc } from './htmlHelpers';
 import { getTranslation, translateConcept, translateDietItem, translateDayName } from './translationHelpers';
@@ -12,6 +14,38 @@ import {
   isMeaningfulValue,
 } from './dataHelpers';
 
+function parsePersonKeyForDisplay(pk: string): { role: string; name: string } {
+  let role = '';
+  let name = '';
+  if (pk.includes('.pre__')) {
+    const [rolePart, ...nameParts] = pk.split('.pre__');
+    role = rolePart || '';
+    name = nameParts.join('.pre__');
+    const isRefuerzo = role.startsWith('REF');
+    if (!isRefuerzo) {
+      role = `${role}P`;
+    }
+  } else if (pk.includes('.pick__')) {
+    const [rolePart, ...nameParts] = pk.split('.pick__');
+    role = rolePart || '';
+    name = nameParts.join('.pick__');
+    const isRefuerzo = role.startsWith('REF');
+    if (!isRefuerzo) {
+      role = `${role}R`;
+    }
+  } else {
+    const [rolePart, ...nameParts] = pk.split('__');
+    role = rolePart || '';
+    name = nameParts.join('__');
+    if (role.startsWith('REF')) {
+      while (role.length > 3 && (role.endsWith('P') || role.endsWith('R'))) {
+        role = role.replace(/[PR]$/, '');
+      }
+    }
+  }
+  return { role, name };
+}
+
 export function buildReportWeekHTML({
   project,
   title,
@@ -23,6 +57,8 @@ export function buildReportWeekHTML({
   data,
 }: BuildReportWeekHTMLParams): string {
   // Debug removed to improve performance
+
+  const genderMap = (data as any)?.__genderMap as Record<string, string> | undefined;
 
   // Deduplicate data
   const finalData = deduplicateData(data);
@@ -87,16 +123,17 @@ export function buildReportWeekHTML({
   // Generate body rows
   const body = finalPersonKeys
     .map(pk => {
-      const [rolePart, ...nameParts] = String(pk).split('__');
-      const role = rolePart || '';
-      const name = nameParts.join('__');
+      const { role, name } = parsePersonKeyForDisplay(String(pk));
 
       // Skip entries with empty or invalid roles/names
       if (!role && !name) {
         return '';
       }
 
-      const displayName = role && name ? `${role} — ${name}` : (role || name);
+      const gender = genderMap?.[pk];
+      const badgeCode = getRoleBadgeCode(role, i18n.language);
+      const badgeDisplay = applyGenderToBadge(badgeCode, gender);
+      const displayName = badgeDisplay && name ? `${badgeDisplay} — ${name}` : (badgeDisplay || name);
 
       const head = `
         <tr>

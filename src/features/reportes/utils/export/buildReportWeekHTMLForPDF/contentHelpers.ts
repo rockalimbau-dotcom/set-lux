@@ -11,7 +11,8 @@ export function generateBodyByBlocks(
   personsByBlock: { base: string[]; pre: string[]; pick: string[] },
   safeSemanaWithData: string[],
   conceptosConDatos: string[],
-  finalData: any
+  finalData: any,
+  genderMap?: Record<string, string>
 ): string {
   const bodyParts: string[] = [];
 
@@ -37,7 +38,7 @@ export function generateBodyByBlocks(
       '#e65100'
     );
     bodyParts.push(baseTitle);
-    bodyParts.push(...basePersons.map(pk => generatePersonHTML(pk, conceptosConDatos, safeSemanaWithData, finalData)));
+    bodyParts.push(...basePersons.map(pk => generatePersonHTML(pk, conceptosConDatos, safeSemanaWithData, finalData, genderMap)));
   }
 
   // Prelight team
@@ -50,7 +51,7 @@ export function generateBodyByBlocks(
       '#1565c0'
     );
     bodyParts.push(preTitle);
-    bodyParts.push(...prePersons.map(pk => generatePersonHTML(pk, conceptosConDatos, safeSemanaWithData, finalData)));
+    bodyParts.push(...prePersons.map(pk => generatePersonHTML(pk, conceptosConDatos, safeSemanaWithData, finalData, genderMap)));
   }
 
   // Pickup team
@@ -63,7 +64,7 @@ export function generateBodyByBlocks(
       '#1565c0'
     );
     bodyParts.push(pickTitle);
-    bodyParts.push(...pickPersons.map(pk => generatePersonHTML(pk, conceptosConDatos, safeSemanaWithData, finalData)));
+    bodyParts.push(...pickPersons.map(pk => generatePersonHTML(pk, conceptosConDatos, safeSemanaWithData, finalData, genderMap)));
   }
 
   return bodyParts.join('');

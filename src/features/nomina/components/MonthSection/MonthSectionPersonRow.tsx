@@ -1,7 +1,7 @@
 import { Td } from '@shared/components';
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getRoleBadgeCode } from '@shared/constants/roles';
+import { getRoleBadgeCode, applyGenderToBadge } from '@shared/constants/roles';
 import { displayValue, displayMoney } from '../../utils/displayHelpers';
 import WorkedDaysSummary from '../WorkedDaysSummary.tsx';
 import CargaDescargaSummary from '../CargaDescargaSummary.tsx';
@@ -88,7 +88,8 @@ export function MonthSectionPersonRow({
 
   // Calcular el código del badge usando el rol original (preservado para REFs)
   const roleForBadge = (r as any)._originalRole || r.role || '';
-  const roleCode = getRoleBadgeCode(roleForBadge, i18n.language) || '';
+  const roleCodeRaw = getRoleBadgeCode(roleForBadge, i18n.language) || '';
+  const roleCode = applyGenderToBadge(roleCodeRaw, (r as any).gender);
   // Para refuerzos (REFG, REFGP, etc.) y roles con sufijos (GP, GR) usar ancho adaptativo
   const isLongCode = roleCode.length > 3 || roleCode.startsWith('REF') || roleCode.endsWith('P') || roleCode.endsWith('R');
   // Aumentar min-w para códigos largos como REFE, REFBB, etc.

@@ -22,13 +22,15 @@ import {
 function ensureSlot(
   totals: Map<string, any>,
   role: string,
-  name: string
+  name: string,
+  gender?: 'male' | 'female' | 'neutral'
 ) {
   const k = `${role}__${name}`;
   if (!totals.has(k)) {
     totals.set(k, {
       role,
       name,
+      gender,
       extras: 0,
       horasExtra: 0,
       turnAround: 0,
@@ -115,7 +117,7 @@ export function aggregateReports(
     const uniqStorageKeys = buildUniqueStorageKeys(w, refuerzoSet);
 
     for (const [pk, info] of uniqStorageKeys) {
-      const slot = ensureSlot(totals, info.roleVisible, info.name);
+      const slot = ensureSlot(totals, info.roleVisible, info.name, info.gender);
       for (const iso of days) {
         const keysToUse = getKeysToUse(pk, info.roleVisible);
         processDay(slot, data, keysToUse, pk, iso);

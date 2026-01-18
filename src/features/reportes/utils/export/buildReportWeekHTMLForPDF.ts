@@ -19,6 +19,8 @@ export function buildReportWeekHTMLForPDF({
 }: Omit<BuildReportWeekHTMLParams, 'personaKey' | 'personaRole' | 'personaName'>): string {
   // Debug removed to improve performance
 
+  const genderMap = (data as any)?.__genderMap as Record<string, string> | undefined;
+
   // Deduplicate data
   const finalData = deduplicateData(data);
 
@@ -64,7 +66,7 @@ export function buildReportWeekHTMLForPDF({
   const headHorario = generateScheduleHeader(safeSemanaWithData, horarioTexto);
 
   // Generate body grouped by blocks
-  const body = generateBodyByBlocks(personsByBlock, safeSemanaWithData, conceptosConDatos, finalData);
+  const body = generateBodyByBlocks(personsByBlock, safeSemanaWithData, conceptosConDatos, finalData, genderMap);
 
   // Generate HTML
   const html = `<!DOCTYPE html>

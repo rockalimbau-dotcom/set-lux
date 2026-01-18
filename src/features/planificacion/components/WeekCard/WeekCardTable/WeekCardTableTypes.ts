@@ -55,5 +55,6 @@ export interface MemberChipProps {
   role: string;
   name: string;
   source?: string;
+  gender?: 'male' | 'female' | 'neutral';
 }
 

@@ -1,4 +1,6 @@
 import { parseDietas } from '../../text';
+import i18n from '../../../../../i18n/config';
+import { getRoleBadgeCode, applyGenderToBadge } from '@shared/constants/roles';
 import { esc } from '../htmlHelpers';
 import { translateConcept, translateDietItem } from '../translationHelpers';
 import {
@@ -12,7 +14,8 @@ import {
  */
 function generatePersonHeader(
   pk: string,
-  safeSemanaWithData: string[]
+  safeSemanaWithData: string[],
+  genderMap?: Record<string, string>
 ): string {
   // El formato del pk es: "role.block__name" donde block puede ser "pre" o "pick"
   // Ejemplos: "G.pre__Nombre", "REFE.pre__Nombre", "G.pick__Nombre", "G__Nombre" (base)
@@ -66,7 +69,10 @@ function generatePersonHeader(
     return '';
   }
 
-  const displayName = role && name ? `${role} — ${name}` : role || name;
+  const gender = genderMap?.[pk];
+  const badgeCode = getRoleBadgeCode(role, i18n.language);
+  const badgeDisplay = applyGenderToBadge(badgeCode, gender);
+  const displayName = badgeDisplay && name ? `${badgeDisplay} — ${name}` : badgeDisplay || name;
 
   return `
         <tr>
@@ -184,9 +190,10 @@ export function generatePersonHTML(
   pk: string,
   conceptosConDatos: string[],
   safeSemanaWithData: string[],
-  finalData: any
+  finalData: any,
+  genderMap?: Record<string, string>
 ): string {
-  const header = generatePersonHeader(pk, safeSemanaWithData);
+  const header = generatePersonHeader(pk, safeSemanaWithData, genderMap);
   if (!header) return ''; // Skip invalid entries
 
   const rows = generatePersonConceptRows(pk, conceptosConDatos, safeSemanaWithData, finalData);

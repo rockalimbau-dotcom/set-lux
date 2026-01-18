@@ -54,18 +54,21 @@ export function useNeedsActions({
                 week.days[dayIdx].team = Array.isArray(value) ? (value as AnyRecord[]).map(m => ({
                   role: (m?.role || '').toUpperCase(),
                   name: (m?.name || '').trim(),
+                  gender: m?.gender,
                 })).filter(m => m.role || m.name) : [];
               } else if (fieldKey === 'preList') {
                 // Sincronizar preList a prelight en planificación
                 week.days[dayIdx].prelight = Array.isArray(value) ? (value as AnyRecord[]).map(m => ({
                   role: (m?.role || '').toUpperCase(),
                   name: (m?.name || '').trim(),
+                  gender: m?.gender,
                 })).filter(m => m.role || m.name) : [];
               } else if (fieldKey === 'pickList') {
                 // Sincronizar pickList a pickup en planificación
                 week.days[dayIdx].pickup = Array.isArray(value) ? (value as AnyRecord[]).map(m => ({
                   role: (m?.role || '').toUpperCase(),
                   name: (m?.name || '').trim(),
+                  gender: m?.gender,
                 })).filter(m => m.role || m.name) : [];
               }
               // Guardar de vuelta en localStorage
@@ -110,6 +113,7 @@ export function useNeedsActions({
                 week.days[dayIdx][planListKey] = list.map(m => ({
                   role: (m?.role || '').toUpperCase(),
                   name: (m?.name || '').trim(),
+                  gender: m?.gender,
                 })).filter(m => m.role || m.name);
                 storage.setJSON(planKey, planData);
               }

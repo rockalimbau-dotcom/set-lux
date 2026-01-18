@@ -190,6 +190,7 @@ function WeekCard({
   const poolRefs = useCallback((reinf: AnyRecord[] = []) => (reinf || []).map(r => ({
     role: r?.role || 'REF', // Mantener el rol original (REFG, REFBB, etc.)
     name: (r?.name || '').trim(),
+    gender: r?.gender,
     source: 'ref',
   })), []);
 

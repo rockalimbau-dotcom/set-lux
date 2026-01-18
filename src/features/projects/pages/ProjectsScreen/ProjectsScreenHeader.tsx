@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import LogoIcon from '@shared/components/LogoIcon';
+import { storage } from '@shared/services/localStorage.service';
 
 interface ProjectsScreenHeaderProps {
   userName: string;
@@ -24,6 +25,9 @@ export function ProjectsScreenHeader({
   const theme = document.documentElement.getAttribute('data-theme') || 'light';
   const isLight = theme === 'light';
   const focusColor = isLight ? '#0476D9' : '#F27405';
+  const profile = storage.getJSON<any>('profile_v1') || {};
+  const gender = profile.gender || 'neutral';
+  const genderContext = gender === 'male' || gender === 'female' || gender === 'neutral' ? gender : 'neutral';
 
   return (
     <div className='px-5 sm:px-6 md:px-7 lg:px-8 xl:px-6' style={{backgroundColor: 'var(--bg)', minHeight: 'auto', position: 'relative', contain: 'layout style', marginTop: 0, paddingTop: '1.5rem', paddingBottom: '0.5rem', zIndex: 10}}>
@@ -54,7 +58,7 @@ export function ProjectsScreenHeader({
                 onClick={() => setMenuOpen(!menuOpen)}
                 className='text-[9px] sm:text-[10px] md:text-xs text-zinc-300 hover:text-white transition-colors cursor-pointer'
               >
-                <span style={{color: (document.documentElement.getAttribute('data-theme')||'dark')==='light' ? '#111827' : undefined}}>{t('common.welcome')} </span>
+                <span style={{color: (document.documentElement.getAttribute('data-theme')||'dark')==='light' ? '#111827' : undefined}}>{t('common.welcome', { context: genderContext })} </span>
                 <span className='font-semibold' style={{color: (document.documentElement.getAttribute('data-theme')||'dark')==='light' ? '#0468BF' : '#F27405'}}>{userName}</span> ✨
               </button>
               

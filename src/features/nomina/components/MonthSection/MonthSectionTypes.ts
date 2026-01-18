@@ -17,6 +17,7 @@ export type RolePrices = {
 export type RowIn = {
   role: string;
   name: string;
+  gender?: 'male' | 'female' | 'neutral';
   extras: number;
   horasExtra: number;
   turnAround: number;

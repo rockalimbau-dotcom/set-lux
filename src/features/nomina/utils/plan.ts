@@ -62,23 +62,23 @@ export function weekISOdays(week: { startDate: string }): string[] {
   return Array.from({ length: 7 }, (_, i) => toYYYYMMDD(addDays(start, i)));
 }
 
-export function weekAllPeopleActive(week: any): { role: string; name: string }[] {
+export function weekAllPeopleActive(week: any): { role: string; name: string; gender?: 'male' | 'female' | 'neutral' }[] {
   const seen = new Set<string>();
-  const out: { role: string; name: string }[] = [];
-  const push = (role?: string, name?: string) => {
+  const out: { role: string; name: string; gender?: 'male' | 'female' | 'neutral' }[] = [];
+  const push = (role?: string, name?: string, gender?: 'male' | 'female' | 'neutral') => {
     if (!role && !name) return;
     // Generar nombre por defecto si no hay nombre
     const finalName = name || `Persona_${role || 'UNKNOWN'}`;
     const id = `${role || ''}__${finalName}`;
     if (seen.has(id)) return;
     seen.add(id);
-    out.push({ role: role || '', name: finalName });
+    out.push({ role: role || '', name: finalName, gender });
   };
 
   for (const d of week?.days || []) {
-    for (const m of d?.team || []) push(m.role || '', m.name || '');
-    for (const m of d?.prelight || []) push(`${m.role || ''}P`, m.name || '');
-    for (const m of d?.pickup || []) push(`${m.role || ''}R`, m.name || '');
+    for (const m of d?.team || []) push(m.role || '', m.name || '', m.gender);
+    for (const m of d?.prelight || []) push(`${m.role || ''}P`, m.name || '', m.gender);
+    for (const m of d?.pickup || []) push(`${m.role || ''}R`, m.name || '', m.gender);
   }
   return out;
 }

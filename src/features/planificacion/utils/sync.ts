@@ -78,12 +78,14 @@ export const sortByHierarchy = (list: TeamMember[] = []): TeamMember[] =>
     })
     .map(({ it }) => it);
 
-export const indexRoster = (list: TeamMember[]): Map<string, string[]> => {
-  const map = new Map<string, string[]>();
+export const indexRoster = (
+  list: TeamMember[]
+): Map<string, { name: string; gender?: 'male' | 'female' | 'neutral' }[]> => {
+  const map = new Map<string, { name: string; gender?: 'male' | 'female' | 'neutral' }[]>();
   (list || []).forEach(m => {
     if (!m || !m.role) return;
     const arr = map.get(m.role) || [];
-    arr.push(m.name || '');
+    arr.push({ name: m.name || '', gender: (m as any).gender });
     map.set(m.role, arr);
   });
   return map;
@@ -103,18 +105,20 @@ export const syncDayListWithRoster = (dayList: TeamMember[], rosterList: TeamMem
   for (const [role, names] of rosterIdx.entries()) {
     const pos = positionsOfRole(out, role);
     for (let i = 0; i < names.length; i++) {
-      const targetName = names[i] || '';
+      const targetName = names[i]?.name || '';
+      const targetGender = names[i]?.gender;
       if (i < pos.length) {
         const at = pos[i];
-        if (out[at]?.name !== targetName) {
+        if (out[at]?.name !== targetName || out[at]?.gender !== targetGender) {
           out[at] = {
             ...out[at],
             name: targetName,
+            gender: targetGender,
             source: out[at].source || 'base',
           };
         }
       } else {
-        out.push({ role, name: targetName, source: 'base' });
+        out.push({ role, name: targetName, gender: targetGender, source: 'base' });
       }
     }
   }
@@ -132,13 +136,20 @@ export const syncDayListWithRosterBlankOnly = (
     const pos = positionsOfRole(out, role);
     for (let i = 0; i < names.length && i < pos.length; i++) {
       const at = pos[i];
-      const targetName = names[i] || '';
+      const targetName = names[i]?.name || '';
+      const targetGender = names[i]?.gender;
       const curName = (out[at]?.name || '').trim();
       if (curName === '' && targetName !== '') {
         out[at] = {
           ...out[at],
           name: targetName,
+          gender: targetGender,
           source: out[at].source || fallbackSource,
+        };
+      } else if (curName === targetName && out[at]?.gender !== targetGender) {
+        out[at] = {
+          ...out[at],
+          gender: targetGender,
         };
       }
     }
@@ -178,6 +189,7 @@ export const syncAllWeeks = (
         nextTeam = (base || []).map(m => ({
           role: m.role,
           name: m.name || '',
+          gender: (m as any).gender,
           source: 'base',
         }));
       } else {
@@ -194,6 +206,10 @@ export const syncAllWeeks = (
       const syncRefs = (lst: TeamMember[]): TeamMember[] => {
         const out = [...(lst || [])];
         const refNames = (refs || []).map(r => r.name || '');
+        const refByName = new Map<string, TeamMember>();
+        (refs || []).forEach(r => {
+          if (r?.name) refByName.set(r.name, r);
+        });
         // Buscar posiciones de todos los roles que empiezan con REF (REF, REFG, REFBB, etc.)
         const refPos: number[] = [];
         (out || []).forEach((m, i) => {
@@ -206,7 +222,12 @@ export const syncAllWeeks = (
           const at = refPos[i];
           const curName = (out[at]?.name || '').trim();
           if (curName === '' && refNames[i]) {
-            out[at] = { ...out[at], name: refNames[i] };
+            const refData = refByName.get(refNames[i]);
+            out[at] = {
+              ...out[at],
+              name: refNames[i],
+              gender: (refData as any)?.gender,
+            };
           }
         }
         return out;

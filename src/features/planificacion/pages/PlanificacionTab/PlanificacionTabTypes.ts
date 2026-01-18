@@ -1,6 +1,6 @@
 import { AnyRecord } from '@shared/types/common';
 
-export type TeamMember = { role: string; name: string };
+export type TeamMember = { role: string; name: string; gender?: 'male' | 'female' | 'neutral' };
 
 export interface PlanificacionTabProps {
   project?: AnyRecord;

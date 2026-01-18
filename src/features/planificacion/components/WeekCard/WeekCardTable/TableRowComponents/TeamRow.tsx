@@ -28,6 +28,7 @@ export function TeamRow({
         const basePool = (baseTeam || []).map(m => ({
           role: m.role,
           name: (m.name || '').trim(),
+          gender: m.gender,
           source: 'base',
         }));
         const options = missingByPair(
@@ -39,7 +40,7 @@ export function TeamRow({
             <div className='flex flex-wrap gap-1 sm:gap-1.5 md:gap-2 justify-center'>
               {(day.team || []).map((m: AnyRecord, idx: number) => (
                 <span key={idx} className='inline-flex items-center gap-0.5 sm:gap-1 md:gap-2'>
-                  <MemberChip role={m.role} name={m.name} source={m.source} />
+                  <MemberChip role={m.role} name={m.name} source={m.source} gender={m.gender} />
                   <Button
                     variant='remove'
                     size='sm'

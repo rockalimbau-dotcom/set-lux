@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import ChipBase from '@shared/components/Chip';
 import { AnyRecord } from '@shared/types/common';
-import { getRoleBadgeCode } from '@shared/constants/roles';
+import { getRoleBadgeCode, applyGenderToBadge } from '@shared/constants/roles';
 import { MemberChipProps } from './WeekCardTableTypes';
 
-export function MemberChip({ role, name, source }: MemberChipProps) {
+export function MemberChip({ role, name, source, gender }: MemberChipProps) {
   const { i18n } = useTranslation();
   
   // Detectar el tema actual
@@ -50,6 +50,7 @@ export function MemberChip({ role, name, source }: MemberChipProps) {
     if (source === 'pre') label = `${label}P`;
     if (source === 'pick') label = `${label}R`;
   }
+  label = applyGenderToBadge(label, gender);
   return <ChipBase label={label} colorBg={roleBgColor} colorFg={roleFgColor} text={name} />;
 }
 

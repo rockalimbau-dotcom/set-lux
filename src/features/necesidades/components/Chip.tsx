@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getRoleBadgeCode } from '@shared/constants/roles';
+import { getRoleBadgeCode, applyGenderToBadge } from '@shared/constants/roles';
 
 type ChipProps = {
   role?: string;
   name?: string;
+  gender?: 'male' | 'female' | 'neutral';
   onRemove?: () => void;
   context?: 'prelight' | 'pickup' | string;
   readOnly?: boolean;
 };
 
-export default function Chip({ role, name, onRemove, context, readOnly = false }: ChipProps) {
+export default function Chip({ role, name, gender, onRemove, context, readOnly = false }: ChipProps) {
   const { t } = useTranslation();
   
   // Detectar el tema actual
@@ -58,6 +59,7 @@ export default function Chip({ role, name, onRemove, context, readOnly = false }
     if (context === 'prelight') label = `${label}P`;
     if (context === 'pickup') label = `${label}R`;
   }
+  label = applyGenderToBadge(label, gender);
   
   // Determinar si el código es largo (REFG, REFBB, GP, GR, etc.)
   const isLongCode = label.length > 3 || label.startsWith('REF') || label.endsWith('P') || label.endsWith('R');

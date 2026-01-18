@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ROLE_COLORS } from '@shared/constants/roles';
+import { ROLE_COLORS, applyGenderToBadge } from '@shared/constants/roles';
 import { AnyRecord } from '@shared/types/common';
 import { displayBadge, translateRoleLabel } from './EquipoTabUtils';
 import { ConfirmModal } from './ConfirmModal';
@@ -57,6 +57,15 @@ export function TeamRow({ row, onChange, onRemove, canEdit, allowedRoles, groupK
   const [hoveredOption, setHoveredOption] = useState<string | null>(null);
   const [isButtonHovered, setIsButtonHovered] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const [isGenderOpen, setIsGenderOpen] = useState(false);
+  const [genderHoveredOption, setGenderHoveredOption] = useState<string | null>(null);
+  const [isGenderButtonHovered, setIsGenderButtonHovered] = useState(false);
+  const genderDropdownRef = useRef<HTMLDivElement>(null);
+  const gender = row.gender || 'neutral';
+  const baseRoleForGender = row.role?.startsWith('REF') && row.role.length > 3
+    ? row.role.substring(3)
+    : row.role;
+  const showGenderDropdown = !['G', 'AUX', 'RIG'].includes(baseRoleForGender || '');
 
   // Cerrar dropdown al hacer clic fuera
   useEffect(() => {
@@ -64,22 +73,31 @@ export function TeamRow({ row, onChange, onRemove, canEdit, allowedRoles, groupK
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsOpen(false);
       }
+      if (genderDropdownRef.current && !genderDropdownRef.current.contains(event.target as Node)) {
+        setIsGenderOpen(false);
+      }
     };
 
-    if (isOpen) {
+    if (isOpen || isGenderOpen) {
       document.addEventListener('mousedown', handleClickOutside);
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [isOpen]);
+  }, [isOpen, isGenderOpen]);
 
   // Obtener el label del rol seleccionado (traducido)
   const selectedRole = allowedRoles.find((r: AnyRecord) => r.code === row.role);
   const selectedLabel = selectedRole 
-    ? (translateRoleLabel(selectedRole.code, t, groupKey) || selectedRole.label)
+    ? (translateRoleLabel(selectedRole.code, t, groupKey, gender) || selectedRole.label)
     : '';
+  const genderOptions = [
+    { value: 'neutral', label: t('team.genderNeutral') },
+    { value: 'male', label: t('team.genderMale') },
+    { value: 'female', label: t('team.genderFemale') },
+  ];
+  const selectedGenderLabel = genderOptions.find(opt => opt.value === gender)?.label || t('team.genderNeutral');
 
   const focusColor = theme === 'light' ? '#0476D9' : '#F27405';
   
@@ -88,6 +106,9 @@ export function TeamRow({ row, onChange, onRemove, canEdit, allowedRoles, groupK
     ? 'linear-gradient(135deg,#60A5FA,#0369A1)' // Color de Best Boy (más oscuro)
     : 'linear-gradient(135deg,#FDE047,#F59E0B)'; // Color de Eléctrico
   const roleFgColor = theme === 'light' ? 'white' : '#000000'; // Blanco en claro, negro en oscuro
+
+  const badgeRaw = displayBadge(row.role || '—', groupKey, i18n.language);
+  const badgeDisplay = applyGenderToBadge(badgeRaw, gender);
 
   return (
     <>
@@ -104,7 +125,7 @@ export function TeamRow({ row, onChange, onRemove, canEdit, allowedRoles, groupK
               } as React.CSSProperties}
               title={row.role}
             >
-              {displayBadge(row.role || '—', groupKey, i18n.language)}
+              {badgeDisplay}
             </span>
           </div>
           <div className='sm:w-[180px] md:w-[200px] lg:w-[220px] w-full relative' ref={dropdownRef}>
@@ -169,12 +190,82 @@ export function TeamRow({ row, onChange, onRemove, canEdit, allowedRoles, groupK
                         : 'inherit',
                     }}
                   >
-                  {translateRoleLabel(r.code, t, groupKey) || r.label}
+                  {translateRoleLabel(r.code, t, groupKey, gender) || r.label}
                   </button>
               ))}
               </div>
             )}
           </div>
+          {showGenderDropdown && (
+          <div className='sm:w-[130px] md:w-[140px] lg:w-[150px] w-full relative' ref={genderDropdownRef}>
+            <label htmlFor={`gender-${row.id}`} className='sr-only'>{t('team.gender')}</label>
+            <button
+              type='button'
+              disabled={!canEdit}
+              onClick={() => canEdit && setIsGenderOpen(!isGenderOpen)}
+              onMouseEnter={() => setIsGenderButtonHovered(true)}
+              onMouseLeave={() => setIsGenderButtonHovered(false)}
+              onBlur={() => setIsGenderButtonHovered(false)}
+              title={t('team.gender')}
+              aria-label={t('team.gender')}
+              id={`gender-${row.id}`}
+              className={`w-full min-w-0 px-1.5 py-1 sm:px-2 sm:py-1.5 md:px-3 md:py-2 rounded sm:rounded-md md:rounded-lg border focus:outline-none text-[9px] sm:text-[10px] md:text-xs lg:text-sm text-left transition-colors ${
+                theme === 'light' 
+                  ? 'bg-white text-gray-900' 
+                  : 'bg-black/40 text-zinc-300'
+              } ${!canEdit ? 'opacity-50 cursor-not-allowed' : ''}`}
+              style={{
+                borderWidth: isGenderButtonHovered ? '1.5px' : '1px',
+                borderStyle: 'solid',
+                borderColor: isGenderButtonHovered && theme === 'light' 
+                  ? '#0476D9' 
+                  : (isGenderButtonHovered && theme === 'dark'
+                    ? '#fff'
+                    : 'var(--border)'),
+                backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath fill='${theme === 'light' ? '%23111827' : '%23ffffff'}' d='M5 7.5L1.25 3.75h7.5z'/%3E%3C/svg%3E")`,
+                backgroundRepeat: 'no-repeat',
+                backgroundPosition: 'right 0.5rem center',
+                paddingRight: '1.75rem',
+              }}
+            >
+              {selectedGenderLabel}
+            </button>
+            {isGenderOpen && canEdit && (
+              <div className={`absolute top-full left-0 mt-0.5 sm:mt-1 w-full border border-neutral-border rounded sm:rounded-md md:rounded-lg shadow-lg z-50 overflow-y-auto max-h-40 sm:max-h-48 md:max-h-52 ${
+                theme === 'light' ? 'bg-white' : 'bg-neutral-panel'
+              }`}>
+                {genderOptions.map(opt => (
+                  <button
+                    key={opt.value}
+                    type='button'
+                    onClick={() => {
+                      onChange(row.id, { gender: opt.value });
+                      setIsGenderOpen(false);
+                      setGenderHoveredOption(null);
+                    }}
+                    onMouseEnter={() => setGenderHoveredOption(opt.value)}
+                    onMouseLeave={() => setGenderHoveredOption(null)}
+                    className={`w-full text-left px-2 py-1 sm:px-2.5 sm:py-1.5 md:px-3 md:py-2 text-[9px] sm:text-[10px] md:text-xs lg:text-sm transition-colors ${
+                      theme === 'light' 
+                        ? 'text-gray-900' 
+                        : 'text-zinc-300'
+                    }`}
+                    style={{
+                      backgroundColor: genderHoveredOption === opt.value 
+                        ? (theme === 'light' ? '#A0D3F2' : focusColor)
+                        : 'transparent',
+                      color: genderHoveredOption === opt.value 
+                        ? (theme === 'light' ? '#111827' : 'white')
+                        : 'inherit',
+                    }}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+          )}
           <div className='flex-1 min-w-0 sm:min-w-[180px] md:min-w-[200px] lg:min-w-[220px]'>
             <label htmlFor={`name-${row.id}`} className='sr-only'>{t('team.nameAndSurname')}</label>
             <input

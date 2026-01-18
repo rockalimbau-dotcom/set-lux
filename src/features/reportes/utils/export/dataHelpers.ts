@@ -121,6 +121,7 @@ export const deduplicateData = (data: any): any => {
   const deduplicatedData: any = {};
   
   Object.keys(data || {}).forEach(k => {
+    if (String(k).startsWith('__')) return;
     // Parsear la clave: puede ser "role__name", "role.pre__name", "role.pick__name"
     let role = '';
     let name = '';

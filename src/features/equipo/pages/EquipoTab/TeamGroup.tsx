@@ -36,7 +36,7 @@ export function TeamGroup({
     const seq = nextSeq();
     setRows([
       ...rows,
-      { id: safeId(), role: allowedRoles[0]?.code || 'E', name: '', seq },
+      { id: safeId(), role: allowedRoles[0]?.code || 'E', name: '', gender: 'neutral', seq },
     ]);
   };
   const updateRow = (id: string, patch: AnyRecord) => {

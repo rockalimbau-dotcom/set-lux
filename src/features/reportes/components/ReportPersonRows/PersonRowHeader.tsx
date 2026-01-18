@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Td } from '@shared/components';
 import { AnyRecord } from '@shared/types/common';
 import { personaKeyFrom } from './ReportPersonRowsHelpers';
-import { getRoleBadgeCode } from '@shared/constants/roles';
+import { getRoleBadgeCode, applyGenderToBadge } from '@shared/constants/roles';
 
 interface PersonRowHeaderProps {
   person: AnyRecord;
@@ -29,6 +29,7 @@ export function PersonRowHeader({
   const { i18n } = useTranslation();
   const visualRole = person?.role || '';
   const name = person?.name || '';
+  const gender = person?.gender;
   const pKey = personaKeyFrom(visualRole, name, block);
 
   // Detectar el tema actual
@@ -67,7 +68,8 @@ export function PersonRowHeader({
   const roleFgColor = theme === 'light' ? 'white' : '#000000'; // Blanco en claro, negro en oscuro
 
   // Calcular el código del badge y determinar si necesita más espacio
-  const roleCode = getRoleBadgeCode(visualRole || '', i18n.language) || '';
+  const roleCodeRaw = getRoleBadgeCode(visualRole || '', i18n.language) || '';
+  const roleCode = applyGenderToBadge(roleCodeRaw, gender);
   // Para refuerzos (REFG, REFGP, etc.) y roles con sufijos (GP, GR) usar ancho adaptativo
   const isLongCode = roleCode.length > 3 || roleCode.startsWith('REF') || roleCode.endsWith('P') || roleCode.endsWith('R');
   const badgeWidthClass = isLongCode

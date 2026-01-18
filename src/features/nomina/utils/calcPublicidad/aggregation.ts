@@ -21,12 +21,13 @@ export function aggregateReports(project: any, weeks: any[], filterISO: ((iso: s
   const rolesInCondiciones = getRolesInCondiciones(project);
 
 
-  const ensure = (role: string, name: string) => {
+  const ensure = (role: string, name: string, gender?: 'male' | 'female' | 'neutral') => {
     const k = `${role}__${name}`;
     if (!totals.has(k)) {
       totals.set(k, {
         role,
         name,
+        gender,
         extras: 0,
         horasExtra: 0,
         turnAround: 0,
@@ -56,11 +57,12 @@ export function aggregateReports(project: any, weeks: any[], filterISO: ((iso: s
     
 
     const rawPeople = weekAllPeopleActive(w);
-    const uniqStorage = new Map<string, string>();
+    const uniqStorage = new Map<string, { roleVisible: string; gender?: 'male' | 'female' | 'neutral' }>();
     for (const p of rawPeople) {
       const r = p.role || '';
       const n = p.name || '';
       const vk = visibleRoleFor(r, n, refuerzoSet);
+      const gender = (p as any)?.gender;
       
       // REF no se procesa en diario (no hay refuerzos)
       if (vk === 'REF') {
@@ -70,18 +72,18 @@ export function aggregateReports(project: any, weeks: any[], filterISO: ((iso: s
       // Detectar bloque basándose en el sufijo del rol
       const block = r.endsWith('P') ? 'pre' : r.endsWith('R') ? 'pick' : undefined;
       const sk = storageKeyFor(r, n, block);
-      if (!uniqStorage.has(sk)) uniqStorage.set(sk, vk);
+      if (!uniqStorage.has(sk)) uniqStorage.set(sk, { roleVisible: vk, gender });
     }
 
 
-    for (const [storageKey, visibleKey] of uniqStorage) {
+    for (const [storageKey, meta] of uniqStorage) {
       const pk = storageKey;
-      const roleVis = visibleKey;
+      const roleVis = meta.roleVisible;
       const personName = pk.split('__')[1] || '';
 
       for (const iso of filteredDays) {
         const keysToUse = storageKeyVariants(pk);
-        const slot = ensure(roleVis, personName);
+        const slot = ensure(roleVis, personName, meta.gender);
 
         const he = parseHorasExtra(getCellValueCandidates(data, keysToUse, COL_CANDIDATES.extras, iso));
         const ta = parseNum(getCellValueCandidates(data, keysToUse, COL_CANDIDATES.ta, iso));

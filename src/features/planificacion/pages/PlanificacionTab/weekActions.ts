@@ -158,6 +158,7 @@ export const createWeekHandlers = (
             next.team = (baseRoster || []).map((m: AnyRecord) => ({
               role: m.role,
               name: m.name,
+              gender: m.gender,
             }));
           }
 
@@ -217,6 +218,7 @@ export const createWeekHandlers = (
               .map((m: AnyRecord) => ({
                 role: m.role,
                 name: m.name,
+                gender: m.gender,
               }));
             
             next.team = [...currentTeam, ...missingMembers];
@@ -258,6 +260,7 @@ export const createWeekHandlers = (
             {
               role: member.role,
               name: member.name,
+              gender: member.gender,
               source:
                 member.source ||
                 (listKey === 'prelight'

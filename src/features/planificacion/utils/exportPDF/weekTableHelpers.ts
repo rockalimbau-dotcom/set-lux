@@ -1,4 +1,5 @@
 import i18n from '../../../../i18n/config';
+import { getRoleBadgeCode, applyGenderToBadge } from '@shared/constants/roles';
 import { Week, DayInfo } from './types';
 import { esc, getTranslation, translateJornadaType } from './helpers';
 
@@ -28,6 +29,17 @@ function hasMeaningfulData(day: any): boolean {
   const isNotDescanso = day.tipo !== 'Descanso';
   
   return hasTeam || hasPrelight || hasPickup || hasIssue || hasObservations || hasLocation || hasCut || hasSchedule || isNotDescanso;
+}
+
+function formatMemberLabel(member: any, suffix: string): string {
+  const role = member?.role || '';
+  const name = member?.name || '';
+  const isRefRole =
+    role === 'REF' || (role && role.startsWith('REF') && role.length > 3);
+  const baseBadge = getRoleBadgeCode(role, i18n.language);
+  const badgeWithSuffix = isRefRole ? baseBadge : `${baseBadge}${suffix}`;
+  const badgeDisplay = applyGenderToBadge(badgeWithSuffix, member?.gender);
+  return esc(`${badgeDisplay} ${name}`.trim());
 }
 
 interface GenerateWeekTableParams {
@@ -92,7 +104,7 @@ export function generateWeekTable({
             // Si el rol es REF o empieza con REF (REFG, REFBB, etc.), no añadir sufijo P/R
             const isRefRole = m.role === 'REF' || (m.role && m.role.startsWith('REF') && m.role.length > 3);
             const suffix = isRefRole ? '' : (m.source === 'pre' ? 'P' : m.source === 'pick' ? 'R' : '');
-            return esc(`${m.role}${suffix} ${m.name || ''}`.trim());
+            return formatMemberLabel(m, suffix);
           })
           .join('\n');
         return team;
@@ -106,7 +118,7 @@ export function generateWeekTable({
             // Si el rol es REF o empieza con REF (REFG, REFBB, etc.), no añadir sufijo P
             const isRefRole = m.role === 'REF' || (m.role && m.role.startsWith('REF') && m.role.length > 3);
             const suffix = isRefRole ? '' : (m.source === 'pre' ? 'P' : '');
-            return esc(`${m.role}${suffix} ${m.name || ''}`.trim());
+            return formatMemberLabel(m, suffix);
           })
           .join('\n');
         const hs = [week.days?.[i]?.prelightStart, week.days?.[i]?.prelightEnd]
@@ -129,7 +141,7 @@ export function generateWeekTable({
             // Si el rol es REF o empieza con REF (REFG, REFBB, etc.), no añadir sufijo R
             const isRefRole = m.role === 'REF' || (m.role && m.role.startsWith('REF') && m.role.length > 3);
             const suffix = isRefRole ? '' : (m.source === 'pick' ? 'R' : '');
-            return esc(`${m.role}${suffix} ${m.name || ''}`.trim());
+            return formatMemberLabel(m, suffix);
           })
           .join('\n');
         const hs = [week.days?.[i]?.pickupStart, week.days?.[i]?.pickupEnd]

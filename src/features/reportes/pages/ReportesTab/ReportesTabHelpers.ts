@@ -30,7 +30,7 @@ export function weekToPersonas(week: AnyRecord): AnyRecord[] {
         const id = `${role}__${name}`;
         if (!seen.has(id) && (role || name)) {
           seen.add(id);
-          out.push({ id, cargo: role, nombre: name });
+          out.push({ id, cargo: role, nombre: name, gender: (m as AnyRecord)?.gender });
         }
       }
     }
