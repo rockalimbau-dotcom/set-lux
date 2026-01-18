@@ -18,14 +18,7 @@ export function generateBodyByBlocks(
 
   // Helper to filter persons with data
   const filterPersonsWithData = (personKeys: string[]): string[] => {
-    return personKeys.filter(pk => {
-      return safeSemanaWithData.some(iso => {
-        return conceptosConDatos.some(concepto => {
-          const value = finalData?.[pk]?.[concepto]?.[iso];
-          return isMeaningfulValue(value);
-        });
-      });
-    });
+    return personKeys;
   };
 
   // Base team

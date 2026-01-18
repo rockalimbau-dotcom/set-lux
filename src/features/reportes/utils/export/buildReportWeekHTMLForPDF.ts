@@ -1,5 +1,5 @@
 import { BuildReportWeekHTMLParams } from './types';
-import { deduplicateData, filterConceptsWithData, filterDaysWithData } from './dataHelpers';
+import { deduplicateData } from './dataHelpers';
 import { esc } from './htmlHelpers';
 import { getTranslation } from './translationHelpers';
 import { groupAndSortPersonsByBlock } from './buildReportWeekHTMLForPDF/sortingHelpers';
@@ -43,22 +43,9 @@ export function buildReportWeekHTMLForPDF({
   }
 
 
-  // Filter days that are not DESCANSO or have data
-  const safeSemanaWithData = filterDaysWithData(
-    safeSemana,
-    horarioTexto,
-    finalPersonKeys,
-    CONCEPTS,
-    finalData
-  );
-
-  // Filter concepts that have meaningful data
-  const conceptosConDatos = filterConceptsWithData(
-    CONCEPTS,
-    finalPersonKeys,
-    safeSemanaWithData,
-    finalData
-  );
+  // Export: always show all days and concepts even if empty
+  const safeSemanaWithData = [...safeSemana];
+  const conceptosConDatos = [...CONCEPTS];
 
 
   // Generate table headers

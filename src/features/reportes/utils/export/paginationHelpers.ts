@@ -26,8 +26,8 @@ export const calculatePersonsPerPage = (
   // Estimate concepts per person (average case)
   const estimatedConceptsPerPerson = Math.min(CONCEPTS.length, 3);
   
-  // Usar un margen de seguridad más conservador (reducir altura máxima disponible)
-  const safetyMargin = 80; // Aumentar margen de seguridad para evitar cortes
+  // Margen inferior extra para evitar que invada el footer
+  const safetyMargin = 200;
   const effectiveMaxHeight = maxPageHeight - safetyMargin;
   
   // Start more conservative para asegurar que siempre quepa en una página
@@ -44,7 +44,7 @@ export const calculatePersonsPerPage = (
   // Auto-fill logic: if we have space, try to add more persons
   // Pero ser más conservador con el espacio buffer
   let optimalPersonsPerPage = personsPerPage;
-  const spaceBuffer = 40; // Aumentar buffer para evitar cortes
+  const spaceBuffer = 60; // Buffer para evitar cortes en el footer
   
   for (let testPersons = personsPerPage + 1; testPersons <= totalPersons; testPersons++) {
     const testHeight = estimateContentHeight(testPersons, estimatedConceptsPerPerson);

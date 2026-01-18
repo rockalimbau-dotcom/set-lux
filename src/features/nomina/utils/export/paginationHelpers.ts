@@ -13,25 +13,25 @@ export const calculatePagination = (
   // Heights in pixels (1123x794px = A4 landscape at 3x scale)
   const maxPageHeight = 794;
   
-  // Fixed heights (more conservative estimates)
-  const headerHeight = 60; // Header with padding
-  const infoPanelHeight = 50; // Info panel with margin
-  const tableHeaderHeight = 40; // Table thead
-  const footerHeight = 30; // Footer with padding
-  const contentPadding = 24; // Top and bottom padding of content (12px * 2)
+  // Fixed heights (extra conservative to avoid footer overlap)
+  const headerHeight = 70; // Header with padding
+  const infoPanelHeight = 60; // Info panel with margin
+  const tableHeaderHeight = 44; // Table thead
+  const footerHeight = 40; // Footer with padding
+  const contentPadding = 28; // Top and bottom padding of content
   
   // Variable heights
-  const sectionTitleHeight = 40; // Section title row (more conservative)
-  const baseRowHeight = 30; // Base row height (padding 6px * 2 + content)
-  const rowWithContentHeight = 45; // Row with multi-line content (extras, dietas, etc.)
+  const sectionTitleHeight = 44; // Section title row
+  const baseRowHeight = 26; // Base row height (single line)
+  const lineHeight = 12; // Approx line height for multi-line cells
   
   // Calculate total fixed height
   const fixedHeight = headerHeight + infoPanelHeight + tableHeaderHeight + footerHeight + contentPadding;
   const availableHeight = maxPageHeight - fixedHeight;
   
-  // Conservative buffer to ensure content doesn't overflow
-  const safetyBuffer = 40;
-  const usableHeight = availableHeight - safetyBuffer;
+  // Extra buffer to ensure a bottom limit before the footer
+  const safetyBuffer = 80;
+  const usableHeight = Math.max(availableHeight - safetyBuffer, 200);
   
   const pages: Array<Array<{ type: 'title' | 'row', block?: string, row?: any }>> = [];
   let currentPage: Array<{ type: 'title' | 'row', block?: string, row?: any }> = [];
@@ -42,15 +42,36 @@ export const calculatePagination = (
    * Rows with extras, dietas, or worked days breakdown may be taller
    */
   const estimateRowHeight = (row: any): number => {
-    // Check if row has complex content that might make it taller
-    const hasExtras = row.extras && row.extras > 0;
-    const hasDietas = row._totalDietas && row._totalDietas > 0;
-    const hasWorkedBreakdown = row._rodaje || row._carga || row._descarga || row._localizar || row._oficina;
+    const workedParts = [
+      row._localizar,
+      row._oficina,
+      row._carga,
+      row._rodaje,
+      row._prelight,
+      row._recogida,
+      row._descarga,
+    ].filter(val => (val || 0) > 0).length;
+    const workedLines = workedParts > 0 ? 1 + workedParts : 1;
     
-    if (hasExtras || hasDietas || hasWorkedBreakdown) {
-      return rowWithContentHeight;
-    }
-    return baseRowHeight;
+    const cargaDescargaParts = [row._cargaDays, row._descargaDays].filter(val => (val || 0) > 0).length;
+    const cargaDescargaLines = cargaDescargaParts > 0 ? 1 + cargaDescargaParts : 1;
+    
+    const extrasParts = [
+      row.horasExtra,
+      row.turnAround,
+      row.nocturnidad,
+      row.penaltyLunch,
+    ].filter(val => (val || 0) > 0).length;
+    const extrasLines = extrasParts > 0 ? 1 + extrasParts : 1;
+    
+    const hasDietas =
+      (row._totalDietas || 0) > 0 ||
+      (row.ticketTotal || 0) > 0 ||
+      (row.dietasCount && row.dietasCount.size > 0);
+    const dietasLines = hasDietas ? 2 : 1;
+    
+    const maxLines = Math.max(workedLines, cargaDescargaLines, extrasLines, dietasLines, 1);
+    return baseRowHeight + (maxLines - 1) * lineHeight;
   };
   
   for (let i = 0; i < groupedRows.length; i++) {

@@ -8,9 +8,6 @@ import {
   calculateTotalForExport,
   deduplicateData,
   sortPersonKeysByRole,
-  filterConceptsWithData,
-  filterPersonsWithData,
-  filterDaysWithData,
   isMeaningfulValue,
 } from './dataHelpers';
 
@@ -65,31 +62,10 @@ export function buildReportWeekHTML({
   const sortedPersonKeys = sortPersonKeysByRole(Object.keys(finalData || {}));
 
 
-  // Filter days that are not DESCANSO or have data
-  const safeSemanaWithData = filterDaysWithData(
-    safeSemana,
-    horarioTexto,
-    sortedPersonKeys,
-    CONCEPTS,
-    finalData
-  );
-
-  // Filter concepts that have meaningful data
-  const conceptosConDatos = filterConceptsWithData(
-    CONCEPTS,
-    sortedPersonKeys,
-    safeSemanaWithData,
-    finalData
-  );
-
-
-  // Filter persons that have meaningful data
-  const finalPersonKeys = filterPersonsWithData(
-    sortedPersonKeys,
-    safeSemanaWithData,
-    conceptosConDatos,
-    finalData
-  );
+  // Export: always show all days, concepts and persons even if empty
+  const safeSemanaWithData = [...safeSemana];
+  const conceptosConDatos = [...CONCEPTS];
+  const finalPersonKeys = sortedPersonKeys;
 
   // Generate table headers
   const headDays = `
