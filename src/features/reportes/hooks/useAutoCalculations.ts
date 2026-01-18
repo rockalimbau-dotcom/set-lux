@@ -246,6 +246,24 @@ export default function useAutoCalculations({
             manual: manualNoct,
             off,
           });
+
+          // Si no trabaja, limpiar valores manuales que no son auto-calculados
+          if (off) {
+            const clearConcept = (concepto: string) => {
+              next[pk][concepto] = next[pk][concepto] || {};
+              next[pk][concepto][iso] = '';
+              if (next[pk].__manual__?.[concepto]?.[iso]) {
+                next[pk].__manual__ = next[pk].__manual__ || {};
+                next[pk].__manual__[concepto] = next[pk].__manual__[concepto] || {};
+                delete next[pk].__manual__[concepto][iso];
+              }
+            };
+
+            clearConcept('Kilometraje');
+            clearConcept('Transporte');
+            clearConcept('Penalty lunch');
+            clearConcept('Dietas');
+          }
         }
       }
 
