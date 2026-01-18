@@ -1,5 +1,5 @@
 import i18n from '../../../../i18n/config';
-import { esc, displayValue, displayMoney, generateWorkedDaysText, generateExtrasText, generateDietasText, getColumnVisibility } from './helpers';
+import { esc, displayValue, displayMoney, generateWorkedDaysText, generateExtrasText, generateDietasText, generateCargaDescargaText, getColumnVisibility } from './helpers';
 
 /**
  * Generate header cells based on column visibility
@@ -10,6 +10,16 @@ export const generateHeaderCells = (columnVisibility: ReturnType<typeof getColum
     `<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.workedDays')}</th>`,
     `<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.totalDays')}</th>`,
   ];
+
+  if (columnVisibility.localizacion) {
+    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.localizacionTecnica')}</th>`);
+    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.totalLocalizacionTecnica')}</th>`);
+  }
+
+  if (columnVisibility.cargaDescarga) {
+    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.cargaDescarga')}</th>`);
+    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.totalCargaDescarga')}</th>`);
+  }
 
   if (columnVisibility.holidays) {
     headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.holidayDays')}</th>`);
@@ -60,6 +70,16 @@ export const generateRowDataCells = (
     `<td style="text-align:center !important;vertical-align:middle !important;">${generateWorkedDaysText(r) || esc(displayValue(r._worked))}</td>`,
     `<td style="text-align:center !important;vertical-align:middle !important;">${esc(displayMoney(r._totalDias, 2))}</td>`,
   ];
+
+  if (columnVisibility.localizacion) {
+    dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;">${esc(displayValue(r._localizarDays))}</td>`);
+    dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;">${esc(displayMoney(r._totalLocalizacion, 2))}</td>`);
+  }
+
+  if (columnVisibility.cargaDescarga) {
+    dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;">${generateCargaDescargaText(r) || esc(displayValue((r._cargaDays || 0) + (r._descargaDays || 0)))}</td>`);
+    dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;">${esc(displayMoney(r._totalCargaDescarga, 2))}</td>`);
+  }
 
   if (columnVisibility.holidays) {
     dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;">${esc(displayValue(r._holidays))}</td>`);

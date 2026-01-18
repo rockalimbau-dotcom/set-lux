@@ -32,7 +32,7 @@ export function calcWorkedBreakdown(
   weeks: any[],
   filterISO: (iso: string) => boolean,
   person: { role: string; name: string },
-  projectMode: 'semanal' | 'mensual' | 'publicidad' = 'semanal'
+  projectMode: 'semanal' | 'mensual' | 'publicidad' | 'diario' = 'semanal'
 ): WorkedBreakdownResult {
   const isWantedISO = filterISO || (() => true);
   const wantedRole = String(person.role || '');
@@ -129,7 +129,7 @@ export function calcWorkedBreakdown(
       }
       
       // Lógica diferente según el modo del proyecto
-      if (projectMode === 'publicidad') {
+      if (projectMode === 'publicidad' || projectMode === 'diario') {
         // En publicidad: solo Rodaje y Oficina cuentan en workedDays
         if (dayType === 'Rodaje') {
           rodaje += 1;
@@ -208,7 +208,7 @@ export function calcWorkedBreakdown(
   }
 
   // Retornar según el modo del proyecto
-  if (projectMode === 'publicidad') {
+  if (projectMode === 'publicidad' || projectMode === 'diario') {
     return { 
       workedDays, 
       travelDays, 

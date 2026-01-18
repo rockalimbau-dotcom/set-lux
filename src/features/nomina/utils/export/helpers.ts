@@ -90,6 +90,20 @@ export const generateWorkedDaysText = (r: any): string => {
 };
 
 /**
+ * Generate carga/descarga summary text for export (diario)
+ */
+export const generateCargaDescargaText = (r: any): string => {
+  const carga = r._cargaDays || 0;
+  const descarga = r._descargaDays || 0;
+  const total = carga + descarga;
+  if (total === 0) return '';
+  const parts: string[] = [];
+  if (carga > 0) parts.push(`${i18n.t('payroll.dayTypes.loading')} x${carga}`);
+  if (descarga > 0) parts.push(`${i18n.t('payroll.dayTypes.unloading')} x${descarga}`);
+  return `<div style="text-align:center;"><strong>${total}</strong><br/><div style="font-size:10px;line-height:1.2;">${parts.join('<br/>')}</div></div>`;
+};
+
+/**
  * Generate dietas summary text for export
  */
 export const generateDietasText = (r: any): string => {
@@ -161,6 +175,8 @@ export const generateExtrasText = (r: any): string => {
  */
 export const getColumnVisibility = (enrichedRows: any[]) => {
   return {
+    localizacion: enrichedRows.some(r => (r._localizarDays || 0) > 0 || (r._totalLocalizacion || 0) > 0),
+    cargaDescarga: enrichedRows.some(r => (r._cargaDays || 0) > 0 || (r._descargaDays || 0) > 0 || (r._totalCargaDescarga || 0) > 0),
     holidays: enrichedRows.some(r => (r._holidays || 0) > 0),
     travel: enrichedRows.some(r => (r._travel || 0) > 0),
     extras: enrichedRows.some(r => (r.extras || 0) > 0),

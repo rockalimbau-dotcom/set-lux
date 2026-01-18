@@ -139,8 +139,8 @@ export function MonthSectionPersonRow({
               <div className='text-right font-medium text-zinc-100 mb-0.5 sm:mb-1 text-[9px] sm:text-[10px] md:text-xs'>{r._worked}</div>
             )}
             <WorkedDaysSummary
-              carga={r._carga || 0}
-              descarga={r._descarga || 0}
+              carga={projectMode === 'diario' ? 0 : (r._carga || 0)}
+              descarga={projectMode === 'diario' ? 0 : (r._descarga || 0)}
               localizar={r._localizar || 0}
               rodaje={r._rodaje || 0}
               oficina={r._oficina || 0}
