@@ -86,6 +86,14 @@ export function collectWeekTeamWithSuffixFactory(
       for (const m of lst) {
         if (!m) continue;
         const isRef = isMemberRefuerzo(m);
+        const sourceSuffix =
+          m.source === 'base'
+            ? ''
+            : m.source === 'pre'
+            ? 'P'
+            : m.source === 'pick'
+            ? 'R'
+            : suffix;
         // IMPORTANTE: Los refuerzos (REFG, REFE, REFBB, etc.) NUNCA llevan sufijo P o R
         // Solo los roles normales (G, E, BB, etc.) llevan sufijo cuando están en prelight/pickup
         let role: string;
@@ -110,14 +118,19 @@ export function collectWeekTeamWithSuffixFactory(
             role = 'REF';
           }
         } else {
-          // Roles normales: añadir sufijo (G -> GP, E -> EP, etc.)
-          role = `${m.role || ''}${suffix}`;
+          // Roles normales: añadir sufijo solo si el source lo indica
+          const baseRole = String(m.role || '');
+          if (!sourceSuffix) {
+            role = baseRole.replace(/[PR]$/, '');
+          } else {
+            role = baseRole.endsWith(sourceSuffix) ? baseRole : `${baseRole}${sourceSuffix}`;
+          }
         }
         const name = m.name || '';
         const key = `${role}__${name}`;
         if (!set.has(key)) {
           set.add(key);
-          out.push({ role, name, gender: (m as any)?.gender });
+          out.push({ role, name, gender: (m as any)?.gender, source: (m as any)?.source });
         }
       }
     }
@@ -381,9 +394,19 @@ export function buildPeoplePre(
           continue;
         }
       } else {
-        // Roles normales: añadir sufijo P si no lo tiene
-        const roleStr = m.role || '';
-        finalRole = roleStr.endsWith('P') ? roleStr : `${roleStr}P`;
+        // Roles normales: añadir sufijo P solo si el source lo indica
+        const roleStr = String(m.role || '');
+        const sourceSuffix =
+          (m as any)?.source === 'base'
+            ? ''
+            : (m as any)?.source === 'pick'
+            ? 'R'
+            : 'P';
+        if (!sourceSuffix) {
+          finalRole = roleStr.replace(/[PR]$/, '');
+        } else {
+          finalRole = roleStr.endsWith(sourceSuffix) ? roleStr : `${roleStr}${sourceSuffix}`;
+        }
         const item: PersonaWithBlock = { role: finalRole, name: m.name, gender: (m as any)?.gender, __block: 'pre' };
         const key = `${item.role}__${item.name}__${item.__block || ''}`;
         if (!seen.has(key)) {
@@ -504,8 +527,19 @@ export function buildPeoplePick(
           continue;
         }
       } else {
-        // Roles normales: añadir sufijo R si no lo tiene
-        finalRole = (m.role || '').endsWith('R') ? (m.role || '') : `${m.role || ''}R`;
+        // Roles normales: añadir sufijo R solo si el source lo indica
+        const roleStr = String(m.role || '');
+        const sourceSuffix =
+          (m as any)?.source === 'base'
+            ? ''
+            : (m as any)?.source === 'pre'
+            ? 'P'
+            : 'R';
+        if (!sourceSuffix) {
+          finalRole = roleStr.replace(/[PR]$/, '');
+        } else {
+          finalRole = roleStr.endsWith(sourceSuffix) ? roleStr : `${roleStr}${sourceSuffix}`;
+        }
         const item: PersonaWithBlock = { role: finalRole, name: m.name, gender: (m as any)?.gender, __block: 'pick' };
         const key = `${item.role}__${item.name}__${item.__block || ''}`;
         if (!seen.has(key)) {

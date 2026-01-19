@@ -24,7 +24,9 @@ export function weekToPersonas(week: AnyRecord): AnyRecord[] {
     for (const { key, suffix } of SOURCES) {
       for (const m of (day[key] as AnyRecord[]) || []) {
         const baseRole = m.role || '';
-        const role = baseRole ? `${baseRole}${suffix}` : '';
+        const sourceSuffix =
+          m.source === 'pre' ? 'P' : m.source === 'pick' ? 'R' : '';
+        const role = baseRole ? `${baseRole}${sourceSuffix || suffix}` : '';
         // Generar nombre por defecto si no hay nombre
         const name = m.name || `Persona_${baseRole || 'UNKNOWN'}`;
         const id = `${role}__${name}`;

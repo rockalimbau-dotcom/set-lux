@@ -140,7 +140,7 @@ export function AddPrelightDropdown({
                   badge = `${badge}P`;
                 }
                 const displayRole = applyGenderToBadge(badge, p.gender);
-                const optionValue = `${p.role}::${p.name}::pre`;
+                const optionValue = `${p.role}::${p.name}::${p.source || 'pre'}`;
                 return (
                   <button
                     key={`${p.role}-${p.name}-${ii}`}

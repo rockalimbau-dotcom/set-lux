@@ -140,7 +140,7 @@ export function AddPickupDropdown({
                   badge = `${badge}R`;
                 }
                 const displayRole = applyGenderToBadge(badge, p.gender);
-                const optionValue = `${p.role}::${p.name}::pick`;
+                const optionValue = `${p.role}::${p.name}::${p.source || 'pick'}`;
                 return (
                   <button
                     key={`${p.role}-${p.name}-${ii}`}
