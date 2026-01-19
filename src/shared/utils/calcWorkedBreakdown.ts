@@ -81,19 +81,9 @@ export function calcWorkedBreakdown(
         break;
       }
       
-      // Determinar el tipo de jornada a usar (prelight/pickup específico o general)
-      let dayTypeForSkip = day?.tipo || '';
-      if (wantedSuffix === 'P' && day?.prelightTipo) {
-        dayTypeForSkip = day.prelightTipo;
-      } else if (wantedSuffix === 'R' && day?.pickupTipo) {
-        dayTypeForSkip = day.pickupTipo;
-      }
-      
-      // Saltar si es Descanso o Fin (usando el tipo específico si existe)
-      if (dayTypeForSkip === 'Descanso' || dayTypeForSkip === 'Fin') continue;
-
       // Verificar si la persona está trabajando en este día (en team, prelight o pickup)
       let isWorking = false;
+      let activeSource: 'team' | 'prelight' | 'pickup' | null = null;
       // Si el rol es REF o empieza con REF (REFG, REFBB, etc.), usar lógica de refuerzo
       if (wantedRole === 'REF' || (wantedRole && wantedRole.startsWith('REF') && wantedRole.length > 3)) {
         const anyRef = (arr: any[]) =>
@@ -103,21 +93,49 @@ export function calcWorkedBreakdown(
             return nameEq(m?.name) && isRefRole;
           });
         isWorking = anyRef(day?.team) || anyRef(day?.prelight) || anyRef(day?.pickup);
+        if (isWorking) activeSource = 'team';
       } else {
-        const list =
-          wantedSuffix === 'P'
-            ? day?.prelight
-            : wantedSuffix === 'R'
-            ? day?.pickup
-            : day?.team;
-        isWorking = (list || []).some((m: any) => {
-          if (!nameEq(m?.name)) return false;
-          const mBase = String(m?.role || '').replace(/[PR]$/, '');
-          return !m?.role || !wantedBase || mBase === wantedBase;
-        });
+        const matches = (list: any[]) =>
+          (list || []).some((m: any) => {
+            if (!nameEq(m?.name)) return false;
+            const mBase = String(m?.role || '').replace(/[PR]$/, '');
+            return !m?.role || !wantedBase || mBase === wantedBase;
+          });
+
+        const inTeam = matches(day?.team);
+        const inPre = matches(day?.prelight);
+        const inPick = matches(day?.pickup);
+
+        if (wantedSuffix === 'P') {
+          isWorking = inPre;
+          activeSource = inPre ? 'prelight' : null;
+        } else if (wantedSuffix === 'R') {
+          isWorking = inPick;
+          activeSource = inPick ? 'pickup' : null;
+        } else {
+          isWorking = inTeam || inPre || inPick;
+          if (inTeam) activeSource = 'team';
+          else if (inPre) activeSource = 'prelight';
+          else if (inPick) activeSource = 'pickup';
+        }
       }
       
       if (!isWorking) continue;
+
+      // Determinar el tipo de jornada a usar (prelight/pickup específico o general)
+      let dayTypeForSkip = day?.tipo || '';
+      if (wantedSuffix === 'P' && day?.prelightTipo) {
+        dayTypeForSkip = day.prelightTipo;
+      } else if (wantedSuffix === 'R' && day?.pickupTipo) {
+        dayTypeForSkip = day.pickupTipo;
+      } else if (activeSource === 'prelight' && day?.prelightTipo) {
+        dayTypeForSkip = day.prelightTipo;
+      } else if (activeSource === 'pickup' && day?.pickupTipo) {
+        dayTypeForSkip = day.pickupTipo;
+      }
+      
+      // Saltar si es Descanso o Fin (usando el tipo específico si existe)
+      if (dayTypeForSkip === 'Descanso' || dayTypeForSkip === 'Fin') continue;
         
       // Contar por tipo de día según planificación
       // Si es prelight o pickup, usar su tipo específico, sino usar el tipo del día principal
@@ -125,6 +143,10 @@ export function calcWorkedBreakdown(
       if (wantedSuffix === 'P' && day?.prelightTipo) {
         dayType = day.prelightTipo;
       } else if (wantedSuffix === 'R' && day?.pickupTipo) {
+        dayType = day.pickupTipo;
+      } else if (activeSource === 'prelight' && day?.prelightTipo) {
+        dayType = day.prelightTipo;
+      } else if (activeSource === 'pickup' && day?.pickupTipo) {
         dayType = day.pickupTipo;
       }
       
@@ -201,8 +223,8 @@ export function calcWorkedBreakdown(
       }
       
       // Mantener compatibilidad con código existente
-      if (wantedSuffix === 'P') workedPre += 1;
-      else if (wantedSuffix === 'R') workedPick += 1;
+      if (activeSource === 'prelight') workedPre += 1;
+      else if (activeSource === 'pickup') workedPick += 1;
       else workedBase += 1;
     }
   }

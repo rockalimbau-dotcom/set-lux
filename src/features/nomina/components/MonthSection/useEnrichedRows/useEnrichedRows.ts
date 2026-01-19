@@ -90,6 +90,8 @@ export function useEnrichedRows({
       const originalRole = r.role || '';
       const hasP = originalRole.endsWith('P') || originalRole.endsWith('p');
       const hasR = originalRole.endsWith('R') || originalRole.endsWith('r');
+      const needsPrelightPrice = !hasP && !hasR && workedPre > 0 && workedBase === 0 && workedPick === 0;
+      const needsPickupPrice = !hasP && !hasR && workedPick > 0 && workedBase === 0 && workedPre === 0;
       
       // Si el rol empieza con "REF" (REFG, REFBB, etc.) o está en refuerzoSet, usar lógica de refuerzo
       const isRefuerzo = (r.role && r.role.startsWith('REF') && r.role.length > 3) || refuerzoSet.has(keyNoPR);
@@ -111,10 +113,10 @@ export function useEnrichedRows({
       // getForRole normaliza el rol y busca en las tablas, así que podemos pasar el nombre con sufijo
       let roleForPriceLookup = baseRoleLabel;
       if (!isRefuerzo) {
-        if (hasP) {
+        if (hasP || needsPrelightPrice) {
           // Añadir sufijo P al nombre del rol (ej: "GafferP")
           roleForPriceLookup = `${baseRoleLabel}P`;
-        } else if (hasR) {
+        } else if (hasR || needsPickupPrice) {
           // Añadir sufijo R al nombre del rol (ej: "GafferR")
           roleForPriceLookup = `${baseRoleLabel}R`;
         }
@@ -134,6 +136,7 @@ export function useEnrichedRows({
       
       // Determinar role display
       const roleDisplay = determineRoleDisplay(r.role, baseRoleCode, workedBase, workedPre, workedPick);
+      const roleForBadge = isRefuerzo ? originalRoleForBadge : roleDisplay;
 
       // Obtener override de ventana contable si existe
       const pKey = `${r.role}__${r.name}`;
@@ -248,7 +251,7 @@ export function useEnrichedRows({
       return {
         ...r,
         role: roleDisplay,
-        _originalRole: originalRoleForBadge, // Preservar rol original para el badge
+        _originalRole: roleForBadge, // Mostrar sufijo P/R cuando aplique
         extras: extrasValue,
         horasExtra: horasExtraValue,
         turnAround: turnAroundValue,

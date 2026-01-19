@@ -77,8 +77,8 @@ export function weekAllPeopleActive(week: any): { role: string; name: string; ge
 
   for (const d of week?.days || []) {
     for (const m of d?.team || []) push(m.role || '', m.name || '', m.gender);
-    for (const m of d?.prelight || []) push(`${m.role || ''}P`, m.name || '', m.gender);
-    for (const m of d?.pickup || []) push(`${m.role || ''}R`, m.name || '', m.gender);
+    for (const m of d?.prelight || []) push(m.role || '', m.name || '', m.gender);
+    for (const m of d?.pickup || []) push(m.role || '', m.name || '', m.gender);
   }
   return out;
 }

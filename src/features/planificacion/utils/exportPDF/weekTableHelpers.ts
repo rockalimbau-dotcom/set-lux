@@ -62,9 +62,9 @@ export function generateWeekTable({
   const dayNames = [0, 1, 2, 3, 4, 5, 6].map(getDayNameShort);
   
   const meaningfulDays = DAYS.map((_, i) => hasMeaningfulData(week.days?.[i]));
-  const filteredDays = DAYS.filter((_, i) => meaningfulDays[i]);
-  const filteredDateRow = filteredDays.map((_, i) => {
-    const originalIndex = DAYS.findIndex((_, idx) => meaningfulDays[idx] && idx >= i);
+  const filteredIndexes = DAYS.map((_, i) => (meaningfulDays[i] ? i : null))
+    .filter((value): value is number => value !== null);
+  const filteredDateRow = filteredIndexes.map(originalIndex => {
     const dayDate = addDays(monday, originalIndex);
     const dayName = dayNames[originalIndex];
     const dayNumber = dayDate.getDate();
@@ -83,8 +83,7 @@ export function generateWeekTable({
   const headHorario = `
       <tr>
         <th style="border:1px solid #999;padding:6px;text-align:left;background:#1e40af;color:#fff;">${esc(getTranslation('planning.schedule', 'Horario'))}</th>
-        ${filteredDays.map((_, i) => {
-          const originalIndex = DAYS.findIndex((_, idx) => meaningfulDays[idx] && idx >= i);
+        ${filteredIndexes.map(originalIndex => {
           const day = week.days?.[originalIndex];
           const schedule = day?.start && day?.end ? `${day.start}-${day.end}` : getTranslation('reports.addInPlanning', 'Añadelo en Planificación');
           return `<th style="border:1px solid #999;padding:6px;text-align:left;background:#1e40af;color:#fff;">${esc(schedule)}</th>`;
@@ -160,8 +159,7 @@ export function generateWeekTable({
   ];
 
   const conceptosConDatos = concepts.filter(concepto => {
-    return filteredDays.some((_, i) => {
-      const originalIndex = DAYS.findIndex((_, idx) => meaningfulDays[idx] && idx >= i);
+    return filteredIndexes.some(originalIndex => {
       const value = concepto.getter(originalIndex);
       if (!value) return false;
       
@@ -176,8 +174,7 @@ export function generateWeekTable({
   const body = conceptosConDatos.map(concepto => `
       <tr>
         <td style="border:1px solid #999;padding:6px;">${esc(concepto.key)}</td>
-        ${filteredDays.map((_, i) => {
-          const originalIndex = DAYS.findIndex((_, idx) => meaningfulDays[idx] && idx >= i);
+        ${filteredIndexes.map(originalIndex => {
           return `<td style="border:1px solid #999;padding:6px;">${esc(concepto.getter(originalIndex))}</td>`;
         }).join('')}
       </tr>`

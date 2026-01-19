@@ -356,8 +356,8 @@ describe('nomina/utils/plan', () => {
       expect(result).toHaveLength(4);
       expect(result).toContainEqual({ role: 'G', name: 'John' });
       expect(result).toContainEqual({ role: 'E', name: 'Jane' });
-      expect(result).toContainEqual({ role: 'GP', name: 'Bob' });
-      expect(result).toContainEqual({ role: 'ER', name: 'Alice' });
+      expect(result).toContainEqual({ role: 'G', name: 'Bob' });
+      expect(result).toContainEqual({ role: 'E', name: 'Alice' });
     });
 
     it('removes duplicates', () => {
@@ -373,10 +373,8 @@ describe('nomina/utils/plan', () => {
 
       const result = weekAllPeopleActive(week);
 
-      expect(result).toHaveLength(3); // team, prelight, pickup are separate
+      expect(result).toHaveLength(1); // team, prelight, pickup are merged
       expect(result).toContainEqual({ role: 'G', name: 'John' });
-      expect(result).toContainEqual({ role: 'GP', name: 'John' });
-      expect(result).toContainEqual({ role: 'GR', name: 'John' });
     });
 
     it('handles empty week', () => {
