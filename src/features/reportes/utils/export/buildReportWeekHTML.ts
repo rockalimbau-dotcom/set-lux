@@ -62,8 +62,14 @@ export function buildReportWeekHTML({
   const sortedPersonKeys = sortPersonKeysByRole(Object.keys(finalData || {}));
 
 
-  // Export: always show all days, concepts and persons even if empty
-  const safeSemanaWithData = [...safeSemana];
+  const restLabel = getTranslation('reports.rest', 'DESCANSO');
+  const safeSemanaWithData = safeSemana.filter(iso => {
+    const dayLabel = horarioTexto(iso);
+    if (dayLabel !== restLabel) return true;
+    return Object.values(finalData || {}).some((person: any) =>
+      isMeaningfulValue(person?.Dietas?.[iso])
+    );
+  });
   const conceptosConDatos = [...CONCEPTS];
   const finalPersonKeys = sortedPersonKeys;
 
@@ -126,6 +132,7 @@ export function buildReportWeekHTML({
 
       const rows = conceptosConDatos
         .filter(c => {
+          if (c === 'Dietas') return true;
           // Only show concepts that have meaningful data for this person
           return safeSemanaWithData.some(iso => {
             const value = finalData?.[pk]?.[c]?.[iso];

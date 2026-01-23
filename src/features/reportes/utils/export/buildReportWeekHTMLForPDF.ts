@@ -1,5 +1,5 @@
 import { BuildReportWeekHTMLParams } from './types';
-import { deduplicateData } from './dataHelpers';
+import { deduplicateData, isMeaningfulValue } from './dataHelpers';
 import { esc } from './htmlHelpers';
 import { getTranslation } from './translationHelpers';
 import { groupAndSortPersonsByBlock } from './buildReportWeekHTMLForPDF/sortingHelpers';
@@ -43,8 +43,14 @@ export function buildReportWeekHTMLForPDF({
   }
 
 
-  // Export: always show all days and concepts even if empty
-  const safeSemanaWithData = [...safeSemana];
+  const restLabel = getTranslation('reports.rest', 'DESCANSO');
+  const safeSemanaWithData = safeSemana.filter(iso => {
+    const dayLabel = horarioTexto(iso);
+    if (dayLabel !== restLabel) return true;
+    return Object.values(finalData || {}).some((person: any) =>
+      isMeaningfulValue(person?.Dietas?.[iso])
+    );
+  });
   const conceptosConDatos = [...CONCEPTS];
 
 

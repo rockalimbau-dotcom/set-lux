@@ -1,5 +1,4 @@
 import { useMemo } from 'react';
-import { isWeekend } from './horarioHelpers';
 
 interface UseFilteredSemanaProps {
   safeSemana: string[];
@@ -18,17 +17,7 @@ export function useFilteredSemana({
   horarioPickup,
 }: UseFilteredSemanaProps): string[] {
   return useMemo(() => {
-    return safeSemana.filter(iso => {
-      const dayLabel = horarioTexto(iso);
-      if (dayLabel === 'DESCANSO' && isWeekend(iso)) {
-        const hasPrelight = horarioPrelight(iso) !== '—';
-        const hasPickup = horarioPickup(iso) !== '—';
-        if (!hasPrelight && !hasPickup) {
-          return false;
-        }
-      }
-      return true;
-    });
-  }, [safeSemana, horarioTexto, horarioPrelight, horarioPickup]);
+    return safeSemana;
+  }, [safeSemana]);
 }
 

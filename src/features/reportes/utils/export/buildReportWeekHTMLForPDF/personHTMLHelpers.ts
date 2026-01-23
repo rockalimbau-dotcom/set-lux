@@ -158,6 +158,7 @@ function generatePersonConceptRows(
 ): string {
   return conceptosConDatos
     .filter(c => {
+      if (c === 'Dietas') return true;
       // Only show concepts that have meaningful data for this person
       return safeSemanaWithData.some(iso => {
         const value = finalData?.[pk]?.[c]?.[iso];
