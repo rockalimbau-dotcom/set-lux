@@ -288,7 +288,8 @@
       "dietNoOvernight": "Diet without overnight",
       "dietFullBreakfast": "Full diet + breakfast",
       "pocketExpenses": "Pocket expenses",
-      "ticket": "Ticket"
+      "ticket": "Ticket",
+      "other": "Other"
     },
     "dayTypes": {
       "location": "Location",
@@ -582,6 +583,7 @@
     "exportWeekPDF": "Export week (PDF)",
     "weekContent": "Week content",
     "selectDiet": "Select diet",
+    "otherAmount": "Other amount",
     "concepts": {
       "extraHours": "Extra hours",
       "turnAround": "Turn Around",
@@ -591,6 +593,7 @@
       "mileage": "Mileage",
       "transportation": "Transports"
     },
+    "kilometrajeHint": "(enter specific km)",
     "dietOptions": {
       "empty": "",
       "lunch": "Lunch",
@@ -598,7 +601,8 @@
       "dietNoOvernight": "Diet without overnight",
       "dietWithOvernight": "Diet with overnight",
       "pocketExpenses": "Pocket expenses",
-      "ticket": "Ticket"
+      "ticket": "Ticket",
+      "other": "Other"
     },
     "dietOptionsAdvertising": {
       "empty": "",
@@ -607,7 +611,8 @@
       "dietNoOvernight": "Diet without overnight",
       "dietWithOvernight": "Diet with overnight",
       "pocketExpenses": "Pocket expenses",
-      "ticket": "Ticket"
+      "ticket": "Ticket",
+      "other": "Other"
     },
     "yesNo": {
       "empty": "",

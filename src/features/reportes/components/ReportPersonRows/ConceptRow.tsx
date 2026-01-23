@@ -51,7 +51,14 @@ export function ConceptRow({
   return (
     <tr id={`person-${pKey}-rows`}>
       <Td className='whitespace-nowrap align-middle'>
-        <div className='text-[9px] sm:text-[10px] md:text-xs text-zinc-300'>{translateConcept(concepto, t)}</div>
+        <div className='text-[9px] sm:text-[10px] md:text-xs text-zinc-300'>
+          {translateConcept(concepto, t)}
+        </div>
+        {concepto === 'Kilometraje' && (
+          <div className='text-[8px] sm:text-[9px] md:text-[10px] text-black dark:text-white'>
+            {t('reports.kilometrajeHint')}
+          </div>
+        )}
       </Td>
 
       {semana.map(fecha => {

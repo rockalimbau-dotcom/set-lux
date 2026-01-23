@@ -18,6 +18,7 @@ export const DIETAS_OPCIONES: readonly string[] = [
   'Dieta con pernocta',
   'Gastos de bolsillo',
   'Ticket',
+  'Otros',
 ] as const;
 
 export const DIETAS_OPCIONES_DIARIO: readonly string[] = [
@@ -28,6 +29,7 @@ export const DIETAS_OPCIONES_DIARIO: readonly string[] = [
   'Dieta con pernocta',
   'Gastos de bolsillo',
   'Ticket',
+  'Otros',
 ] as const;
 
 export const SI_NO: readonly string[] = ['', 'SI'] as const;

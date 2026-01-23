@@ -44,11 +44,12 @@ export function parseHorasExtra(input: unknown): number {
   return parseNum(input);
 }
 
-export function parseDietasValue(raw: unknown): { labels: string[]; ticket: number } {
-  if (!raw) return { labels: [], ticket: 0 };
+export function parseDietasValue(raw: unknown): { labels: string[]; ticket: number; other: number } {
+  if (!raw) return { labels: [], ticket: 0, other: 0 };
 
   let labels: string[] = [];
   let ticket = 0;
+  let other = 0;
 
   const addToken = (s: unknown) => {
     const t = String(s).trim();
@@ -70,10 +71,31 @@ export function parseDietasValue(raw: unknown): { labels: string[]; ticket: numb
       labels.push('Ticket');
       return;
     }
+
+    // Buscar formato Otros(22.5) o Otros(22,5)
+    const otherMatch = t.match(/^Otros\s*\(([-+]?\d+(?:[\.,]\d+)?)\)$/i) ||
+                       t.match(/^Otros\s*:\s*([-+]?\d+(?:[\.,]\d+)?)$/i) ||
+                       t.match(/^Otros\s+([-+]?\d+(?:[\.,]\d+)?)$/i);
+
+    if (otherMatch) {
+      const numStr = otherMatch[1].replace(',', '.');
+      const num = parseFloat(numStr);
+      if (!isNaN(num) && isFinite(num)) {
+        other += num;
+      }
+      labels.push('Otros');
+      return;
+    }
     
     // También buscar si el token completo es "Ticket" sin paréntesis ni precio
     if (t.toLowerCase() === 'ticket') {
       labels.push('Ticket');
+      return;
+    }
+
+    // Token "Otros" sin precio
+    if (t.toLowerCase() === 'otros') {
+      labels.push('Otros');
       return;
     }
     
@@ -142,6 +164,11 @@ export function parseDietasValue(raw: unknown): { labels: string[]; ticket: numb
     if (t.startsWith('ticket') || t === 'bitllet') {
       return 'Ticket';
     }
+
+    // Normalizar Otros (reconocer traducciones: otros, other, altres)
+    if (t === 'otros' || t === 'other' || t === 'altres') {
+      return 'Otros';
+    }
     
     return s;
   };
@@ -155,7 +182,7 @@ export function parseDietasValue(raw: unknown): { labels: string[]; ticket: numb
       uniq.push(l);
     }
   }
-  return { labels: uniq, ticket };
+  return { labels: uniq, ticket, other };
 }
 
 

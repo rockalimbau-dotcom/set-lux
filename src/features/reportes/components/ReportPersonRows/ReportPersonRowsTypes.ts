@@ -12,8 +12,8 @@ export interface DietasCellProps {
   dropdownKey: string;
   dropdownState: { isOpen: boolean; hoveredOption: string | null; isButtonHovered: boolean };
   setDropdownState: (key: string, updates: Partial<{ isOpen: boolean; hoveredOption: string | null; isButtonHovered: boolean }>) => void;
-  parseDietas: (raw: string) => { items: Set<string>; ticket: number | null };
-  formatDietas: (items: Set<string>, ticket: number | null) => string;
+  parseDietas: (raw: string) => { items: Set<string>; ticket: number | null; other: number | null };
+  formatDietas: (items: Set<string>, ticket: number | null, other: number | null) => string;
   dietasOptions: string[];
   setCell: (pKey: string, concepto: string, fecha: string, value: any) => void;
 }
@@ -48,8 +48,8 @@ export interface ReportPersonRowsProps {
   CONCEPTS: readonly string[];
   DIETAS_OPCIONES: readonly (string | null)[];
   SI_NO: readonly string[];
-  parseDietas: (raw: string) => { items: Set<string>; ticket: number | null };
-  formatDietas: (items: Set<string>, ticket: number | null) => string;
+  parseDietas: (raw: string) => { items: Set<string>; ticket: number | null; other: number | null };
+  formatDietas: (items: Set<string>, ticket: number | null, other: number | null) => string;
   horasExtraTipo?: string;
   readOnly?: boolean;
 }

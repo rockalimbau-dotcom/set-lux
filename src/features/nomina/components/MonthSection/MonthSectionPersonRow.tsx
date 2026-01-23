@@ -251,6 +251,7 @@ export function MonthSectionPersonRow({
           <DietasSummary
             dietasCount={r.dietasCount}
             ticketTotal={r.ticketTotal}
+            otherTotal={r.otherTotal}
           />
           </div>
         </Td>

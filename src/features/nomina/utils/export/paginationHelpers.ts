@@ -67,6 +67,7 @@ export const calculatePagination = (
     const hasDietas =
       (row._totalDietas || 0) > 0 ||
       (row.ticketTotal || 0) > 0 ||
+      (row.otherTotal || 0) > 0 ||
       (row.dietasCount && row.dietasCount.size > 0);
     const dietasLines = hasDietas ? 2 : 1;
     

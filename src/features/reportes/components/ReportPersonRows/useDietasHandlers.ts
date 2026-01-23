@@ -7,8 +7,8 @@ interface UseDietasHandlersProps {
   concepto: string;
   fecha: string;
   readOnly: boolean;
-  parseDietas: (raw: string) => { items: Set<string>; ticket: number | null };
-  formatDietas: (items: Set<string>, ticket: number | null) => string;
+  parseDietas: (raw: string) => { items: Set<string>; ticket: number | null; other: number | null };
+  formatDietas: (items: Set<string>, ticket: number | null, other: number | null) => string;
   setCell: (pKey: string, concepto: string, fecha: string, value: any) => void;
 }
 
@@ -26,19 +26,22 @@ function normalizeDietaToOriginal(translated: string): string {
   if (t.includes('diet with overnight') || t.includes('dieta amb pernocta') || t.includes('dieta con pernocta') || t.includes('full diet') || t.includes('dieta completa')) return 'Dieta con pernocta';
   if (t === 'pocket expenses' || t === 'despeses de butxaca' || t.startsWith('gastos')) return 'Gastos de bolsillo';
   if (t === 'ticket' || t === 'bitllet') return 'Ticket';
+  if (t === 'otros' || t === 'other' || t === 'altres') return 'Otros';
   
   // Si no coincide con ninguna traducción, devolver el valor original (por si ya está normalizado)
   return translated;
 }
 
 interface UseDietasHandlersReturn {
-  parsed: { items: Set<string>; ticket: number | null };
+  parsed: { items: Set<string>; ticket: number | null; other: number | null };
   itemToRemove: string | null;
   setItemToRemove: (item: string | null) => void;
   handleAddItem: (item: string) => void;
   handleRemoveItem: (item: string) => void;
   handleRemoveTicket: () => void;
   handleTicketChange: (value: string) => void;
+  handleRemoveOther: () => void;
+  handleOtherChange: (value: string) => void;
 }
 
 /**
@@ -69,7 +72,10 @@ export function useDietasHandlers({
     const ticketPrice = items.has('Ticket') 
       ? (normalizedItem === 'Ticket' && !wasAlreadyAdded ? null : parsed.ticket)
       : null;
-    const newStr = formatDietas(items, ticketPrice);
+    const otherPrice = items.has('Otros')
+      ? (normalizedItem === 'Otros' && !wasAlreadyAdded ? null : parsed.other)
+      : null;
+    const newStr = formatDietas(items, ticketPrice, otherPrice);
     setCell(pKey, concepto, fecha, newStr);
   };
 
@@ -83,7 +89,8 @@ export function useDietasHandlers({
     
     const newStr = formatDietas(
       items,
-      items.has('Ticket') ? currentParsed.ticket : null
+      items.has('Ticket') ? currentParsed.ticket : null,
+      items.has('Otros') ? currentParsed.other : null
     );
     setCell(pKey, concepto, fecha, newStr);
     setItemToRemove(null);
@@ -94,7 +101,7 @@ export function useDietasHandlers({
     const currentParsed = parseDietas(val);
     const items = new Set(currentParsed.items);
     items.delete('Ticket');
-    const newStr = formatDietas(items, null);
+    const newStr = formatDietas(items, null, currentParsed.other);
     setCell(pKey, concepto, fecha, newStr);
     setItemToRemove(null);
   };
@@ -102,7 +109,24 @@ export function useDietasHandlers({
   const handleTicketChange = (value: string) => {
     if (readOnly) return;
     const n = value === '' ? null : Number(value);
-    const newStr = formatDietas(parsed.items, n);
+    const newStr = formatDietas(parsed.items, n, parsed.other);
+    setCell(pKey, concepto, fecha, newStr);
+  };
+
+  const handleRemoveOther = () => {
+    if (readOnly) return;
+    const currentParsed = parseDietas(val);
+    const items = new Set(currentParsed.items);
+    items.delete('Otros');
+    const newStr = formatDietas(items, currentParsed.ticket, null);
+    setCell(pKey, concepto, fecha, newStr);
+    setItemToRemove(null);
+  };
+
+  const handleOtherChange = (value: string) => {
+    if (readOnly) return;
+    const n = value === '' ? null : Number(value);
+    const newStr = formatDietas(parsed.items, parsed.ticket, n);
     setCell(pKey, concepto, fecha, newStr);
   };
 
@@ -114,6 +138,8 @@ export function useDietasHandlers({
     handleRemoveItem,
     handleRemoveTicket,
     handleTicketChange,
+    handleRemoveOther,
+    handleOtherChange,
   };
 }
 

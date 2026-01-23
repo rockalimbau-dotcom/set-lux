@@ -18,6 +18,7 @@ const mockProps = {
       km: 50,
       dietasCount: new Map([['Comida', 3]]),
       ticketTotal: 25,
+      otherTotal: 0,
     },
   ],
   weeksForMonth: [],
@@ -112,6 +113,7 @@ describe('MonthSection with holiday days and conditional columns', () => {
           km: 0, // No km
           dietasCount: new Map(), // No dietas
           ticketTotal: 0, // No ticket
+          otherTotal: 0,
         },
       ],
       calcWorkedBreakdown: () => ({
@@ -179,6 +181,7 @@ describe('MonthSection with holiday days and conditional columns', () => {
           km: 0,
           dietasCount: new Map(),
           ticketTotal: 0,
+          otherTotal: 0,
         },
       ],
       calcWorkedBreakdown: () => ({

@@ -197,7 +197,7 @@ describe('nominas/index', () => {
 
       const { parseNum, parseDietasValue, parseHorasExtra } = await import('../utils/parse.ts');
       parseNum.mockImplementation(val => Number(val) || 0);
-      parseDietasValue.mockReturnValue({ labels: ['Comida'], ticket: 0 });
+      parseDietasValue.mockReturnValue({ labels: ['Comida'], ticket: 0, other: 0 });
       parseHorasExtra.mockImplementation(val => Number(val) || 0);
 
       const result = aggregateReports(mockProject, mockWeeks);
@@ -340,7 +340,7 @@ describe('nominas/index', () => {
 
       const { parseNum, parseDietasValue, parseHorasExtra } = await import('../utils/parse.ts');
       parseNum.mockImplementation(val => Number(val) || 0);
-      parseDietasValue.mockReturnValue({ labels: ['Comida'], ticket: 0 });
+      parseDietasValue.mockReturnValue({ labels: ['Comida'], ticket: 0, other: 0 });
       parseHorasExtra.mockImplementation(val => Number(val) || 0);
 
       const result = aggregateWindowedReport(mockProject, mockWeeks, filterISO);

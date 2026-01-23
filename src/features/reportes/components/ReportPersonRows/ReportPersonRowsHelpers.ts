@@ -30,6 +30,7 @@ export const translateDietItem = (item: string, t: (key: string) => string): str
     'Dieta con pernocta': t('reports.dietOptions.dietWithOvernight'),
     'Gastos de bolsillo': t('reports.dietOptions.pocketExpenses'),
     'Ticket': t('reports.dietOptions.ticket'),
+    'Otros': t('reports.dietOptions.other'),
   };
   return itemMap[item] || item;
 };
@@ -62,7 +63,7 @@ export const calculateTotal = (
   concepto: string,
   semana: readonly string[],
   data: AnyRecord,
-  parseDietas: (raw: string) => { items: Set<string>; ticket: number | null },
+  parseDietas: (raw: string) => { items: Set<string>; ticket: number | null; other: number | null },
   horasExtraTipo?: string
 ): number | string | { breakdown: Map<string, number> } => {
   if (concepto === 'Dietas') {
@@ -72,15 +73,19 @@ export const calculateTotal = (
       const val = data?.[pKey]?.[concepto]?.[fecha] ?? '';
       if (val && val.toString().trim() !== '') {
         const parsed = parseDietas(val);
-        // Contar cada item (excepto Ticket que se maneja por separado)
+        // Contar cada item (excepto Ticket/Otros que se manejan por separado)
         parsed.items.forEach(item => {
-          if (item !== 'Ticket') {
+          if (item !== 'Ticket' && item !== 'Otros') {
             breakdown.set(item, (breakdown.get(item) || 0) + 1);
           }
         });
         // Si hay ticket, contarlo también
         if (parsed.ticket !== null) {
           breakdown.set('Ticket', (breakdown.get('Ticket') || 0) + 1);
+        }
+        // Si hay otros, contarlo también
+        if (parsed.other !== null) {
+          breakdown.set('Otros', (breakdown.get('Otros') || 0) + 1);
         }
       }
     });

@@ -287,7 +287,8 @@
       "dietNoOvernight": "Dieta sin pernoctar",
       "dietWithOvernight": "Dieta con pernocta",
       "pocketExpenses": "Gastos de bolsillo",
-      "ticket": "Ticket"
+      "ticket": "Ticket",
+      "other": "Otros"
     },
     "dayTypes": {
       "location": "Localizar",
@@ -597,6 +598,7 @@
     "exportWeekPDF": "Exportar semana (PDF)",
     "weekContent": "Contenido de la semana",
     "selectDiet": "Seleccionar dieta",
+    "otherAmount": "Importe Otros",
     "concepts": {
       "extraHours": "Horas extra",
       "turnAround": "Turn Around",
@@ -606,6 +608,7 @@
       "mileage": "Kilometraje",
       "transportation": "Transporte"
     },
+    "kilometrajeHint": "(indica km específico)",
     "dietOptions": {
       "empty": "",
       "lunch": "Comida",
@@ -613,7 +616,8 @@
       "dietNoOvernight": "Dieta sin pernoctar",
       "dietWithOvernight": "Dieta con pernocta",
       "pocketExpenses": "Gastos de bolsillo",
-      "ticket": "Ticket"
+      "ticket": "Ticket",
+      "other": "Otros"
     },
     "dietOptionsAdvertising": {
       "empty": "",
@@ -622,7 +626,8 @@
       "dietNoOvernight": "Dieta sin pernoctar",
       "dietWithOvernight": "Dieta con pernocta",
       "pocketExpenses": "Gastos de bolsillo",
-      "ticket": "Ticket"
+      "ticket": "Ticket",
+      "other": "Otros"
     },
     "yesNo": {
       "empty": "",

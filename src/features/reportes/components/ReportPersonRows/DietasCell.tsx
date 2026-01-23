@@ -36,6 +36,8 @@ const DietasCell: React.FC<DietasCellProps> = ({
     handleRemoveItem,
     handleRemoveTicket,
     handleTicketChange,
+    handleRemoveOther,
+    handleOtherChange,
   } = useDietasHandlers({
     val,
     pKey,
@@ -103,10 +105,13 @@ const DietasCell: React.FC<DietasCellProps> = ({
         <DietasItemsList
           items={parsed.items}
           ticket={parsed.ticket}
+          other={parsed.other}
           readOnly={readOnly}
           onRemoveItem={(item) => setItemToRemove(item)}
           onRemoveTicket={() => setItemToRemove('Ticket')}
+          onRemoveOther={() => setItemToRemove('Otros')}
           onTicketChange={handleTicketChange}
+          onOtherChange={handleOtherChange}
         />
       </div>
       
@@ -117,6 +122,8 @@ const DietasCell: React.FC<DietasCellProps> = ({
           onConfirm={() => {
             if (itemToRemove === 'Ticket') {
               handleRemoveTicket();
+            } else if (itemToRemove === 'Otros') {
+              handleRemoveOther();
             } else {
               handleRemoveItem(itemToRemove);
             }

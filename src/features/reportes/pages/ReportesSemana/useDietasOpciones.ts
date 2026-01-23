@@ -11,6 +11,7 @@ const OPTION_TO_TRANSLATION_KEY: Record<string, string> = {
   'Dieta con pernocta': 'dietWithOvernight',
   'Gastos de bolsillo': 'pocketExpenses',
   'Ticket': 'ticket',
+  'Otros': 'other',
 };
 
 export function useDietasOpciones(mode: 'semanal' | 'mensual' | 'diario') {

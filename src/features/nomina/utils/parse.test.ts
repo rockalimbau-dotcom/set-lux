@@ -82,6 +82,7 @@ describe('nomina/utils/parse', () => {
       expect(result).toEqual({
         labels: ['Comida'],
         ticket: 0,
+        other: 0,
       });
     });
 
@@ -90,6 +91,7 @@ describe('nomina/utils/parse', () => {
       expect(result).toEqual({
         labels: ['Comida', 'Cena'],
         ticket: 0,
+        other: 0,
       });
     });
 
@@ -98,6 +100,7 @@ describe('nomina/utils/parse', () => {
       expect(result).toEqual({
         labels: ['Comida', 'Cena', 'Dieta sin pernoctar'],
         ticket: 0,
+        other: 0,
       });
     });
 
@@ -106,6 +109,7 @@ describe('nomina/utils/parse', () => {
       expect(result).toEqual({
         labels: ['Comida', 'Cena'],
         ticket: 0,
+        other: 0,
       });
     });
 
@@ -114,6 +118,7 @@ describe('nomina/utils/parse', () => {
       expect(result).toEqual({
         labels: ['Comida', 'Ticket'],
         ticket: 1550, // parseNum converts 15.50 to 1550
+        other: 0,
       });
     });
 
@@ -122,6 +127,7 @@ describe('nomina/utils/parse', () => {
       expect(result).toEqual({
         labels: ['Comida', 'Ticket'],
         ticket: 2575, // parseNum converts 25.75 to 2575
+        other: 0,
       });
     });
 
@@ -130,6 +136,7 @@ describe('nomina/utils/parse', () => {
       expect(result).toEqual({
         labels: ['Ticket'],
         ticket: 100,
+        other: 0,
       });
     });
 
@@ -138,13 +145,14 @@ describe('nomina/utils/parse', () => {
       expect(result).toEqual({
         labels: ['Ticket', 'Comida'],
         ticket: 30, // 10 + 20
+        other: 0,
       });
     });
 
     it('handles empty input', () => {
-      expect(parseDietasValue('')).toEqual({ labels: [], ticket: 0 });
-      expect(parseDietasValue(null)).toEqual({ labels: [], ticket: 0 });
-      expect(parseDietasValue(undefined)).toEqual({ labels: [], ticket: 0 });
+      expect(parseDietasValue('')).toEqual({ labels: [], ticket: 0, other: 0 });
+      expect(parseDietasValue(null)).toEqual({ labels: [], ticket: 0, other: 0 });
+      expect(parseDietasValue(undefined)).toEqual({ labels: [], ticket: 0, other: 0 });
     });
 
     it('handles whitespace', () => {
@@ -152,6 +160,7 @@ describe('nomina/utils/parse', () => {
       expect(result).toEqual({
         labels: ['Comida', 'Cena'],
         ticket: 0,
+        other: 0,
       });
     });
 
@@ -160,6 +169,7 @@ describe('nomina/utils/parse', () => {
       expect(result).toEqual({
         labels: ['Comida', 'Cena'],
         ticket: 0,
+        other: 0,
       });
     });
 
@@ -175,6 +185,7 @@ describe('nomina/utils/parse', () => {
           'Gastos de bolsillo',
         ],
         ticket: 0,
+        other: 0,
       });
     });
 
@@ -185,6 +196,7 @@ describe('nomina/utils/parse', () => {
       expect(result).toEqual({
         labels: ['Dieta sin pernoctar', 'Gastos de bolsillo'],
         ticket: 0,
+        other: 0,
       });
     });
 
@@ -193,6 +205,7 @@ describe('nomina/utils/parse', () => {
       expect(result).toEqual({
         labels: ['Dieta completa + desayuno', 'Comida', 'Cena'],
         ticket: 0,
+        other: 0,
       });
     });
 
@@ -201,6 +214,7 @@ describe('nomina/utils/parse', () => {
       expect(result).toEqual({
         labels: ['Comida', 'Cena'],
         ticket: 0,
+        other: 0,
       });
     });
 
@@ -209,6 +223,7 @@ describe('nomina/utils/parse', () => {
       expect(result).toEqual({
         labels: ['["Comida", "Cena"'], // invalid JSON becomes a single label
         ticket: 0,
+        other: 0,
       });
     });
 
@@ -217,6 +232,7 @@ describe('nomina/utils/parse', () => {
       expect(result).toEqual({
         labels: ['{"not": "an array"}'],
         ticket: 0,
+        other: 0,
       });
     });
 
@@ -225,6 +241,7 @@ describe('nomina/utils/parse', () => {
       expect(result).toEqual({
         labels: ['Ticket', 'Comida'],
         ticket: 2590.5, // 15.50 + 25.75 = 1550 + 2575 = 4125, but parseNum converts to 2590.5
+        other: 0,
       });
     });
 
@@ -233,6 +250,7 @@ describe('nomina/utils/parse', () => {
       expect(result).toEqual({
         labels: ['Ticket'],
         ticket: 1234.56,
+        other: 0,
       });
     });
 
@@ -241,6 +259,7 @@ describe('nomina/utils/parse', () => {
       expect(result).toEqual({
         labels: ['Comida', 'invalid', 'Cena', 'Ticket'],
         ticket: 10,
+        other: 0,
       });
     });
 
@@ -262,6 +281,7 @@ describe('nomina/utils/parse', () => {
       expect(result).toEqual({
         labels: ['Comida & Cena', 'Dieta (especial)'],
         ticket: 0,
+        other: 0,
       });
     });
 
@@ -270,6 +290,7 @@ describe('nomina/utils/parse', () => {
       expect(result).toEqual({
         labels: ['123', '456', 'Ticket'],
         ticket: 789,
+        other: 0,
       });
     });
   });

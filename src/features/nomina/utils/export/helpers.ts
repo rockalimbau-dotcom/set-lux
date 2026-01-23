@@ -42,6 +42,7 @@ const translateDietItem = (item: string): string => {
     'Dieta con pernocta': i18n.t('payroll.dietOptions.dietWithOvernight'),
     'Gastos de bolsillo': i18n.t('payroll.dietOptions.pocketExpenses'),
     'Ticket': i18n.t('payroll.dietOptions.ticket'),
+    'Otros': i18n.t('payroll.dietOptions.other'),
   };
   return itemMap[item] || item;
 };
@@ -114,6 +115,7 @@ export const generateDietasText = (r: any): string => {
     'Dieta con pernocta',
     'Gastos de bolsillo',
     'Ticket',
+    'Otros',
   ];
   const parts: string[] = [];
   let totalDietas = 0;
@@ -123,6 +125,11 @@ export const generateDietasText = (r: any): string => {
       if (r.ticketTotal > 0) {
         parts.push(`${translateDietItem('Ticket')} ${r.ticketTotal.toFixed(2)}€`);
         totalDietas += 1; // Contar ticket como 1 dieta
+      }
+    } else if (label === 'Otros') {
+      if ((r.otherTotal || 0) > 0) {
+        parts.push(`${translateDietItem('Otros')} ${Number(r.otherTotal || 0).toFixed(2)}€`);
+        totalDietas += 1; // Contar otros como 1 dieta
       }
     } else {
       const cnt = r.dietasCount?.get(label) || 0;

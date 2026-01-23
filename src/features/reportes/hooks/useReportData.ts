@@ -104,18 +104,23 @@ export default function useReportData(
       // Parsear el valor de dietas para separar items del precio del ticket
       const parsed = parseDietas(valor);
       
-      // Si solo se añadió o modificó "Ticket", NO sincronizar con otras personas
-      // Ticket es completamente individual
-      const onlyTicketChanged = parsed.items.size === 1 && parsed.items.has('Ticket');
+      // Si solo se añadió o modificó "Ticket" u "Otros", NO sincronizar con otras personas
+      // Ticket/Otros son completamente individuales
+      const itemsWithoutIndividual = new Set(parsed.items);
+      itemsWithoutIndividual.delete('Ticket');
+      itemsWithoutIndividual.delete('Otros');
+      const onlyIndividualChanged = itemsWithoutIndividual.size === 0;
       
       // Detectar si es una eliminación comparando con el valor anterior
       const previousParsed = parseDietas(previousVal);
       // Es una eliminación si el nuevo valor tiene menos items (excluyendo Ticket) que el anterior
-      const previousItemsWithoutTicket = new Set(previousParsed.items);
-      previousItemsWithoutTicket.delete('Ticket');
-      const currentItemsWithoutTicket = new Set(parsed.items);
-      currentItemsWithoutTicket.delete('Ticket');
-      const isRemoval = currentItemsWithoutTicket.size < previousItemsWithoutTicket.size;
+      const previousItemsWithoutIndividual = new Set(previousParsed.items);
+      previousItemsWithoutIndividual.delete('Ticket');
+      previousItemsWithoutIndividual.delete('Otros');
+      const currentItemsWithoutIndividual = new Set(parsed.items);
+      currentItemsWithoutIndividual.delete('Ticket');
+      currentItemsWithoutIndividual.delete('Otros');
+      const isRemoval = currentItemsWithoutIndividual.size < previousItemsWithoutIndividual.size;
       
       // NO sincronizar si es una eliminación (solo sincronizar adiciones)
       if (isRemoval) {
@@ -161,7 +166,7 @@ export default function useReportData(
             const existingParsed = parseDietas(existingVal);
             
             // Si solo se cambió Ticket, NO sincronizar nada (Ticket es individual)
-            if (onlyTicketChanged) {
+            if (onlyIndividualChanged) {
               // No hacer nada, mantener el valor existente de la otra persona
               continue;
             }
@@ -169,15 +174,20 @@ export default function useReportData(
             // Sincronizar solo los items de dietas (Comida, Cena, etc.), pero NO Ticket
             // Cada persona debe tener su propio ticket (individual)
             const syncedItems = new Set(parsed.items);
-            // Excluir Ticket del sincronizado - cada persona mantiene su propio Ticket
+            // Excluir Ticket y Otros del sincronizado - cada persona mantiene los suyos
             syncedItems.delete('Ticket');
-            // Si la persona destino ya tenía Ticket, mantenerlo
+            syncedItems.delete('Otros');
+            // Si la persona destino ya tenía Ticket/Otros, mantenerlos
             if (existingParsed.items.has('Ticket')) {
               syncedItems.add('Ticket');
             }
-            // Mantener el precio del ticket existente de esta persona (o null si no tiene)
+            if (existingParsed.items.has('Otros')) {
+              syncedItems.add('Otros');
+            }
+            // Mantener precios existentes de Ticket/Otros (individuales)
             const ticketPrice = existingParsed.ticket;
-            const syncedValue = formatDietas(syncedItems, ticketPrice);
+            const otherPrice = existingParsed.other;
+            const syncedValue = formatDietas(syncedItems, ticketPrice, otherPrice);
             copy[k]['Dietas'][fecha] = syncedValue;
           }
         }

@@ -37,7 +37,8 @@ export function calculateTotalDietas(
   effectivePr: {
     dietas: Record<string, number>;
   },
-  ticketValue: number
+  ticketValue: number,
+  otherValue: number
 ): number {
   const cnt = (label: string) => dietasMap.get(label) || 0;
   return (
@@ -47,7 +48,8 @@ export function calculateTotalDietas(
     cnt('Dieta sin pernoctar') * (effectivePr.dietas['Dieta sin pernoctar'] || 0) +
     cnt('Dieta con pernocta') * (effectivePr.dietas['Dieta con pernocta'] || 0) +
     cnt('Gastos de bolsillo') * (effectivePr.dietas['Gastos de bolsillo'] || 0) +
-    (ticketValue || 0)
+    (ticketValue || 0) +
+    (otherValue || 0)
   );
 }
 
@@ -56,7 +58,8 @@ export function calculateTotalDietas(
  */
 export function buildDietasLabel(
   dietasMap: Map<string, number>,
-  ticketValue: number
+  ticketValue: number,
+  otherValue: number
 ): string {
   const dietasLabelParts: string[] = [];
   const cnt = (label: string) => dietasMap.get(label) || 0;
@@ -77,6 +80,8 @@ export function buildDietasLabel(
     );
   if (ticketValue > 0)
     dietasLabelParts.push(`Ticket €${(ticketValue || 0).toFixed(2)}`);
+  if (otherValue > 0)
+    dietasLabelParts.push(`Otros €${(otherValue || 0).toFixed(2)}`);
 
   return dietasLabelParts.join(' · ') || '—';
 }
@@ -103,6 +108,7 @@ export function detectMissingPrices(
     descarga?: number;
     dietasMap?: Map<string, number>;
     ticketValue?: number;
+    otherValue?: number;
     totalDiasTrabajados?: number;
     priceDays?: number;
     precioMensual?: number;
@@ -179,9 +185,9 @@ export function detectMissingPrices(
     
     const cnt = (label: string) => (data.dietasMap?.get(label) || 0);
     const hasDietasData = cnt('Comida') > 0 || cnt('Cena') > 0 || 
-                          cnt('Dieta sin pernoctar') > 0 || cnt('Dieta con pernocta') > 0 ||                           cnt('Gastos de bolsillo') > 0 || (data.ticketValue || 0) > 0;
+                          cnt('Dieta sin pernoctar') > 0 || cnt('Dieta con pernocta') > 0 ||                           cnt('Gastos de bolsillo') > 0 || (data.ticketValue || 0) > 0 || (data.otherValue || 0) > 0;
     if (hasDietasData) {
-      const totalDietas = calculateTotalDietas(data.dietasMap || new Map(), effectivePr, data.ticketValue || 0);
+      const totalDietas = calculateTotalDietas(data.dietasMap || new Map(), effectivePr, data.ticketValue || 0, data.otherValue || 0);
       if (totalDietas === 0) {
         const allDietasPricesZero = 
           (effectivePr.dietas['Comida'] || 0) === 0 &&
@@ -231,9 +237,9 @@ export function detectMissingPrices(
     
     const cnt = (label: string) => (data.dietasMap?.get(label) || 0);
     const hasDietasData = cnt('Comida') > 0 || cnt('Cena') > 0 || 
-                          cnt('Dieta sin pernoctar') > 0 || cnt('Dieta con pernocta') > 0 ||                           cnt('Gastos de bolsillo') > 0 || (data.ticketValue || 0) > 0;
+                          cnt('Dieta sin pernoctar') > 0 || cnt('Dieta con pernocta') > 0 ||                           cnt('Gastos de bolsillo') > 0 || (data.ticketValue || 0) > 0 || (data.otherValue || 0) > 0;
     if (hasDietasData) {
-      const totalDietas = calculateTotalDietas(data.dietasMap || new Map(), effectivePr, data.ticketValue || 0);
+      const totalDietas = calculateTotalDietas(data.dietasMap || new Map(), effectivePr, data.ticketValue || 0, data.otherValue || 0);
       if (totalDietas === 0) {
         const allDietasPricesZero = 
           (effectivePr.dietas['Comida'] || 0) === 0 &&

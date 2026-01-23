@@ -288,7 +288,8 @@
       "dietNoOvernight": "Dieta sense pernoctar",
       "dietFullBreakfast": "Dieta completa + esmorzar",
       "pocketExpenses": "Despeses de butxaca",
-      "ticket": "Bitllet"
+      "ticket": "Ticket",
+      "other": "Altres"
     },
     "dayTypes": {
       "location": "Localitzar",
@@ -598,6 +599,7 @@
     "exportWeekPDF": "Exportar setmana (PDF)",
     "weekContent": "Contingut de la setmana",
     "selectDiet": "Seleccionar dieta",
+    "otherAmount": "Import altres",
     "concepts": {
       "extraHours": "Hores extra",
       "turnAround": "Turn Around",
@@ -607,6 +609,7 @@
       "mileage": "Quilometratge",
       "transportation": "Transport"
     },
+    "kilometrajeHint": "(indica km específic)",
     "dietOptions": {
       "empty": "",
       "lunch": "Dinar",
@@ -614,7 +617,8 @@
       "dietNoOvernight": "Dieta sense pernoctar",
       "dietWithOvernight": "Dieta amb pernocta",
       "pocketExpenses": "Despeses de butxaca",
-      "ticket": "Bitllet"
+      "ticket": "Bitllet",
+      "other": "Altres"
     },
     "dietOptionsAdvertising": {
       "empty": "",
@@ -623,7 +627,8 @@
       "dietNoOvernight": "Dieta sense pernoctar",
       "dietWithOvernight": "Dieta amb pernocta",
       "pocketExpenses": "Despeses de butxaca",
-      "ticket": "Bitllet"
+      "ticket": "Bitllet",
+      "other": "Altres"
     },
     "yesNo": {
       "empty": "",

@@ -36,6 +36,7 @@ function ensureSlot(
       km: 0,
       dietasCount: new Map<string, number>(),
       ticketTotal: 0,
+      otherTotal: 0,
     });
   }
   return totals.get(k);
@@ -75,8 +76,9 @@ function processDayFiltered(
   slot.km += parseNum(getCellValueCandidates(data, keysToUse, COL_CANDIDATES.km, iso));
 
   const dVal = getCellValueCandidates(data, [originalKey], COL_CANDIDATES.dietas, iso) || '';
-  const { labels, ticket } = parseDietasValue(dVal);
+  const { labels, ticket, other } = parseDietasValue(dVal);
   slot.ticketTotal += ticket;
+  slot.otherTotal += other;
   for (const lab of labels) {
     const prev = slot.dietasCount.get(lab) || 0;
     slot.dietasCount.set(lab, prev + 1);

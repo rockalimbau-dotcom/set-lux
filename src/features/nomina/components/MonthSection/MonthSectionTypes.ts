@@ -27,6 +27,7 @@ export type RowIn = {
   km: number;
   dietasCount: Map<string, number>;
   ticketTotal: number;
+  otherTotal: number;
 };
 
 export type WindowOverride = Map<string, {
@@ -39,6 +40,7 @@ export type WindowOverride = Map<string, {
   km?: number;
   dietasCount?: Map<string, number>;
   ticketTotal?: number;
+  otherTotal?: number;
 }>;
 
 export interface MonthSectionProps {

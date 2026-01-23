@@ -4,9 +4,10 @@ import { useTranslation } from 'react-i18next';
 interface DietasSummaryProps {
   dietasCount: Map<string, number>;
   ticketTotal: number;
+  otherTotal: number;
 }
 
-export default function DietasSummary({ dietasCount, ticketTotal }: DietasSummaryProps) {
+export default function DietasSummary({ dietasCount, ticketTotal, otherTotal }: DietasSummaryProps) {
   const { t } = useTranslation();
   
   // Helper para traducir items de dietas
@@ -18,6 +19,7 @@ export default function DietasSummary({ dietasCount, ticketTotal }: DietasSummar
       'Dieta con pernocta': t('payroll.dietOptions.dietWithOvernight'),
       'Gastos de bolsillo': t('payroll.dietOptions.pocketExpenses'),
       'Ticket': t('payroll.dietOptions.ticket'),
+      'Otros': t('payroll.dietOptions.other'),
     };
     return itemMap[item] || item;
   };
@@ -29,6 +31,7 @@ export default function DietasSummary({ dietasCount, ticketTotal }: DietasSummar
     'Dieta con pernocta',
     'Gastos de bolsillo',
     'Ticket',
+    'Otros',
   ];
   const parts: string[] = [];
   let totalDietas = 0;
@@ -38,6 +41,11 @@ export default function DietasSummary({ dietasCount, ticketTotal }: DietasSummar
       if (ticketTotal > 0) {
         parts.push(`${translateDietItem('Ticket')} ${ticketTotal.toFixed(2)}€`);
         totalDietas += 1; // Contar ticket como 1 dieta
+      }
+    } else if (label === 'Otros') {
+      if (otherTotal > 0) {
+        parts.push(`${translateDietItem('Otros')} ${otherTotal.toFixed(2)}€`);
+        totalDietas += 1; // Contar otros como 1 dieta
       }
     } else {
       const cnt = dietasCount.get(label) || 0;

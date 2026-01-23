@@ -162,8 +162,9 @@ export function useEnrichedRows({
       const kmValue = getValueWithOverride(ov, 'km', useFilteredData, filteredRow, r.km);
       const dietasMap = getValueWithOverride(ov, 'dietasCount', useFilteredData, filteredRow, r.dietasCount);
       const ticketValue = getValueWithOverride(ov, 'ticketTotal', useFilteredData, filteredRow, r.ticketTotal);
+      const otherValue = getValueWithOverride(ov, 'otherTotal', useFilteredData, filteredRow, r.otherTotal);
 
-      const totalDietas = calculateTotalDietas(dietasMap, effectivePr, ticketValue);
+      const totalDietas = calculateTotalDietas(dietasMap, effectivePr, ticketValue, otherValue);
 
       // Calcular totales según el modo del proyecto
       let totals: {
@@ -239,6 +240,7 @@ export function useEnrichedRows({
           descarga,
           dietasMap,
           ticketValue,
+          otherValue,
           totalDiasTrabajados,
           priceDays,
           precioMensual: (effectivePr as any).precioMensual,
@@ -246,7 +248,7 @@ export function useEnrichedRows({
         effectivePr
       );
 
-      const dietasLabel = buildDietasLabel(dietasMap, ticketValue);
+      const dietasLabel = buildDietasLabel(dietasMap, ticketValue, otherValue);
 
       return {
         ...r,
@@ -261,6 +263,7 @@ export function useEnrichedRows({
         km: kmValue,
         dietasCount: dietasMap,
         ticketTotal: ticketValue,
+        otherTotal: otherValue,
         _worked: totalDiasTrabajados,
         _travel: travelDays,
         _holidays: holidayDays,

@@ -4,7 +4,7 @@ import React from 'react';
 import ReportPersonRows from './ReportPersonRows.jsx';
 
 const CONCEPTS = ['Dietas', 'Kilometraje'];
-const DIETAS_OPCIONES = ['Desayuno', 'Comida', 'Cena', 'Ticket'];
+const DIETAS_OPCIONES = ['Desayuno', 'Comida', 'Cena', 'Ticket', 'Otros'];
 const SI_NO = ['—', 'Sí', 'No'];
 
 function noop() {}
@@ -16,9 +16,9 @@ function isPersonScheduledOnBlock() {
   return true;
 }
 function parseDietas(raw) {
-  return { items: new Set(), ticket: null };
+  return { items: new Set(), ticket: null, other: null };
 }
-function formatDietas(items, ticket) {
+function formatDietas(items, ticket, other) {
   return '';
 }
 

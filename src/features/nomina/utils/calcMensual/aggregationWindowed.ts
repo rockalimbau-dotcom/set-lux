@@ -32,6 +32,7 @@ function ensureSlotWindowed(
       km: 0,
       dietasCount: new Map<string, number>(),
       ticketTotal: 0,
+      otherTotal: 0,
     });
   }
   return totals.get(visibleKey);
@@ -74,8 +75,9 @@ function processDayWindowed(
 
   // Para dietas, usar solo la clave original para evitar "comida" fantasma
   const dVal = getCellValueCandidates(data, [storageKey], COL_CANDIDATES.dietas, iso) || '';
-  const { labels, ticket } = parseDietasValue(dVal);
+  const { labels, ticket, other } = parseDietasValue(dVal);
   slot.ticketTotal += ticket;
+  slot.otherTotal += other;
   for (const lab of labels) {
     const prev = slot.dietasCount.get(lab) || 0;
     slot.dietasCount.set(lab, prev + 1);
