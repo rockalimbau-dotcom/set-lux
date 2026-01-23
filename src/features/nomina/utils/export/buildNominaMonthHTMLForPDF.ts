@@ -10,6 +10,7 @@ export function buildNominaMonthHTMLForPDF({
   monthKey,
   enrichedRows,
   monthLabelEs,
+  showHelp = false,
 }: BuildNominaMonthHTMLParams & { _currentPage?: number; _totalPages?: number }): string {
   const columnVisibility = getColumnVisibility(enrichedRows);
   const headerCells = generateHeaderCells(columnVisibility);
@@ -23,6 +24,40 @@ export function buildNominaMonthHTMLForPDF({
   });
 
   const title = `${i18n.t('payroll.title')} - ${monthLabelEs(monthKey, true)}`;
+  const helpHtml = showHelp
+    ? `
+      <div class="payroll-help">
+        <div class="payroll-help-title">${i18n.t('payroll.understandPayroll')}</div>
+        <div class="payroll-help-body">
+          <div class="payroll-help-image">
+            <img src="/Como_entender_nomina.png" alt="${i18n.t('payroll.understandPayrollAlt')}" />
+          </div>
+          <div class="payroll-help-legend">
+            <div class="payroll-help-item">
+              <span class="payroll-help-color payroll-help-pink"></span>
+              <span>${i18n.t('payroll.legendBase')} <span class="payroll-help-detail">${i18n.t('payroll.legendBaseDetail')}</span></span>
+            </div>
+            <div class="payroll-help-item">
+              <span class="payroll-help-color payroll-help-yellow"></span>
+              <span>${i18n.t('payroll.legendTransport')}</span>
+            </div>
+            <div class="payroll-help-item">
+              <span class="payroll-help-color payroll-help-green"></span>
+              <span>${i18n.t('payroll.legendDietas')}</span>
+            </div>
+            <div class="payroll-help-item">
+              <span class="payroll-help-color payroll-help-blue"></span>
+              <span>${i18n.t('payroll.legendExtras')}</span>
+            </div>
+            <div class="payroll-help-item">
+              <span class="payroll-help-color payroll-help-orange"></span>
+              <span>${i18n.t('payroll.legendBruto')}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    `
+    : '';
 
   return generateHTMLStructure({
     title,
@@ -31,6 +66,7 @@ export function buildNominaMonthHTMLForPDF({
     monthKey,
     head,
     body,
+    helpHtml,
   });
 }
 

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { btnExport } from '@shared/utils/tailwindClasses';
 import { storage } from '@shared/services/localStorage.service';
@@ -35,6 +35,7 @@ export function MonthSectionHeader({
   readOnly = false,
 }: MonthSectionHeaderProps) {
   const { t } = useTranslation();
+  const [isHelpOpen, setIsHelpOpen] = useState(false);
 
   const btnExportCls = btnExport;
   const btnExportStyle: React.CSSProperties = {
@@ -58,6 +59,14 @@ export function MonthSectionHeader({
         <span className='text-xs sm:text-sm md:text-base font-semibold text-brand'>
           {t('payroll.payrollTitle')} {monthLabel}
         </span>
+        <button
+          type='button'
+          onClick={() => setIsHelpOpen(true)}
+          className='w-5 h-5 sm:w-6 sm:h-6 rounded-full border border-neutral-border text-[10px] sm:text-xs font-semibold hover:border-[var(--hover-border)]'
+          title={t('payroll.understandPayroll')}
+        >
+          ?
+        </button>
       </div>
       <div className='flex flex-wrap items-center gap-2 sm:gap-2 md:gap-4 w-full sm:w-auto sm:ml-auto'>
         {(projectMode === 'semanal' || projectMode === 'mensual') && (
@@ -146,6 +155,60 @@ export function MonthSectionHeader({
           PDF
         </button>
       </div>
+      {isHelpOpen && (
+        <div className='fixed inset-0 bg-black/60 grid place-items-center p-6 z-50'>
+          <div
+            className='w-full max-w-[720px] rounded sm:rounded-md md:rounded-lg border border-neutral-border p-3 sm:p-4'
+            style={{ backgroundColor: 'var(--panel)', color: 'var(--text)' }}
+          >
+            <div className='flex items-center justify-between gap-2 mb-2'>
+              <h3 className='text-[11px] sm:text-xs md:text-sm font-semibold' style={{ color: 'var(--brand)' }}>
+                {t('payroll.understandPayroll')}
+              </h3>
+              <button
+                type='button'
+                onClick={() => setIsHelpOpen(false)}
+                className='px-2 py-1 rounded-md border border-neutral-border text-[9px] sm:text-[10px] md:text-xs'
+              >
+                {t('common.close')}
+              </button>
+            </div>
+            <div className='w-full max-h-[75vh] overflow-auto rounded border border-neutral-border bg-white/5 p-2'>
+              <a href='/Como_entender_nomina.png' target='_blank' rel='noreferrer'>
+                <img
+                  src='/Como_entender_nomina.png'
+                  alt={t('payroll.understandPayrollAlt')}
+                  className='w-full h-auto rounded'
+                />
+              </a>
+            </div>
+            <div className='mt-2 space-y-1 text-[9px] sm:text-[10px] md:text-xs' style={{ color: 'var(--text)' }}>
+              {[
+                { color: '#F9A8D4', label: t('payroll.legendBase'), detail: t('payroll.legendBaseDetail') },
+                { color: '#FDE68A', label: t('payroll.legendTransport') },
+                { color: '#86EFAC', label: t('payroll.legendDietas') },
+                { color: '#93C5FD', label: t('payroll.legendExtras') },
+                { color: '#FDBA74', label: t('payroll.legendBruto') },
+              ].map(item => (
+                <div key={item.label} className='flex items-center gap-2'>
+                  <span
+                    className='inline-block rounded-sm border border-neutral-border'
+                    style={{ backgroundColor: item.color, width: '14px', height: '14px', minWidth: '14px' }}
+                  />
+                  <span>
+                    {item.label}
+                    {item.detail && (
+                      <span className='ml-1 text-[8px] sm:text-[9px] md:text-[10px] opacity-80'>
+                        {item.detail}
+                      </span>
+                    )}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

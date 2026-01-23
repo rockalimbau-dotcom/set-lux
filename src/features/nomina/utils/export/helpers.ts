@@ -144,7 +144,7 @@ export const generateDietasText = (r: any): string => {
     return '';
   }
   
-  return `<div style="text-align:center;"><strong>${totalDietas}</strong><br/>${parts.join(' ')}</div>`;
+  return `<div style="text-align:center;"><strong>${totalDietas}</strong><br/><div style="font-size:9px;line-height:1.2;">${parts.join('<br/>')}</div></div>`;
 };
 
 /**

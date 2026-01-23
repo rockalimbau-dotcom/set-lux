@@ -11,6 +11,7 @@ interface GenerateHTMLStructureParams {
   head: string;
   body: string;
   isPDF?: boolean;
+  helpHtml?: string;
 }
 
 /**
@@ -24,6 +25,7 @@ export function generateHTMLStructure({
   head,
   body,
   isPDF = true,
+  helpHtml = '',
 }: GenerateHTMLStructureParams): string {
   const styles = isPDF ? PDF_STYLES : SCREEN_STYLES;
   const containerClass = isPDF ? 'container-pdf' : 'container';
@@ -60,6 +62,7 @@ export function generateHTMLStructure({
           <tbody>${body}</tbody>
         </table>
       </div>
+      ${helpHtml}
     </div>
     
     <div class="footer">

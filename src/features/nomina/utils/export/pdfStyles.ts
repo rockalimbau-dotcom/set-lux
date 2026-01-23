@@ -85,6 +85,77 @@ export const PDF_STYLES = `
       overflow: hidden;
       box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
+
+    .payroll-help {
+      margin-top: 10px;
+      padding: 8px 10px;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      font-size: 9px;
+    }
+
+    .payroll-help-title {
+      font-weight: 700;
+      color: #f97316;
+      margin-bottom: 6px;
+      font-size: 10px;
+    }
+
+    .payroll-help-body {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+
+    .payroll-help-image {
+      width: 53%;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 4px;
+      background: #f8fafc;
+    }
+
+    .payroll-help-image img {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 4px;
+      max-height: 360px;
+      object-fit: contain;
+    }
+
+    .payroll-help-legend {
+      width: 47%;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .payroll-help-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .payroll-help-detail {
+      font-size: 8px;
+      opacity: 0.8;
+    }
+
+    .payroll-help-color {
+      width: 12px;
+      height: 12px;
+      min-width: 12px;
+      border-radius: 3px;
+      border: 1px solid #e2e8f0;
+      display: inline-block;
+    }
+
+    .payroll-help-pink { background: #F9A8D4; }
+    .payroll-help-yellow { background: #FDE68A; }
+    .payroll-help-green { background: #86EFAC; }
+    .payroll-help-blue { background: #93C5FD; }
+    .payroll-help-orange { background: #FDBA74; }
     
     table {
       width: 100%;
@@ -176,6 +247,10 @@ export const PDF_STYLES = `
       left: 0;
       right: 0;
       background: white;
+    }
+
+    .footer {
+      display: none;
     }
     
     .setlux-logo {

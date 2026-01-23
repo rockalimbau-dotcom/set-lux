@@ -102,6 +102,7 @@ export async function exportToPDF({
         monthKey,
         enrichedRows: pageRows,
         monthLabelEs,
+        showHelp: enrichedRows.length === 1,
         _currentPage: pageIndex + 1,
         _totalPages: totalPages,
       });
