@@ -1,4 +1,5 @@
 import LogoIcon from '@shared/components/LogoIcon';
+import { ThemeToggleButton } from '@app/App/ThemeToggleButton';
 import { Project, ProjectTab } from './ProjectDetailTypes';
 
 interface ProjectDetailHeaderProps {
@@ -66,19 +67,16 @@ export function ProjectDetailHeader({
           </div>
 
           {/* Contenedor derecho con altura fija para evitar movimiento del logo */}
-          <div className='flex flex-col items-end gap-0.5 sm:gap-1 md:gap-1.5 lg:gap-2' style={{minHeight: 'auto', justifyContent: 'flex-start'}}>
+          <div className='flex items-center gap-2' style={{minHeight: 'auto', justifyContent: 'flex-start'}}>
+            <ThemeToggleButton />
             <span
               onClick={onStatusClick}
-              className={`px-2 py-1 sm:px-2.5 sm:py-1.5 md:px-3 md:py-2 rounded sm:rounded-md md:rounded-lg text-[10px] sm:text-xs font-medium border cursor-pointer`}
+              className='px-2 py-1 sm:px-2.5 sm:py-1.5 md:px-3 md:py-2 rounded sm:rounded-md md:rounded-lg text-[10px] sm:text-xs font-medium border cursor-pointer'
               style={{backgroundColor: estadoBg, borderColor: estadoBg, color: '#ffffff'}}
               title={t('projectDetail.changeStatus', { status: estadoText })}
             >
               {estadoText}
             </span>
-            {/* Espaciador invisible para igualar altura con ProjectsScreenHeader (botón + menú) */}
-            <div className='text-[9px] sm:text-[10px] md:text-xs' style={{height: '1.25rem', visibility: 'hidden'}} aria-hidden="true">
-              &nbsp;
-            </div>
           </div>
         </div>
       </div>

@@ -11,7 +11,7 @@ export function ThemeToggleButton() {
     <button
       type='button'
       onClick={toggleTheme}
-      className='px-2 py-1 sm:px-3 sm:py-1.5 md:px-4 md:py-2 rounded-lg sm:rounded-xl border hover:border-[var(--hover-border)] text-xs sm:text-sm'
+      className='px-2 py-1 sm:px-2.5 sm:py-1.5 md:px-3 md:py-2 rounded-lg sm:rounded-xl border hover:border-[var(--hover-border)] text-[10px] sm:text-xs'
       style={{
         backgroundColor:
           (typeof document !== 'undefined' && (document.documentElement.getAttribute('data-theme') || 'dark') === 'light')

@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import LogoIcon from '@shared/components/LogoIcon';
+import { ThemeToggleButton } from '@app/App/ThemeToggleButton';
 import { storage } from '@shared/services/localStorage.service';
 
 interface ProjectsScreenHeaderProps {
@@ -44,16 +45,17 @@ export function ProjectsScreenHeader({
           </div>
 
           {/* Botón Nuevo Proyecto */}
-          <div className='flex flex-col items-end gap-0.5 sm:gap-1 md:gap-1.5 lg:gap-2' style={{minHeight: 'auto', justifyContent: 'flex-start'}}>
+          <div className='relative flex items-center gap-2' style={{minHeight: 'auto', justifyContent: 'flex-start'}}>
+            <ThemeToggleButton />
             <button
               onClick={onNewProject}
-              className='px-1.5 py-0.5 sm:px-2 sm:py-1 md:px-2.5 md:py-1.5 lg:px-3 lg:py-2 xl:px-4 xl:py-2 rounded-md sm:rounded-lg md:rounded-xl font-semibold text-white transition-all hover:shadow-lg border border-transparent hover:border-[var(--hover-border)] text-[10px] sm:text-xs md:text-sm'
+              className='px-2 py-1 sm:px-2.5 sm:py-1.5 md:px-3 md:py-2 rounded-md sm:rounded-lg md:rounded-xl font-semibold text-white transition-all hover:shadow-lg border border-transparent hover:border-[var(--hover-border)] text-[10px] sm:text-xs'
               style={{backgroundColor: (document.documentElement.getAttribute('data-theme')||'dark')==='light' ? '#0468BF' : 'var(--brand)'}}
             >
               {t('common.newProject')}
             </button>
             {/* Saludo de bienvenida */}
-            <div className='relative' ref={menuRef}>
+            <div className='absolute right-0 top-full mt-1 sm:mt-2' ref={menuRef}>
               <button
                 onClick={() => setMenuOpen(!menuOpen)}
                 className='text-[9px] sm:text-[10px] md:text-xs text-zinc-300 hover:text-white transition-colors cursor-pointer'

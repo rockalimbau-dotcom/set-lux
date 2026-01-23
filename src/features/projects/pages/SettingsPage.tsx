@@ -15,7 +15,6 @@ export default function SettingsPage() {
   const [saved, setSaved] = useState(false);
 
   // Estados para los dropdowns
-  const [themeDropdown, setThemeDropdown] = useState({ isOpen: false, isButtonHovered: false, hoveredOption: null as string | null });
   const [idiomaDropdown, setIdiomaDropdown] = useState({ isOpen: false, isButtonHovered: false, hoveredOption: null as string | null });
   const [genderDropdown, setGenderDropdown] = useState({ isOpen: false, isButtonHovered: false, hoveredOption: null as string | null });
   
@@ -35,16 +34,12 @@ export default function SettingsPage() {
     return value;
   };
 
-  const themeRef = useRef<HTMLDivElement>(null);
   const idiomaRef = useRef<HTMLDivElement>(null);
   const genderRef = useRef<HTMLDivElement>(null);
 
   // Cerrar dropdowns al hacer clic fuera
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (themeRef.current && !themeRef.current.contains(event.target as Node)) {
-        setThemeDropdown(prev => ({ ...prev, isOpen: false }));
-      }
       if (idiomaRef.current && !idiomaRef.current.contains(event.target as Node)) {
         setIdiomaDropdown(prev => ({ ...prev, isOpen: false }));
       }
@@ -64,8 +59,6 @@ export default function SettingsPage() {
   const focusColor = currentTheme === 'light' ? '#0476D9' : '#F27405';
 
   // Obtener labels para mostrar
-  const themeLabel = theme === 'dark' ? t('settings.dark') : t('settings.light');
-
   useEffect(() => {
     const s = storage.getJSON<any>('settings_v1') || {};
     // Check localStorage first for theme (for compatibility with App.tsx)
@@ -163,72 +156,6 @@ export default function SettingsPage() {
           <h3 className='text-xs sm:text-sm md:text-base lg:text-lg xl:text-xl font-semibold mb-2 sm:mb-2.5 md:mb-3 lg:mb-4 xl:mb-5' style={{color: colors.primary}}>{t('settings.preferences')}</h3>
 
           <div className='space-y-3 sm:space-y-4 md:space-y-5 lg:space-y-6'>
-            <label className='block space-y-1 sm:space-y-1.5 md:space-y-2'>
-              <span className='text-xs sm:text-sm font-medium' style={{color: colors.mutedText}}>{t('settings.theme')}</span>
-              <div className='relative w-full' ref={themeRef}>
-                <button
-                  type='button'
-                  onClick={() => setThemeDropdown(prev => ({ ...prev, isOpen: !prev.isOpen }))}
-                  onMouseEnter={() => setThemeDropdown(prev => ({ ...prev, isButtonHovered: true }))}
-                  onMouseLeave={() => setThemeDropdown(prev => ({ ...prev, isButtonHovered: false }))}
-                  onBlur={() => setThemeDropdown(prev => ({ ...prev, isButtonHovered: false }))}
-                  className={`w-full px-2 py-1 sm:px-2.5 sm:py-1.5 md:px-3 md:py-2 lg:px-3.5 lg:py-2.5 xl:px-4 xl:py-3 rounded sm:rounded-md md:rounded-lg lg:rounded-xl border focus:outline-none text-xs sm:text-sm text-left transition-colors ${
-                    currentTheme === 'light' 
-                      ? 'bg-white text-gray-900' 
-                      : 'bg-black/40 text-zinc-300'
-                  }`}
-                  style={{
-                    borderWidth: themeDropdown.isButtonHovered ? '1.5px' : '1px',
-                    borderStyle: 'solid',
-                    borderColor: themeDropdown.isButtonHovered && currentTheme === 'light' 
-                      ? '#0476D9' 
-                      : (themeDropdown.isButtonHovered && currentTheme === 'dark'
-                        ? '#fff'
-                        : colors.inputBorder),
-                    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='9' viewBox='0 0 12 12'%3E%3Cpath fill='${currentTheme === 'light' ? '%23111827' : '%23ffffff'}' d='M6 9L1 4h10z'/%3E%3C/svg%3E")`,
-                    backgroundRepeat: 'no-repeat',
-                    backgroundPosition: 'right 0.5rem center',
-                    paddingRight: '1.75rem',
-                  }}
-                >
-                  {themeLabel}
-                </button>
-                {themeDropdown.isOpen && (
-                  <div className={`absolute top-full left-0 mt-1 w-full border border-neutral-border rounded-lg shadow-lg z-50 overflow-y-auto max-h-60 ${
-                    currentTheme === 'light' ? 'bg-white' : 'bg-neutral-panel'
-                  }`}>
-                    {[
-                      { value: 'dark', label: t('settings.dark') },
-                      { value: 'light', label: t('settings.light') }
-                    ].map(opcion => (
-                      <button
-                        key={opcion.value}
-                        type='button'
-                        onMouseDown={(e) => {
-                          e.preventDefault(); // Prevenir que el botón principal pierda el foco antes de cerrar
-                          setTheme(opcion.value as 'dark' | 'light');
-                          setThemeDropdown({ isOpen: false, isButtonHovered: false, hoveredOption: null });
-                        }}
-                        onMouseEnter={() => setThemeDropdown(prev => ({ ...prev, hoveredOption: opcion.value }))}
-                        onMouseLeave={() => setThemeDropdown(prev => ({ ...prev, hoveredOption: null }))}
-                        className={`w-full text-left px-2 py-1 sm:px-2.5 sm:py-1.5 md:px-3 md:py-2 lg:px-3.5 lg:py-2 xl:px-4 xl:py-2 text-xs sm:text-sm transition-colors`}
-                        style={{
-                          backgroundColor: themeDropdown.hoveredOption === opcion.value 
-                            ? (currentTheme === 'light' ? '#A0D3F2' : focusColor)
-                            : 'transparent',
-                          color: themeDropdown.hoveredOption === opcion.value 
-                            ? (currentTheme === 'light' ? '#111827' : 'white')
-                            : (currentTheme === 'light' ? '#111827' : '#d1d5db'),
-                        }}
-                      >
-                        {opcion.label}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </label>
-
             <label className='block space-y-1 sm:space-y-1.5 md:space-y-2'>
               <span className='text-xs sm:text-sm font-medium' style={{color: colors.mutedText}}>{t('settings.language')}</span>
               <div className='relative w-full' ref={idiomaRef}>
