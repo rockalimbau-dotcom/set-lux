@@ -88,6 +88,7 @@ export function WeekSection({
     rowId: string;
     label: string;
   } | null>(null);
+  const [attachmentInfoOpen, setAttachmentInfoOpen] = useState(false);
 
   // Definir todas las claves de filas para esta semana
   const customRows = useMemo(
@@ -394,6 +395,8 @@ export function WeekSection({
                 rowKey={`${wid}_needLoc`}
                 isSelected={isRowSelected(`${wid}_needLoc`)}
                 toggleRowSelection={toggleRowSelection}
+                showAttachment
+                onAttachmentClick={() => setAttachmentInfoOpen(true)}
               />
               <FieldRow
                 weekId={wid}
@@ -405,6 +408,8 @@ export function WeekSection({
                 rowKey={`${wid}_needProd`}
                 isSelected={isRowSelected(`${wid}_needProd`)}
                 toggleRowSelection={toggleRowSelection}
+                showAttachment
+                onAttachmentClick={() => setAttachmentInfoOpen(true)}
               />
               <FieldRow
                 weekId={wid}
@@ -427,6 +432,8 @@ export function WeekSection({
                 rowKey={`${wid}_needGroups`}
                 isSelected={isRowSelected(`${wid}_needGroups`)}
                 toggleRowSelection={toggleRowSelection}
+                showAttachment
+                onAttachmentClick={() => setAttachmentInfoOpen(true)}
               />
               <FieldRow
                 weekId={wid}
@@ -438,6 +445,8 @@ export function WeekSection({
                 rowKey={`${wid}_needLight`}
                 isSelected={isRowSelected(`${wid}_needLight`)}
                 toggleRowSelection={toggleRowSelection}
+                showAttachment
+                onAttachmentClick={() => setAttachmentInfoOpen(true)}
               />
               <FieldRow
                 weekId={wid}
@@ -499,6 +508,8 @@ export function WeekSection({
                 rowKey={`${wid}_obs`}
                 isSelected={isRowSelected(`${wid}_obs`)}
                 toggleRowSelection={toggleRowSelection}
+                showAttachment
+                onAttachmentClick={() => setAttachmentInfoOpen(true)}
               />
               {customRows.map(row => {
                 const rowKey = `${wid}_custom_${row.id}`;
@@ -548,13 +559,25 @@ export function WeekSection({
                       const value = (wk?.days?.[i]?.[row.fieldKey] as string) || '';
                       return (
                         <Td key={`${rowKey}_${d.key}`} align='middle' className='text-center'>
-                          <div className='flex justify-center'>
+                          <div className='flex flex-col items-center justify-center gap-2'>
                             <TextAreaAuto
                               value={value}
                               onChange={(val: string) => !readOnly && setCell(wid, i, row.fieldKey, val)}
                               placeholder={t('needs.writeHere')}
                               readOnly={readOnly}
                             />
+                            <button
+                              type='button'
+                              onClick={() => !readOnly && setAttachmentInfoOpen(true)}
+                              disabled={readOnly}
+                              title={t('needs.attachImage')}
+                              className={`px-1 py-0.5 rounded border border-neutral-border text-[8px] sm:text-[9px] md:text-[10px] ${
+                                readOnly ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-80'
+                              }`}
+                              style={{ color: 'var(--text)' }}
+                            >
+                              📎 {t('needs.imageLabel')}
+                            </button>
                           </div>
                         </Td>
                       );
@@ -624,6 +647,37 @@ export function WeekSection({
             setCustomRowToRemove(null);
           }}
         />
+      )}
+      {attachmentInfoOpen && (
+        <div className='fixed inset-0 bg-black/60 grid place-items-center p-6 z-50'>
+          <div
+            className='w-full max-w-[240px] sm:max-w-[280px] md:max-w-xs rounded sm:rounded-md md:rounded-lg border border-neutral-border p-3 sm:p-4'
+            style={{ backgroundColor: isDark ? 'var(--panel)' : '#ffffff' }}
+          >
+            <h3
+              className='text-[10px] sm:text-xs md:text-sm font-semibold mb-2'
+              style={{ color: isDark ? '#F27405' : '#111827' }}
+            >
+              {t('needs.attachmentBetaTitle')}
+            </h3>
+            <p
+              className='text-[9px] sm:text-[10px] md:text-xs mb-3'
+              style={{ color: isDark ? '#ffffff' : '#111827' }}
+            >
+              {t('needs.attachmentBetaMessage')}
+            </p>
+            <div className='flex justify-center'>
+              <button
+                type='button'
+                onClick={() => setAttachmentInfoOpen(false)}
+                className='px-2 py-1 rounded-md border border-neutral-border text-[9px] sm:text-[10px] md:text-xs'
+                style={{ color: isDark ? '#ffffff' : '#111827' }}
+              >
+                {t('needs.close')}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </section>
   );

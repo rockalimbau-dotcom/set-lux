@@ -15,9 +15,23 @@ type FieldRowProps = {
   rowKey?: string; // Clave única para identificar esta fila
   isSelected?: boolean; // Si la fila está seleccionada
   toggleRowSelection?: (rowKey: string) => void; // Función para alternar selección
+  showAttachment?: boolean;
+  onAttachmentClick?: (dayIdx: number) => void;
 };
 
-export default function FieldRow({ weekId, weekObj, fieldKey, label, setCell, readOnly = false, rowKey, isSelected, toggleRowSelection }: FieldRowProps) {
+export default function FieldRow({
+  weekId,
+  weekObj,
+  fieldKey,
+  label,
+  setCell,
+  readOnly = false,
+  rowKey,
+  isSelected,
+  toggleRowSelection,
+  showAttachment = false,
+  onAttachmentClick,
+}: FieldRowProps) {
   const { t } = useTranslation();
   
   // Helper function to translate location values from planning
@@ -71,13 +85,27 @@ export default function FieldRow({ weekId, weekObj, fieldKey, label, setCell, re
         const displayValue = fieldKey === 'loc' ? translateLocationValue(rawValue) : rawValue;
         return (
           <Td key={d.key} align='middle' className='text-center'>
-            <div className='flex justify-center'>
-            <TextAreaAuto
-              value={displayValue}
-              onChange={(val: string) => !readOnly && setCell(weekId, i, fieldKey, val)}
-              placeholder={t('needs.writeHere')}
-              readOnly={readOnly}
-            />
+            <div className='flex flex-col items-center justify-center gap-2'>
+              <TextAreaAuto
+                value={displayValue}
+                onChange={(val: string) => !readOnly && setCell(weekId, i, fieldKey, val)}
+                placeholder={t('needs.writeHere')}
+                readOnly={readOnly}
+              />
+              {showAttachment && (
+                <button
+                  type='button'
+                  onClick={() => !readOnly && onAttachmentClick?.(i)}
+                  disabled={readOnly}
+                  title={t('needs.attachImage')}
+                  className={`px-1 py-0.5 rounded border border-neutral-border text-[8px] sm:text-[9px] md:text-[10px] ${
+                    readOnly ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-80'
+                  }`}
+                  style={{ color: 'var(--text)' }}
+                >
+                  📎 {t('needs.imageLabel')}
+                </button>
+              )}
             </div>
           </Td>
         );
