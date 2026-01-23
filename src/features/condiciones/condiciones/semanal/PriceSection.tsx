@@ -142,7 +142,7 @@ export function PriceSection({
     <div className='space-y-1 sm:space-y-1.5 md:space-y-2'>
       {/* Header de la sección */}
       <div className='flex items-center justify-between gap-2'>
-        <h4 className='text-[10px] sm:text-xs md:text-sm lg:text-base font-semibold text-zinc-700 dark:text-zinc-200'>
+        <h4 className='text-[10px] sm:text-xs md:text-sm lg:text-base font-semibold text-brand'>
           {title}
         </h4>
         {onRemove && (
@@ -158,7 +158,7 @@ export function PriceSection({
       </div>
 
       {/* Texto informativo y botón añadir rol */}
-      <div className='text-[9px] sm:text-[10px] md:text-xs text-zinc-400 mb-1 sm:mb-1.5 md:mb-2 flex items-center justify-between gap-1 sm:gap-2'>
+      <div className='text-[9px] sm:text-[10px] md:text-xs text-white mb-1 sm:mb-1.5 md:mb-2 flex items-center justify-between gap-1 sm:gap-2'>
         {sectionKey === 'base' && (
           <span className='flex-1' dangerouslySetInnerHTML={{ __html: t('conditions.introduceWeeklyPrice') }} />
         )}

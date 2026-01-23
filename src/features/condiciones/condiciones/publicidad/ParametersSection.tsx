@@ -25,9 +25,9 @@ export function ParametersSection({
   const p = params;
   
   const buttonStyle: React.CSSProperties = {
-    background: theme === 'light' ? '#A0D3F2' : '#f59e0b',
+    background: theme === 'light' ? 'var(--bg)' : 'transparent',
     color: theme === 'light' ? '#111827' : '#FFFFFF',
-    borderColor: theme === 'light' ? '#A0D3F2' : '#f59e0b',
+    borderColor: theme === 'light' ? '#0476D9' : '#f59e0b',
   };
 
   return (
@@ -45,12 +45,25 @@ export function ParametersSection({
         >
           {showParams ? '−' : '+'}
         </button>
-        <h4 className='text-brand font-semibold m-0 text-xs sm:text-sm md:text-base'>
-          {t('conditions.calculationParameters')}
-        </h4>
+        <div className='flex items-center gap-2'>
+          <h4 className='text-brand font-semibold m-0 text-xs sm:text-sm md:text-base'>
+            {t('conditions.calculationParameters')}
+          </h4>
+          <div className='inline-flex items-center gap-1 rounded-full bg-brand px-2.5 py-1 text-[10px] sm:text-xs md:text-sm font-semibold text-white dark:bg-amber-500'>
+            <div className='inline-flex items-center justify-center w-4 h-4 rounded-full bg-white/20 text-white text-[10px] font-bold'>
+              !
+            </div>
+            {t('conditions.importantLabel')}
+          </div>
+        </div>
       </div>
 
-      <div className='text-[9px] sm:text-[10px] md:text-xs text-zinc-400 mb-1.5 sm:mb-2 md:mb-3' dangerouslySetInnerHTML={{ __html: t('conditions.amountsCalculatedFrom') }} />
+      <div
+        className={`text-[9px] sm:text-[10px] md:text-xs mb-1.5 sm:mb-2 md:mb-3 ${
+          theme === 'light' ? 'text-black' : 'text-white'
+        }`}
+        dangerouslySetInnerHTML={{ __html: t('conditions.calculationParametersDescriptionWeekly') }}
+      />
 
       {showParams && (
         <div
