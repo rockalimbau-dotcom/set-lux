@@ -539,7 +539,14 @@
   "footer": {
     "copyright": "© {{year}} SetLux. Todos los derechos reservados.",
     "generatedBy": "Generado por",
-    "generatedAutomaticallyBy": "Generado automáticamente por"
+    "generatedAutomaticallyBy": "Generado automáticamente por",
+    "suggestions": "Ayúdanos a mejorar",
+    "suggestionsPlaceholder": "Cuéntanos qué mejorarías o qué te falta en la app…",
+    "sendSuggestion": "Enviar",
+    "sending": "Enviando…",
+    "closeSuggestion": "Cerrar",
+    "sendError": "No se pudo enviar. Inténtalo de nuevo.",
+    "thanks": "¡Gracias!"
   },
   "projectDetail": {
     "confirmStatusChangeTitle": "Confirmar cambio de estado",

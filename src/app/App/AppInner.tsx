@@ -3,6 +3,7 @@ import { Routes, Route, useLocation } from 'react-router-dom';
 import { useAuth } from '@app/providers/AuthProvider.tsx';
 import AppRouter from '@app/routes/AppRouter.tsx';
 import { Footer } from '@shared/components/Footer.tsx';
+import { SuggestionFab } from '@shared/components/SuggestionFab';
 import { useLocalStorage } from '@shared/hooks/useLocalStorage';
 import type { Project as UIProject } from '@features/projects/pages/ProjectsScreen.tsx';
 import { LoginState, RegisterState } from './AppTypes';
@@ -208,6 +209,7 @@ function AppInner() {
         </Routes>
       </main>
       {hasContent && <Footer />}
+      {hasContent && <SuggestionFab />}
     </>
   );
 }

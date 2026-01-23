@@ -540,7 +540,14 @@
   "footer": {
     "copyright": "© {{year}} SetLux. Tots els drets reservats.",
     "generatedBy": "Generat per",
-    "generatedAutomaticallyBy": "Generat automàticament per"
+    "generatedAutomaticallyBy": "Generat automàticament per",
+    "suggestions": "Ajuda'ns a millorar",
+    "suggestionsPlaceholder": "Explica'ns què milloraries o què et falta a l'app…",
+    "sendSuggestion": "Enviar",
+    "sending": "Enviant…",
+    "closeSuggestion": "Tancar",
+    "sendError": "No s'ha pogut enviar. Torna-ho a provar.",
+    "thanks": "Gràcies!"
   },
   "projectDetail": {
     "confirmStatusChangeTitle": "Confirmar canvi d'estat",
