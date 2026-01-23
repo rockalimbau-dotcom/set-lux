@@ -5,6 +5,7 @@ import { storage } from '@shared/services/localStorage.service';
 export function SuggestionFab() {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
+  const [isAttachmentInfoOpen, setIsAttachmentInfoOpen] = useState(false);
   const [message, setMessage] = useState('');
   const [sent, setSent] = useState(false);
   const [isSending, setIsSending] = useState(false);
@@ -115,18 +116,28 @@ export function SuggestionFab() {
             <textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              className='w-full min-h-[70px] rounded-md border border-neutral-border bg-transparent p-2 text-[10px] sm:text-xs placeholder:text-black dark:placeholder:text-white'
+              className='w-full min-h-[110px] rounded-md border border-neutral-border bg-transparent p-2 text-[10px] sm:text-xs leading-relaxed placeholder:text-black dark:placeholder:text-white'
               placeholder={t('footer.suggestionsPlaceholder')}
+              rows={4}
             />
             <div className='mt-2 flex items-center justify-between gap-2'>
-              <span className='text-[10px] sm:text-xs text-emerald-500'>
-                {sent ? t('footer.thanks') : ' '}
-              </span>
-              {sendError && (
-                <span className='text-[10px] sm:text-xs text-red-500'>
-                  {sendError}
+              <div className='flex items-center gap-2'>
+                <button
+                  type='button'
+                  onClick={() => setIsAttachmentInfoOpen(true)}
+                  className='px-2 py-1 rounded-md border border-neutral-border text-[10px] sm:text-xs'
+                >
+                  📎 {t('footer.attachImage')}
+                </button>
+                <span className='text-[10px] sm:text-xs text-emerald-500'>
+                  {sent ? t('footer.thanks') : ' '}
                 </span>
-              )}
+                {sendError && (
+                  <span className='text-[10px] sm:text-xs text-red-500'>
+                    {sendError}
+                  </span>
+                )}
+              </div>
               <div className='flex items-center gap-2'>
                 <button
                   type='button'
@@ -145,6 +156,30 @@ export function SuggestionFab() {
                   {isSending ? t('footer.sending') : t('footer.sendSuggestion')}
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {isAttachmentInfoOpen && (
+        <div className='fixed inset-0 bg-black/60 grid place-items-center p-6 z-50'>
+          <div
+            className='w-full max-w-[240px] sm:max-w-[280px] md:max-w-xs rounded sm:rounded-md md:rounded-lg border border-neutral-border p-3 sm:p-4'
+            style={{ backgroundColor: 'var(--panel)', color: 'var(--text)' }}
+          >
+            <h3 className='text-[10px] sm:text-xs md:text-sm font-semibold mb-2' style={{ color: 'var(--brand)' }}>
+              {t('footer.attachmentBetaTitle')}
+            </h3>
+            <p className='text-[9px] sm:text-[10px] md:text-xs mb-3'>
+              {t('footer.attachmentBetaMessage')}
+            </p>
+            <div className='flex justify-center'>
+              <button
+                type='button'
+                onClick={() => setIsAttachmentInfoOpen(false)}
+                className='px-2 py-1 rounded-md border border-neutral-border text-[9px] sm:text-[10px] md:text-xs'
+              >
+                {t('footer.closeSuggestion')}
+              </button>
             </div>
           </div>
         </div>
