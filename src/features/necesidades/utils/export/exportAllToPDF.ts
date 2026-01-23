@@ -45,6 +45,12 @@ export async function exportAllToPDF(
         [`${wid}_pickList`]: 'pickList',
         [`${wid}_obs`]: 'obs',
       };
+      const customRows = Array.isArray(wk?.customRows) ? wk.customRows : [];
+      customRows.forEach((row: any) => {
+        if (row?.id && row?.fieldKey) {
+          rowKeyToFieldKey[`${wid}_custom_${row.id}`] = row.fieldKey;
+        }
+      });
       
       // Obtener datos de la semana
       let valuesByDay = Array.from({ length: 7 }).map(
@@ -88,7 +94,10 @@ export async function exportAllToPDF(
         wk.label || i18n.t('needs.week'),
         wk.startDate || '',
         valuesByDay,
-        selectedRowKeys.length > 0 ? selectedRowKeys : undefined // Pasar las filas seleccionadas
+        selectedRowKeys.length > 0 ? selectedRowKeys : undefined, // Pasar las filas seleccionadas
+        undefined,
+        false,
+        customRows
       );
       
       const tempContainer = document.createElement('div');

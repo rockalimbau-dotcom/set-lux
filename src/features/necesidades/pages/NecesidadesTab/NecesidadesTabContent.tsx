@@ -14,7 +14,15 @@ interface NecesidadesTabContentProps {
   setCell: (weekId: string, dayIdx: number, fieldKey: string, value: unknown) => void;
   removeFromList: (weekId: string, dayIdx: number, listKey: string, idx: number) => void;
   setWeekOpen: (weekId: string, isOpen: boolean) => void;
-  exportWeekPDF: (weekId: string) => void;
+  exportWeekPDF: (
+    weekId: string,
+    selectedRowKeys?: string[],
+    selectedDayIdxs?: number[],
+    includeEmptyRows?: boolean
+  ) => void;
+  addCustomRow: (weekId: string) => string | null;
+  updateCustomRowLabel: (weekId: string, rowId: string, label: string) => void;
+  removeCustomRow: (weekId: string, rowId: string) => void;
   exportAllNeedsPDF: () => void;
   swapDays: (weekId1: string, dayIdx1: number, weekId2: string, dayIdx2: number) => void;
 }
@@ -30,6 +38,9 @@ export function NecesidadesTabContent({
   exportWeekPDF,
   exportAllNeedsPDF,
   swapDays,
+  addCustomRow,
+  updateCustomRowLabel,
+  removeCustomRow,
 }: NecesidadesTabContentProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -74,7 +85,10 @@ export function NecesidadesTabContent({
 
   return (
     <>
-      <div className='flex items-center justify-end gap-2 mb-2 sm:mb-3 md:mb-4'>
+      <div className='flex items-center justify-between gap-2 mb-2 sm:mb-3 md:mb-4'>
+        <span className='text-[9px] sm:text-[10px] md:text-xs text-zinc-400 dark:text-white'>
+          <strong>Tip:</strong> {t('planning.scrollTip')}
+        </span>
         <button
           className='px-1.5 py-1 sm:px-2 sm:py-1.5 md:px-2.5 md:py-2 rounded sm:rounded-md md:rounded-lg text-[10px] sm:text-xs md:text-sm font-semibold btn-pdf'
           style={btnExportStyle}
@@ -104,6 +118,9 @@ export function NecesidadesTabContent({
               clearSelection={clearSelection}
               isDaySelected={isDaySelected}
               weekEntries={weekEntries}
+              addCustomRow={addCustomRow}
+              updateCustomRowLabel={updateCustomRowLabel}
+              removeCustomRow={removeCustomRow}
             />
           );
         } catch (error) {

@@ -5,6 +5,7 @@ import { AnyRecord } from '@shared/types/common';
 
 interface UseNeedsActionsProps {
   planKey: string;
+  storageKey: string;
   readOnly: boolean;
   setNeeds: (updater: (prev: AnyRecord) => AnyRecord) => void;
 }
@@ -14,10 +15,86 @@ interface UseNeedsActionsProps {
  */
 export function useNeedsActions({
   planKey,
+  storageKey,
   readOnly,
   setNeeds,
 }: UseNeedsActionsProps) {
   const { t } = useTranslation();
+
+  const addCustomRow = useCallback((weekId: string): string | null => {
+    if (readOnly) return null;
+    const newId = `${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+    const newRow = {
+      id: newId,
+      label: t('needs.customRowLabel'),
+      fieldKey: `custom_${newId}`,
+    };
+    setNeeds((prev: AnyRecord) => {
+      const w: AnyRecord = prev[weekId] || { days: {} };
+      const customRows = Array.isArray(w.customRows) ? [...w.customRows] : [];
+      customRows.push(newRow);
+      const next = {
+        ...prev,
+        [weekId]: {
+          ...w,
+          customRows,
+        },
+      };
+      storage.setJSON(storageKey, next);
+      return next;
+    });
+    return newId;
+  }, [readOnly, setNeeds, t, storageKey]);
+
+  const updateCustomRowLabel = useCallback((weekId: string, rowId: string, label: string) => {
+    if (readOnly) return;
+    setNeeds((prev: AnyRecord) => {
+      const w: AnyRecord = prev[weekId] || { days: {} };
+      const customRows = Array.isArray(w.customRows) ? [...w.customRows] : [];
+      const nextRows = customRows.map(row =>
+        row?.id === rowId ? { ...row, label } : row
+      );
+      const next = {
+        ...prev,
+        [weekId]: {
+          ...w,
+          customRows: nextRows,
+        },
+      };
+      storage.setJSON(storageKey, next);
+      return next;
+    });
+  }, [readOnly, setNeeds, storageKey]);
+
+  const removeCustomRow = useCallback((weekId: string, rowId: string) => {
+    if (readOnly) return;
+    setNeeds((prev: AnyRecord) => {
+      const w: AnyRecord = prev[weekId] || { days: {} };
+      const customRows = Array.isArray(w.customRows) ? [...w.customRows] : [];
+      const rowToRemove = customRows.find(row => row?.id === rowId);
+      const nextRows = customRows.filter(row => row?.id !== rowId);
+      const days = { ...(w.days || {}) } as AnyRecord;
+      if (rowToRemove?.fieldKey) {
+        for (let i = 0; i < 7; i++) {
+          if (days[i]) {
+            const day = { ...(days[i] as AnyRecord) };
+            delete day[rowToRemove.fieldKey];
+            days[i] = day;
+          }
+        }
+      }
+      const next = {
+        ...prev,
+        [weekId]: {
+          ...w,
+          days,
+          customRows: nextRows,
+        },
+      };
+      storage.setJSON(storageKey, next);
+      return next;
+    });
+  }, [readOnly, setNeeds, storageKey]);
 
   const setCell = useCallback((weekId: string, dayIdx: number, fieldKey: string, value: unknown) => {
     if (readOnly) return;
@@ -204,6 +281,6 @@ export function useNeedsActions({
     }, 0);
   }, [readOnly, planKey, setNeeds]);
 
-  return { setCell, removeFromList, setWeekOpen, swapDays };
+  return { setCell, removeFromList, setWeekOpen, swapDays, addCustomRow, updateCustomRowLabel, removeCustomRow };
 }
 

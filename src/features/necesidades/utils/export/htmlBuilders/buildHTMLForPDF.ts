@@ -1,5 +1,5 @@
 import i18n from '../../../../../i18n/config';
-import { DayValues } from '../types';
+import { CustomRow, DayValues } from '../types';
 import { esc, parseYYYYMMDD, getDays, translateWeekLabel } from '../helpers';
 import { generateHeaderRow, generateTableBody } from './tableHelpers';
 import { baseStyles, containerPDFStyles } from './styles';
@@ -12,13 +12,31 @@ export function buildNecesidadesHTMLForPDF(
   weekLabel: string,
   weekStart: string,
   valuesByDay: DayValues[],
-  selectedRowKeys?: string[] // Filas seleccionadas para filtrar qué mostrar
+  selectedRowKeys?: string[], // Filas seleccionadas para filtrar qué mostrar
+  selectedDayIdxs?: number[], // Columnas seleccionadas (días)
+  includeEmptyRows?: boolean, // Incluir filas vacías
+  customRows?: CustomRow[]
 ): string {
   const monday = parseYYYYMMDD(weekStart);
   const DAYS = getDays();
+  const filteredDayIdxs = selectedDayIdxs && selectedDayIdxs.length > 0
+    ? selectedDayIdxs
+    : null;
+  const filteredDays = filteredDayIdxs
+    ? DAYS.filter((_, idx) => filteredDayIdxs.includes(idx))
+    : DAYS;
+  const filteredValuesByDay = filteredDayIdxs
+    ? filteredDayIdxs.map(idx => valuesByDay[idx] || {})
+    : valuesByDay;
   const translatedWeekLabel = translateWeekLabel(weekLabel);
-  const headerRow = generateHeaderRow(DAYS, monday);
-  const body = generateTableBody(DAYS, valuesByDay, selectedRowKeys);
+  const headerRow = generateHeaderRow(filteredDays, monday);
+  const body = generateTableBody(
+    filteredDays,
+    filteredValuesByDay,
+    selectedRowKeys,
+    includeEmptyRows,
+    customRows
+  );
 
   const titleSuffix = weekLabel.includes('-')
     ? i18n.t('needs.preproduction')

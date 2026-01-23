@@ -1,13 +1,15 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Th } from '@shared/components';
+import { Th, Td } from '@shared/components';
 import { AnyRecord } from '@shared/types/common';
 import { btnExport } from '@shared/utils/tailwindClasses';
 import FieldRow from '../../components/FieldRow';
 import ListRow from '../../components/ListRow';
+import TextAreaAuto from '../../components/TextAreaAuto';
 import { DayInfo } from './NecesidadesTabTypes';
 import { parseYYYYMMDD, addDays, formatDDMM, translateWeekLabel } from './NecesidadesTabUtils';
 import { useRowSelection } from '../../hooks/useRowSelection';
+import { useColumnSelection } from '../../hooks/useColumnSelection';
 import { ConfirmModal } from '../../components/ConfirmModal';
 
 interface SelectedDayForSwap {
@@ -22,7 +24,12 @@ interface WeekSectionProps {
   setCell: (weekId: string, dayIdx: number, fieldKey: string, value: unknown) => void;
   removeFromList: (weekId: string, dayIdx: number, listKey: string, idx: number) => void;
   setWeekOpen: (weekId: string, isOpen: boolean) => void;
-  exportWeekPDF: (weekId: string, selectedRowKeys?: string[]) => void;
+  exportWeekPDF: (
+    weekId: string,
+    selectedRowKeys?: string[],
+    selectedDayIdxs?: number[],
+    includeEmptyRows?: boolean
+  ) => void;
   readOnly: boolean;
   swapDays: (weekId1: string, dayIdx1: number, weekId2: string, dayIdx2: number) => void;
   selectedDayForSwap: SelectedDayForSwap | null;
@@ -30,6 +37,9 @@ interface WeekSectionProps {
   clearSelection: () => void;
   isDaySelected: (weekId: string, dayIdx: number) => boolean;
   weekEntries: [string, any][]; // Para obtener etiquetas de semanas
+  addCustomRow: (weekId: string) => string | null;
+  updateCustomRowLabel: (weekId: string, rowId: string, label: string) => void;
+  removeCustomRow: (weekId: string, rowId: string) => void;
 }
 
 export function WeekSection({
@@ -47,10 +57,20 @@ export function WeekSection({
   clearSelection,
   isDaySelected,
   weekEntries,
+  addCustomRow,
+  updateCustomRowLabel,
+  removeCustomRow,
 }: WeekSectionProps) {
   const { t } = useTranslation();
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+    if (typeof document !== 'undefined') {
+      return (document.documentElement.getAttribute('data-theme') || 'light') as 'dark' | 'light';
+    }
+    return 'light';
+  });
   const monday = parseYYYYMMDD(wk.startDate);
   const datesRow = useMemo(() => DAYS.map((_, i) => formatDDMM(addDays(monday, i))), [monday, DAYS]);
+  const isDark = theme === 'dark';
   
   // Estado para el modal de confirmación de intercambio
   const [swapConfirmation, setSwapConfirmation] = useState<{
@@ -63,29 +83,56 @@ export function WeekSection({
     weekLabel1: string;
     weekLabel2: string;
   } | null>(null);
+  const [customRowToRemove, setCustomRowToRemove] = useState<{
+    weekId: string;
+    rowId: string;
+    label: string;
+  } | null>(null);
 
   // Definir todas las claves de filas para esta semana
-  const rowKeys = useMemo(() => [
-    `${wid}_loc`, // Location
-    `${wid}_seq`, // Sequences
-    `${wid}_crewList`, // Technical Team
-    `${wid}_needLoc`, // Location Needs
-    `${wid}_needProd`, // Production Needs
-    `${wid}_needTransport`, // Transport Needs
-    `${wid}_needGroups`, // Groups Needs
-    `${wid}_needLight`, // Light Needs
-    `${wid}_extraMat`, // Extra Material
-    `${wid}_precall`, // Precall
-    `${wid}_preList`, // Prelight Team
-    `${wid}_pickList`, // Pickup Team
-    `${wid}_obs`, // Observations
-  ], [wid]);
+  const customRows = useMemo(
+    () => (Array.isArray(wk?.customRows) ? wk.customRows : []),
+    [wk?.customRows]
+  );
+  const rowKeys = useMemo(() => {
+    const base = [
+      `${wid}_loc`, // Location
+      `${wid}_seq`, // Sequences
+      `${wid}_crewList`, // Technical Team
+      `${wid}_needLoc`, // Location Needs
+      `${wid}_needProd`, // Production Needs
+      `${wid}_needTransport`, // Transport Needs
+      `${wid}_needGroups`, // Groups Needs
+      `${wid}_needLight`, // Light Needs
+      `${wid}_extraMat`, // Extra Material
+      `${wid}_precall`, // Precall
+      `${wid}_preList`, // Prelight Team
+      `${wid}_pickList`, // Pickup Team
+      `${wid}_obs`, // Observations
+    ];
+    const custom = customRows.map(row => `${wid}_custom_${row.id}`);
+    return [...base, ...custom];
+  }, [wid, customRows]);
 
   // Hook para gestionar selección de filas
-  const { toggleRowSelection, isRowSelected } = useRowSelection({
+  const { toggleRowSelection, isRowSelected, selectRow } = useRowSelection({
     persistKey: `needs_${wid}`,
     rowKeys,
   });
+
+  // Hook para selección de columnas (días)
+  const {
+    selectedColumns,
+    toggleColumnSelection,
+    setAllColumns,
+    isColumnSelected,
+    columnKeys,
+  } = useColumnSelection({
+    persistKey: `needs_${wid}`,
+    columnCount: DAYS.length,
+  });
+  const allColumnsSelected = columnKeys.length > 0 && columnKeys.every(idx => isColumnSelected(idx));
+  const allRowsSelected = rowKeys.length > 0 && rowKeys.every(key => isRowSelected(key));
 
   const btnExportCls = btnExport;
   const btnExportStyle = {
@@ -93,6 +140,27 @@ export function WeekSection({
     color: '#FFFFFF',
     border: '1px solid rgba(255,255,255,0.08)',
   } as React.CSSProperties;
+
+  useEffect(() => {
+    const updateTheme = () => {
+      if (typeof document !== 'undefined') {
+        const currentTheme = (document.documentElement.getAttribute('data-theme') || 'light') as 'dark' | 'light';
+        setTheme(currentTheme);
+      }
+    };
+
+    const observer = new MutationObserver(updateTheme);
+    if (typeof document !== 'undefined') {
+      observer.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['data-theme'],
+      });
+    }
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
 
   return (
     <section
@@ -120,7 +188,18 @@ export function WeekSection({
             onClick={() => {
               // Obtener las filas seleccionadas
               const selectedRowKeys = rowKeys.filter(key => isRowSelected(key));
-              exportWeekPDF(wid, selectedRowKeys.length > 0 ? selectedRowKeys : undefined);
+              const selectedDayIdxs = columnKeys.filter(idx => selectedColumns.has(idx));
+              const useSelectedDays =
+                selectedDayIdxs.length > 0 && selectedDayIdxs.length < columnKeys.length
+                  ? selectedDayIdxs
+                  : undefined;
+              const includeEmptyRows = allRowsSelected && (allColumnsSelected || !!useSelectedDays);
+              exportWeekPDF(
+                wid,
+                selectedRowKeys.length > 0 ? selectedRowKeys : undefined,
+                useSelectedDays,
+                includeEmptyRows
+              );
             }}
             title={t('needs.exportWeekPDF')}
           >
@@ -166,28 +245,61 @@ export function WeekSection({
                     />
                   </div>
                 </Th>
-                <Th>{t('needs.fieldDay')}</Th>
+                <Th>
+                  <div className='flex flex-col items-center gap-1'>
+                    <input
+                      type='checkbox'
+                      checked={allColumnsSelected}
+                      onChange={e => {
+                        if (readOnly) return;
+                        setAllColumns(e.target.checked);
+                      }}
+                      disabled={readOnly}
+                      onClick={e => e.stopPropagation()}
+                      title={t('needs.selectForExport')}
+                      className={`accent-blue-500 dark:accent-[#f59e0b] ${readOnly ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                    />
+                    <span>{t('needs.fieldDay')}</span>
+                  </div>
+                </Th>
                 {DAYS.map((d, i) => {
                   const isSelected = isDaySelected(wid, i);
                   const hasSelection = selectedDayForSwap !== null;
                   const isOtherSelected = hasSelection && !isSelected;
                   
                   return (
-                    <Th 
+                    <Th
                       key={d.key} 
                       align='center' 
                       className={`text-center relative ${isSelected ? 'bg-blue-500/20 dark:bg-blue-500/30 border-2 border-blue-500' : ''} ${isOtherSelected ? 'hover:bg-zinc-100/10 dark:hover:bg-zinc-800/20' : ''}`}
                     >
-                      <div className='text-[9px] sm:text-[10px] md:text-xs'>{d.name}</div>
-                      <div className='text-[8px] sm:text-[9px] md:text-[10px] text-zinc-400'>
-                        {datesRow[i]}
+                      <div className='flex justify-center mb-0.5'>
+                        <input
+                          type='checkbox'
+                          checked={isColumnSelected(i)}
+                          onChange={() => {
+                            if (readOnly) return;
+                            toggleColumnSelection(i);
+                          }}
+                          disabled={readOnly}
+                          onClick={e => e.stopPropagation()}
+                          title={t('needs.selectForExport')}
+                          className={`accent-blue-500 dark:accent-[#f59e0b] ${readOnly ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                        />
+                      </div>
+                      <div className='text-[9px] sm:text-[10px] md:text-xs'>
+                        {d.name} {datesRow[i]}
                       </div>
                       <div className='flex justify-center gap-1 mt-1'>
                         {!hasSelection ? (
                           <button
                             onClick={() => !readOnly && selectDayForSwap(wid, i)}
                             disabled={readOnly}
-                            className={`px-1 py-0.5 text-[8px] sm:text-[9px] rounded border transition ${readOnly ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-blue-500/20'} ${isSelected ? 'bg-blue-500/30 border-blue-500' : 'border-neutral-border'}`}
+                            className={`px-1 py-0.5 text-[8px] sm:text-[9px] rounded border transition ${
+                              readOnly
+                                ? 'opacity-50 cursor-not-allowed'
+                                : 'cursor-pointer hover:bg-blue-500/20 dark:hover:bg-[#f59e0b]/40'
+                            } ${isSelected ? 'bg-blue-500/30 border-blue-500 dark:bg-[#f59e0b]/45 dark:border-[#f59e0b]' : 'border-neutral-border'}`}
                             title={readOnly ? t('conditions.projectClosed') : t('needs.selectForSwap')}
                           >
                             {t('needs.swap')}
@@ -388,6 +500,87 @@ export function WeekSection({
                 isSelected={isRowSelected(`${wid}_obs`)}
                 toggleRowSelection={toggleRowSelection}
               />
+              {customRows.map(row => {
+                const rowKey = `${wid}_custom_${row.id}`;
+                return (
+                  <tr key={rowKey}>
+                    <Td align='middle' className='text-center'>
+                      <div className='flex justify-center'>
+                        <input
+                          type='checkbox'
+                          checked={isRowSelected(rowKey)}
+                          onChange={() => !readOnly && toggleRowSelection(rowKey)}
+                          disabled={readOnly}
+                          title={readOnly ? t('conditions.projectClosed') : (isRowSelected(rowKey) ? t('needs.deselectForExport') : t('needs.selectForExport'))}
+                          className={`accent-blue-500 dark:accent-[#f59e0b] ${readOnly ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                        />
+                      </div>
+                    </Td>
+                    <Td className='border border-neutral-border px-1 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-1 font-semibold bg-white/5 whitespace-nowrap text-[9px] sm:text-[10px] md:text-xs lg:text-sm align-middle'>
+                      <div className='flex items-center gap-1'>
+                        <input
+                          type='text'
+                          value={row.label || ''}
+                          onChange={e => !readOnly && updateCustomRowLabel(wid, row.id, e.target.value)}
+                          placeholder={t('needs.customRowPlaceholder')}
+                          disabled={readOnly}
+                          className={`flex-1 bg-transparent focus:outline-none ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        />
+                        <button
+                          type='button'
+                          onClick={() => {
+                            if (readOnly) return;
+                            setCustomRowToRemove({
+                              weekId: wid,
+                              rowId: row.id,
+                              label: row.label || t('needs.customRowLabel'),
+                            });
+                          }}
+                          disabled={readOnly}
+                          title={t('needs.remove')}
+                          className={`text-[9px] sm:text-[10px] md:text-xs text-red-500 dark:text-white ${readOnly ? 'opacity-50 cursor-not-allowed' : 'hover:text-red-400 dark:hover:text-white/80'}`}
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    </Td>
+                    {DAYS.map((d, i) => {
+                      const value = (wk?.days?.[i]?.[row.fieldKey] as string) || '';
+                      return (
+                        <Td key={`${rowKey}_${d.key}`} align='middle' className='text-center'>
+                          <div className='flex justify-center'>
+                            <TextAreaAuto
+                              value={value}
+                              onChange={(val: string) => !readOnly && setCell(wid, i, row.fieldKey, val)}
+                              placeholder={t('needs.writeHere')}
+                              readOnly={readOnly}
+                            />
+                          </div>
+                        </Td>
+                      );
+                    })}
+                  </tr>
+                );
+              })}
+              <tr>
+                <Td colSpan={DAYS.length + 2} className='border border-neutral-border px-1 py-1 sm:px-2 sm:py-1.5 md:px-3 md:py-2'>
+                  <button
+                    type='button'
+                    onClick={() => {
+                      if (readOnly) return;
+                      const newId = addCustomRow(wid);
+                      if (newId) {
+                        selectRow(`${wid}_custom_${newId}`);
+                      }
+                    }}
+                    disabled={readOnly}
+                    className={`text-[9px] sm:text-[10px] md:text-xs font-semibold ${readOnly ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-80'}`}
+                    style={{ color: isDark ? '#ffffff' : '#111827' }}
+                  >
+                    {t('needs.addRow')}
+                  </button>
+                </Td>
+              </tr>
             </tbody>
           </table>
         </div>
@@ -416,6 +609,19 @@ export function WeekSection({
             );
             setSwapConfirmation(null);
             clearSelection();
+          }}
+        />
+      )}
+      {customRowToRemove && (
+        <ConfirmModal
+          title={t('needs.confirmDeletion')}
+          message={t('needs.confirmDeleteCustomRow', {
+            name: customRowToRemove.label,
+          })}
+          onClose={() => setCustomRowToRemove(null)}
+          onConfirm={() => {
+            removeCustomRow(customRowToRemove.weekId, customRowToRemove.rowId);
+            setCustomRowToRemove(null);
           }}
         />
       )}

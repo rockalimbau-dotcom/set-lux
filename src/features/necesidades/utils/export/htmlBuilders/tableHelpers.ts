@@ -1,6 +1,6 @@
 import i18n from '../../../../../i18n/config';
 import { getRoleBadgeCode, applyGenderToBadge } from '@shared/constants/roles';
-import { DayValues } from '../types';
+import { CustomRow, DayValues } from '../types';
 import {
   esc,
   formatDDMM,
@@ -92,7 +92,9 @@ function isListRowEmpty(listKey: string, notesKey: string, valuesByDay: DayValue
 export function generateTableBody(
   DAYS: ReturnType<typeof getDays>,
   valuesByDay: DayValues[],
-  selectedRowKeys?: string[] // Filas seleccionadas para filtrar qué mostrar
+  selectedRowKeys?: string[], // Filas seleccionadas para filtrar qué mostrar
+  includeEmptyRows: boolean = false,
+  customRows: CustomRow[] = []
 ): string {
   // Mapeo de fieldKey/listKey a función de generación
   const rowGenerators: Array<{ key: string; generate: () => string; isEmpty: () => boolean }> = [
@@ -110,6 +112,18 @@ export function generateTableBody(
     { key: 'pickList', generate: () => listRow(i18n.t('needs.pickupTeam'), 'pickList', 'pickTxt', DAYS, valuesByDay), isEmpty: () => isListRowEmpty('pickList', 'pickTxt', valuesByDay) },
     { key: 'obs', generate: () => fieldRow('obs', i18n.t('needs.observations'), DAYS, valuesByDay), isEmpty: () => isFieldRowEmpty('obs', valuesByDay) },
   ];
+  if (customRows.length > 0) {
+    customRows.forEach(row => {
+      if (!row?.fieldKey) return;
+      const label = row.label || i18n.t('needs.customRowLabel');
+      const hasLabel = Boolean((label || '').trim());
+      rowGenerators.push({
+        key: row.fieldKey,
+        generate: () => fieldRow(row.fieldKey, label, DAYS, valuesByDay),
+        isEmpty: () => !hasLabel && isFieldRowEmpty(row.fieldKey, valuesByDay),
+      });
+    });
+  }
   
   // Si hay filas seleccionadas, filtrar
   if (selectedRowKeys && selectedRowKeys.length > 0) {
@@ -117,22 +131,29 @@ export function generateTableBody(
     const selectedFields = new Set(
       selectedRowKeys
         .map(key => {
+          const customMarker = '_custom_';
+          const customIdx = key.indexOf(customMarker);
+          if (customIdx !== -1) {
+            const customId = key.slice(customIdx + customMarker.length);
+            const row = customRows.find(r => r.id === customId);
+            return row?.fieldKey || null;
+          }
           const parts = key.split('_');
           return parts.length > 1 ? parts[parts.length - 1] : null;
         })
         .filter(Boolean) as string[]
     );
     
-    // Generar solo las filas seleccionadas que no estén vacías
+    // Generar solo las filas seleccionadas (con o sin vacías)
     return rowGenerators
-      .filter(row => selectedFields.has(row.key) && !row.isEmpty())
+      .filter(row => selectedFields.has(row.key) && (includeEmptyRows || !row.isEmpty()))
       .map(row => row.generate())
       .join('');
   }
   
-  // Si no hay selección, generar todas las filas que no estén vacías
+  // Si no hay selección, generar todas las filas (con o sin vacías)
   return rowGenerators
-    .filter(row => !row.isEmpty())
+    .filter(row => includeEmptyRows || !row.isEmpty())
     .map(row => row.generate())
     .join('');
 }

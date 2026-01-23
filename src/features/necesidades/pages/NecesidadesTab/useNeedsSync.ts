@@ -5,6 +5,7 @@ import { AnyRecord } from '@shared/types/common';
 
 interface UseNeedsSyncProps {
   planKey: string;
+  storageKey: string;
   setNeeds: (updater: (prev: AnyRecord) => AnyRecord) => void;
   setHasError: (hasError: boolean) => void;
   setErrorMessage: (message: string) => void;
@@ -15,6 +16,7 @@ interface UseNeedsSyncProps {
  */
 export function useNeedsSync({
   planKey,
+  storageKey,
   setNeeds,
   setHasError,
   setErrorMessage,
@@ -34,7 +36,10 @@ export function useNeedsSync({
       }
 
       if (!plan) {
-        setNeeds({});
+        setNeeds(prev => {
+          if (Object.keys(prev).length === 0) return prev;
+          return prev;
+        });
         return;
       }
 
@@ -45,13 +50,22 @@ export function useNeedsSync({
       if (!all.length) {
         setNeeds((prev: AnyRecord) => {
           if (Object.keys(prev).length === 0) return prev;
-          return {};
+          return prev;
         });
         return;
       }
 
       setNeeds((prev: AnyRecord) => {
         try {
+          const storedNeeds = storage.getJSON<any>(storageKey) || {};
+          const storedById = new Map<string, AnyRecord>();
+          const storedByMonday = new Map<string, AnyRecord>();
+          for (const [wid, wk] of Object.entries(storedNeeds)) {
+            const week = wk as AnyRecord;
+            storedById.set(wid, week);
+            if (week?.startDate) storedByMonday.set(week.startDate as string, week);
+          }
+
           const next: AnyRecord = { ...prev };
 
           const byMondayPrev = new Map<string, { wid: string; wk: AnyRecord }>();
@@ -70,19 +84,23 @@ export function useNeedsSync({
                 delete next[prevByMon.wid];
                 next[w.id as string] = { ...cloned, label: w.label, startDate: w.startDate };
               } else {
+                const storedWeek = storedById.get(w.id as string) || storedByMonday.get(monday);
                 next[w.id as string] = {
                   label: w.label,
                   startDate: w.startDate,
                   open: true,
                   days: {},
+                  customRows: storedWeek?.customRows || [],
                 };
               }
             } else {
+              const storedWeek = storedById.get(w.id as string) || storedByMonday.get(monday);
               next[w.id as string] = {
                 ...(next[w.id as string] as AnyRecord),
                 label: w.label,
                 startDate: w.startDate,
                 days: (next[w.id as string] as AnyRecord).days || {},
+                customRows: (next[w.id as string] as AnyRecord).customRows || storedWeek?.customRows || [],
               } as AnyRecord;
             }
 

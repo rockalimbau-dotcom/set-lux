@@ -24,9 +24,16 @@ export interface DayValues {
   [key: string]: any;
 }
 
+export interface CustomRow {
+  id: string;
+  label: string;
+  fieldKey: string;
+}
+
 export interface WeekEntry {
   label?: string;
   startDate?: string;
+  customRows?: CustomRow[];
   [key: string]: any;
 }
 

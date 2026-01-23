@@ -50,6 +50,22 @@ export function useLocalStorage<T>(
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const pendingValueRef = useRef<T | null>(null);
   
+  useEffect(() => {
+    const flushPending = () => {
+      if (pendingValueRef.current !== null) {
+        storage.setString(keyRef.current, safeStringify(pendingValueRef.current));
+        pendingValueRef.current = null;
+      }
+    };
+    window.addEventListener('beforeunload', flushPending);
+    window.addEventListener('pagehide', flushPending);
+    return () => {
+      flushPending();
+      window.removeEventListener('beforeunload', flushPending);
+      window.removeEventListener('pagehide', flushPending);
+    };
+  }, []);
+  
   const set = useCallback((updater: SetValue<T>) => {
     setValue(prev => {
       const next = typeof updater === 'function' ? (updater as (prevValue: T) => T)(prev) : updater;

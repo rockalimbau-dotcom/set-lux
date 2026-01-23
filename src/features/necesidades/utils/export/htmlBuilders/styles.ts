@@ -87,6 +87,12 @@ export const baseStyles = `
     border: 2px solid #1e40af;
   }
   
+  th:first-child,
+  td:first-child {
+    width: 1%;
+    white-space: nowrap;
+  }
+  
   th {
     background: #1e40af;
     color: white;

@@ -1,7 +1,7 @@
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import i18n from '../../../../i18n/config';
-import { DayValues } from './types';
+import { CustomRow, DayValues } from './types';
 import { buildNecesidadesHTMLForPDF } from './htmlBuilders';
 import { translateWeekLabel, getNeedsLabel } from './helpers';
 
@@ -13,10 +13,22 @@ export async function exportToPDF(
   weekLabel: string,
   weekStart: string,
   valuesByDay: DayValues[],
-  selectedRowKeys?: string[] // Filas seleccionadas para filtrar qué mostrar
+  selectedRowKeys?: string[], // Filas seleccionadas para filtrar qué mostrar
+  selectedDayIdxs?: number[], // Columnas seleccionadas (días)
+  includeEmptyRows?: boolean, // Incluir filas vacías
+  customRows?: CustomRow[]
 ): Promise<void> {
   try {
-    const html = buildNecesidadesHTMLForPDF(project, weekLabel, weekStart, valuesByDay, selectedRowKeys);
+    const html = buildNecesidadesHTMLForPDF(
+      project,
+      weekLabel,
+      weekStart,
+      valuesByDay,
+      selectedRowKeys,
+      selectedDayIdxs,
+      includeEmptyRows,
+      customRows
+    );
     
     const tempContainer = document.createElement('div');
     tempContainer.innerHTML = html;

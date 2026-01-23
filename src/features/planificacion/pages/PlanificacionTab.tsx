@@ -83,7 +83,7 @@ export default function PlanificacionTab({
   return (
     <div id='print-root' className='space-y-2 sm:space-y-3 md:space-y-4 lg:space-y-6'>
       <div className='no-pdf flex items-center justify-between gap-1 sm:gap-1.5 md:gap-2'>
-        <span className='text-[9px] sm:text-[10px] md:text-xs text-zinc-400'>
+        <span className='text-[9px] sm:text-[10px] md:text-xs text-zinc-400 dark:text-white'>
           <strong>Tip:</strong> {t('planning.scrollTip')}
         </span>
         <button

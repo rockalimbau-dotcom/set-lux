@@ -43,6 +43,13 @@ export function useRowSelection({ persistKey, rowKeys }: UseRowSelectionProps) {
     });
   };
 
+  const selectRow = (rowKey: string) => {
+    setSelectedRowsArray(prev => {
+      if (prev.includes(rowKey)) return prev;
+      return [...prev, rowKey];
+    });
+  };
+
   const isRowSelected = (rowKey: string) => {
     return selectedRows.has(rowKey);
   };
@@ -51,5 +58,6 @@ export function useRowSelection({ persistKey, rowKeys }: UseRowSelectionProps) {
     selectedRows,
     toggleRowSelection,
     isRowSelected,
+    selectRow,
   };
 }

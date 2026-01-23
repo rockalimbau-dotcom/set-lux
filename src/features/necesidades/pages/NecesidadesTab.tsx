@@ -52,6 +52,7 @@ export default function NecesidadesTab({ project, readOnly = false }: Necesidade
   // Sync from planificación
   useNeedsSync({
     planKey,
+    storageKey,
     setNeeds,
     setHasError,
     setErrorMessage,
@@ -67,14 +68,20 @@ export default function NecesidadesTab({ project, readOnly = false }: Necesidade
   });
 
   // Actions
-  const { setCell, removeFromList, setWeekOpen, swapDays } = useNeedsActions({
+  const { setCell, removeFromList, setWeekOpen, swapDays, addCustomRow, updateCustomRowLabel, removeCustomRow } = useNeedsActions({
     planKey,
+    storageKey,
     readOnly,
     setNeeds,
   });
 
   // Export functions
-  const exportWeekPDF = async (weekId: string, selectedRowKeys?: string[]) => {
+  const exportWeekPDF = async (
+    weekId: string,
+    selectedRowKeys?: string[],
+    selectedDayIdxs?: number[],
+    includeEmptyRows?: boolean
+  ) => {
     try {
       const w: AnyRecord = needs[weekId];
       if (!w) {
@@ -99,6 +106,12 @@ export default function NecesidadesTab({ project, readOnly = false }: Necesidade
         [`${weekId}_pickList`]: 'pickList',
         [`${weekId}_obs`]: 'obs',
       };
+      const customRows = Array.isArray(w?.customRows) ? w.customRows : [];
+      customRows.forEach((row: AnyRecord) => {
+        if (row?.id && row?.fieldKey) {
+          rowKeyToFieldKey[`${weekId}_custom_${row.id}`] = row.fieldKey;
+        }
+      });
       
       // Si hay filas seleccionadas, filtrar los datos
       let valuesByDay = Array.from({ length: 7 }).map((_, i) => (w.days as AnyRecord)?.[i] || {});
@@ -138,7 +151,10 @@ export default function NecesidadesTab({ project, readOnly = false }: Necesidade
         w.label || t('needs.week'),
         w.startDate || '',
         valuesByDay,
-        selectedRowKeys // Pasar las filas seleccionadas para que el HTML solo muestre esas filas
+        selectedRowKeys, // Pasar las filas seleccionadas para que el HTML solo muestre esas filas
+        selectedDayIdxs, // Pasar columnas seleccionadas (días)
+        includeEmptyRows, // Incluir filas vacías cuando todo está activo
+        customRows
       );
     } catch (error) {
       console.error('Error exporting PDF:', error);
@@ -194,6 +210,9 @@ export default function NecesidadesTab({ project, readOnly = false }: Necesidade
         exportWeekPDF={exportWeekPDF}
         exportAllNeedsPDF={exportAllNeedsPDF}
         swapDays={swapDays}
+        addCustomRow={addCustomRow}
+        updateCustomRowLabel={updateCustomRowLabel}
+        removeCustomRow={removeCustomRow}
       />
     </div>
   );
