@@ -35,13 +35,38 @@ export function makeRolePrices(project: any) {
       .replace(/\p{Diacritic}/gu, '')
       .replace(/\s+/g, ' ')
       .trim();
+  
+  const normalizeLabel = (s: unknown): string =>
+    String(s == null ? '' : s)
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/\p{Diacritic}/gu, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+  
+  const KNOWN_LABELS = new Set(
+    [
+      'Gaffer',
+      'Best boy',
+      'Eléctrico',
+      'Eléctrico/a',
+      'Auxiliar',
+      'Meritorio',
+      'Técnico de mesa',
+      'Finger boy',
+      'Rigger',
+    ].map(normalizeLabel)
+  );
 
   // Determinar qué tabla de precios usar según el rol
   const getPriceTable = (roleCode: string): Record<string, any> => {
     const roleStr = String(roleCode || '');
     // Detectar si el rol tiene sufijo P (prelight) o R (pickup)
-    const hasP = roleStr.endsWith('P') || roleStr.endsWith('p');
-    const hasR = roleStr.endsWith('R') || roleStr.endsWith('r');
+    // Evitar confundir roles base como "Gaffer" (termina en r) con pickup.
+    const roleNorm = normalizeLabel(roleStr);
+    const hasSuffix = /[PR]$/i.test(roleStr) && !KNOWN_LABELS.has(roleNorm);
+    const hasP = hasSuffix && /P$/i.test(roleStr);
+    const hasR = hasSuffix && /R$/i.test(roleStr);
     
     if (hasP) {
       // Si hay tabla de prelight y el rol base existe, usar prelight; si no, usar base
