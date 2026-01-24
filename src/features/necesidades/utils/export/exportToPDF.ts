@@ -4,6 +4,7 @@ import i18n from '../../../../i18n/config';
 import { CustomRow, DayValues } from './types';
 import { buildNecesidadesHTMLForPDF } from './htmlBuilders';
 import { translateWeekLabel, getNeedsLabel } from './helpers';
+import { shareOrSavePDF } from '@shared/utils/pdfShare';
 
 /**
  * Export single week to PDF
@@ -95,7 +96,8 @@ export async function exportToPDF(
     const translatedWeekLabel = translateWeekLabel(weekLabel);
     const weekPart = translatedWeekLabel.replace(/\s+/g, '');
     const projectName = project?.nombre || i18n.t('needs.project');
-    pdf.save(`${needsLabel}_${weekPart}_${projectName.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`);
+    const filename = `${needsLabel}_${weekPart}_${projectName.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
+    await shareOrSavePDF(pdf, filename, needsLabel);
   } catch (error) {
     console.error('Error generating PDF:', error);
     throw error;

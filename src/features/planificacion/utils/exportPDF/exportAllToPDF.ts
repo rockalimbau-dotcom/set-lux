@@ -4,6 +4,7 @@ import i18n from '../../../../i18n/config';
 import { Week, DayInfo } from './types';
 import { buildPlanificacionHTMLForPDF } from './buildHTMLForPDF';
 import { getFilenameTranslation } from './helpers';
+import { shareOrSavePDF } from '@shared/utils/pdfShare';
 
 /**
  * Export all weeks to PDF
@@ -107,7 +108,7 @@ export async function exportAllToPDF(
     
     const filename = `${planningLabel}_${scopeLabel}_${projectName.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
 
-    pdf.save(filename);
+    await shareOrSavePDF(pdf, filename, i18n.t('planning.title'));
     console.log(`✅ Planificación PDF All: ${allWeeks.length} pages saved as ${filename}`);
   } catch (error) {
     console.error('Error generating PDF for all planificación:', error);

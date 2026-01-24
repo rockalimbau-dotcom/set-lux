@@ -5,6 +5,7 @@ import { WeekEntry, NeedsData } from './types';
 import { buildNecesidadesHTMLForPDF } from './htmlBuilders';
 import { getNeedsLabel, getCompleteLabel } from './helpers';
 import { storage } from '@shared/services/localStorage.service';
+import { shareOrSavePDF } from '@shared/utils/pdfShare';
 
 /**
  * Export all weeks to PDF
@@ -162,7 +163,7 @@ export async function exportAllToPDF(
     const completeLabel = getCompleteLabel();
     const filename = `${needsLabel}_${completeLabel}_${projectName.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
     
-    pdf.save(filename);
+    await shareOrSavePDF(pdf, filename, needsLabel);
     console.log(`✅ Necesidades PDF All: ${weekEntries.length} pages saved as ${filename}`);
   } catch (error) {
     console.error('Error generating PDF for all needs:', error);

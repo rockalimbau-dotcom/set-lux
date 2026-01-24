@@ -12,6 +12,7 @@ import { storage } from '@shared/services/localStorage.service';
 import { personaKey, normalizePersonaKey } from '../model';
 import { norm } from '../text';
 import html2canvas from 'html2canvas';
+import { shareOrSavePDF } from '@shared/utils/pdfShare';
 
 export async function exportReportRangeToPDF(params: ExportReportRangeParams) {
   const {
@@ -534,7 +535,7 @@ export async function exportReportRangeToPDF(params: ExportReportRangeParams) {
 
     // Save final PDF
     const fname = generateRangeFilename(project, title, safeSemana);
-    pdf.save(fname);
+    await shareOrSavePDF(pdf, fname, title);
 
     return true;
   } catch (error) {

@@ -4,6 +4,7 @@ import i18n from '../../../../i18n/config';
 import { baseStyles } from '@features/condiciones/utils/exportPDF/htmlBuilders/styles';
 import { generateFooter } from '@features/condiciones/utils/exportPDF/htmlBuilders/contentHelpers';
 import { translateRoleLabel } from '@features/equipo/pages/EquipoTab/EquipoTabUtils';
+import { shareOrSavePDF } from '@shared/utils/pdfShare';
 
 type TeamGroupKey = 'base' | 'reinforcements' | 'prelight' | 'pickup';
 
@@ -190,5 +191,5 @@ export async function exportEquipoToPDF(project: any, team: any): Promise<void> 
   }
 
   const filename = `${i18n.t('team.title')} - ${project?.nombre || i18n.t('common.project')}.pdf`;
-  pdf.save(filename);
+  await shareOrSavePDF(pdf, filename, i18n.t('team.title'));
 }

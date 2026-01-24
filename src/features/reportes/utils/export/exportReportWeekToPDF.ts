@@ -4,6 +4,7 @@ import { BuildPdfParams } from './types';
 import { buildReportWeekHTMLForPDF } from './buildReportWeekHTMLForPDF';
 import { calculatePersonsPerPage } from './paginationHelpers';
 import { generateWeekFilename } from './filenameHelpers';
+import { shareOrSavePDF } from '@shared/utils/pdfShare';
 
 export async function exportReportWeekToPDF(params: BuildPdfParams) {
   const {
@@ -117,7 +118,7 @@ export async function exportReportWeekToPDF(params: BuildPdfParams) {
     
     // Generate and save filename
     const fname = generateWeekFilename(project, title, filename);
-    pdf.save(fname);
+    await shareOrSavePDF(pdf, fname, title);
     
     return true;
   } catch (error) {

@@ -5,6 +5,7 @@ import { buildNominaMonthHTMLForPDF } from './buildNominaMonthHTMLForPDF';
 import { getBlockFromRole } from './helpers';
 import { calculatePagination } from './paginationHelpers';
 import { generateNominaFilename } from './filenameHelpers';
+import { shareOrSavePDF } from '@shared/utils/pdfShare';
 
 export async function exportToPDF({
   project,
@@ -165,7 +166,7 @@ export async function exportToPDF({
     
     // Generate and save filename
     const filename = generateNominaFilename(project, monthKey, monthLabelEs);
-    pdf.save(filename);
+    await shareOrSavePDF(pdf, filename);
     
     return true;
   } catch (error) {

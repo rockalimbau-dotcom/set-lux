@@ -10,6 +10,7 @@ import {
 import { renderWithParams, restoreStrongTags, markdownToHtml } from '../../condiciones/shared';
 import { buildCondicionesPageHTMLForPDF } from './htmlBuilders';
 import { getConditionsLabel, filterRolesWithPrices } from './helpers';
+import { shareOrSavePDF } from '@shared/utils/pdfShare';
 
 /**
  * Get translation helper
@@ -318,7 +319,7 @@ export async function exportCondicionesToPDF(
     
     const conditionsLabel = getConditionsLabel();
     const fileName = `${conditionsLabel}_${whichTranslated}_${projectName.replace(/\s+/g, '_')}.pdf`;
-    pdf.save(fileName);
+    await shareOrSavePDF(pdf, fileName, conditionsLabel);
   } catch (error) {
     console.error('Error generating condiciones PDF:', error);
     throw error;
