@@ -329,6 +329,7 @@
     "understood": "Entendido",
     "description": "Base, refuerzos, prelight y recogida",
     "descriptionAdvertising": "Base, prelight y recogida",
+    "title": "Equipo",
     "baseTeam": "Equipo base",
     "reinforcements": "Refuerzos",
     "prelightTeam": "Equipo Prelight",
@@ -356,6 +357,7 @@
     "noTeamMessage": "Pulsa el botón \"+ Añadir\" para añadir miembros al equipo.",
     "tip": "Tip:",
     "tipMessage": "El <em>Equipo base</em> se añade por defecto al crear semana o marcar \"Rodaje\" en Planificación.",
+    "exportPDF": "Exportar PDF",
     "reinforcementPrefix": "Refuerzo",
     "roles": {
       "G": "Gaffer",

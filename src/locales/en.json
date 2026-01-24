@@ -330,6 +330,7 @@
     "understood": "Understood",
     "description": "Base, reinforcements, prelight and pickup",
     "descriptionAdvertising": "Base, prelight and pickup",
+    "title": "Team",
     "baseTeam": "Base team",
     "reinforcements": "Reinforcements",
     "prelightTeam": "Prelight team",
@@ -356,6 +357,7 @@
     "noTeamMessage": "Click the \"+ Add\" button to add team members.",
     "tip": "Tip:",
     "tipMessage": "The <em>Base team</em> is added by default when creating a week or marking \"Filming\" in Planning.",
+    "exportPDF": "Export PDF",
     "reinforcementPrefix": "Reinforcements",
     "roles": {
       "G": "Gaffer",

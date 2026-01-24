@@ -8,6 +8,8 @@ import { sortTeam } from './EquipoTab/EquipoTabUtils';
 import { useEquipoData } from './EquipoTab/useEquipoData';
 import { useEquipoActions } from './EquipoTab/useEquipoActions';
 import { TeamGroup } from './EquipoTab/TeamGroup';
+import { btnExport } from '@shared/utils/tailwindClasses';
+import { exportEquipoToPDF } from '../utils/exportPDF/exportToPDF';
 
 function EquipoTab({
   currentUser = { name: '', role: '' },
@@ -17,6 +19,7 @@ function EquipoTab({
   allowEditOverride = false,
   storageKey = 'setlux_equipo_global_v2',
   projectMode = 'semanal',
+  project,
 }: EquipoTabProps) {
   const { t } = useTranslation();
   const canEdit = useMemo(() => {
@@ -62,6 +65,15 @@ function EquipoTab({
       <div className='flex items-center justify-between'>
         <div />
         <div className='flex items-center gap-1 sm:gap-1.5 md:gap-2'>
+          <button
+            onClick={() => exportEquipoToPDF(project, team)}
+            disabled={!team}
+            className={`px-1.5 py-1 sm:px-2 sm:py-1.5 md:px-3 md:py-2 rounded sm:rounded-md md:rounded-lg border text-[9px] sm:text-[10px] md:text-xs border-neutral-border hover:border-accent whitespace-nowrap ${!team ? 'opacity-50 cursor-not-allowed' : ''} ${btnExport}`}
+            title="PDF"
+            type='button'
+          >
+            PDF
+          </button>
           {!groupsEnabled.prelight && (
             <button
               onClick={() => canEdit && enableGroup('prelight')}

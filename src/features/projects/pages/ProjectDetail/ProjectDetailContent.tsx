@@ -50,6 +50,7 @@ export function ProjectDetailContent({
 
       {activeTab === 'equipo' && (
         <EquipoTab
+          project={project}
           currentUser={{
             name: user?.nombreCompleto || '',
             role: user?.roleCode || '',

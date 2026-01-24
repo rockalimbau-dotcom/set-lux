@@ -8,6 +8,7 @@ export interface EquipoTabProps {
   allowEditOverride?: boolean;
   storageKey?: string;
   projectMode?: 'semanal' | 'mensual' | 'diario';
+  project?: AnyRecord;
 }
 
 export interface TeamData {

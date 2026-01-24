@@ -329,6 +329,7 @@
     "understood": "Entesos",
     "description": "Base, reforços, prelight i recollida",
     "descriptionAdvertising": "Base, prelight i recollida",
+    "title": "Equip",
     "baseTeam": "Equip base",
     "reinforcements": "Reforços",
     "prelightTeam": "Equip Prelight",
@@ -355,6 +356,7 @@
     "noTeamMessage": "Prem el botó \"+ Afegir\" per afegir membres a l'equip.",
     "tip": "Consell:",
     "tipMessage": "L'<em>Equip base</em> s'afegeix per defecte en crear setmana o marcar \"Rodatge\" en Planificació.",
+    "exportPDF": "Exportar PDF",
     "reinforcementPrefix": "Reforç",
     "roles": {
       "G": "Gaffer",
