@@ -1,5 +1,6 @@
 // Utils specific to planning access used by ReportesSemana
 import { norm } from './text';
+import { hasRoleGroupSuffix, stripRoleSuffix } from '@shared/constants/roles';
 
 export const BLOCKS = { base: 'base', pre: 'pre', pick: 'pick' } as const;
 
@@ -39,8 +40,10 @@ export function isPersonScheduledOnBlock(
   if (!day || day.tipo === 'Descanso') return false;
 
   const block = blockForRef
-    || (/P$/.test(String(roleLabel || '')) ? BLOCKS.pre
-      : /R$/.test(String(roleLabel || '')) ? BLOCKS.pick
+    || (hasRoleGroupSuffix(String(roleLabel || '')) && /P$/i.test(String(roleLabel || ''))
+      ? BLOCKS.pre
+      : hasRoleGroupSuffix(String(roleLabel || '')) && /R$/i.test(String(roleLabel || ''))
+      ? BLOCKS.pick
       : BLOCKS.base);
   // Si el rol es REF o empieza con REF (REFG, REFBB, etc.), usar lógica de refuerzo
   const roleStr = String(roleLabel || '');
@@ -48,14 +51,14 @@ export function isPersonScheduledOnBlock(
     return refWorksOnBlock(findWeekAndDayFn, iso, name, block);
   }
 
-  const baseRole = String(roleLabel || '').replace(/[PR]$/, '');
+  const baseRole = stripRoleSuffix(String(roleLabel || ''));
   const suffix = block === BLOCKS.pre ? 'prelight' : block === BLOCKS.pick ? 'pickup' : 'team';
   const list: Array<{ name?: string; role?: string }> = Array.isArray((day as any)[suffix]) ? (day as any)[suffix] : [];
   return list.some(
     (m: { name?: string; role?: string }) => {
       const memberRole = String(m?.role || '');
-      const normMemberBase = norm(memberRole).replace(/[pr]$/i, '');
-      const normBase = norm(baseRole).replace(/[pr]$/i, '');
+      const normMemberBase = norm(stripRoleSuffix(memberRole));
+      const normBase = norm(stripRoleSuffix(baseRole));
       return (
         norm(m?.name) === norm(name) &&
         (!memberRole || normMemberBase === normBase || !baseRole)
@@ -82,8 +85,8 @@ export function blockKeyForPerson(
       return 'pick';
     return 'base';
   }
-  if (/P$/.test(r)) return 'pre';
-  if (/R$/.test(r)) return 'pick';
+  if (hasRoleGroupSuffix(r) && /P$/i.test(r)) return 'pre';
+  if (hasRoleGroupSuffix(r) && /R$/i.test(r)) return 'pick';
   return 'base';
 }
 
@@ -129,15 +132,15 @@ export function personWorksOn(
       );
     return any(day.team) || any(day.prelight) || any(day.pickup);
   }
-  const suffix = /P$/.test(roleLabel) ? 'P' : /R$/.test(roleLabel) ? 'R' : '';
-  const baseRole = String(roleLabel || '').replace(/[PR]$/, '');
+  const suffix = hasRoleGroupSuffix(roleLabel) ? (/P$/i.test(roleLabel) ? 'P' : 'R') : '';
+  const baseRole = stripRoleSuffix(String(roleLabel || ''));
   const list =
     suffix === 'P' ? day.prelight : suffix === 'R' ? day.pickup : day.team;
   return (list || []).some(
     (m: { name?: string; role?: string }) => {
       const memberRole = String(m?.role || '');
-      const normMemberBase = norm(memberRole).replace(/[pr]$/i, '');
-      const normBase = norm(baseRole).replace(/[pr]$/i, '');
+      const normMemberBase = norm(stripRoleSuffix(memberRole));
+      const normBase = norm(stripRoleSuffix(baseRole));
       return (
         norm(m?.name) === norm(personName) &&
         (!memberRole || normMemberBase === normBase || !baseRole)

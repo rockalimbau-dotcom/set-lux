@@ -1,6 +1,6 @@
 import { parseDietas } from '../../text';
 import i18n from '../../../../../i18n/config';
-import { getRoleBadgeCode, applyGenderToBadge } from '@shared/constants/roles';
+import { getRoleBadgeCode, applyGenderToBadge, stripRefuerzoSuffix } from '@shared/constants/roles';
 import { esc } from '../htmlHelpers';
 import { translateConcept, translateDietItem } from '../translationHelpers';
 import {
@@ -57,9 +57,7 @@ function generatePersonHeader(
     name = nameParts.join('__');
     // IMPORTANTE: Para refuerzos, eliminar TODOS los sufijos P o R (REFEP -> REFE, REFERP -> REFER -> REFE)
     if (role.startsWith('REF')) {
-      while (role.length > 3 && (role.endsWith('P') || role.endsWith('R'))) {
-        role = role.replace(/[PR]$/, '');
-      }
+      role = stripRefuerzoSuffix(role);
     }
     // Mantener el rol tal cual (G, E, REFE, REFG, etc.) sin sufijos para refuerzos
   }

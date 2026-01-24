@@ -1,3 +1,5 @@
+import { ROLE_CODES_WITH_PR_SUFFIX } from '@shared/constants/roles';
+
 /**
  * Parse number from various formats
  */
@@ -20,8 +22,10 @@ export function num(v: unknown): number {
  * Normalize string for comparison (remove accents, lowercase, remove P/R suffix)
  */
 function normalizeStr(s: unknown): string {
-  return String(s == null ? '' : s)
-    .replace(/[PR]$/i, '')
+  const raw = String(s == null ? '' : s);
+  const upper = raw.toUpperCase();
+  const withoutSuffix = ROLE_CODES_WITH_PR_SUFFIX.has(upper) ? raw : raw.replace(/[PR]$/i, '');
+  return withoutSuffix
     .toLowerCase()
     .normalize('NFD')
     .replace(/\p{Diacritic}/gu, '')

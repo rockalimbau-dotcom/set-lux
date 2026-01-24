@@ -20,19 +20,25 @@ describe('roles', () => {
         'FB',
         'AUX',
         'M',
-        'REF',
+        'RG',
+        'RBB',
+        'RE',
+        'TG',
+        'EPO',
+        'TP',
         'RIG',
+        'REF',
       ]);
     });
 
-    it('has 9 role codes', () => {
-      expect(ROLE_ORDER).toHaveLength(9);
+    it('has 15 role codes', () => {
+      expect(ROLE_ORDER).toHaveLength(15);
     });
   });
 
   describe('ROLES', () => {
     it('contains all roles with correct structure', () => {
-      expect(ROLES).toHaveLength(9);
+      expect(ROLES).toHaveLength(14);
 
       ROLES.forEach(role => {
         expect(role).toHaveProperty('code');
@@ -44,7 +50,7 @@ describe('roles', () => {
 
     it('has correct role codes', () => {
       const codes = ROLES.map(role => role.code);
-      expect(codes).toEqual(['G', 'BB', 'E', 'TM', 'FB', 'AUX', 'M', 'REF', 'RIG']);
+      expect(codes).toEqual(['G', 'BB', 'E', 'TM', 'FB', 'AUX', 'M', 'RG', 'RBB', 'RE', 'TG', 'EPO', 'TP', 'REF']);
     });
 
     it('has correct role labels', () => {
@@ -57,8 +63,13 @@ describe('roles', () => {
         'Finger Boy',
         'Auxiliar',
         'Meritorio',
+        'Rigging Gaffer',
+        'Rigging Best Boy',
+        'Rigging Eléctrico',
+        'Técnico de Generador',
+        'Eléctrico de potencia',
+        'Técnico de prácticos',
         'Refuerzo Eléctrico',
-        'Rigger',
       ]);
     });
   });
@@ -98,8 +109,14 @@ describe('roles', () => {
       expect(roleRank('FB')).toBe(4);
       expect(roleRank('AUX')).toBe(5);
       expect(roleRank('M')).toBe(6);
-      expect(roleRank('REF')).toBe(7);
-      expect(roleRank('RIG')).toBe(8);
+      expect(roleRank('RG')).toBe(7);
+      expect(roleRank('RBB')).toBe(8);
+      expect(roleRank('RE')).toBe(9);
+      expect(roleRank('TG')).toBe(10);
+      expect(roleRank('EPO')).toBe(11);
+      expect(roleRank('TP')).toBe(12);
+      expect(roleRank('RIG')).toBe(13);
+      expect(roleRank('REF')).toBe(14);
     });
 
     it('returns 999 for invalid role codes', () => {
@@ -125,13 +142,19 @@ describe('roles', () => {
     it('has correct label mappings', () => {
       expect(ROLE_CODE_TO_LABEL.G).toBe('Gaffer');
       expect(ROLE_CODE_TO_LABEL.BB).toBe('Best boy');
+      expect(ROLE_CODE_TO_LABEL.RG).toBe('Rigging Gaffer');
+      expect(ROLE_CODE_TO_LABEL.RBB).toBe('Rigging Best Boy');
+      expect(ROLE_CODE_TO_LABEL.RE).toBe('Rigging Eléctrico');
       expect(ROLE_CODE_TO_LABEL.E).toBe('Eléctrico');
       expect(ROLE_CODE_TO_LABEL.AUX).toBe('Auxiliar');
       expect(ROLE_CODE_TO_LABEL.M).toBe('Meritorio');
       expect(ROLE_CODE_TO_LABEL.TM).toBe('Técnico de mesa');
       expect(ROLE_CODE_TO_LABEL.FB).toBe('Finger boy');
+      expect(ROLE_CODE_TO_LABEL.TG).toBe('Técnico de Generador');
+      expect(ROLE_CODE_TO_LABEL.EPO).toBe('Eléctrico de potencia');
+      expect(ROLE_CODE_TO_LABEL.TP).toBe('Técnico de prácticos');
       expect(ROLE_CODE_TO_LABEL.REF).toBe('Refuerzo');
-      expect(ROLE_CODE_TO_LABEL.RIG).toBe('Rigger');
+      expect(ROLE_CODE_TO_LABEL.RIG).toBe('Rigging Eléctrico');
     });
   });
 
@@ -139,13 +162,19 @@ describe('roles', () => {
     it('returns correct label for valid role codes', () => {
       expect(roleLabelFromCode('G')).toBe('Gaffer');
       expect(roleLabelFromCode('BB')).toBe('Best boy');
+      expect(roleLabelFromCode('RG')).toBe('Rigging Gaffer');
+      expect(roleLabelFromCode('RBB')).toBe('Rigging Best Boy');
+      expect(roleLabelFromCode('RE')).toBe('Rigging Eléctrico');
       expect(roleLabelFromCode('E')).toBe('Eléctrico');
       expect(roleLabelFromCode('AUX')).toBe('Auxiliar');
       expect(roleLabelFromCode('M')).toBe('Meritorio');
       expect(roleLabelFromCode('TM')).toBe('Técnico de mesa');
       expect(roleLabelFromCode('FB')).toBe('Finger boy');
+      expect(roleLabelFromCode('TG')).toBe('Técnico de Generador');
+      expect(roleLabelFromCode('EPO')).toBe('Eléctrico de potencia');
+      expect(roleLabelFromCode('TP')).toBe('Técnico de prácticos');
       expect(roleLabelFromCode('REF')).toBe('Refuerzo');
-      expect(roleLabelFromCode('RIG')).toBe('Rigger');
+      expect(roleLabelFromCode('RIG')).toBe('Rigging Eléctrico');
     });
 
     it('returns original code for invalid role codes', () => {
@@ -168,7 +197,7 @@ describe('roles', () => {
   describe('integration tests', () => {
     it('ROLE_ORDER and ROLES are consistent', () => {
       const roleCodes = ROLES.map(role => role.code);
-      expect(roleCodes).toEqual(ROLE_ORDER);
+      expect(ROLE_ORDER).toEqual(expect.arrayContaining(roleCodes));
     });
 
     it('ROLE_COLORS and ROLE_ORDER are consistent', () => {

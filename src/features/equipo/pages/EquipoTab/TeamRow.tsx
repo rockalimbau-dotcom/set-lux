@@ -65,7 +65,7 @@ export function TeamRow({ row, onChange, onRemove, canEdit, allowedRoles, groupK
   const baseRoleForGender = row.role?.startsWith('REF') && row.role.length > 3
     ? row.role.substring(3)
     : row.role;
-  const showGenderDropdown = !['G', 'AUX', 'RIG'].includes(baseRoleForGender || '');
+  const showGenderDropdown = !['G', 'AUX', 'RIG', 'RG'].includes(baseRoleForGender || '');
 
   // Cerrar dropdown al hacer clic fuera
   useEffect(() => {

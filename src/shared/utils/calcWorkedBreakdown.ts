@@ -1,4 +1,5 @@
 import { weekISOdays } from '@features/nomina/utils/plan';
+import { hasRoleGroupSuffix, stripRoleSuffix } from '@shared/constants/roles';
 import { norm, nameEq as nameEqUtil } from './normalize';
 
 export interface WorkedBreakdownResult {
@@ -36,11 +37,11 @@ export function calcWorkedBreakdown(
 ): WorkedBreakdownResult {
   const isWantedISO = filterISO || (() => true);
   const wantedRole = String(person.role || '');
-  const wantedBase = wantedRole.replace(/[PR]$/, '');
-  const wantedSuffix = /P$/.test(wantedRole)
-    ? 'P'
-    : /R$/.test(wantedRole)
-    ? 'R'
+  const wantedBase = stripRoleSuffix(wantedRole);
+  const wantedSuffix = hasRoleGroupSuffix(wantedRole)
+    ? /P$/i.test(wantedRole)
+      ? 'P'
+      : 'R'
     : '';
   const wantedNameNorm = norm(person.name || '');
 
@@ -98,7 +99,7 @@ export function calcWorkedBreakdown(
         const matches = (list: any[]) =>
           (list || []).some((m: any) => {
             if (!nameEq(m?.name)) return false;
-            const mBase = String(m?.role || '').replace(/[PR]$/, '');
+            const mBase = stripRoleSuffix(String(m?.role || ''));
             return !m?.role || !wantedBase || mBase === wantedBase;
           });
 

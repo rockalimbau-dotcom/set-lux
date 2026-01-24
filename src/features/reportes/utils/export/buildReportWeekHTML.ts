@@ -1,6 +1,6 @@
 import { parseDietas } from '../text';
 import i18n from '../../../../i18n/config';
-import { getRoleBadgeCode, applyGenderToBadge } from '@shared/constants/roles';
+import { getRoleBadgeCode, applyGenderToBadge, stripRefuerzoSuffix } from '@shared/constants/roles';
 import { BuildReportWeekHTMLParams } from './types';
 import { esc } from './htmlHelpers';
 import { getTranslation, translateConcept, translateDietItem, translateDayName } from './translationHelpers';
@@ -35,9 +35,7 @@ function parsePersonKeyForDisplay(pk: string): { role: string; name: string } {
     role = rolePart || '';
     name = nameParts.join('__');
     if (role.startsWith('REF')) {
-      while (role.length > 3 && (role.endsWith('P') || role.endsWith('R'))) {
-        role = role.replace(/[PR]$/, '');
-      }
+      role = stripRefuerzoSuffix(role);
     }
   }
   return { role, name };

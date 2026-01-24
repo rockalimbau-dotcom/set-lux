@@ -1,14 +1,46 @@
 import { loadCondModel } from '../cond';
-import { ROLE_CODE_TO_LABEL } from '@shared/constants/roles';
+import { ROLE_CODE_TO_LABEL, ROLE_CODES_WITH_PR_SUFFIX, hasRoleGroupSuffix, stripRoleSuffix } from '@shared/constants/roles';
 import { stripPR, buildRefuerzoIndex } from '../plan';
 import { storageKeyFor } from './helpers';
 
 /**
  * Normalize role name for comparison
  */
+const normalizeLabel = (s: unknown): string =>
+  String(s == null ? '' : s)
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+const KNOWN_LABELS = new Set(
+  [
+    'Gaffer',
+    'Best boy',
+    'Eléctrico',
+    'Eléctrico/a',
+    'Auxiliar',
+    'Meritorio',
+    'Técnico de mesa',
+    'Finger boy',
+    'Rigger',
+    'Rigging Gaffer',
+    'Rigging Best Boy',
+    'Rigging Eléctrico',
+    'Técnico de Generador',
+    'Eléctrico de potencia',
+    'Técnico de prácticos',
+  ].map(normalizeLabel)
+);
+
 function normalizeRoleName(roleName: string): string {
-  return String(roleName || '')
-    .replace(/[PR]$/i, '')
+  const raw = String(roleName || '');
+  const upper = raw.toUpperCase();
+  const roleNorm = normalizeLabel(raw);
+  const shouldStrip = /[PR]$/i.test(raw) && !ROLE_CODES_WITH_PR_SUFFIX.has(upper) && !KNOWN_LABELS.has(roleNorm);
+  const cleaned = shouldStrip ? raw.replace(/[PR]$/i, '') : raw;
+  return cleaned
     .toLowerCase()
     .normalize('NFD')
     .replace(/\p{Diacritic}/gu, '')
@@ -50,10 +82,10 @@ export function visibleRoleFor(roleCode: string, name: string, refuerzoSet: Set<
   if (roleCode && roleCode.startsWith('REF') && roleCode.length > 3) {
     return 'REF';
   }
-  const base = stripPR(roleCode || '');
+  const base = stripRoleSuffix(roleCode || '');
   const keyNoPR = `${base}__${name || ''}`;
   if (refuerzoSet.has(keyNoPR)) return 'REF';
-  const suffix = /[PR]$/.test(roleCode || '') ? roleCode.slice(-1) : '';
+  const suffix = hasRoleGroupSuffix(roleCode || '') ? roleCode.slice(-1) : '';
   return suffix ? `${base}${suffix}` : base;
 }
 

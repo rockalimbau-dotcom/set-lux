@@ -12,8 +12,14 @@ export const PRICE_ROLES_DIARIO = [
   'Best boy',
   'Eléctrico',
   'Auxiliar',
+  'Meritorio',
+  'Rigging Gaffer',
+  'Rigging Best Boy',
+  'Rigging Eléctrico',
   'Técnico de mesa',
   'Finger boy',
-  'Rigger',
+  'Técnico de Generador',
+  'Eléctrico de potencia',
+  'Técnico de prácticos',
 ];
 

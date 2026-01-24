@@ -85,8 +85,8 @@ export function translateRoleLabel(
     const baseTranslationKey = `team.roles.${baseCode}`;
     const baseTranslated = t(baseTranslationKey, { context: genderContext });
     const baseLabel = baseTranslated !== baseTranslationKey ? baseTranslated : baseCode;
-    // Añadir "Refuerzo" antes del nombre del rol base
-    const refuerzoLabel = `Refuerzo ${baseLabel}`;
+    // Añadir prefijo de refuerzo antes del nombre del rol base
+    const refuerzoLabel = `${t('team.reinforcementPrefix')} ${baseLabel}`;
     // Añadir sufijo de grupo si es prelight o pickup
     const sufTitle = roleTitleSuffix(groupKey || '');
     return refuerzoLabel + sufTitle;

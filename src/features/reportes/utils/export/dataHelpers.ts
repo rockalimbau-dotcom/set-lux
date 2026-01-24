@@ -86,30 +86,48 @@ export const rolePriorityForReports = (role: string = ''): number => {
   if (r === 'FB') return 4;
   if (r === 'AUX') return 5;
   if (r === 'M') return 6;
-  if (r === 'RIG') return 7;
+  if (r === 'RG') return 7;
+  if (r === 'RBB') return 8;
+  if (r === 'RE') return 9;
+  if (r === 'RIG') return 9;
+  if (r === 'TG') return 10;
+  if (r === 'EPO') return 11;
+  if (r === 'TP') return 12;
   
   // REFUERZOS
-  if (r === 'REF' || (r.startsWith('REF') && r.length > 3)) return 8;
+  if (r === 'REF' || (r.startsWith('REF') && r.length > 3)) return 14;
   
   // EQUIPO PRELIGHT
-  if (r === 'GP') return 9;
-  if (r === 'BBP') return 10;
-  if (r === 'EP') return 11;
-  if (r === 'TMP') return 12;
-  if (r === 'FBP') return 13;
-  if (r === 'AUXP') return 14;
-  if (r === 'MP') return 15;
-  if (r === 'RIGP') return 16;
+  if (r === 'GP') return 15;
+  if (r === 'BBP') return 16;
+  if (r === 'EP') return 17;
+  if (r === 'TMP') return 18;
+  if (r === 'FBP') return 19;
+  if (r === 'AUXP') return 20;
+  if (r === 'MP') return 21;
+  if (r === 'RGP') return 22;
+  if (r === 'RBBP') return 23;
+  if (r === 'REP') return 24;
+  if (r === 'TGP') return 25;
+  if (r === 'EPOP') return 26;
+  if (r === 'TPP') return 27;
+  if (r === 'RIGP') return 28;
   
   // EQUIPO RECOGIDA
-  if (r === 'GR') return 17;
-  if (r === 'BBR') return 18;
-  if (r === 'ER') return 19;
-  if (r === 'TMR') return 20;
-  if (r === 'FBR') return 21;
-  if (r === 'AUXR') return 22;
-  if (r === 'MR') return 23;
-  if (r === 'RIGR') return 24;
+  if (r === 'GR') return 29;
+  if (r === 'BBR') return 30;
+  if (r === 'ER') return 31;
+  if (r === 'TMR') return 32;
+  if (r === 'FBR') return 33;
+  if (r === 'AUXR') return 34;
+  if (r === 'MR') return 35;
+  if (r === 'RGR') return 36;
+  if (r === 'RBBR') return 37;
+  if (r === 'RER') return 38;
+  if (r === 'TGR') return 39;
+  if (r === 'EPOR') return 40;
+  if (r === 'TPR') return 41;
+  if (r === 'RIGR') return 42;
   
   // Roles desconocidos al final
   return 1000;

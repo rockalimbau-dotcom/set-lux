@@ -62,7 +62,6 @@
     "dop": "DoP",
     "warehouse": "Magatzem",
     "production": "Productora",
-    "productionLabel": "Producció",
     "conditionsType": "Tipus de condicions",
     "country": "País",
     "region": "Regió",
@@ -356,22 +355,38 @@
     "noTeamMessage": "Prem el botó \"+ Afegir\" per afegir membres a l'equip.",
     "tip": "Consell:",
     "tipMessage": "L'<em>Equip base</em> s'afegeix per defecte en crear setmana o marcar \"Rodatge\" en Planificació.",
+    "reinforcementPrefix": "Reforç",
     "roles": {
       "G": "Gaffer",
-      "BB": "Best Boy",
-      "BB_female": "Best Girl",
+      "BB": "Best Boy Electric",
+      "BB_female": "Best Girl Electric",
+      "RG": "Rigging Gaffer",
+      "RBB": "Rigging Best Boy",
+      "RBB_female": "Rigging Best Girl",
+      "RE": "Rigging elèctric@",
+      "RE_male": "Rigging elèctric",
+      "RE_female": "Rigging elèctrica",
       "E": "Elèctric@",
       "E_male": "Elèctric",
       "E_female": "Elèctrica",
-      "TM": "Tècnic de taula",
+      "TM": "Tècnic@ de taula",
       "TM_female": "Tècnica de taula",
       "FB": "Finger Boy",
       "FB_female": "Finger Girl",
-      "AUX": "Auxiliar",
-      "M": "Meritori",
+      "AUX": "Auxiliar elèctric@",
+      "M": "Meritori@",
       "M_female": "Meritoria",
+      "TG": "Tècnic@ de Generador",
+      "TG_male": "Tècnic de Generador",
+      "TG_female": "Tècnica de Generador",
+      "EPO": "Elèctric@ de potència",
+      "EPO_male": "Elèctric de potència",
+      "EPO_female": "Elèctrica de potència",
+      "TP": "Tècnic@ de pràctics",
+      "TP_male": "Tècnic de pràctics",
+      "TP_female": "Tècnica de pràctics",
       "REF": "Reforç Elèctric",
-      "RIG": "Rigger"
+      "RIG": "Rigging elèctric"
     }
   },
   "needs": {
@@ -443,18 +458,7 @@
     "errorMigratingData": "Error en migrar dades existents",
     "errorLoadingPlanning": "Error en carregar dades de planificació"
   },
-  "reports": {
-    "reports": "Informes",
-    "description": "Hores extres, dietes, quilometratge, transportes",
-    "total": "Total",
-    "week": "Setmana",
-    "remove": "Treure",
-    "ticketAmount": "Import Bitllet",
-    "removeTicket": "Treure Bitllet",
-    "notWorkingThisDay": "No treballa aquest dia",
-    "uncheck": "Desmarcar",
-    "check": "Marcar"
-  },
+  
   "planning": {
     "description": "Setmanes, horaris i equip per dia",
     "preproduction": "Preproducció",
@@ -482,7 +486,7 @@
     "office": "Oficina",
     "loading": "Càrrega",
     "unloading": "Descàrrega",
-    "location": "Localitzar",
+    
     "travelDay": "Travel Day",
     "holidayShooting": "Rodatge Festiu",
     "end": "Fi",
@@ -492,7 +496,7 @@
     "endPickup": "Fi recollida",
     "locationPlaceholder": "Rodatge / Direcció / Carrer...",
     "confirmDelete": "Confirmar eliminació",
-    "confirmDeleteWeek": "Estàs segur que vols eliminar aquesta setmana?",
+    
     "restLocation": "DESCANS",
     "endLocation": "FI DEL RODATGE",
     "duplicateWeek": "Duplicar setmana",
@@ -580,6 +584,7 @@
     "changeStatus": "Canviar estat (actual: {{status}})"
   },
   "reports": {
+    "reports": "Informes",
     "description": "Hores extres, dietes, quilometratge, transportes",
     "configureProject": "Configura el projecte",
     "addWeeksIn": "Afegeix setmanes a",
@@ -592,7 +597,12 @@
     "toAppearHere": "perquè apareguin aquí els informes.",
     "missingTeam": "Falta afegir l'equip",
     "fillTeamIn": "Omple l'equip a",
-    "toGenerateReports": "per poder generar els informes.",
+    "remove": "Treure",
+    "ticketAmount": "Import Bitllet",
+    "removeTicket": "Treure Bitllet",
+    "notWorkingThisDay": "No treballa aquest dia",
+    "uncheck": "Desmarcar",
+    "check": "Marcar",
     "from": "Des de:",
     "to": "Fins a:",
     "exportMonthPDF": "Exportar mes (PDF)",
@@ -636,7 +646,7 @@
       "dietNoOvernight": "Dieta sense pernoctar",
       "dietWithOvernight": "Dieta amb pernocta",
       "pocketExpenses": "Despeses de butxaca",
-      "ticket": "Bitllet",
+      "ticket": "Ticket",
       "other": "Altres"
     },
     "dietOptionsAdvertising": {
@@ -646,7 +656,7 @@
       "dietNoOvernight": "Dieta sense pernoctar",
       "dietWithOvernight": "Dieta amb pernocta",
       "pocketExpenses": "Despeses de butxaca",
-      "ticket": "Bitllet",
+      "ticket": "Ticket",
       "other": "Altres"
     },
     "yesNo": {

@@ -1,6 +1,7 @@
 import { personaRole, personaName } from './model';
 import { isMemberRefuerzo } from './plan';
 import { norm } from './text';
+import { hasRoleGroupSuffix, stripRoleSuffix, stripRefuerzoSuffix } from '@shared/constants/roles';
 
 // Jerarquía completa de roles para reportes (igual que en planificación)
 const rolePriorityForReports = (role: string = ''): number => {
@@ -14,30 +15,48 @@ const rolePriorityForReports = (role: string = ''): number => {
   if (r === 'FB') return 4;
   if (r === 'AUX') return 5;
   if (r === 'M') return 6;
-  if (r === 'RIG') return 7;
+  if (r === 'RG') return 7;
+  if (r === 'RBB') return 8;
+  if (r === 'RE') return 9;
+  if (r === 'TG') return 10;
+  if (r === 'EPO') return 11;
+  if (r === 'TP') return 12;
+  if (r === 'RIG') return 9;
   
   // REFUERZOS
-  if (r === 'REF' || (r.startsWith('REF') && r.length > 3)) return 8;
+  if (r === 'REF' || (r.startsWith('REF') && r.length > 3)) return 14;
   
   // EQUIPO PRELIGHT
-  if (r === 'GP') return 9;
-  if (r === 'BBP') return 10;
-  if (r === 'EP') return 11;
-  if (r === 'TMP') return 12;
-  if (r === 'FBP') return 13;
-  if (r === 'AUXP') return 14;
-  if (r === 'MP') return 15;
-  if (r === 'RIGP') return 16;
+  if (r === 'GP') return 15;
+  if (r === 'BBP') return 16;
+  if (r === 'EP') return 17;
+  if (r === 'TMP') return 18;
+  if (r === 'FBP') return 19;
+  if (r === 'AUXP') return 20;
+  if (r === 'MP') return 21;
+  if (r === 'RGP') return 22;
+  if (r === 'RBBP') return 23;
+  if (r === 'REP') return 24;
+  if (r === 'TGP') return 25;
+  if (r === 'EPOP') return 26;
+  if (r === 'TPP') return 27;
+  if (r === 'RIGP') return 28;
   
   // EQUIPO RECOGIDA
-  if (r === 'GR') return 17;
-  if (r === 'BBR') return 18;
-  if (r === 'ER') return 19;
-  if (r === 'TMR') return 20;
-  if (r === 'FBR') return 21;
-  if (r === 'AUXR') return 22;
-  if (r === 'MR') return 23;
-  if (r === 'RIGR') return 24;
+  if (r === 'GR') return 29;
+  if (r === 'BBR') return 30;
+  if (r === 'ER') return 31;
+  if (r === 'TMR') return 32;
+  if (r === 'FBR') return 33;
+  if (r === 'AUXR') return 34;
+  if (r === 'MR') return 35;
+  if (r === 'RGR') return 36;
+  if (r === 'RBBR') return 37;
+  if (r === 'RER') return 38;
+  if (r === 'TGR') return 39;
+  if (r === 'EPOR') return 40;
+  if (r === 'TPR') return 41;
+  if (r === 'RIGR') return 42;
   
   // Roles desconocidos al final
   return 1000;
@@ -104,11 +123,7 @@ export function collectWeekTeamWithSuffixFactory(
           if (originalRole.startsWith('REF')) {
             // Mantener código completo sin añadir sufijo (REFG se mantiene como REFG, no REFGP)
             // IMPORTANTE: Eliminar TODOS los sufijos P o R repetidamente (REFEP -> REFE, REFERP -> REFER -> REFE)
-            let cleanRole = originalRole;
-            while (cleanRole.length > 3 && (cleanRole.endsWith('P') || cleanRole.endsWith('R'))) {
-              cleanRole = cleanRole.replace(/[PR]$/, '');
-            }
-            role = cleanRole;
+            role = stripRefuerzoSuffix(originalRole);
             // Si después de eliminar sufijos queda vacío o no empieza con REF, usar 'REF' genérico
             if (!role || !role.startsWith('REF')) {
               role = 'REF';
@@ -119,11 +134,12 @@ export function collectWeekTeamWithSuffixFactory(
           }
         } else {
           // Roles normales: añadir sufijo solo si el source lo indica
-          const baseRole = String(m.role || '');
+          const rawRole = String(m.role || '');
+          const baseRole = stripRoleSuffix(rawRole);
           if (!sourceSuffix) {
-            role = baseRole.replace(/[PR]$/, '');
+            role = baseRole;
           } else {
-            role = baseRole.endsWith(sourceSuffix) ? baseRole : `${baseRole}${sourceSuffix}`;
+            role = hasRoleGroupSuffix(rawRole) ? rawRole : `${baseRole}${sourceSuffix}`;
           }
         }
         const name = m.name || '';
@@ -163,10 +179,7 @@ export function buildSafePersonas(
       if (isRef) {
         // IMPORTANTE: Los refuerzos NUNCA deben tener sufijos P o R
         // Eliminar TODOS los sufijos P o R repetidamente (REFEP -> REFE, REFERP -> REFER -> REFE)
-        let cleanRole = String(m.role || '').trim();
-        while (cleanRole.length > 3 && (cleanRole.endsWith('P') || cleanRole.endsWith('R'))) {
-          cleanRole = cleanRole.replace(/[PR]$/, '');
-        }
+        const cleanRole = stripRefuerzoSuffix(String(m.role || '').trim());
         if (cleanRole === 'REF' || !cleanRole.startsWith('REF')) {
           role = 'REF';
         } else {
@@ -238,12 +251,7 @@ export function buildPeopleBase(
       // Refuerzos: eliminar CUALQUIER sufijo P o R (incluso si está en medio como REFEP -> REFE)
       // IMPORTANTE: Los refuerzos pueden venir como "REFEP" o "REFER" si están en prelight/pickup
       // pero en base deben ser "REFE", "REFG", etc. sin sufijos
-      let cleanRole = String(m.role || '').trim();
-      // Eliminar TODOS los sufijos P o R al final, repetidamente hasta que no quede ninguno
-      // Esto maneja casos como REFEP -> REFE, REFERP -> REFER -> REFE, etc.
-      while (cleanRole.length > 3 && (cleanRole.endsWith('P') || cleanRole.endsWith('R'))) {
-        cleanRole = cleanRole.replace(/[PR]$/, '');
-      }
+      const cleanRole = stripRefuerzoSuffix(String(m.role || '').trim());
       
       if (cleanRole === 'REF' || !cleanRole.startsWith('REF')) {
         finalRole = 'REF';
@@ -365,7 +373,7 @@ export function buildPeoplePre(
       
       if (isRefRole) {
         // Refuerzos: eliminar cualquier sufijo P o R y mantener código base
-        const cleanRole = String(m.role || '').replace(/[PR]$/, '').trim();
+        const cleanRole = stripRefuerzoSuffix(String(m.role || '').trim());
         if (cleanRole === 'REF' || !cleanRole.startsWith('REF')) {
           finalRole = 'REF';
         } else {
@@ -402,10 +410,11 @@ export function buildPeoplePre(
             : (m as any)?.source === 'pick'
             ? 'R'
             : 'P';
+        const baseRole = stripRoleSuffix(roleStr);
         if (!sourceSuffix) {
-          finalRole = roleStr.replace(/[PR]$/, '');
+          finalRole = baseRole;
         } else {
-          finalRole = roleStr.endsWith(sourceSuffix) ? roleStr : `${roleStr}${sourceSuffix}`;
+          finalRole = hasRoleGroupSuffix(roleStr) ? roleStr : `${baseRole}${sourceSuffix}`;
         }
         const item: PersonaWithBlock = { role: finalRole, name: m.name, gender: (m as any)?.gender, __block: 'pre' };
         const key = `${item.role}__${item.name}__${item.__block || ''}`;
@@ -498,7 +507,7 @@ export function buildPeoplePick(
       
       if (isRefRole) {
         // Refuerzos: eliminar cualquier sufijo P o R y mantener código base
-        const cleanRole = String(m.role || '').replace(/[PR]$/, '').trim();
+        const cleanRole = stripRefuerzoSuffix(String(m.role || '').trim());
         if (cleanRole === 'REF' || !cleanRole.startsWith('REF')) {
           finalRole = 'REF';
         } else {
@@ -535,10 +544,11 @@ export function buildPeoplePick(
             : (m as any)?.source === 'pre'
             ? 'P'
             : 'R';
+        const baseRole = stripRoleSuffix(roleStr);
         if (!sourceSuffix) {
-          finalRole = roleStr.replace(/[PR]$/, '');
+          finalRole = baseRole;
         } else {
-          finalRole = roleStr.endsWith(sourceSuffix) ? roleStr : `${roleStr}${sourceSuffix}`;
+          finalRole = hasRoleGroupSuffix(roleStr) ? roleStr : `${baseRole}${sourceSuffix}`;
         }
         const item: PersonaWithBlock = { role: finalRole, name: m.name, gender: (m as any)?.gender, __block: 'pick' };
         const key = `${item.role}__${item.name}__${item.__block || ''}`;
@@ -639,7 +649,7 @@ export function collectRefRolesForBlock(
       if (m && isMemberRefuerzo(m) && m.name) {
         const originalRole = String(m.role || '').trim();
         // Limpiar cualquier sufijo P o R
-        const cleanRole = originalRole.replace(/[PR]$/, '').trim();
+        const cleanRole = stripRefuerzoSuffix(originalRole.trim());
         let finalRole: string;
         if (cleanRole === 'REF' || !cleanRole.startsWith('REF')) {
           finalRole = 'REF';

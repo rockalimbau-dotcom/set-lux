@@ -18,11 +18,15 @@ export function useEquipoData({
   storageKey,
   currentUser,
 }: UseEquipoDataProps) {
+  const normalizeRole = (role: string) => (String(role || '').toUpperCase() === 'RIG' ? 'RE' : role);
+  const normalizeList = (list: AnyRecord[]) =>
+    (list || []).map(item => (item?.role ? { ...item, role: normalizeRole(item.role) } : item));
+
   const initialTeamData = {
-    base: initialTeam?.base || [],
-    reinforcements: initialTeam?.reinforcements || [],
-    prelight: initialTeam?.prelight || [],
-    pickup: initialTeam?.pickup || [],
+    base: normalizeList(initialTeam?.base || []),
+    reinforcements: normalizeList(initialTeam?.reinforcements || []),
+    prelight: normalizeList(initialTeam?.prelight || []),
+    pickup: normalizeList(initialTeam?.pickup || []),
     enabledGroups: {
       prelight: initialTeam?.enabledGroups?.prelight ?? false,
       pickup: initialTeam?.enabledGroups?.pickup ?? false,
@@ -31,7 +35,16 @@ export function useEquipoData({
 
   const [teamData, setTeamData] = useLocalStorage(storageKey, initialTeamData);
 
-  const normalized = useMemo(() => normalizeInitial(initialTeam || {}, currentUser), [initialTeam, currentUser]);
+  const normalized = useMemo(() => {
+    const base = normalizeInitial(initialTeam || {}, currentUser);
+    return {
+      ...base,
+      base: normalizeList(base.base || []),
+      reinforcements: normalizeList(base.reinforcements || []),
+      prelight: normalizeList(base.prelight || []),
+      pickup: normalizeList(base.pickup || []),
+    };
+  }, [initialTeam, currentUser]);
 
   const [team, setTeam] = useState(() => {
     return {
@@ -65,15 +78,20 @@ export function useEquipoData({
           const pickupFiltered = (saved.pickup ?? []).filter((r: AnyRecord) => r.role !== 'REF');
           
           const merged = {
-            base: baseFiltered,
-            reinforcements: reinforcementsFiltered,
-            prelight: prelightFiltered,
-            pickup: pickupFiltered,
+            base: normalizeList(baseFiltered),
+            reinforcements: normalizeList(reinforcementsFiltered),
+            prelight: normalizeList(prelightFiltered),
+            pickup: normalizeList(pickupFiltered),
             enabledGroups: {
               prelight: saved.enabledGroups?.prelight ?? false,
               pickup: saved.enabledGroups?.pickup ?? false,
             },
           };
+          const hadRig =
+            (baseFiltered || []).some((r: AnyRecord) => String(r?.role || '').toUpperCase() === 'RIG') ||
+            (reinforcementsFiltered || []).some((r: AnyRecord) => String(r?.role || '').toUpperCase() === 'RIG') ||
+            (prelightFiltered || []).some((r: AnyRecord) => String(r?.role || '').toUpperCase() === 'RIG') ||
+            (pickupFiltered || []).some((r: AnyRecord) => String(r?.role || '').toUpperCase() === 'RIG');
           setTeam({
             base: sortTeam(merged.base),
             reinforcements: sortTeam(merged.reinforcements),
@@ -81,6 +99,15 @@ export function useEquipoData({
             pickup: sortTeam(merged.pickup),
           });
           setGroupsEnabled({ ...merged.enabledGroups });
+          if (hadRig) {
+            setTeamData({
+              base: sortTeam(merged.base),
+              reinforcements: sortTeam(merged.reinforcements),
+              prelight: sortTeam(merged.prelight),
+              pickup: sortTeam(merged.pickup),
+              enabledGroups: { ...merged.enabledGroups },
+            });
+          }
         } else {
           // Filtrar REF del equipo base, refuerzos, prelight y pickup - el rol 'REF' ya no se usa
           const baseFiltered = (initialTeam?.base || []).filter((r: AnyRecord) => r.role !== 'REF');
@@ -89,10 +116,10 @@ export function useEquipoData({
           const pickupFiltered = (initialTeam?.pickup || []).filter((r: AnyRecord) => r.role !== 'REF');
           
           const payload = {
-            base: sortTeam(baseFiltered),
-            reinforcements: sortTeam(reinforcementsFiltered),
-            prelight: sortTeam(prelightFiltered),
-            pickup: sortTeam(pickupFiltered),
+            base: sortTeam(normalizeList(baseFiltered)),
+            reinforcements: sortTeam(normalizeList(reinforcementsFiltered)),
+            prelight: sortTeam(normalizeList(prelightFiltered)),
+            pickup: sortTeam(normalizeList(pickupFiltered)),
             enabledGroups: {
               prelight: initialTeam?.enabledGroups?.prelight ?? false,
               pickup: initialTeam?.enabledGroups?.pickup ?? false,

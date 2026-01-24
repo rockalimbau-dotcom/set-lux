@@ -14,6 +14,19 @@ export function useWeeksData(
   pickRoster: AnyRecord[],
   refsRoster: AnyRecord[]
 ) {
+  const normalizeRole = (role: string) => (String(role || '').toUpperCase() === 'RIG' ? 'RE' : role);
+  const normalizeList = (list: AnyRecord[]) =>
+    (list || []).map(item => (item?.role ? { ...item, role: normalizeRole(item.role) } : item));
+  const normalizeWeeks = (weeks: AnyRecord[]) =>
+    (weeks || []).map(w => ({
+      ...w,
+      days: (w.days || []).map((d: AnyRecord) => ({
+        ...d,
+        team: normalizeList(d.team || []),
+        prelight: normalizeList(d.prelight || []),
+        pickup: normalizeList(d.pickup || []),
+      })),
+    }));
   const [weeksData, setWeeksData] = useLocalStorage<{ pre: AnyRecord[]; pro: AnyRecord[] }>(storageKey, {
     pre: [],
     pro: [],
@@ -35,10 +48,18 @@ export function useWeeksData(
   useEffect(() => {
     const pre = weeksData.pre || [];
     const pro = weeksData.pro || [];
+    const normalizedPre = normalizeWeeks(pre);
+    const normalizedPro = normalizeWeeks(pro);
+    const hadRig =
+      JSON.stringify(pre) !== JSON.stringify(normalizedPre) ||
+      JSON.stringify(pro) !== JSON.stringify(normalizedPro);
+    if (hadRig) {
+      setWeeksData({ pre: normalizedPre, pro: normalizedPro });
+    }
     
     // Reordenar y renombrar semanas si los labels no coinciden con el orden correcto
-    const reorderedPre = reorderWeeksAfterDelete(pre as any, true, holidayFull, holidayMD);
-    const reorderedPro = reorderWeeksAfterDelete(pro as any, false, holidayFull, holidayMD);
+    const reorderedPre = reorderWeeksAfterDelete(normalizedPre as any, true, holidayFull, holidayMD);
+    const reorderedPro = reorderWeeksAfterDelete(normalizedPro as any, false, holidayFull, holidayMD);
     
     setPreWeeks(reorderedPre as any);
     setProWeeks(reorderedPro as any);

@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { storage } from '@shared/services/localStorage.service';
 import { parseYYYYMMDD, toYYYYMMDD, addDays } from '@shared/utils/date';
+import { stripRoleSuffix } from '@shared/constants/roles';
 
 export function usePlanWeeks(project: { id?: string; nombre?: string } | null) {
   const storageKey = useMemo(() => {
@@ -27,8 +28,7 @@ export const stripPR = (r: string): string => {
   if (role.startsWith('REF') && role.length > 3) {
     role = role.substring(3);
   }
-  // Quitar sufijo P/R si existe
-  return role.replace(/[PR]$/, '');
+  return stripRoleSuffix(role);
 };
 
 export function isMemberRefuerzo(m: { role?: string; name?: string; refuerzo?: boolean } | null) {

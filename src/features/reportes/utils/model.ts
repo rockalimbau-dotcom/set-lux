@@ -1,6 +1,7 @@
 // Helpers de persona y modelo base para Reportes Semana
+import { stripRoleSuffix, stripRefuerzoSuffix } from '@shared/constants/roles';
 
-export const stripPR = (r: string): string => String(r || '').replace(/[PR]$/, '');
+export const stripPR = (r: string): string => stripRoleSuffix(String(r || ''));
 
 /**
  * Normalize a persona key by cleaning P/R suffixes from refuerzo roles
@@ -33,9 +34,7 @@ export function normalizePersonaKey(key: string): string {
   
   // For refuerzos, clean all P/R suffixes
   if (role.startsWith('REF')) {
-    while (role.length > 3 && (role.endsWith('P') || role.endsWith('R'))) {
-      role = role.replace(/[PR]$/, '');
-    }
+    role = stripRefuerzoSuffix(role);
   }
   
   // Reconstruct the key
@@ -70,11 +69,7 @@ export function personaKey(p: any): string {
   let role: string;
   if (isRefuerzo) {
     // Para refuerzos, eliminar TODOS los sufijos P o R repetidamente (REFEP -> REFE, REFERP -> REFER -> REFE)
-    let cleanRole = originalRole;
-    while (cleanRole.length > 3 && (cleanRole.endsWith('P') || cleanRole.endsWith('R'))) {
-      cleanRole = cleanRole.replace(/[PR]$/, '');
-    }
-    role = cleanRole;
+    role = stripRefuerzoSuffix(originalRole);
   } else {
     role = stripPR(originalRole);
   }

@@ -15,9 +15,14 @@ export const PRICE_ROLES: string[] = [
   'Eléctrico',
   'Auxiliar',
   'Meritorio',
+  'Rigging Gaffer',
+  'Rigging Best Boy',
+  'Rigging Eléctrico',
   'Técnico de mesa',
   'Finger boy',
-  'Rigger',
+  'Técnico de Generador',
+  'Eléctrico de potencia',
+  'Técnico de prácticos',
 ];
 
 

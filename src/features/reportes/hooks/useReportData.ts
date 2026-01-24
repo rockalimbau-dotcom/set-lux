@@ -38,6 +38,54 @@ export default function useReportData(
   isPersonScheduledOn: (fecha: string, role: string, name: string, findWeekAndDay: (iso: string) => WeekAndDay, block?: 'base' | 'pre' | 'pick') => boolean,
   findWeekAndDay: (iso: string) => WeekAndDay
 ): UseReportDataReturn {
+  const normalizeRole = (role: string) => (String(role || '').toUpperCase() === 'RIG' ? 'RE' : role);
+  const normalizePersonKey = (key: string) => {
+    if (!key || typeof key !== 'string') return key;
+    if (key.includes('.pre__')) {
+      const [rolePart, ...nameParts] = key.split('.pre__');
+      const role = normalizeRole(rolePart);
+      return `${role}.pre__${nameParts.join('.pre__')}`;
+    }
+    if (key.includes('.pick__')) {
+      const [rolePart, ...nameParts] = key.split('.pick__');
+      const role = normalizeRole(rolePart);
+      return `${role}.pick__${nameParts.join('.pick__')}`;
+    }
+    const [rolePart, ...nameParts] = key.split('__');
+    const role = normalizeRole(rolePart);
+    return `${role}__${nameParts.join('__')}`;
+  };
+  const mergePersonData = (base: PersonaReportData = {}, incoming: PersonaReportData = {}) => {
+    const merged: PersonaReportData = { ...incoming, ...base };
+    for (const key of Object.keys(incoming || {})) {
+      if (key === '__manual__') continue;
+      const incomingConcept = incoming[key] as ConceptValues;
+      const baseConcept = base[key] as ConceptValues;
+      if (incomingConcept && typeof incomingConcept === 'object') {
+        merged[key] = { ...(incomingConcept || {}), ...(baseConcept || {}) } as any;
+      }
+    }
+    if (incoming.__manual__ || base.__manual__) {
+      merged.__manual__ = { ...(incoming.__manual__ || {}), ...(base.__manual__ || {}) };
+    }
+    return merged;
+  };
+  const migrateRiggerRoles = (prev: ReportData) => {
+    const next: ReportData = {};
+    let changed = false;
+    for (const [key, value] of Object.entries(prev || {})) {
+      if (key.startsWith('__')) {
+        next[key] = value as PersonaReportData;
+        continue;
+      }
+      const normalizedKey = normalizePersonKey(key);
+      if (normalizedKey !== key) changed = true;
+      const existing = next[normalizedKey] || {};
+      next[normalizedKey] = mergePersonData(existing, value as PersonaReportData);
+    }
+    return { next, changed };
+  };
+
   // Crear estado inicial basado en personas y conceptos
   const getInitialData = (): ReportData => {
     const base: ReportData = {};
@@ -53,6 +101,14 @@ export default function useReportData(
   };
 
   const [data, setData] = useLocalStorage(storageKey, getInitialData);
+
+  useEffect(() => {
+    setData((prev: ReportData) => {
+      const { next, changed } = migrateRiggerRoles(prev || {});
+      return changed ? next : prev;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [storageKey]);
 
   // asegurar estructura si cambian semana/personas
   useEffect(() => {

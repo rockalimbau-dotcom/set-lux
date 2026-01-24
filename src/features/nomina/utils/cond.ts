@@ -22,6 +22,40 @@ export function loadCondModel(project: { id?: string; nombre?: string; condition
     `cond_${base}_publicidad`, // Compatibilidad hacia atrás
   ];
   
+  const migrateCondiciones = (obj: any) => {
+    if (!obj || typeof obj !== 'object') return { obj, changed: false };
+    let changed = false;
+    const migrateRolesList = (roles: any[]) => {
+      if (!Array.isArray(roles)) return roles;
+      const mapped = roles.map(r => (String(r) === 'Rigger' ? 'Rigging Eléctrico' : r));
+      const unique = Array.from(new Set(mapped));
+      if (unique.join('|') !== roles.join('|')) changed = true;
+      return unique;
+    };
+    const migratePrices = (prices: Record<string, any> | undefined) => {
+      if (!prices || typeof prices !== 'object') return prices;
+      const next = { ...prices };
+      if ('Rigger' in next) {
+        if (!('Rigging Eléctrico' in next)) {
+          next['Rigging Eléctrico'] = next['Rigger'];
+        } else {
+          next['Rigging Eléctrico'] = { ...next['Rigger'], ...next['Rigging Eléctrico'] };
+        }
+        delete next['Rigger'];
+        changed = true;
+      }
+      return next;
+    };
+    const roles = migrateRolesList(obj.roles || []);
+    const prices = migratePrices(obj.prices);
+    const pricesPrelight = migratePrices(obj.pricesPrelight);
+    const pricesPickup = migratePrices(obj.pricesPickup);
+    return {
+      obj: { ...obj, roles, prices, pricesPrelight, pricesPickup },
+      changed,
+    };
+  };
+
   for (const k of keys) {
     try {
       const obj = storage.getJSON<any>(k);
@@ -123,7 +157,13 @@ export function loadCondModel(project: { id?: string; nombre?: string; condition
         return { ...obj, prices: filteredPrices };
       }
       
-      return obj; // { prices:{...}, params:{...} }
+      const migrated = migrateCondiciones(obj);
+      if (migrated.changed) {
+        try {
+          storage.setJSON(k, migrated.obj);
+        } catch {}
+      }
+      return migrated.obj; // { prices:{...}, params:{...} }
     } catch {}
   }
 

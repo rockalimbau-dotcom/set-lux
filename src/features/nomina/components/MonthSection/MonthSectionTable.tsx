@@ -1,5 +1,6 @@
 import { Th, Td } from '@shared/components';
 import React from 'react';
+import { stripRoleSuffix } from '@shared/constants/roles';
 import { useTranslation } from 'react-i18next';
 import { MonthSectionPersonRow } from './MonthSectionPersonRow';
 
@@ -201,7 +202,7 @@ export function MonthSectionTable({
               {renderSectionHeader(sectionTitles[group.type])}
               {group.rows.map((r, idx) => {
                 const pKey = `${r.role}__${r.name}`;
-                let roleForColor = String(r.role || '').replace(/[PR]$/, '');
+                let roleForColor = stripRoleSuffix(String(r.role || ''));
                 // Si el rol empieza con REF (REFG, REFBB, etc.), usar el rol base para el color
                 if (roleForColor.startsWith('REF') && roleForColor.length > 3) {
                   roleForColor = roleForColor.substring(3);

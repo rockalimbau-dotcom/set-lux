@@ -1,4 +1,5 @@
 import { loadCondModel } from '../cond';
+import { ROLE_CODES_WITH_PR_SUFFIX, stripRoleSuffix } from '@shared/constants/roles';
 import { DEFAULT_PRICE_ROWS, DEFAULT_PARAMS } from './rolePricesConstants';
 import { num, getNumField } from './rolePricesHelpers';
 import { persistDefaultPrices, persistDefaultParams } from './rolePricesPersistence';
@@ -36,18 +37,54 @@ export function makeRolePrices(project: any) {
   }
 
   // Helper para normalizar strings
-  const normalizeStr = (s: string) => s.toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '').trim();
+  const normalizeStr = (s: string) => {
+    const raw = String(s || '');
+    const upper = raw.toUpperCase();
+    const withoutSuffix = ROLE_CODES_WITH_PR_SUFFIX.has(upper) ? raw : raw.replace(/[PR]$/i, '');
+    return withoutSuffix.toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '').trim();
+  };
+
+  const normalizeLabel = (s: unknown): string =>
+    String(s == null ? '' : s)
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/\p{Diacritic}/gu, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+  const KNOWN_LABELS = new Set(
+    [
+      'Gaffer',
+      'Best boy',
+      'Eléctrico',
+      'Eléctrico/a',
+      'Auxiliar',
+      'Meritorio',
+      'Técnico de mesa',
+      'Finger boy',
+      'Rigger',
+      'Rigging Gaffer',
+      'Rigging Best Boy',
+      'Rigging Eléctrico',
+      'Técnico de Generador',
+      'Eléctrico de potencia',
+      'Técnico de prácticos',
+    ].map(normalizeLabel)
+  );
   
   // Determinar qué tabla de precios usar según el rol
   const getPriceTable = (roleCode: string): Record<string, any> => {
     const roleStr = String(roleCode || '');
     // Detectar si el rol tiene sufijo P (prelight) o R (pickup)
-    const hasP = roleStr.endsWith('P') || roleStr.endsWith('p');
-    const hasR = roleStr.endsWith('R') || roleStr.endsWith('r');
+    const upperRole = roleStr.toUpperCase();
+    const roleNorm = normalizeLabel(roleStr);
+    const hasSuffix = /[PR]$/i.test(roleStr) && !ROLE_CODES_WITH_PR_SUFFIX.has(upperRole) && !KNOWN_LABELS.has(roleNorm);
+    const hasP = hasSuffix && /P$/i.test(roleStr);
+    const hasR = hasSuffix && /R$/i.test(roleStr);
     
     if (hasP) {
       // Si hay tabla de prelight, intentar usarla; si no, usar base
-      const baseRole = roleStr.replace(/[PR]$/i, '');
+      const baseRole = roleStr.slice(0, -1);
       if (Object.keys(prelightPriceRows).length > 0) {
         // Buscar por nombre exacto o normalizado
         if (prelightPriceRows[baseRole]) {
@@ -61,7 +98,7 @@ export function makeRolePrices(project: any) {
       return basePriceRows;
     } else if (hasR) {
       // Si hay tabla de pickup, intentar usarla; si no, usar base
-      const baseRole = roleStr.replace(/[PR]$/i, '');
+      const baseRole = roleStr.slice(0, -1);
       if (Object.keys(pickupPriceRows).length > 0) {
         // Buscar por nombre exacto o normalizado
         if (pickupPriceRows[baseRole]) {
@@ -79,8 +116,8 @@ export function makeRolePrices(project: any) {
   };
 
   const getForRole = (roleCode: string, baseRoleCode: string | null = null) => {
-    const normalized = String(roleCode || '').replace(/[PR]$/, '');
-    const baseNorm = String(baseRoleCode || '').replace(/[PR]$/, '') || normalized;
+    const normalized = stripRoleSuffix(String(roleCode || ''));
+    const baseNorm = stripRoleSuffix(String(baseRoleCode || '')) || normalized;
 
     // Determinar qué tabla usar según el rol
     const priceRows = getPriceTable(roleCode);

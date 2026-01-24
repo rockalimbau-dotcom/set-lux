@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { AnyRecord } from '@shared/types/common';
 import { isMemberRefuerzo } from '../../utils/plan';
+import { hasRoleGroupSuffix, stripRoleSuffix } from '@shared/constants/roles';
 import { norm } from '../../utils/text';
 
 interface UsePersonScheduledCheckerProps {
@@ -48,13 +49,13 @@ export function usePersonScheduledChecker({
         suffix = 'pickup';
       } else {
         // Si no se especifica block, usar el sufijo del rol
-        suffix = /P$/.test(role || '')
-          ? 'prelight'
-          : /R$/.test(role || '')
-            ? 'pickup'
-            : 'team';
+        suffix = hasRoleGroupSuffix(role || '')
+          ? /P$/i.test(role || '')
+            ? 'prelight'
+            : 'pickup'
+          : 'team';
       }
-      const baseRole = String(role || '').replace(/[PR]$/, '');
+      const baseRole = stripRoleSuffix(String(role || ''));
       const list = Array.isArray(day[suffix]) ? day[suffix] : [];
       return list.some(
         (m: AnyRecord) =>

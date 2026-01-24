@@ -50,8 +50,8 @@ function translateRoleName(roleName: string, sectionKey?: 'base' | 'prelight' | 
     const translationKey = `team.roles.${code}`;
     const baseLabel = i18n.t(translationKey) !== translationKey ? i18n.t(translationKey) : baseRoleCode;
     
-    // Añadir "Refuerzo" antes del nombre del rol base
-    let refuerzoLabel = `Refuerzo ${baseLabel}`;
+    // Añadir prefijo de refuerzo antes del nombre del rol base
+    let refuerzoLabel = `${i18n.t('team.reinforcementPrefix')} ${baseLabel}`;
     
     // Añadir sufijo según la sección
     if (sectionKey === 'prelight') {
@@ -67,11 +67,17 @@ function translateRoleName(roleName: string, sectionKey?: 'base' | 'prelight' | 
   const roleNameToCode: Record<string, string> = {
     'Gaffer': 'G',
     'Best boy': 'BB',
+    'Rigging Gaffer': 'RG',
+    'Rigging Best Boy': 'RBB',
+    'Rigging Eléctrico': 'RE',
     'Eléctrico': 'E',
     'Auxiliar': 'AUX',
     'Meritorio': 'M',
     'Técnico de mesa': 'TM',
     'Finger boy': 'FB',
+    'Técnico de Generador': 'TG',
+    'Eléctrico de potencia': 'EPO',
+    'Técnico de prácticos': 'TP',
     'Refuerzo': 'REF',
   };
   

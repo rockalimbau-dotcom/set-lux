@@ -1,4 +1,5 @@
 import i18n from '../../../../i18n/config';
+import { hasRoleGroupSuffix, stripRoleSuffix } from '@shared/constants/roles';
 
 /**
  * Escape HTML special characters
@@ -198,8 +199,8 @@ export const getColumnVisibility = (enrichedRows: any[]) => {
  */
 export const getBlockFromRole = (role: string): 'base' | 'pre' | 'pick' => {
   const roleUpper = String(role || '').toUpperCase();
-  if (roleUpper.endsWith('P')) return 'pre';
-  if (roleUpper.endsWith('R')) return 'pick';
+  if (hasRoleGroupSuffix(roleUpper) && roleUpper.endsWith('P')) return 'pre';
+  if (hasRoleGroupSuffix(roleUpper) && roleUpper.endsWith('R')) return 'pick';
   return 'base';
 };
 
@@ -207,7 +208,7 @@ export const getBlockFromRole = (role: string): 'base' | 'pre' | 'pick' => {
  * Get base role priority for sorting
  */
 const getBaseRolePriority = (role: string): number => {
-  const baseRole = role.replace(/[PR]$/, '').toUpperCase().trim();
+  const baseRole = stripRoleSuffix(role).toUpperCase().trim();
   
   if (baseRole === 'G') return 0;
   if (baseRole === 'BB') return 1;
@@ -216,7 +217,14 @@ const getBaseRolePriority = (role: string): number => {
   if (baseRole === 'FB') return 4;
   if (baseRole === 'AUX') return 5;
   if (baseRole === 'M') return 6;
-  if (baseRole === 'REF') return 7;
+  if (baseRole === 'RG') return 7;
+  if (baseRole === 'RBB') return 8;
+  if (baseRole === 'RE') return 9;
+  if (baseRole === 'TG') return 10;
+  if (baseRole === 'EPO') return 11;
+  if (baseRole === 'TP') return 12;
+  if (baseRole === 'RIG') return 9;
+  if (baseRole === 'REF') return 14;
   
   return 1000;
 };

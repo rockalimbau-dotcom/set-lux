@@ -1,11 +1,12 @@
 import { norm } from '@shared/utils/normalize';
+import { stripRoleSuffix } from '@shared/constants/roles';
 
 /**
  * Generate storage key variants for robust data lookup
  */
 export function storageKeyVariants(storageKey: string): string[] {
   const [rolePart, name = ''] = String(storageKey || '').split('__');
-  const baseRole = String(rolePart || '').replace(/[PR]$/, '');
+  const baseRole = stripRoleSuffix(String(rolePart || ''));
   const variants = new Set<string>();
   
   // Claves base
@@ -131,12 +132,13 @@ export const COL_CANDIDATES = {
  */
 export const ROLE_ORDER: Record<string, number> = { 
   // EQUIPO BASE
-  G: 0, BB: 1, E: 2, TM: 3, FB: 4, AUX: 5, M: 6, RIG: 7,
+  G: 0, BB: 1, E: 2, TM: 3, FB: 4, AUX: 5, M: 6, RG: 7, RBB: 8, RE: 9, TG: 10, EPO: 11, TP: 12,
+  RIG: 9,
   // REFUERZOS
-  REF: 8,
+  REF: 14,
   // EQUIPO PRELIGHT
-  GP: 9, BBP: 10, EP: 11, TMP: 12, FBP: 13, AUXP: 14, MP: 15, RIGP: 16,
+  GP: 15, BBP: 16, EP: 17, TMP: 18, FBP: 19, AUXP: 20, MP: 21, RGP: 22, RBBP: 23, REP: 24, TGP: 25, EPOP: 26, TPP: 27, RIGP: 28,
   // EQUIPO RECOGIDA
-  GR: 17, BBR: 18, ER: 19, TMR: 20, FBR: 21, AUXR: 22, MR: 23, RIGR: 24
+  GR: 29, BBR: 30, ER: 31, TMR: 32, FBR: 33, AUXR: 34, MR: 35, RGR: 36, RBBR: 37, RER: 38, TGR: 39, EPOR: 40, TPR: 41, RIGR: 42
 };
 

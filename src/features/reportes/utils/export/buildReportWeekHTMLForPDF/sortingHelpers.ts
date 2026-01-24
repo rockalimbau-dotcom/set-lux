@@ -1,4 +1,5 @@
 import { rolePriorityForReports } from '../dataHelpers';
+import { stripRoleSuffix, stripRefuerzoSuffix } from '@shared/constants/roles';
 
 /**
  * Get block type from person key (base, pre, pick)
@@ -16,10 +17,11 @@ function getBlockFromKey(key: string): 'base' | 'pre' | 'pick' {
 function getBaseRole(role: string): string {
   const r = String(role).toUpperCase().trim();
   // Si es un refuerzo con código completo (REFG, REFE, etc.), mantenerlo tal cual
-  if (r.startsWith('REF') && r.length > 3) return r;
+  if (r.startsWith('REF') && r.length > 3) return stripRefuerzoSuffix(r);
   if (r === 'REF') return 'REF';
   // Para roles normales, eliminar sufijos P o R
-  return r.replace(/[PR]$/, '');
+  if (r.startsWith('REF')) return stripRefuerzoSuffix(r);
+  return stripRoleSuffix(r);
 }
 
 /**
