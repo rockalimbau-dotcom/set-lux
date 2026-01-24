@@ -700,102 +700,102 @@
     "prev": "Anterior",
     "next": "Siguiente",
     "finish": "Finalizar",
-    "finishTitlePrefix": "¡Listo,",
-    "finishTitleSuffix": "! 🎉✨",
-    "finishBody": "Ya puedes crear tu primer proyecto en SetLux.",
+    "finishTitlePrefix": "Gracias",
+    "finishTitleSuffix": "por tu tiempo.",
+    "finishBody": "Ya puedes crear tu primer proyecto y comenzar a trabajar con SetLux.",
     "finishNameFallback": "amigo",
     "steps": {
       "theme": {
         "title": "Tema",
-        "body": "Cambia el tema de la app. Es parte de la identidad de la marca."
+        "body": "Cambia el tema de la app según tu preferencia"
       },
       "newProject": {
         "title": "Nuevo proyecto",
-        "body": "Crea tu primer proyecto desde aquí."
+        "body": "Crea un nuevo proyecto desde aquí"
       },
       "newProjectForm": {
         "title": "Editor de proyecto",
-        "body": "Completa los datos del proyecto en este formulario."
+        "body": "Introduce y edita los datos generales del proyecto"
       },
       "team": {
         "title": "Equipo",
-        "body": "Añade miembros, roles y genera el PDF del equipo."
+        "body": "Gestiona el equipo del proyecto y genera su PDF.\nEsta información se usa en planificación y reportes."
       },
       "teamAdd": {
         "title": "Añadir miembro",
-        "body": "Añade un miembro al equipo base."
+        "body": "Añade un nuevo miembro al equipo"
       },
       "teamRow": {
         "title": "Rol y nombre",
-        "body": "Escoge rol y pon un nombre."
+        "body": "Asigna un rol y un nombre al miembro"
       },
       "conditions": {
         "title": "Condiciones",
-        "body": "Define tarifas y genera el PDF de condiciones."
+        "body": "Define las condiciones económicas y genera su PDF.\nEstas condiciones se reflejan en la nómina."
       },
       "conditionsParams": {
         "title": "Parámetros de cálculo",
-        "body": "Abre este apartado y revisa los parámetros."
+        "body": "Revisa y ajusta los parámetros generales del proyecto. Estos valores se aplican a reportes y nómina.\nSi no estás seguro, puedes usar los valores estándar y ajustarlos más adelante."
       },
       "conditionsPrices": {
         "title": "Tabla de precios",
-        "body": "Introduce un precio para continuar."
+        "body": "Introduce un precio para poder continuar"
       },
       "planning": {
         "title": "Planificación",
-        "body": "Crea semanas y exporta el PDF de planificación."
+        "body": "Organiza la planificación por semanas y genera su PDF.\nCada semana se utiliza después en reportes y nómina."
       },
       "planningAdd": {
         "title": "Añadir semana",
-        "body": "Pulsa + Añadir semana para crear una."
+        "body": "Pulsa \"Semana\" para crear una nueva"
       },
       "planningWeek": {
         "title": "Semana creada",
-        "body": "Aquí puedes ver y editar la semana creada."
+        "body": "Aquí puedes revisar y editar la semana creada"
       },
       "reports": {
         "title": "Reportes",
-        "body": "Consulta la información y genera PDFs de reportes."
+        "body": "Consulta la información del proyecto y genera reportes en PDF.\nLos reportes alimentan el cálculo de nómina."
       },
       "reportsWeek": {
         "title": "Semana en reportes",
-        "body": "Revisa la semana y su información."
+        "body": "Revisa la información de la semana seleccionada"
       },
       "reportsRange": {
         "title": "Fechas desde / hasta",
-        "body": "Este rango en reportes se refleja en Nómina para calcular horas extra."
+        "body": "Este rango se utiliza en Nómina para el cálculo de horas extra, dietas, kilometraje y transporte"
       },
       "payrollRange": {
         "title": "Fechas desde / hasta",
-        "body": "Este rango es el mismo que en Reportes. En Nómina se reflejan horas extras, dietas, transportes y kilometraje dentro de estas fechas."
+        "body": "Este rango es el mismo que en Reportes. Dentro de estas fechas se calculan horas extra, dietas, transporte y kilometraje"
       },
       "reportsExtra": {
         "title": "Opciones de horas extra",
-        "body": "Aquí puedes elegir el método de cálculo de horas extra."
+        "body": "Selecciona el método de cálculo de las horas extra"
       },
       "payroll": {
         "title": "Nómina",
-        "body": "Revisa la nómina y genera el PDF."
+        "body": "Revisa la nómina del proyecto y genera su PDF"
       },
       "payrollTable": {
         "title": "Tabla de nómina",
-        "body": "Revisa la tabla de la nómina."
+        "body": "Consulta el detalle de la nómina"
       },
       "needs": {
         "title": "Necesidades",
-        "body": "Consulta las necesidades del proyecto."
+        "body": "Consulta las necesidades técnicas del proyecto.\nÚtil para preparación y coordinación."
       },
       "needsWeek": {
         "title": "Semana en necesidades",
-        "body": "Aquí puedes ver la semana creada."
+        "body": "Aquí puedes consultar la semana creada"
       },
       "status": {
         "title": "Activo / Cerrado",
-        "body": "Cierra el proyecto cuando termine para dejarlo en solo lectura."
+        "body": "Cierra el proyecto al finalizar para dejarlo en modo solo lectura"
       },
       "help": {
         "title": "Ayuda",
-        "body": "Envíanos sugerencias o dudas desde aquí."
+        "body": "¿Tienes dudas o sugerencias? Escríbenos desde aquí"
       }
     }
   }

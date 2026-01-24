@@ -331,12 +331,29 @@ export function TutorialOverlay({
           >
             {step.title}
           </div>
-        <div
-          className={`${isMobile ? 'text-[8px]' : 'text-xs'} mt-1`}
-          style={{ color: isLight ? '#111827' : '#ffffff' }}
-        >
-            {step.description}
-          </div>
+          {(() => {
+            const lines = step.description.split('\n');
+            const mainLine = lines[0] || '';
+            const secondaryLine = lines.slice(1).join(' ').trim();
+            return (
+              <>
+                <div
+                  className={`${isMobile ? 'text-[8px]' : 'text-xs'} mt-1`}
+                  style={{ color: isLight ? '#111827' : '#ffffff' }}
+                >
+                  {mainLine}
+                </div>
+                {secondaryLine && (
+                  <div
+                    className={`${isMobile ? 'text-[7px]' : 'text-[11px]'} mt-1`}
+                    style={{ color: isLight ? '#111827' : '#ffffff' }}
+                  >
+                    {secondaryLine}
+                  </div>
+                )}
+              </>
+            );
+          })()}
           {!targetRect && missingHint && (
             <div className='mt-2 text-[11px]' style={{ color: isLight ? '#1d4ed8' : '#fdba74' }}>
               {missingHint}

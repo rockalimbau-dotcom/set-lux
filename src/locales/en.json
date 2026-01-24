@@ -684,102 +684,102 @@
     "prev": "Previous",
     "next": "Next",
     "finish": "Finish",
-    "finishTitlePrefix": "All set,",
-    "finishTitleSuffix": "! 🎉✨",
-    "finishBody": "You can now create your first project in SetLux.",
+    "finishTitlePrefix": "Thank you",
+    "finishTitleSuffix": "for your time.",
+    "finishBody": "You can now create your first project and start working with SetLux.",
     "finishNameFallback": "friend",
     "steps": {
       "theme": {
         "title": "Theme",
-        "body": "Switch the app theme. It is part of the brand identity."
+        "body": "Change the app theme to your preference"
       },
       "newProject": {
         "title": "New project",
-        "body": "Create your first project from here."
+        "body": "Create a new project from here"
       },
       "newProjectForm": {
         "title": "Project editor",
-        "body": "Fill in the project details in this form."
+        "body": "Enter and edit the project's general details"
       },
       "team": {
         "title": "Team",
-        "body": "Add members, roles, and generate the team PDF."
+        "body": "Manage the project team and generate its PDF.\nThis information is used in planning and reports."
       },
       "teamAdd": {
         "title": "Add member",
-        "body": "Add a member to the base team."
+        "body": "Add a new member to the team"
       },
       "teamRow": {
         "title": "Role and name",
-        "body": "Choose a role and enter a name."
+        "body": "Assign a role and a name to the member"
       },
       "conditions": {
         "title": "Conditions",
-        "body": "Set rates and generate the conditions PDF."
+        "body": "Define the financial conditions and generate its PDF.\nThese conditions are reflected in payroll."
       },
       "conditionsParams": {
         "title": "Calculation parameters",
-        "body": "Open this section and review the parameters."
+        "body": "Review and adjust the project's general parameters. These values apply to reports and payroll.\nIf you're not sure, you can use the standard values and adjust them later."
       },
       "conditionsPrices": {
         "title": "Price table",
-        "body": "Enter a price to continue."
+        "body": "Enter a price to continue"
       },
       "planning": {
         "title": "Planning",
-        "body": "Create weeks and export the planning PDF."
+        "body": "Organize planning by weeks and generate its PDF.\nEach week is used later in reports and payroll."
       },
       "planningAdd": {
         "title": "Add week",
-        "body": "Press + Add week to create one."
+        "body": "Tap \"Week\" to create a new one"
       },
       "planningWeek": {
         "title": "Week created",
-        "body": "You can view and edit the created week here."
+        "body": "Here you can review and edit the created week"
       },
       "reports": {
         "title": "Reports",
-        "body": "Review data and generate report PDFs."
+        "body": "Review project information and generate reports in PDF.\nReports feed the payroll calculation."
       },
       "reportsWeek": {
         "title": "Week in reports",
-        "body": "Review the week and its information."
+        "body": "Review the information for the selected week"
       },
       "reportsRange": {
         "title": "From / to dates",
-        "body": "This reports range is used in Payroll to calculate overtime."
+        "body": "This range is used in Payroll to calculate overtime, per diems, mileage, and transport"
       },
       "payrollRange": {
         "title": "From / to dates",
-        "body": "This range is the same as Reports. Payroll reflects overtime, per diems, transport, and mileage within these dates."
+        "body": "This range is the same as Reports. Within these dates, overtime, per diems, transport, and mileage are calculated"
       },
       "reportsExtra": {
         "title": "Overtime options",
-        "body": "Choose the overtime calculation method here."
+        "body": "Select the overtime calculation method"
       },
       "payroll": {
         "title": "Payroll",
-        "body": "Review payroll and generate the PDF."
+        "body": "Review the project payroll and generate its PDF"
       },
       "payrollTable": {
         "title": "Payroll table",
-        "body": "Review the payroll table."
+        "body": "Check the payroll details"
       },
       "needs": {
         "title": "Needs",
-        "body": "Review project needs."
+        "body": "Review the project's technical needs.\nUseful for preparation and coordination."
       },
       "needsWeek": {
         "title": "Week in needs",
-        "body": "You can view the created week here."
+        "body": "Here you can review the created week"
       },
       "status": {
         "title": "Active / Closed",
-        "body": "Close the project when finished to make it read-only."
+        "body": "Close the project when finished to leave it read-only"
       },
       "help": {
         "title": "Help",
-        "body": "Send us suggestions or questions from here."
+        "body": "Have questions or suggestions? Write to us from here"
       }
     }
   }

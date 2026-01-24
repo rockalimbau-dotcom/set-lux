@@ -630,7 +630,7 @@ function AppInner() {
       {tutorialFinishToast && (
         <div className='fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 px-4'>
           <div
-            className='rounded-md border border-neutral-border px-5 py-4 text-center text-sm font-semibold shadow-xl sm:text-base'
+            className='rounded-md border border-neutral-border px-6 py-5 text-center text-base font-semibold shadow-xl sm:text-lg'
             style={{
               borderColor: isLight ? 'rgba(0,0,0,0.08)' : 'var(--border)',
               backgroundColor: isLight ? '#ffffff' : 'var(--panel)',
@@ -638,12 +638,12 @@ function AppInner() {
               whiteSpace: 'pre-line',
             }}
           >
-            <div>
+            <div className='text-lg font-semibold sm:text-xl'>
               {t('tutorial.finishTitlePrefix')}{' '}
-              <span style={{ color: isLight ? '#2563eb' : '#f59e0b' }}>{tutorialFinishToast}</span>
+              <span style={{ color: isLight ? '#2563eb' : '#f59e0b' }}>{tutorialFinishToast}</span>{' '}
               {t('tutorial.finishTitleSuffix')}
             </div>
-            <div className='mt-1 font-normal' style={{ color: isLight ? '#111827' : '#ffffff' }}>
+            <div className='mt-2 text-base font-normal sm:text-lg' style={{ color: isLight ? '#111827' : '#ffffff' }}>
               {t('tutorial.finishBody')}
             </div>
           </div>

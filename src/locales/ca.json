@@ -694,102 +694,102 @@
     "prev": "Anterior",
     "next": "Següent",
     "finish": "Finalitzar",
-    "finishTitlePrefix": "Llesta,",
-    "finishTitleSuffix": "! 🎉✨",
-    "finishBody": "Ja pots crear el teu primer projecte a SetLux.",
+    "finishTitlePrefix": "Gràcies",
+    "finishTitleSuffix": "pel teu temps.",
+    "finishBody": "Ara pots crear el teu primer projecte i començar a treballar amb SetLux.",
     "finishNameFallback": "amic",
     "steps": {
       "theme": {
         "title": "Tema",
-        "body": "Canvia el tema de l'app. És part de la identitat de la marca."
+        "body": "Canvia el tema de l'app segons la teva preferència"
       },
       "newProject": {
         "title": "Nou projecte",
-        "body": "Crea el teu primer projecte des d'aquí."
+        "body": "Crea un nou projecte des d'aquí"
       },
       "newProjectForm": {
         "title": "Editor de projecte",
-        "body": "Omple les dades del projecte en aquest formulari."
+        "body": "Introdueix i edita les dades generals del projecte"
       },
       "team": {
         "title": "Equip",
-        "body": "Afegeix membres, rols i genera el PDF de l'equip."
+        "body": "Gestiona l'equip del projecte i genera el seu PDF.\nAquesta informació s'utilitza en planificació i informes."
       },
       "teamAdd": {
         "title": "Afegir membre",
-        "body": "Afegeix un membre a l'equip base."
+        "body": "Afegeix un nou membre a l'equip"
       },
       "teamRow": {
         "title": "Rol i nom",
-        "body": "Escull el rol i posa un nom."
+        "body": "Assigna un rol i un nom al membre"
       },
       "conditions": {
         "title": "Condicions",
-        "body": "Defineix tarifes i genera el PDF de condicions."
+        "body": "Defineix les condicions econòmiques i genera el seu PDF.\nAquestes condicions es reflecteixen a la nòmina."
       },
       "conditionsParams": {
         "title": "Paràmetres de càlcul",
-        "body": "Obre aquest apartat i revisa els paràmetres."
+        "body": "Revisa i ajusta els paràmetres generals del projecte. Aquests valors s'apliquen a informes i nòmina.\nSi no n'estàs segur, pots usar els valors estàndard i ajustar-los més endavant."
       },
       "conditionsPrices": {
         "title": "Taula de preus",
-        "body": "Introdueix un preu per continuar."
+        "body": "Introdueix un preu per poder continuar"
       },
       "planning": {
         "title": "Planificació",
-        "body": "Crea setmanes i exporta el PDF de planificació."
+        "body": "Organitza la planificació per setmanes i genera el seu PDF.\nCada setmana s'utilitza després en informes i nòmina."
       },
       "planningAdd": {
         "title": "Afegir setmana",
-        "body": "Prem + Afegir setmana per crear-ne una."
+        "body": "Prem \"Setmana\" per crear-ne una de nova"
       },
       "planningWeek": {
         "title": "Setmana creada",
-        "body": "Aquí pots veure i editar la setmana creada."
+        "body": "Aquí pots revisar i editar la setmana creada"
       },
       "reports": {
         "title": "Informes",
-        "body": "Consulta la informació i genera PDFs d'informes."
+        "body": "Consulta la informació del projecte i genera informes en PDF.\nEls informes alimenten el càlcul de nòmina."
       },
       "reportsWeek": {
         "title": "Setmana als informes",
-        "body": "Revisa la setmana i la seva informació."
+        "body": "Revisa la informació de la setmana seleccionada"
       },
       "reportsRange": {
         "title": "Dates des de / fins",
-        "body": "Aquest rang d'informes es reflecteix a Nòmina per calcular hores extres."
+        "body": "Aquest rang s'utilitza a Nòmina per al càlcul d'hores extres, dietes, quilometratge i transport"
       },
       "payrollRange": {
         "title": "Dates des de / fins",
-        "body": "Aquest rang és el mateix que a Informes. A Nòmina es reflecteixen hores extres, dietes, transport i quilometratge dins d'aquestes dates."
+        "body": "Aquest rang és el mateix que a Informes. Dins d'aquestes dates es calculen hores extres, dietes, transport i quilometratge"
       },
       "reportsExtra": {
         "title": "Opcions d'hores extres",
-        "body": "Aquí pots triar el mètode de càlcul d'hores extres."
+        "body": "Selecciona el mètode de càlcul de les hores extres"
       },
       "payroll": {
         "title": "Nòmina",
-        "body": "Revisa la nòmina i genera el PDF."
+        "body": "Revisa la nòmina del projecte i genera el seu PDF"
       },
       "payrollTable": {
         "title": "Taula de nòmina",
-        "body": "Revisa la taula de la nòmina."
+        "body": "Consulta el detall de la nòmina"
       },
       "needs": {
         "title": "Necessitats",
-        "body": "Consulta les necessitats del projecte."
+        "body": "Consulta les necessitats tècniques del projecte.\nÚtil per a la preparació i coordinació."
       },
       "needsWeek": {
         "title": "Setmana a necessitats",
-        "body": "Aquí pots veure la setmana creada."
+        "body": "Aquí pots consultar la setmana creada"
       },
       "status": {
         "title": "Actiu / Tancat",
-        "body": "Tanca el projecte quan acabi per deixar-lo en només lectura."
+        "body": "Tanca el projecte en finalitzar per deixar-lo en mode només lectura"
       },
       "help": {
         "title": "Ajuda",
-        "body": "Envia'ns suggeriments o dubtes des d'aquí."
+        "body": "Tens dubtes o suggeriments? Escriu-nos des d'aquí"
       }
     }
   }
