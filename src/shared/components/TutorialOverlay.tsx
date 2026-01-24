@@ -171,8 +171,9 @@ export function TutorialOverlay({
   const tooltipStyle = useMemo(() => {
     const viewportWidth = typeof window !== 'undefined' ? window.innerWidth : 1024;
     const viewportHeight = typeof window !== 'undefined' ? window.innerHeight : 768;
-    const maxWidth = step?.tooltipMaxWidth || 360;
-    const width = Math.min(maxWidth, viewportWidth - 32);
+    const isMobile = viewportWidth < 640;
+    const maxWidth = step?.tooltipMaxWidth || (isMobile ? 200 : 360);
+    const width = Math.min(maxWidth, viewportWidth - 10);
     const heightEstimate = 200;
     const anchor = step?.tooltipAnchorSelector
       ? (document.querySelector(step.tooltipAnchorSelector) as HTMLElement | null)
@@ -190,7 +191,7 @@ export function TutorialOverlay({
     const gap = 4;
     const baseRect = anchorRect || targetRect!;
     const rightStart = baseRect.right + gap;
-    const leftStart = targetRect.left - width - gap;
+    const leftStart = baseRect.left - width - gap;
     const placeRight = step?.tooltipPlacement === 'right';
     const placeCenter = step?.tooltipPlacement === 'center';
     const placeTop = step?.tooltipPlacement === 'top';
@@ -239,6 +240,7 @@ export function TutorialOverlay({
   const overlayColor = 'rgba(0,0,0,0.6)';
   const viewportWidth = typeof window !== 'undefined' ? window.innerWidth : 1024;
   const viewportHeight = typeof window !== 'undefined' ? window.innerHeight : 768;
+  const isMobile = viewportWidth < 640;
 
   if (!isOpen || !step) return null;
 
@@ -306,7 +308,7 @@ export function TutorialOverlay({
 
       {tooltipReady && (
         <div
-          className='absolute rounded-xl border px-4 py-3 shadow-xl'
+          className={`absolute rounded-xl border shadow-xl ${isMobile ? 'px-2 py-1' : 'px-4 py-3'}`}
           style={{
             width: tooltipStyle.width,
             left: tooltipStyle.left,
@@ -318,15 +320,21 @@ export function TutorialOverlay({
           }}
         >
         <div
-          className='text-[10px] uppercase tracking-wide'
+          className={`${isMobile ? 'text-[6px]' : 'text-[10px]'} uppercase tracking-wide`}
           style={{ color: isLight ? '#111827' : '#ffffff' }}
         >
             {stepIndex + 1} / {steps.length}
           </div>
-          <div className='mt-1 text-sm font-semibold' style={{ color: isLight ? '#111827' : 'var(--text)' }}>
+          <div
+            className={`${isMobile ? 'text-[9px]' : 'text-sm'} mt-1 font-semibold`}
+            style={{ color: isLight ? '#111827' : 'var(--text)' }}
+          >
             {step.title}
           </div>
-        <div className='mt-1 text-xs' style={{ color: isLight ? '#111827' : '#ffffff' }}>
+        <div
+          className={`${isMobile ? 'text-[8px]' : 'text-xs'} mt-1`}
+          style={{ color: isLight ? '#111827' : '#ffffff' }}
+        >
             {step.description}
           </div>
           {!targetRect && missingHint && (
@@ -334,11 +342,11 @@ export function TutorialOverlay({
               {missingHint}
             </div>
           )}
-          <div className='mt-3 flex items-center justify-between gap-2'>
+          <div className={`mt-1.5 flex items-center gap-1 ${isMobile ? 'flex-col' : 'justify-between'}`}>
             <button
               type='button'
               onClick={() => setShowExitConfirm(true)}
-              className='rounded-md border px-2 py-1 text-[11px]'
+              className={`rounded-md border ${isMobile ? 'px-2 py-0.5 text-[7px] w-full' : 'px-2 py-1 text-[11px]'}`}
               style={{
                 borderColor: isLight ? '#d1d5db' : 'var(--border)',
                 color: isLight ? '#111827' : '#ffffff',
@@ -346,12 +354,12 @@ export function TutorialOverlay({
             >
               {t('tutorial.exit')}
             </button>
-            <div className='flex items-center gap-2'>
+            <div className={`flex items-center gap-1 ${isMobile ? 'w-full justify-between' : ''}`}>
               <button
                 type='button'
                 onClick={() => onStepChange(Math.max(0, stepIndex - 1))}
                 disabled={isFirst}
-                className={`rounded-md border px-2 py-1 text-[11px] ${isFirst ? 'cursor-not-allowed opacity-50' : ''}`}
+                className={`rounded-md border ${isMobile ? 'px-2 py-0.5 text-[7px] w-full' : 'px-2 py-1 text-[11px]'} ${isFirst ? 'cursor-not-allowed opacity-50' : ''}`}
                 style={{
                   borderColor: isLight ? '#d1d5db' : 'var(--border)',
                   color: isLight ? '#111827' : '#ffffff',
@@ -369,7 +377,7 @@ export function TutorialOverlay({
                     onStepChange(stepIndex + 1);
                   }
                 }}
-                className='rounded-md px-3 py-1 text-[11px] font-semibold text-white'
+                className={`rounded-md font-semibold text-white ${isMobile ? 'px-3 py-0.5 text-[7px] w-full' : 'px-3 py-1 text-[11px]'}`}
                 style={{ backgroundColor: isLight ? '#0468BF' : '#F27405' }}
               >
                 {isLast ? t('tutorial.finish') : t('tutorial.next')}
