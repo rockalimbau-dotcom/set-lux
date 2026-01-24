@@ -680,6 +680,124 @@
       "saturday": "Sábado",
       "sunday": "Domingo"
     }
+  },
+  "tutorial": {
+    "promptTitle": "¿Quieres un tutorial rápido?",
+    "promptBody": "Te mostramos los pasos clave para usar SetLux.",
+    "promptStart": "Empezar",
+    "promptLater": "Ahora no",
+    "promptNever": "No volver a mostrar",
+    "reminder": "Puedes volver a ver el tutorial en Configuración.",
+    "settingsTitle": "Tutorial",
+    "settingsBody": "Puedes volver a ver el tutorial cuando quieras.",
+    "settingsButton": "Ver tutorial",
+    "missingHint": "Si no lo ves, vuelve al inicio del proyecto.",
+    "exit": "Salir",
+    "exitConfirmTitle": "¿Seguro que quieres salir del tutorial?",
+    "exitConfirmBody": "Podrás retomarlo cuando quieras desde Configuración.",
+    "exitConfirmCancel": "Cancelar",
+    "exitConfirmOk": "Salir",
+    "prev": "Anterior",
+    "next": "Siguiente",
+    "finish": "Finalizar",
+    "finishTitlePrefix": "¡Listo,",
+    "finishTitleSuffix": "! 🎉✨",
+    "finishBody": "Ya puedes crear tu primer proyecto en SetLux.",
+    "finishNameFallback": "amigo",
+    "steps": {
+      "theme": {
+        "title": "Tema",
+        "body": "Cambia el tema de la app. Es parte de la identidad de la marca."
+      },
+      "newProject": {
+        "title": "Nuevo proyecto",
+        "body": "Crea tu primer proyecto desde aquí."
+      },
+      "newProjectForm": {
+        "title": "Editor de proyecto",
+        "body": "Completa los datos del proyecto en este formulario."
+      },
+      "team": {
+        "title": "Equipo",
+        "body": "Añade miembros, roles y genera el PDF del equipo."
+      },
+      "teamAdd": {
+        "title": "Añadir miembro",
+        "body": "Añade un miembro al equipo base."
+      },
+      "teamRow": {
+        "title": "Rol y nombre",
+        "body": "Escoge rol y pon un nombre."
+      },
+      "conditions": {
+        "title": "Condiciones",
+        "body": "Define tarifas y genera el PDF de condiciones."
+      },
+      "conditionsParams": {
+        "title": "Parámetros de cálculo",
+        "body": "Abre este apartado y revisa los parámetros."
+      },
+      "conditionsPrices": {
+        "title": "Tabla de precios",
+        "body": "Introduce un precio para continuar."
+      },
+      "planning": {
+        "title": "Planificación",
+        "body": "Crea semanas y exporta el PDF de planificación."
+      },
+      "planningAdd": {
+        "title": "Añadir semana",
+        "body": "Pulsa + Añadir semana para crear una."
+      },
+      "planningWeek": {
+        "title": "Semana creada",
+        "body": "Aquí puedes ver y editar la semana creada."
+      },
+      "reports": {
+        "title": "Reportes",
+        "body": "Consulta la información y genera PDFs de reportes."
+      },
+      "reportsWeek": {
+        "title": "Semana en reportes",
+        "body": "Revisa la semana y su información."
+      },
+      "reportsRange": {
+        "title": "Fechas desde / hasta",
+        "body": "Este rango en reportes se refleja en Nómina para calcular horas extra."
+      },
+      "payrollRange": {
+        "title": "Fechas desde / hasta",
+        "body": "Este rango es el mismo que en Reportes. En Nómina se reflejan horas extras, dietas, transportes y kilometraje dentro de estas fechas."
+      },
+      "reportsExtra": {
+        "title": "Opciones de horas extra",
+        "body": "Aquí puedes elegir el método de cálculo de horas extra."
+      },
+      "payroll": {
+        "title": "Nómina",
+        "body": "Revisa la nómina y genera el PDF."
+      },
+      "payrollTable": {
+        "title": "Tabla de nómina",
+        "body": "Revisa la tabla de la nómina."
+      },
+      "needs": {
+        "title": "Necesidades",
+        "body": "Consulta las necesidades del proyecto."
+      },
+      "needsWeek": {
+        "title": "Semana en necesidades",
+        "body": "Aquí puedes ver la semana creada."
+      },
+      "status": {
+        "title": "Activo / Cerrado",
+        "body": "Cierra el proyecto cuando termine para dejarlo en solo lectura."
+      },
+      "help": {
+        "title": "Ayuda",
+        "body": "Envíanos sugerencias o dudas desde aquí."
+      }
+    }
   }
 }
 

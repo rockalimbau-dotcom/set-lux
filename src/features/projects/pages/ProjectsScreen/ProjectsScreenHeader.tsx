@@ -49,6 +49,7 @@ export function ProjectsScreenHeader({
             <ThemeToggleButton />
             <button
               onClick={onNewProject}
+              data-tutorial='new-project'
               className='px-2 py-1 sm:px-2.5 sm:py-1.5 md:px-3 md:py-2 rounded-md sm:rounded-lg md:rounded-xl font-semibold text-white transition-all hover:shadow-lg border border-transparent hover:border-[var(--hover-border)] text-[10px] sm:text-xs'
               style={{backgroundColor: (document.documentElement.getAttribute('data-theme')||'dark')==='light' ? '#0468BF' : 'var(--brand)'}}
             >

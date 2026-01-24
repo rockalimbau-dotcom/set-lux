@@ -674,6 +674,124 @@
       "saturday": "Dissabte",
       "sunday": "Diumenge"
     }
+  },
+  "tutorial": {
+    "promptTitle": "Vols un tutorial ràpid?",
+    "promptBody": "Et mostrem els passos clau per usar SetLux.",
+    "promptStart": "Començar",
+    "promptLater": "Ara no",
+    "promptNever": "No tornar a mostrar",
+    "reminder": "Pots tornar a veure el tutorial a Configuració.",
+    "settingsTitle": "Tutorial",
+    "settingsBody": "Pots repetir el tutorial quan vulguis.",
+    "settingsButton": "Veure tutorial",
+    "missingHint": "Si no ho veus, torna a l'inici del projecte.",
+    "exit": "Sortir",
+    "exitConfirmTitle": "Segur que vols sortir del tutorial?",
+    "exitConfirmBody": "El podràs reprendre quan vulguis des de Configuració.",
+    "exitConfirmCancel": "Cancel·lar",
+    "exitConfirmOk": "Sortir",
+    "prev": "Anterior",
+    "next": "Següent",
+    "finish": "Finalitzar",
+    "finishTitlePrefix": "Llesta,",
+    "finishTitleSuffix": "! 🎉✨",
+    "finishBody": "Ja pots crear el teu primer projecte a SetLux.",
+    "finishNameFallback": "amic",
+    "steps": {
+      "theme": {
+        "title": "Tema",
+        "body": "Canvia el tema de l'app. És part de la identitat de la marca."
+      },
+      "newProject": {
+        "title": "Nou projecte",
+        "body": "Crea el teu primer projecte des d'aquí."
+      },
+      "newProjectForm": {
+        "title": "Editor de projecte",
+        "body": "Omple les dades del projecte en aquest formulari."
+      },
+      "team": {
+        "title": "Equip",
+        "body": "Afegeix membres, rols i genera el PDF de l'equip."
+      },
+      "teamAdd": {
+        "title": "Afegir membre",
+        "body": "Afegeix un membre a l'equip base."
+      },
+      "teamRow": {
+        "title": "Rol i nom",
+        "body": "Escull el rol i posa un nom."
+      },
+      "conditions": {
+        "title": "Condicions",
+        "body": "Defineix tarifes i genera el PDF de condicions."
+      },
+      "conditionsParams": {
+        "title": "Paràmetres de càlcul",
+        "body": "Obre aquest apartat i revisa els paràmetres."
+      },
+      "conditionsPrices": {
+        "title": "Taula de preus",
+        "body": "Introdueix un preu per continuar."
+      },
+      "planning": {
+        "title": "Planificació",
+        "body": "Crea setmanes i exporta el PDF de planificació."
+      },
+      "planningAdd": {
+        "title": "Afegir setmana",
+        "body": "Prem + Afegir setmana per crear-ne una."
+      },
+      "planningWeek": {
+        "title": "Setmana creada",
+        "body": "Aquí pots veure i editar la setmana creada."
+      },
+      "reports": {
+        "title": "Informes",
+        "body": "Consulta la informació i genera PDFs d'informes."
+      },
+      "reportsWeek": {
+        "title": "Setmana als informes",
+        "body": "Revisa la setmana i la seva informació."
+      },
+      "reportsRange": {
+        "title": "Dates des de / fins",
+        "body": "Aquest rang d'informes es reflecteix a Nòmina per calcular hores extres."
+      },
+      "payrollRange": {
+        "title": "Dates des de / fins",
+        "body": "Aquest rang és el mateix que a Informes. A Nòmina es reflecteixen hores extres, dietes, transport i quilometratge dins d'aquestes dates."
+      },
+      "reportsExtra": {
+        "title": "Opcions d'hores extres",
+        "body": "Aquí pots triar el mètode de càlcul d'hores extres."
+      },
+      "payroll": {
+        "title": "Nòmina",
+        "body": "Revisa la nòmina i genera el PDF."
+      },
+      "payrollTable": {
+        "title": "Taula de nòmina",
+        "body": "Revisa la taula de la nòmina."
+      },
+      "needs": {
+        "title": "Necessitats",
+        "body": "Consulta les necessitats del projecte."
+      },
+      "needsWeek": {
+        "title": "Setmana a necessitats",
+        "body": "Aquí pots veure la setmana creada."
+      },
+      "status": {
+        "title": "Actiu / Tancat",
+        "body": "Tanca el projecte quan acabi per deixar-lo en només lectura."
+      },
+      "help": {
+        "title": "Ajuda",
+        "body": "Envia'ns suggeriments o dubtes des d'aquí."
+      }
+    }
   }
 }
 

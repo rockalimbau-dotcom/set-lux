@@ -99,6 +99,7 @@ export function SuggestionFab() {
       <div className='fixed bottom-4 right-4 z-50'>
         <button
           type='button'
+          data-tutorial='help-fab'
           onClick={() => setIsOpen(v => !v)}
           className='px-2.5 py-1.5 rounded-full border border-neutral-border text-[10px] sm:text-xs shadow-md hover:border-[var(--hover-border)]'
           style={{ backgroundColor: 'var(--panel)', color: 'var(--text)' }}
@@ -108,7 +109,7 @@ export function SuggestionFab() {
       </div>
 
       {isOpen && (
-        <div className='fixed bottom-14 right-4 z-50 w-[260px] sm:w-[300px]'>
+        <div className='fixed bottom-14 right-4 z-50 w-[260px] sm:w-[300px]' data-tutorial='help-panel'>
           <div
             className='rounded-lg border border-neutral-border bg-neutral-panel p-2 sm:p-3 shadow-lg'
             style={{ backgroundColor: 'var(--panel)', color: 'var(--text)' }}

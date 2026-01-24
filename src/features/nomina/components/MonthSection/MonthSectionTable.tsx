@@ -128,7 +128,7 @@ export function MonthSectionTable({
   );
 
   return (
-    <div className='px-3 pb-3 sm:px-4 sm:pb-4 md:px-5 md:pb-5 overflow-x-auto'>
+    <div className='px-3 pb-3 sm:px-4 sm:pb-4 md:px-5 md:pb-5 overflow-x-auto' data-tutorial='payroll-table'>
       <table className='min-w-[800px] sm:min-w-[1000px] md:min-w-[1200px] w-full border-collapse text-[9px] sm:text-[10px] md:text-xs lg:text-sm'>
         <thead>
           <tr>

@@ -664,6 +664,124 @@
       "saturday": "Saturday",
       "sunday": "Sunday"
     }
+  },
+  "tutorial": {
+    "promptTitle": "Want a quick tutorial?",
+    "promptBody": "We will show you the key steps to use SetLux.",
+    "promptStart": "Start",
+    "promptLater": "Not now",
+    "promptNever": "Don't show again",
+    "reminder": "You can view the tutorial again in Settings.",
+    "settingsTitle": "Tutorial",
+    "settingsBody": "You can replay the tutorial anytime.",
+    "settingsButton": "View tutorial",
+    "missingHint": "If you don't see it, return to the project overview.",
+    "exit": "Exit",
+    "exitConfirmTitle": "Are you sure you want to exit the tutorial?",
+    "exitConfirmBody": "You can resume it anytime from Settings.",
+    "exitConfirmCancel": "Cancel",
+    "exitConfirmOk": "Exit",
+    "prev": "Previous",
+    "next": "Next",
+    "finish": "Finish",
+    "finishTitlePrefix": "All set,",
+    "finishTitleSuffix": "! 🎉✨",
+    "finishBody": "You can now create your first project in SetLux.",
+    "finishNameFallback": "friend",
+    "steps": {
+      "theme": {
+        "title": "Theme",
+        "body": "Switch the app theme. It is part of the brand identity."
+      },
+      "newProject": {
+        "title": "New project",
+        "body": "Create your first project from here."
+      },
+      "newProjectForm": {
+        "title": "Project editor",
+        "body": "Fill in the project details in this form."
+      },
+      "team": {
+        "title": "Team",
+        "body": "Add members, roles, and generate the team PDF."
+      },
+      "teamAdd": {
+        "title": "Add member",
+        "body": "Add a member to the base team."
+      },
+      "teamRow": {
+        "title": "Role and name",
+        "body": "Choose a role and enter a name."
+      },
+      "conditions": {
+        "title": "Conditions",
+        "body": "Set rates and generate the conditions PDF."
+      },
+      "conditionsParams": {
+        "title": "Calculation parameters",
+        "body": "Open this section and review the parameters."
+      },
+      "conditionsPrices": {
+        "title": "Price table",
+        "body": "Enter a price to continue."
+      },
+      "planning": {
+        "title": "Planning",
+        "body": "Create weeks and export the planning PDF."
+      },
+      "planningAdd": {
+        "title": "Add week",
+        "body": "Press + Add week to create one."
+      },
+      "planningWeek": {
+        "title": "Week created",
+        "body": "You can view and edit the created week here."
+      },
+      "reports": {
+        "title": "Reports",
+        "body": "Review data and generate report PDFs."
+      },
+      "reportsWeek": {
+        "title": "Week in reports",
+        "body": "Review the week and its information."
+      },
+      "reportsRange": {
+        "title": "From / to dates",
+        "body": "This reports range is used in Payroll to calculate overtime."
+      },
+      "payrollRange": {
+        "title": "From / to dates",
+        "body": "This range is the same as Reports. Payroll reflects overtime, per diems, transport, and mileage within these dates."
+      },
+      "reportsExtra": {
+        "title": "Overtime options",
+        "body": "Choose the overtime calculation method here."
+      },
+      "payroll": {
+        "title": "Payroll",
+        "body": "Review payroll and generate the PDF."
+      },
+      "payrollTable": {
+        "title": "Payroll table",
+        "body": "Review the payroll table."
+      },
+      "needs": {
+        "title": "Needs",
+        "body": "Review project needs."
+      },
+      "needsWeek": {
+        "title": "Week in needs",
+        "body": "You can view the created week here."
+      },
+      "status": {
+        "title": "Active / Closed",
+        "body": "Close the project when finished to make it read-only."
+      },
+      "help": {
+        "title": "Help",
+        "body": "Send us suggestions or questions from here."
+      }
+    }
   }
 }
 

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AnyRecord } from '@shared/types/common';
 import { safeId, displayRolesForGroup } from './EquipoTabUtils';
@@ -38,7 +38,19 @@ export function TeamGroup({
       ...rows,
       { id: safeId(), role: allowedRoles[0]?.code || 'E', name: '', gender: 'neutral', seq },
     ]);
+    if (groupKey === 'base') {
+      try {
+        window.dispatchEvent(new CustomEvent('tutorial-team-member-added'));
+      } catch {}
+    }
   };
+
+  useEffect(() => {
+    if (groupKey !== 'base') return;
+    const handler = () => addRow();
+    window.addEventListener('tutorial-team-add-row', handler as EventListener);
+    return () => window.removeEventListener('tutorial-team-add-row', handler as EventListener);
+  }, [groupKey, addRow]);
   const updateRow = (id: string, patch: AnyRecord) => {
     if (!canEdit) return;
     setRows(rows.map((r: AnyRecord) => (r.id === id ? { ...r, ...patch } : r)));
@@ -80,6 +92,7 @@ export function TeamGroup({
           <button
             onClick={addRow}
             disabled={!canEdit}
+            data-tutorial={groupKey === 'base' ? 'team-add-base' : undefined}
             className={`px-1.5 py-1 sm:px-2 sm:py-1.5 md:px-3 md:py-2 rounded sm:rounded-md md:rounded-lg border text-[9px] sm:text-[10px] md:text-xs border-neutral-border hover:border-accent whitespace-nowrap ${!canEdit ? 'opacity-50 cursor-not-allowed' : ''}`}
             aria-label={t('team.addMemberTo', { title })}
             title={!canEdit ? t('conditions.projectClosed') : t('team.addMemberTo', { title })}
@@ -102,7 +115,7 @@ export function TeamGroup({
           </div>
         ) : (
           <div className='grid gap-1 sm:gap-1.5 md:gap-2'>
-            {rows.map((row: AnyRecord) => (
+            {rows.map((row: AnyRecord, index: number) => (
               <TeamRow
                 key={row.id}
                 row={row}
@@ -111,6 +124,7 @@ export function TeamGroup({
                 canEdit={canEdit}
                 allowedRoles={shownRoles}
                 groupKey={groupKey}
+                tutorialId={groupKey === 'base' && index === rows.length - 1 ? 'team-row-base' : undefined}
               />
             ))}
           </div>

@@ -12,9 +12,10 @@ interface TeamRowProps {
   canEdit: boolean;
   allowedRoles: AnyRecord[];
   groupKey?: string;
+  tutorialId?: string;
 }
 
-export function TeamRow({ row, onChange, onRemove, canEdit, allowedRoles, groupKey = 'base' }: TeamRowProps) {
+export function TeamRow({ row, onChange, onRemove, canEdit, allowedRoles, groupKey = 'base', tutorialId }: TeamRowProps) {
   const { t, i18n } = useTranslation();
   // Si el rol tiene prefijo "REF" (refuerzo), usar el color del rol base
   const roleCodeForColor = row.role?.startsWith('REF') && row.role.length > 3 
@@ -112,7 +113,10 @@ export function TeamRow({ row, onChange, onRemove, canEdit, allowedRoles, groupK
 
   return (
     <>
-      <div className='rounded sm:rounded-md md:rounded-lg lg:rounded-xl border border-neutral-border bg-neutral-surface p-1.5 sm:p-2 md:p-2.5 lg:p-3'>
+      <div
+        className='rounded sm:rounded-md md:rounded-lg lg:rounded-xl border border-neutral-border bg-neutral-surface p-1.5 sm:p-2 md:p-2.5 lg:p-3'
+        data-tutorial={tutorialId}
+      >
         <div className='flex flex-col sm:flex-row sm:items-center sm:gap-2 md:gap-3 gap-1.5 sm:gap-2'>
           <div className='sm:w-10 md:w-12 flex sm:justify-start'>
             <span
@@ -140,6 +144,7 @@ export function TeamRow({ row, onChange, onRemove, canEdit, allowedRoles, groupK
               title={t('team.role')}
               aria-label={t('team.role')}
               id={`role-${row.id}`}
+              data-tutorial={tutorialId ? 'team-role-button' : undefined}
               className={`w-full min-w-0 px-1.5 py-1 sm:px-2 sm:py-1.5 md:px-3 md:py-2 rounded sm:rounded-md md:rounded-lg border focus:outline-none text-[9px] sm:text-[10px] md:text-xs lg:text-sm text-left transition-colors ${
                 theme === 'light' 
                   ? 'bg-white text-gray-900' 
@@ -162,9 +167,12 @@ export function TeamRow({ row, onChange, onRemove, canEdit, allowedRoles, groupK
               {selectedLabel}
             </button>
             {isOpen && canEdit && (
-              <div className={`absolute top-full left-0 mt-0.5 sm:mt-1 w-full border border-neutral-border rounded sm:rounded-md md:rounded-lg shadow-lg z-50 overflow-y-auto max-h-48 sm:max-h-56 md:max-h-60 ${
-                theme === 'light' ? 'bg-white' : 'bg-neutral-panel'
-              }`}>
+              <div
+                className={`absolute top-full left-0 mt-0.5 sm:mt-1 w-full border border-neutral-border rounded sm:rounded-md md:rounded-lg shadow-lg z-50 overflow-y-auto max-h-48 sm:max-h-56 md:max-h-60 ${
+                  theme === 'light' ? 'bg-white' : 'bg-neutral-panel'
+                }`}
+                data-tutorial='team-role-dropdown'
+              >
               {allowedRoles.map((r: AnyRecord) => (
                   <button
                     key={r.code}
@@ -277,6 +285,7 @@ export function TeamRow({ row, onChange, onRemove, canEdit, allowedRoles, groupK
               className='w-full min-w-0 px-1.5 py-1 sm:px-2 sm:py-1.5 md:px-3 md:py-2 rounded sm:rounded-md md:rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-[9px] sm:text-[10px] md:text-xs lg:text-sm'
               aria-label={t('team.nameAndSurname')}
               id={`name-${row.id}`}
+              data-tutorial={tutorialId ? 'team-name-base' : undefined}
             />
           </div>
           <div className='sm:w-8 md:w-10 flex sm:justify-end'>

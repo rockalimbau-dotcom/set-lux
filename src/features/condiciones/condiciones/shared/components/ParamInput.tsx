@@ -136,7 +136,7 @@ export function ParamInput({
   }
 
   return (
-      <label className='flex items-center justify-between gap-2 sm:gap-3 md:gap-4'>
+      <label className='flex items-center justify-between gap-2 sm:gap-3 md:gap-4' data-tutorial='conditions-price-input'>
         <span className='text-[10px] sm:text-xs md:text-sm text-zinc-300 dark:text-zinc-400 whitespace-nowrap flex-shrink-0 font-medium'>{label}</span>
         <div className='flex items-center gap-1 sm:gap-1.5 flex-shrink-0'>
           <input

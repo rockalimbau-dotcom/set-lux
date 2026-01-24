@@ -31,7 +31,10 @@ export function ParametersSection({
   };
 
   return (
-    <section className='rounded sm:rounded-md md:rounded-lg lg:rounded-xl xl:rounded-2xl border border-neutral-border bg-neutral-panel/90 p-2 sm:p-2.5 md:p-3 lg:p-4 phase-panel'>
+    <section
+      className='rounded sm:rounded-md md:rounded-lg lg:rounded-xl xl:rounded-2xl border border-neutral-border bg-neutral-panel/90 p-2 sm:p-2.5 md:p-3 lg:p-4 phase-panel'
+      data-tutorial='conditions-params'
+    >
       <div className='flex items-center gap-1 sm:gap-1.5 md:gap-2 mb-1.5 sm:mb-2 md:mb-3'>
         <button
           onClick={() => setShowParams(v => !v)}
@@ -190,12 +193,14 @@ export function ParametersSection({
                 onChange={(v: string) => setParam('dietaCena', v)}
                 readOnly={readOnly}
               />
+            <div data-tutorial='conditions-pernocta-anchor'>
               <ParamInput
                 label={t('conditions.perDiemNoOvernight')}
                 value={p.dietaSinPernocta ?? '50'}
                 onChange={(v: string) => setParam('dietaSinPernocta', v)}
                 readOnly={readOnly}
               />
+            </div>
               <ParamInput
                 label={t('conditions.accommodationBreakfast')}
                 value={p.dietaAlojDes ?? '70'}

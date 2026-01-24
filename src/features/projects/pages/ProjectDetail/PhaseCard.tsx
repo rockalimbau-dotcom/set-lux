@@ -5,12 +5,14 @@ interface PhaseCardProps {
   icon: React.ReactNode;
   desc: string;
   onClick: () => void;
+  tutorialId?: string;
 }
 
-export function PhaseCard({ title, icon, desc, onClick }: PhaseCardProps) {
+export function PhaseCard({ title, icon, desc, onClick, tutorialId }: PhaseCardProps) {
   return (
     <button
       onClick={onClick}
+      data-tutorial={tutorialId}
       className='group text-left rounded sm:rounded-md md:rounded-lg lg:rounded-xl xl:rounded-2xl border border-neutral-border p-2 sm:p-3 md:p-4 lg:p-5 xl:p-6 transition hover:border-[var(--hover-border)]'
       style={{
         backgroundColor: 'var(--panel)',

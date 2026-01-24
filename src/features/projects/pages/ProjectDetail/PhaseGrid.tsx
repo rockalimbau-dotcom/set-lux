@@ -19,12 +19,14 @@ export function PhaseGrid({ condModeLabel, condTipo, onTabChange }: PhaseGridPro
         icon={<PhaseIcon name='condiciones' color='#60a5fa' />}
         desc={t('conditions.description')}
         onClick={() => onTabChange('condiciones')}
+        tutorialId='phase-condiciones'
       />
       <PhaseCard
         title={t('navigation.team')}
         icon={<PhaseIcon name='equipo' color='#60a5fa' />}
         desc={condTipo === 'diario' ? t('team.descriptionAdvertising') : t('team.description')}
         onClick={() => onTabChange('equipo')}
+        tutorialId='phase-equipo'
       />
 
       <PhaseCard
@@ -32,12 +34,14 @@ export function PhaseGrid({ condModeLabel, condTipo, onTabChange }: PhaseGridPro
         icon={<PhaseIcon name='planificacion' color='#60a5fa' />}
         desc={t('planning.description')}
         onClick={() => onTabChange('planificacion')}
+        tutorialId='phase-planificacion'
       />
       <PhaseCard
         title={t('navigation.reports')}
         icon={<PhaseIcon name='reportes' color='#60a5fa' />}
         desc={t('reports.description')}
         onClick={() => onTabChange('reportes')}
+        tutorialId='phase-reportes'
       />
 
       <PhaseCard
@@ -45,6 +49,7 @@ export function PhaseGrid({ condModeLabel, condTipo, onTabChange }: PhaseGridPro
         icon={<PhaseIcon name='nomina' color='#60a5fa' />}
         desc={t('payroll.description')}
         onClick={() => onTabChange('nomina')}
+        tutorialId='phase-nomina'
       />
 
       <PhaseCard
@@ -52,6 +57,7 @@ export function PhaseGrid({ condModeLabel, condTipo, onTabChange }: PhaseGridPro
         icon={<PhaseIcon name='necesidades' color='#60a5fa' />}
         desc={t('needs.description')}
         onClick={() => onTabChange('necesidades')}
+        tutorialId='phase-necesidades'
       />
     </div>
   );

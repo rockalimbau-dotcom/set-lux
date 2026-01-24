@@ -45,6 +45,7 @@ type WeekCardProps = {
   teamList: AnyRecord[];
   project?: AnyRecord;
   readOnly?: boolean;
+  tutorialId?: string;
 };
 
 function WeekCard({
@@ -67,6 +68,7 @@ function WeekCard({
   teamList,
   project,
   readOnly = false,
+  tutorialId,
 }: WeekCardProps) {
   const { t } = useTranslation();
   
@@ -198,6 +200,7 @@ function WeekCard({
     <div
       id={`wk-${week.id}`}
       className='wk-card rounded sm:rounded-md md:rounded-lg lg:rounded-xl xl:rounded-2xl border border-neutral-border bg-neutral-panel/90'
+      data-tutorial={tutorialId}
     >
       <WeekCardHeader
         weekLabel={translateWeekLabel(week.label)}

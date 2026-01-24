@@ -197,7 +197,7 @@ export default function ReportesTab({ project, mode = 'semanal', readOnly = fals
           
           const displayedHorasExtraTipoDiario = translateStoredExtraHoursTypeDiario(horasExtraTipoDiario);
           
-          return weeksWithPeople.map(week => (
+          return weeksWithPeople.map((week, index) => (
             <ReportesSemana
               key={week.id as string}
               project={project as AnyRecord}
@@ -207,6 +207,7 @@ export default function ReportesTab({ project, mode = 'semanal', readOnly = fals
               mode={mode}
               horasExtraTipo={displayedHorasExtraTipoDiario}
               readOnly={readOnly}
+              tutorialId={index === 0 ? 'reports-week' : undefined}
               planTimesByDate={(iso: string) => {
                 const idx = weekToSemanasISO(week).indexOf(iso);
                 if (idx >= 0) {

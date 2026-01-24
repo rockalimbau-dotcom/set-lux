@@ -71,6 +71,7 @@ export function ProjectDetailHeader({
             <ThemeToggleButton />
             <span
               onClick={onStatusClick}
+              data-tutorial='project-status'
               className='px-2 py-1 sm:px-2.5 sm:py-1.5 md:px-3 md:py-2 rounded sm:rounded-md md:rounded-lg text-[10px] sm:text-xs font-medium border cursor-pointer'
               style={{backgroundColor: estadoBg, borderColor: estadoBg, color: '#ffffff'}}
               title={t('projectDetail.changeStatus', { status: estadoText })}

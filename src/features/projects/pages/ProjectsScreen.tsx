@@ -1,5 +1,5 @@
 import { useClickOutsideMultiple } from '@shared/hooks/useClickOutside';
-import { useRef, useState, useMemo, memo, useCallback } from 'react';
+import { useRef, useState, useMemo, memo, useCallback, useEffect } from 'react';
 import { NewProjectModal } from '../components/NewProjectModal';
 import { EditProjectModal } from '../components/EditProjectModal';
 import { DeleteConfirmModal } from '../components/DeleteConfirmModal';
@@ -52,6 +52,18 @@ function ProjectsScreen({
   );
 
   const handleOpen = useCallback((p: Project) => onOpen && onOpen(p), [onOpen]);
+  const handleNewProject = useCallback(() => {
+    setShowNew(true);
+    try {
+      window.dispatchEvent(new CustomEvent('tutorial-new-project-opened'));
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    const handler = () => handleNewProject();
+    window.addEventListener('tutorial-open-new-project', handler as EventListener);
+    return () => window.removeEventListener('tutorial-open-new-project', handler as EventListener);
+  }, [handleNewProject]);
   
   // Filtrar y ordenar proyectos
   const filteredAndSortedProjects = useProjectsFilter(projects, {
@@ -71,7 +83,7 @@ function ProjectsScreen({
       {/* Header moderno y prominente */}
       <ProjectsScreenHeader
         userName={userName}
-        onNewProject={() => setShowNew(true)}
+        onNewProject={handleNewProject}
         onPerfil={onPerfil}
         onConfig={onConfig}
         onSalir={onSalir}

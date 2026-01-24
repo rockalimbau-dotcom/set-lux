@@ -80,7 +80,7 @@ function MonthReportGroup({
       />
 
       {/* Semanas del mes */}
-      {weeks.map(week => (
+      {weeks.map((week, index) => (
         <ReportesSemana
           key={week.id as string}
           project={project as AnyRecord}
@@ -90,6 +90,7 @@ function MonthReportGroup({
           mode={mode}
           horasExtraTipo={horasExtraSelector.displayedHorasExtraTipo}
           readOnly={readOnly}
+          tutorialId={index === 0 ? 'reports-week' : undefined}
           planTimesByDate={(iso: string) => {
             const idx = weekToSemanasISO(week).indexOf(iso);
             if (idx >= 0) {

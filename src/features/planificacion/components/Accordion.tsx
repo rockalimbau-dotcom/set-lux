@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import ToggleIconButton from '../../../shared/components/ToggleIconButton';
 
@@ -38,6 +38,18 @@ export default function Accordion({
       onToggle();
     });
   }, [onToggle]);
+
+  useEffect(() => {
+    if (!isProduction) return;
+    const handler = () => {
+      onAdd();
+      try {
+        window.dispatchEvent(new CustomEvent('tutorial-planning-week-added'));
+      } catch {}
+    };
+    window.addEventListener('tutorial-planning-add-week', handler as EventListener);
+    return () => window.removeEventListener('tutorial-planning-add-week', handler as EventListener);
+  }, [isProduction, onAdd]);
   
   return (
     <section className='rounded sm:rounded-md md:rounded-lg lg:rounded-xl xl:rounded-2xl border border-neutral-border bg-neutral-panel/90'>
@@ -60,8 +72,16 @@ export default function Accordion({
             {isPreproduction ? t('planning.pdfPre') : isProduction ? t('planning.pdfPro') : t('planning.pdf')}
           </button>
           <button
-            onClick={onAdd}
+            onClick={() => {
+              onAdd();
+              if (isProduction) {
+                try {
+                  window.dispatchEvent(new CustomEvent('tutorial-planning-week-added'));
+                } catch {}
+              }
+            }}
             disabled={readOnly}
+            data-tutorial={isProduction ? 'planning-add-week' : undefined}
             className={`px-1.5 py-1 sm:px-2 sm:py-1.5 md:px-2.5 md:py-2 lg:px-3 lg:py-2 rounded sm:rounded-md md:rounded-lg border text-[9px] sm:text-[10px] md:text-xs lg:text-sm border-neutral-border hover:border-[#F59E0B] whitespace-nowrap ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
             title={readOnly ? t('conditions.projectClosed') : t('planning.addWeek')}
           >

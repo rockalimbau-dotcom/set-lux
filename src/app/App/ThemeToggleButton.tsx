@@ -10,6 +10,7 @@ export function ThemeToggleButton() {
   return (
     <button
       type='button'
+      data-tutorial='theme-toggle'
       onClick={toggleTheme}
       className='px-2 py-1 sm:px-2.5 sm:py-1.5 md:px-3 md:py-2 rounded-lg sm:rounded-xl border hover:border-[var(--hover-border)] text-[10px] sm:text-xs'
       style={{

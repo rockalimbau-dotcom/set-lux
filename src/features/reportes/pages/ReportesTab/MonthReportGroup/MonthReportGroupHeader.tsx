@@ -1,4 +1,3 @@
-import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { MonthReportGroupHeaderProps } from './MonthReportGroupHeaderTypes';
 
@@ -30,7 +29,11 @@ export function MonthReportGroupHeader({
       {/* Primera fila: Mes y Horas Extra */}
       <div className='flex items-center gap-2 sm:gap-3 md:gap-4 w-full lg:w-auto'>
         <span className='text-xs sm:text-sm md:text-base font-semibold text-brand'>{monthName}</span>
-        <div className='flex items-center gap-1 sm:gap-1.5 md:gap-2 relative' ref={dropdownRef}>
+        <div
+          className='flex items-center gap-1 sm:gap-1.5 md:gap-2 relative'
+          ref={dropdownRef}
+          data-tutorial='reports-extra-hours'
+        >
           <button
             type='button'
             onClick={() => !readOnly && setIsDropdownOpen(!isDropdownOpen)}
@@ -64,6 +67,7 @@ export function MonthReportGroupHeader({
               className={`absolute top-full left-0 mt-1 w-full min-w-[120px] sm:min-w-[180px] md:min-w-[240px] lg:min-w-[280px] border border-neutral-border rounded sm:rounded-md md:rounded-lg shadow-lg z-50 overflow-y-auto max-h-40 sm:max-h-48 md:max-h-60 ${
                 theme === 'light' ? 'bg-white' : 'bg-neutral-panel'
               }`}
+              data-tutorial='reports-extra-dropdown'
             >
               {horasExtraOpciones.map(opcion => (
                 <button
@@ -95,7 +99,7 @@ export function MonthReportGroupHeader({
       </div>
 
       {/* Segunda fila (solo en móvil): Fechas y PDF */}
-      <div className='flex items-center gap-2 sm:gap-2 md:gap-4 w-full lg:w-auto lg:ml-auto'>
+      <div className='flex items-center gap-2 sm:gap-2 md:gap-4 w-full lg:w-auto lg:ml-auto' data-tutorial='reports-range'>
         <div className='flex items-center gap-1 sm:gap-1.5 md:gap-2'>
           <label className='text-[9px] sm:text-[10px] md:text-xs lg:text-sm text-zinc-300 whitespace-nowrap'>{t('reports.from')}</label>
           <input

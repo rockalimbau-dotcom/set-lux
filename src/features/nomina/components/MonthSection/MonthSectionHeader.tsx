@@ -94,49 +94,51 @@ export function MonthSectionHeader({
                 <label className='text-[9px] sm:text-[10px] md:text-xs text-zinc-400 whitespace-nowrap'>{t('payroll.days')}</label>
               </div>
             )}
-            <div className='flex items-center gap-1 sm:gap-1.5 md:gap-2'>
-              <label className='text-[9px] sm:text-[10px] md:text-xs lg:text-sm text-zinc-300 whitespace-nowrap'>{t('payroll.from')}</label>
-              <input
-                type='date'
-                value={dateFrom}
-                onChange={e => {
-                  if (readOnly) return;
-                  const newValue = e.target.value;
-                  setDateFrom(newValue);
-                  storage.setString(`${dateRangeKey}_from`, newValue);
-                  window.dispatchEvent(
-                    new CustomEvent('localStorageChange', {
-                      detail: { key: `${dateRangeKey}_from`, value: newValue },
-                    })
-                  );
-                }}
-                disabled={readOnly}
-                readOnly={readOnly}
-                className={`w-[80px] sm:w-[100px] md:w-[120px] lg:w-[140px] px-1.5 py-1 sm:px-2 sm:py-1.5 md:px-3 md:py-2 rounded sm:rounded-md md:rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-[9px] sm:text-[10px] md:text-xs lg:text-sm text-left ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
-                title={readOnly ? t('conditions.projectClosed') : t('payroll.dateFrom')}
-              />
-            </div>
-            <div className='flex items-center gap-1 sm:gap-1.5 md:gap-2'>
-              <label className='text-[9px] sm:text-[10px] md:text-xs lg:text-sm text-zinc-300 whitespace-nowrap'>{t('payroll.to')}</label>
-              <input
-                type='date'
-                value={dateTo}
-                onChange={e => {
-                  if (readOnly) return;
-                  const newValue = e.target.value;
-                  setDateTo(newValue);
-                  storage.setString(`${dateRangeKey}_to`, newValue);
-                  window.dispatchEvent(
-                    new CustomEvent('localStorageChange', {
-                      detail: { key: `${dateRangeKey}_to`, value: newValue },
-                    })
-                  );
-                }}
-                disabled={readOnly}
-                readOnly={readOnly}
-                className={`w-[80px] sm:w-[100px] md:w-[120px] lg:w-[140px] px-1.5 py-1 sm:px-2 sm:py-1.5 md:px-3 md:py-2 rounded sm:rounded-md md:rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-[9px] sm:text-[10px] md:text-xs lg:text-sm text-left ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
-                title={readOnly ? t('conditions.projectClosed') : t('payroll.dateTo')}
-              />
+            <div className='flex items-center gap-2 sm:gap-2 md:gap-4' data-tutorial='payroll-range'>
+              <div className='flex items-center gap-1 sm:gap-1.5 md:gap-2'>
+                <label className='text-[9px] sm:text-[10px] md:text-xs lg:text-sm text-zinc-300 whitespace-nowrap'>{t('payroll.from')}</label>
+                <input
+                  type='date'
+                  value={dateFrom}
+                  onChange={e => {
+                    if (readOnly) return;
+                    const newValue = e.target.value;
+                    setDateFrom(newValue);
+                    storage.setString(`${dateRangeKey}_from`, newValue);
+                    window.dispatchEvent(
+                      new CustomEvent('localStorageChange', {
+                        detail: { key: `${dateRangeKey}_from`, value: newValue },
+                      })
+                    );
+                  }}
+                  disabled={readOnly}
+                  readOnly={readOnly}
+                  className={`w-[80px] sm:w-[100px] md:w-[120px] lg:w-[140px] px-1.5 py-1 sm:px-2 sm:py-1.5 md:px-3 md:py-2 rounded sm:rounded-md md:rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-[9px] sm:text-[10px] md:text-xs lg:text-sm text-left ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  title={readOnly ? t('conditions.projectClosed') : t('payroll.dateFrom')}
+                />
+              </div>
+              <div className='flex items-center gap-1 sm:gap-1.5 md:gap-2'>
+                <label className='text-[9px] sm:text-[10px] md:text-xs lg:text-sm text-zinc-300 whitespace-nowrap'>{t('payroll.to')}</label>
+                <input
+                  type='date'
+                  value={dateTo}
+                  onChange={e => {
+                    if (readOnly) return;
+                    const newValue = e.target.value;
+                    setDateTo(newValue);
+                    storage.setString(`${dateRangeKey}_to`, newValue);
+                    window.dispatchEvent(
+                      new CustomEvent('localStorageChange', {
+                        detail: { key: `${dateRangeKey}_to`, value: newValue },
+                      })
+                    );
+                  }}
+                  disabled={readOnly}
+                  readOnly={readOnly}
+                  className={`w-[80px] sm:w-[100px] md:w-[120px] lg:w-[140px] px-1.5 py-1 sm:px-2 sm:py-1.5 md:px-3 md:py-2 rounded sm:rounded-md md:rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-[9px] sm:text-[10px] md:text-xs lg:text-sm text-left ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  title={readOnly ? t('conditions.projectClosed') : t('payroll.dateTo')}
+                />
+              </div>
             </div>
           </>
         )}

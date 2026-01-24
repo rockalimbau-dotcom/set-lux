@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useClickOutsideMultiple } from '@shared/hooks/useClickOutside';
 import { useTheme } from '@shared/hooks/useTheme';
@@ -99,12 +99,24 @@ export function NewProjectModal({ onClose, onCreate }: NewProjectModalProps) {
       region: form.region || 'CT',
     };
     onCreate(proj);
+    try {
+      window.dispatchEvent(new CustomEvent('tutorial-new-project-created', { detail: { projectId: proj.id } }));
+    } catch {}
     onClose();
   };
 
+  useEffect(() => {
+    const handler = () => handleCreate();
+    window.addEventListener('tutorial-submit-new-project', handler as EventListener);
+    return () => window.removeEventListener('tutorial-submit-new-project', handler as EventListener);
+  }, [handleCreate]);
+
   return (
     <div className='fixed inset-0 bg-black/60 grid place-items-center p-6 sm:p-6 md:p-6 z-50 overflow-y-auto'>
-      <div className='w-full max-w-[200px] sm:max-w-[240px] md:max-w-[280px] lg:max-w-xs xl:max-w-sm 2xl:max-w-md rounded sm:rounded-md md:rounded-lg lg:rounded-xl xl:rounded-2xl border border-neutral-border bg-neutral-panel p-2 sm:p-2.5 md:p-3 lg:p-4 xl:p-5 2xl:p-6 my-auto max-h-[75vh] sm:max-h-[80vh] overflow-y-auto'>
+      <div
+        className='w-full max-w-[200px] sm:max-w-[240px] md:max-w-[280px] lg:max-w-xs xl:max-w-sm 2xl:max-w-md rounded sm:rounded-md md:rounded-lg lg:rounded-xl xl:rounded-2xl border border-neutral-border bg-neutral-panel p-2 sm:p-2.5 md:p-3 lg:p-4 xl:p-5 2xl:p-6 my-auto max-h-[75vh] sm:max-h-[80vh] overflow-y-auto'
+        data-tutorial='new-project-form'
+      >
         <h3
           className='text-[10px] sm:text-xs md:text-sm lg:text-base xl:text-lg font-semibold mb-1 sm:mb-1.5 md:mb-2 lg:mb-3 xl:mb-4'
           style={{ color: theme === 'light' ? '#0468BF' : '#F27405' }}

@@ -40,6 +40,7 @@ interface WeekSectionProps {
   addCustomRow: (weekId: string) => string | null;
   updateCustomRowLabel: (weekId: string, rowId: string, label: string) => void;
   removeCustomRow: (weekId: string, rowId: string) => void;
+  tutorialId?: string;
 }
 
 export function WeekSection({
@@ -60,6 +61,7 @@ export function WeekSection({
   addCustomRow,
   updateCustomRowLabel,
   removeCustomRow,
+  tutorialId,
 }: WeekSectionProps) {
   const { t } = useTranslation();
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
@@ -167,8 +169,12 @@ export function WeekSection({
     <section
       key={wid}
       className='rounded sm:rounded-lg md:rounded-xl lg:rounded-2xl border border-neutral-border bg-neutral-panel/90'
+      data-tutorial={tutorialId}
     >
-      <div className='flex items-center justify-between gap-1.5 sm:gap-2 md:gap-3 px-2 py-2 sm:px-3 sm:py-2.5 md:px-4 md:py-3 lg:px-5 lg:py-4'>
+      <div
+        className='flex items-center justify-between gap-1.5 sm:gap-2 md:gap-3 px-2 py-2 sm:px-3 sm:py-2.5 md:px-4 md:py-3 lg:px-5 lg:py-4'
+        data-tutorial={tutorialId ? 'needs-week-header' : undefined}
+      >
         <div className='flex items-center gap-1.5 sm:gap-2 md:gap-3'>
           <button
             onClick={() => !readOnly && setWeekOpen(wid, !wk.open)}

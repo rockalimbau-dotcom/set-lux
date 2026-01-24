@@ -65,7 +65,7 @@ export function PricesTable({
   };
 
   return (
-    <div className='space-y-3 sm:space-y-4 md:space-y-5 lg:space-y-6'>
+    <div className='space-y-3 sm:space-y-4 md:space-y-5 lg:space-y-6' data-tutorial='conditions-prices'>
       {/* Sección Equipo Base */}
       <PriceSection
         title={t('conditions.baseTeam')}

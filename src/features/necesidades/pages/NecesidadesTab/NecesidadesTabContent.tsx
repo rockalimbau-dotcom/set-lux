@@ -99,7 +99,7 @@ export function NecesidadesTabContent({
         </button>
       </div>
 
-      {weekEntries.map(([wid, wk]) => {
+      {weekEntries.map(([wid, wk], index) => {
         try {
           return (
             <WeekSection
@@ -121,6 +121,7 @@ export function NecesidadesTabContent({
               addCustomRow={addCustomRow}
               updateCustomRowLabel={updateCustomRowLabel}
               removeCustomRow={removeCustomRow}
+              tutorialId={index === 0 ? 'needs-week' : undefined}
             />
           );
         } catch (error) {

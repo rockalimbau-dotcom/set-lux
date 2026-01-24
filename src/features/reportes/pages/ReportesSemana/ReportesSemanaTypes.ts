@@ -12,5 +12,6 @@ export interface ReportesSemanaProps {
   readOnly?: boolean;
   onExportWeekHTML?: () => void;
   onExportWeekPDF?: () => void;
+  tutorialId?: string;
 }
 

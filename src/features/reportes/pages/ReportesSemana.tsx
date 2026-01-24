@@ -49,6 +49,7 @@ export default function ReportesSemana({
   readOnly = false,
   onExportWeekHTML,
   onExportWeekPDF,
+  tutorialId,
 }: ReportesSemanaProps) {
   const { t } = useTranslation();
   
@@ -265,7 +266,10 @@ export default function ReportesSemana({
   );
 
   return (
-    <section className='rounded sm:rounded-md md:rounded-lg lg:rounded-xl xl:rounded-2xl border border-neutral-border bg-neutral-panel/90'>
+    <section
+      className='rounded sm:rounded-md md:rounded-lg lg:rounded-xl xl:rounded-2xl border border-neutral-border bg-neutral-panel/90'
+      data-tutorial={tutorialId}
+    >
       <ReportWeekHeader
         open={open}
         title={title}

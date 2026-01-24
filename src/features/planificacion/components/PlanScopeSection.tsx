@@ -84,7 +84,7 @@ function PlanScopeSection(props: PlanScopeSectionProps) {
     readOnly = false,
   } = props;
 
-  const weekCards = useMemo(() => weeks.map(w => (
+  const weekCards = useMemo(() => weeks.map((w, index) => (
     <WeekCard
       key={w.id}
       scope={scope}
@@ -106,6 +106,7 @@ function PlanScopeSection(props: PlanScopeSectionProps) {
       btnExportStyle={btnExportStyle}
       project={project}
       readOnly={readOnly}
+      tutorialId={scope === 'pro' && index === 0 ? 'planning-week' : undefined}
     />
   )), [weeks, scope, duplicateWeek, deleteWeek, setWeekStart, setDayField, addMemberTo, removeMemberFrom, teamList, baseTeam, prelightTeam, pickupTeam, reinforcements, onExportWeek, onExportWeekPDF, btnExportCls, btnExportStyle, project, readOnly]);
 

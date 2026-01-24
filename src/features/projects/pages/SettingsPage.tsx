@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import LogoIcon from '@shared/components/LogoIcon';
 import { storage } from '@shared/services/localStorage.service';
 import { useTranslation } from 'react-i18next';
-import { changeLanguage } from '@i18n/config';
+import { changeLanguage } from '../../../i18n/config';
 
 export default function SettingsPage() {
   const { t } = useTranslation();
@@ -286,6 +286,31 @@ export default function SettingsPage() {
 
           </div>
 
+
+          <div
+            className='mt-8 rounded-md sm:rounded-lg border p-2 sm:p-3 md:p-4'
+            style={{ backgroundColor: colors.inputBg, borderColor: colors.inputBorder }}
+          >
+            <div className='text-xs sm:text-sm font-semibold' style={{ color: colors.accentText }}>
+              {t('tutorial.settingsTitle')}
+            </div>
+            <p className='mt-1 text-[10px] sm:text-xs' style={{ color: colors.mutedText }}>
+              {t('tutorial.settingsBody')}
+            </p>
+            <button
+              type='button'
+              onClick={() => {
+                try {
+                  window.dispatchEvent(new CustomEvent('start-tutorial'));
+                } catch {}
+                navigate('/projects');
+              }}
+              className='mt-2 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-md sm:rounded-lg border text-[10px] sm:text-xs font-semibold'
+              style={{ borderColor: colors.primary, color: colors.primary }}
+            >
+              {t('tutorial.settingsButton')}
+            </button>
+          </div>
 
           <div className='flex justify-end gap-2 sm:gap-3 md:gap-4 mt-4 sm:mt-5 md:mt-6 lg:mt-8'>
             <button 
