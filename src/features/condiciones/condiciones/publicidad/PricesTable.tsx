@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AnyRecord } from '@shared/types/common';
 import { PriceSection } from './PriceSection';

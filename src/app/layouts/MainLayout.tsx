@@ -1,9 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useClickOutside } from '@shared/hooks/useClickOutside';
+import { useState, useEffect } from 'react';
 import {
   NavLink,
   Outlet,
-  useNavigate,
   useParams,
   useLocation,
 } from 'react-router-dom';
@@ -21,7 +19,6 @@ interface MainLayoutProps {
 
 export default function MainLayout({ project, onBack }: MainLayoutProps) {
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const pid = id || project?.id;
   const location = useLocation();

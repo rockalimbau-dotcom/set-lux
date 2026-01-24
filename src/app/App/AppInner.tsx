@@ -19,7 +19,7 @@ import { LandingPage } from './AppInner/LandingPage';
 
 function AppInner() {
   const { mode, setMode, userName, setUserName } = useAuth();
-  const { theme, focusColor } = useTheme();
+  const { theme } = useTheme();
   const { t } = useTranslation();
   const isLight = theme === 'light';
   const location = useLocation();
@@ -39,7 +39,7 @@ function AppInner() {
     pass2: '',
   });
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [, setSuccess] = useState('');
   const [projects, setProjects] = useLocalStorage<UIProject[]>('projects_v1', []);
   const [activeProject, setActiveProject] = useState<UIProject | null>(null);
   const [tutorialOpen, setTutorialOpen] = useState(false);
@@ -54,7 +54,7 @@ function AppInner() {
   useProjectsNormalization(projects, setProjects);
 
   // Auth handlers
-  const { handleLoginSubmit, handleRegisterSubmit } = useAuthHandlers({
+  const { handleLoginSubmit } = useAuthHandlers({
     login,
     setLogin,
     reg,
@@ -468,7 +468,6 @@ function AppInner() {
     setTimeout(() => setTutorialToast(null), 3000);
   };
 
-  const authMode = mode === 'register' ? 'register' : 'login';
   const setAuthMode = (next: 'login' | 'register') => setMode(next);
 
   return (
@@ -479,18 +478,12 @@ function AppInner() {
             path='/'
             element={
               <LandingPage
-                mode={authMode}
                 setMode={setAuthMode}
                 login={login}
                 setLogin={setLogin}
-                reg={reg}
-                setReg={setReg}
                 error={error}
-                success={success}
                 theme={theme}
-                focusColor={focusColor}
                 handleLoginSubmit={handleLoginSubmit}
-                handleRegisterSubmit={handleRegisterSubmit}
                 setError={setError}
               />
             }
@@ -503,7 +496,6 @@ function AppInner() {
                 mode={mode}
                 setMode={setMode}
                 userName={userName}
-                setUserName={setUserName}
                 projects={projects as UIProject[]}
                 setProjects={setProjects as any}
                 activeProject={activeProject as UIProject | null}
@@ -519,7 +511,6 @@ function AppInner() {
                 mode={mode}
                 setMode={setMode}
                 userName={userName}
-                setUserName={setUserName}
                 projects={projects as UIProject[]}
                 setProjects={setProjects as any}
                 activeProject={activeProject as UIProject | null}
@@ -535,7 +526,6 @@ function AppInner() {
                 mode={mode}
                 setMode={setMode}
                 userName={userName}
-                setUserName={setUserName}
                 projects={projects as UIProject[]}
                 setProjects={setProjects as any}
                 activeProject={activeProject as UIProject | null}
@@ -551,7 +541,6 @@ function AppInner() {
                 mode={mode}
                 setMode={setMode}
                 userName={userName}
-                setUserName={setUserName}
                 projects={projects as UIProject[]}
                 setProjects={setProjects as any}
                 activeProject={activeProject as UIProject | null}

@@ -1,13 +1,13 @@
 import { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { storage } from '../../../shared/services/localStorage.service';
-import type { Project as UIProject } from '../../../features/projects/pages/ProjectsScreen.tsx';
+import type { Project as UIProject } from '../../../features/projects/types';
 
 /**
  * Hook to hydrate project from URL params if not already loaded
  */
 export function useProjectHydration(
-  mode: string,
+  _mode: string,
   activeProject: UIProject | null,
   projects: UIProject[],
   setActiveProject: (project: UIProject | null) => void

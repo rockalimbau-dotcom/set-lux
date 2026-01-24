@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AnyRecord } from '@shared/types/common';
-import { renderWithParams, visibleToTemplate } from '../shared';
-import { normalizeText, getDefaultsMensual } from '../../utils/translationHelpers';
+import { renderWithParams } from '../shared';
+import { normalizeText } from '../../utils/translationHelpers';
 import { updateDynamicFestivos, globalDynamicFestivosText } from './mensualData';
 
 interface UseMensualLanguageSyncProps {
@@ -21,7 +21,7 @@ interface UseMensualLanguageSyncProps {
  * Hook to sync mensual conditions templates when language changes
  */
 export function useMensualLanguageSync({
-  model,
+  model: _model,
   setModel,
   getDefaultLegend,
   getDefaultHorarios,

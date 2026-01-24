@@ -3,38 +3,25 @@ import { useTranslation } from 'react-i18next';
 import BrandHero from '@shared/components/BrandHero.jsx';
 import { ThemeToggleButton } from '../ThemeToggleButton';
 import { LoginForm } from './LoginForm';
-import { RegisterForm } from './RegisterForm';
-import { LoginState, RegisterState } from '../AppTypes';
+import { LoginState } from '../AppTypes';
 
 interface LandingPageProps {
-  mode: 'login' | 'register';
   setMode: (mode: 'login' | 'register') => void;
   login: LoginState;
   setLogin: React.Dispatch<React.SetStateAction<LoginState>>;
-  reg: RegisterState;
-  setReg: React.Dispatch<React.SetStateAction<RegisterState>>;
   error: string;
-  success: string;
   theme: 'dark' | 'light';
-  focusColor: string;
   handleLoginSubmit: (e: React.FormEvent) => void;
-  handleRegisterSubmit: (e: React.FormEvent) => void;
   setError: React.Dispatch<React.SetStateAction<string>>;
 }
 
 export function LandingPage({
-  mode,
   setMode,
   login,
   setLogin,
-  reg,
-  setReg,
   error,
-  success,
   theme,
-  focusColor,
   handleLoginSubmit,
-  handleRegisterSubmit,
   setError,
 }: LandingPageProps) {
   const { t } = useTranslation();

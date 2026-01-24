@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import i18n from '@i18n/config';
+import i18n from '../../i18n/config';
 import { storage } from '@shared/services/localStorage.service';
 
 /**

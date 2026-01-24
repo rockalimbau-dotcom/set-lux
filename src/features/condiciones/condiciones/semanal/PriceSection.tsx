@@ -236,8 +236,6 @@ export function PriceSection({
             ) : (
               rolesToDisplay.map((role: string) => {
                 const hasSemanalValue = prices[role]?.['Precio semanal'];
-                // Para la sección base, si el rol no está en prices pero está en finalBaseRoles, permitir edición
-                const isBaseRoleWithoutPrice = sectionKey === 'base' && !prices[role] && finalBaseRoles.includes(role);
                 
                 return (
                   <tr key={role} className='relative'>

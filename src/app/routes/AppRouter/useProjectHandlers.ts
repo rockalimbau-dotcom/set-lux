@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import type { Project as UIProject } from '../../../features/projects/pages/ProjectsScreen.tsx';
+import type { Project as UIProject } from '../../../features/projects/types';
 import type { AppRouterProps } from './AppRouterTypes';
 
 /**

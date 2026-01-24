@@ -1,10 +1,9 @@
-import type { Project as UIProject } from '../../../features/projects/pages/ProjectsScreen.tsx';
+import type { Project as UIProject } from '../../../features/projects/types';
 
 export interface AppRouterProps {
   mode: string;
   setMode: (mode: string) => void;
   userName: string | null;
-  setUserName: (userName: string | null) => void;
   projects: UIProject[];
   setProjects: (projects: UIProject[] | ((prev: UIProject[]) => UIProject[])) => void;
   activeProject: UIProject | null;

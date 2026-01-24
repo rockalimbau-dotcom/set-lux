@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ErrorBoundary } from '../../../shared/components';
 import { storage } from '../../../shared/services/localStorage.service';
-import type { Project as UIProject } from '../../../features/projects/pages/ProjectsScreen.tsx';
+import type { Project as UIProject } from '../../../features/projects/types';
 import type { ProjectHandlers } from './AppRouterTypes';
 
 const ProjectsScreen = React.lazy(() => import('../../../features/projects/pages/ProjectsScreen.tsx'));
@@ -12,7 +12,6 @@ interface ProjectsRouteProps {
   projects: UIProject[];
   handlers: ProjectHandlers;
   setMode: (mode: string) => void;
-  setUserName: (userName: string | null) => void;
 }
 
 /**
@@ -23,7 +22,6 @@ export function ProjectsRoute({
   projects,
   handlers,
   setMode,
-  setUserName,
 }: ProjectsRouteProps) {
   const navigate = useNavigate();
 

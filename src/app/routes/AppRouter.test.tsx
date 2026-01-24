@@ -1,8 +1,10 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import type { ReactNode } from 'react';
 import { MemoryRouter } from 'react-router-dom';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 import AppRouter from './AppRouter.tsx';
+import type { Project } from '../../features/projects/types';
 
 // Mock react-router-dom hooks
 const mockNavigate = vi.fn();
@@ -16,8 +18,8 @@ vi.mock('react-router-dom', async () => {
     useNavigate: () => mockNavigate,
     useParams: () => mockUseParams(),
     useLocation: () => mockUseLocation(),
-    Routes: ({ children }) => <div data-testid='routes'>{children}</div>,
-    Route: ({ element }) => <div data-testid='route'>{element}</div>,
+    Routes: ({ children }: { children: ReactNode }) => <div data-testid='routes'>{children}</div>,
+    Route: ({ element }: { element: ReactNode }) => <div data-testid='route'>{element}</div>,
     Navigate: () => <div data-testid='navigate'>Navigate</div>,
   };
 });
@@ -25,7 +27,7 @@ vi.mock('react-router-dom', async () => {
 // Mock ProjectDetail and ProjectsScreen
 vi.mock('../../features/projects/pages/ProjectDetail.tsx', () => ({
   __esModule: true,
-  default: ({ project, onBack }) => (
+  default: ({ project, onBack }: { project: Project | null; onBack: () => void }) => (
     <div data-testid='project-detail'>
       <div>Project: {project?.nombre || 'No project'}</div>
       <button onClick={onBack} data-testid='back-button'>
@@ -37,18 +39,28 @@ vi.mock('../../features/projects/pages/ProjectDetail.tsx', () => ({
 
 vi.mock('../../features/projects/pages/ProjectsScreen.tsx', () => ({
   __esModule: true,
-  default: ({ userName, projects, onCreateProject, onOpen }) => (
+  default: ({
+    userName,
+    projects,
+    onCreateProject,
+    onOpen,
+  }: {
+    userName: string;
+    projects: Project[];
+    onCreateProject: (project: Project) => void;
+    onOpen: (project: Project) => void;
+  }) => (
     <div data-testid='projects-screen'>
       <div>User: {userName}</div>
       <div>Projects: {projects.length}</div>
       <button
-        onClick={() => onCreateProject({ nombre: 'New Project' })}
+        onClick={() => onCreateProject({ id: 'new', nombre: 'New Project', estado: 'Activo' })}
         data-testid='create-project'
       >
         Create
       </button>
       <button
-        onClick={() => onOpen({ id: '1', nombre: 'Test Project' })}
+        onClick={() => onOpen({ id: '1', nombre: 'Test Project', estado: 'Activo' })}
         data-testid='open-project'
       >
         Open
@@ -124,7 +136,7 @@ describe('AppRouter', () => {
   });
 
   it('renders ProjectDetail when project is active', async () => {
-    const activeProject = { id: 'test-project-1', nombre: 'Test Project' };
+    const activeProject: Project = { id: 'test-project-1', nombre: 'Test Project', estado: 'Activo' };
     const propsWithActiveProject = {
       ...mockProps,
       mode: 'project',

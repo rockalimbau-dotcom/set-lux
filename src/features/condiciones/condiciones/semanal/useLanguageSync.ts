@@ -13,7 +13,7 @@ interface UseLanguageSyncProps {
 /**
  * Hook to sync model templates when language changes (semanal mode)
  */
-export function useLanguageSync({ model, setModel }: UseLanguageSyncProps) {
+export function useLanguageSync({ model: _model, setModel }: UseLanguageSyncProps) {
   const { i18n } = useTranslation();
 
   // Load dynamic holidays on mount

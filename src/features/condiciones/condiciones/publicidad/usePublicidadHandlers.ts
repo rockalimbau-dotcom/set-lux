@@ -12,7 +12,7 @@ interface UseDiarioHandlersProps {
 /**
  * Hook to manage diario handlers (prices, roles, etc.)
  */
-export function useDiarioHandlers({ model, setModel }: UseDiarioHandlersProps) {
+export function useDiarioHandlers({ model: _model, setModel }: UseDiarioHandlersProps) {
   const [roleToDelete, setRoleToDelete] = useState<{ sectionKey: 'base' | 'prelight' | 'pickup'; role: string } | null>(null);
 
   const setPrice = (sectionKey: 'base' | 'prelight' | 'pickup', role: string, header: string, value: string) =>

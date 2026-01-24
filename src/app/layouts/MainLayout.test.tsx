@@ -1,5 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import { BrowserRouter, MemoryRouter } from 'react-router-dom';
+import type { ReactNode } from 'react';
+import { BrowserRouter } from 'react-router-dom';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 import MainLayout from './MainLayout.tsx';
@@ -16,7 +17,17 @@ vi.mock('react-router-dom', async () => {
     useNavigate: () => mockNavigate,
     useParams: () => mockUseParams(),
     useLocation: () => mockUseLocation(),
-    NavLink: ({ children, to, className, end }) => (
+    NavLink: ({
+      children,
+      to,
+      className,
+      end,
+    }: {
+      children: ReactNode;
+      to: string;
+      className?: string;
+      end?: boolean;
+    }) => (
       <a href={to} className={className} data-end={end}>
         {children}
       </a>

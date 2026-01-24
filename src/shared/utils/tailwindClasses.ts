@@ -4,25 +4,6 @@
  */
 
 /**
- * Clases para overlays de modales
- */
-export const modalOverlay = 'fixed inset-0 bg-black/60 grid place-items-center p-4 z-50';
-
-/**
- * Clases para contenedores de modales
- */
-export const modalContainer = 'w-full max-w-md rounded-2xl border border-neutral-border p-6';
-const modalContainerLg = 'w-full max-w-lg rounded-2xl border border-neutral-border p-6';
-const modalContainerXl = 'w-full max-w-xl rounded-2xl border border-neutral-border p-6';
-
-/**
- * Clases para botones de modales
- */
-export const modalButton = 'px-3 py-2 rounded-lg border transition text-sm font-medium hover:border-[var(--hover-border)]';
-const modalButtonPrimary = 'px-4 py-3 rounded-xl font-semibold text-white transition shadow-lg hover:shadow-xl';
-export const modalButtonSecondary = 'inline-flex items-center justify-center px-4 py-3 rounded-xl font-semibold border transition-colors';
-
-/**
  * Clases para botones de exportación
  */
 export const btnExport = 'px-3 py-2 rounded-lg text-sm font-semibold';
@@ -30,8 +11,6 @@ export const btnExport = 'px-3 py-2 rounded-lg text-sm font-semibold';
 /**
  * Clases para botones de acción comunes
  */
-export const btnAddRole = 'px-3 py-1 text-sm bg-brand text-white rounded-lg hover:bg-brand/80 btn-add-role';
-const btnAddRoleDisabled = `${btnAddRole} opacity-50 cursor-not-allowed`;
 
 /**
  * Clases para inputs comunes

@@ -11,7 +11,7 @@ interface UseSemanalHandlersProps {
 /**
  * Hook to manage semanal handlers (prices, roles, etc.)
  */
-export function useSemanalHandlers({ model, setModel }: UseSemanalHandlersProps) {
+export function useSemanalHandlers({ model: _model, setModel }: UseSemanalHandlersProps) {
   const [roleToDelete, setRoleToDelete] = useState<{ sectionKey: 'base' | 'prelight' | 'pickup'; role: string } | null>(null);
 
   const setPrice = (sectionKey: 'base' | 'prelight' | 'pickup', role: string, header: string, value: string) =>

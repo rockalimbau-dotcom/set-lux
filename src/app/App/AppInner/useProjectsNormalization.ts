@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import type { Project as UIProject } from '@features/projects/pages/ProjectsScreen.tsx';
+import type { Project as UIProject } from '@features/projects/types';
 
 /**
  * Hook para normalizar proyectos asegurando que tengan country y region

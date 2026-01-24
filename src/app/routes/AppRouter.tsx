@@ -15,7 +15,6 @@ export default function AppRouter({
   mode,
   setMode,
   userName,
-  setUserName,
   projects,
   setProjects,
   activeProject,
@@ -45,7 +44,6 @@ export default function AppRouter({
         projects={projects}
         handlers={handlers}
         setMode={setMode}
-        setUserName={setUserName}
       />
     );
   }

@@ -12,7 +12,7 @@ interface LoginFormProps {
   onSubmit: (e: React.FormEvent) => void;
 }
 
-export function LoginForm({ login, setLogin, setMode, theme, onSubmit }: LoginFormProps) {
+export function LoginForm({ login, setLogin, theme, onSubmit }: LoginFormProps) {
   const { t } = useTranslation();
 
   return (
