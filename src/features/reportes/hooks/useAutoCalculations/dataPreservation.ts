@@ -1,5 +1,4 @@
 import { convertHorasExtraToNewFormat } from '../../utils/runtime';
-import { isDebugEnabled } from './useAutoCalculationsUtils';
 
 interface PreserveHorasExtraParams {
   sourceState: any;
@@ -30,30 +29,27 @@ export function preserveOrRecalculateHorasExtra({
   value: string;
   isManual: boolean;
 } {
-  const debugEnabled = isDebugEnabled();
-
   if (off) {
     // Si no está trabajando en este bloque, vaciar
     return { value: '', isManual: false };
   }
 
-  // Cuando cambia horasExtraTipo, SIEMPRE recalcular desde el horario
-  if (horasExtraTipoChanged) {
-    return { value: autoExtra, isManual: false };
-  }
-
-  // Si el valor es MANUAL (el usuario lo editó) Y NO cambió el tipo, preservarlo y convertirlo al nuevo formato
+  // Si el valor es MANUAL (el usuario lo editó), preservarlo y convertirlo al nuevo formato
   if (manualExtra) {
     if (currExtra !== undefined && currExtra !== null && String(currExtra).trim() !== '') {
       const convertedValue = convertHorasExtraToNewFormat(currExtra, horasExtraTipo);
       const finalValue = convertedValue && convertedValue !== '' ? convertedValue : String(currExtra);
-
 
       return { value: finalValue, isManual: true };
     } else {
       // Si estaba marcado como manual pero ahora está vacío, preservar el vacío
       return { value: '', isManual: true };
     }
+  }
+
+  // Cuando cambia horasExtraTipo, recalcular desde el horario solo para valores automáticos
+  if (horasExtraTipoChanged) {
+    return { value: autoExtra, isManual: false };
   }
 
   // Si el valor NO es manual Y NO cambió el tipo, usar el nuevo autoExtra

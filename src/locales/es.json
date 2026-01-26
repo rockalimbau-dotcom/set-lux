@@ -647,6 +647,7 @@
       "transportation": "Transporte"
     },
     "kilometrajeHint": "(indica km específico)",
+    "dietasHint": "(desplázate para ver más opciones)",
     "dietOptions": {
       "empty": "",
       "lunch": "Comida",

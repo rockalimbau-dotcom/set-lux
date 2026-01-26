@@ -40,40 +40,32 @@ export function useHorasExtraSelector({
     horasExtraOpciones[0]
   );
 
-  // Función para obtener la clave del mes siguiente
-  const getNextMonthKey = (currentKey: string): string | null => {
-    if (!allMonthKeys || allMonthKeys.length === 0) return null;
-    const currentIndex = allMonthKeys.indexOf(currentKey);
-    if (currentIndex >= 0 && currentIndex < allMonthKeys.length - 1) {
-      return allMonthKeys[currentIndex + 1];
-    }
-    return null;
-  };
-
-  // Función para sincronizar con el mes siguiente
+  // Función para sincronizar con todos los meses
   const setHorasExtraTipo = (newValue: string) => {
     // Actualizar el valor actual
     setHorasExtraTipoInternal(newValue);
     
-    // Sincronizar con el mes siguiente si existe
-    const nextMonthKey = getNextMonthKey(monthKey);
-    if (nextMonthKey) {
-      const base = project?.id || project?.nombre || 'tmp';
-      const nextMonthKeyStorage = `reportes_horasExtra_${base}_${mode}_${nextMonthKey}`;
-      // Actualizar el localStorage del mes siguiente usando el servicio storage
-      if (typeof window !== 'undefined') {
+    const base = project?.id || project?.nombre || 'tmp';
+    const targetMonthKeys = allMonthKeys.filter(key => key !== monthKey);
+    if (targetMonthKeys.length === 0) return;
+
+    if (typeof window !== 'undefined') {
+      for (const targetKey of targetMonthKeys) {
+        const storageKey = `reportes_horasExtra_${base}_${mode}_${targetKey}`;
         try {
-          storage.setString(nextMonthKeyStorage, JSON.stringify(newValue));
+          storage.setString(storageKey, JSON.stringify(newValue));
           // Disparar un evento storage simulado para que useLocalStorage lo detecte
           // Nota: storage events solo se disparan entre pestañas, así que usamos un evento personalizado
-          window.dispatchEvent(new CustomEvent('horasExtraSync', {
-            detail: {
-              key: nextMonthKeyStorage,
-              value: newValue,
-            },
-          }));
+          window.dispatchEvent(
+            new CustomEvent('horasExtraSync', {
+              detail: {
+                key: storageKey,
+                value: newValue,
+              },
+            })
+          );
         } catch (error) {
-          console.error('Error sincronizando hora extra con mes siguiente:', error);
+          console.error('Error sincronizando hora extra entre meses:', error);
         }
       }
     }

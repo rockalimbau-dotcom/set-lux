@@ -59,6 +59,11 @@ export function ConceptRow({
             {t('reports.kilometrajeHint')}
           </div>
         )}
+        {concepto === 'Dietas' && (
+          <div className='text-[8px] sm:text-[9px] md:text-[10px] text-black dark:text-white whitespace-normal leading-tight'>
+            {t('reports.dietasHint')}
+          </div>
+        )}
       </Td>
 
       {semana.map(fecha => {

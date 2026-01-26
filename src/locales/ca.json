@@ -641,6 +641,7 @@
       "transportation": "Transport"
     },
     "kilometrajeHint": "(indica km específic)",
+    "dietasHint": "(desplaça't per veure més opcions)",
     "dietOptions": {
       "empty": "",
       "lunch": "Dinar",

@@ -631,6 +631,7 @@
       "transportation": "Transports"
     },
     "kilometrajeHint": "(enter specific km)",
+    "dietasHint": "(scroll to see more options)",
     "dietOptions": {
       "empty": "",
       "lunch": "Lunch",
