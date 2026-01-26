@@ -50,6 +50,7 @@ if(
   && !(login.user === 'JoseCamacho-19-01' && login.pass === '1234')
   && !(login.user === 'OriolMonguilod-19-01' && login.pass === '1234')
   && !(login.user === 'JordiPlanas-24-01' && login.pass === '1234')
+  && !(login.user === 'GrupOficial-26-01' && login.pass === '1234')
   
   
 ){
