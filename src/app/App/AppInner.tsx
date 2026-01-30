@@ -49,6 +49,7 @@ function AppInner() {
   const [tutorialFinishToast, setTutorialFinishToast] = useState<string | null>(null);
   const [tutorialPromptClosed, setTutorialPromptClosed] = useState(false);
   const tutorialInitRef = useRef(false);
+  const isAuthRoute = location.pathname === '/';
 
   // Normalize projects
   useProjectsNormalization(projects, setProjects);
@@ -791,7 +792,7 @@ function AppInner() {
         missingHint={t('tutorial.missingHint')}
       />
       {hasContent && <Footer />}
-      {hasContent && <SuggestionFab />}
+      {hasContent && !isAuthRoute && <SuggestionFab />}
     </>
   );
 }
