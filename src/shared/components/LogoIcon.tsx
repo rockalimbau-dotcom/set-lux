@@ -41,7 +41,7 @@ const LogoIcon = React.memo(function LogoIcon({ size = 80, onClick, className = 
     };
   }, []);
 
-  const logoSrc = theme === 'light' ? '/01_nuevo_logo_modo_claro.png' : '/01_nuevo_logo_modo_oscuro.png';
+  const logoSrc = theme === 'light' ? '/nuevologo_v3.png' : '/01_nuevo_logo_modo_oscuro.png';
 
   const imgElement = (
     <img
