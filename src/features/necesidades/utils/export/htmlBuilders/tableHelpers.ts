@@ -186,7 +186,7 @@ export function generateTableBody(
     { key: 'shootDay', generate: () => {
       let count = shootingDayOffset;
       const labels = valuesByDay.map(day => {
-        const jornada = String(day?.crewTipo || '').trim().toLowerCase();
+        const jornada = String(day?.crewTipo ?? day?.tipo ?? '').trim().toLowerCase();
         if (jornada === 'rodaje' || jornada === 'rodaje festivo') {
           count += 1;
           return `DÍA ${count}`;
@@ -194,7 +194,12 @@ export function generateTableBody(
         return '';
       });
       return simpleRow(i18n.t('needs.shootingDay'), DAYS, labels);
-    }, isEmpty: () => false },
+    }, isEmpty: () => {
+      return valuesByDay.every(day => {
+        const jornada = String(day?.crewTipo ?? day?.tipo ?? '').trim().toLowerCase();
+        return jornada !== 'rodaje' && jornada !== 'rodaje festivo';
+      });
+    } },
     {
       key: 'crewList',
       generate: () =>
@@ -295,6 +300,14 @@ export function generateTableBody(
         })
         .filter(Boolean) as string[]
     );
+
+    const hasShootDay = valuesByDay.some(day => {
+      const jornada = String(day?.crewTipo ?? day?.tipo ?? '').trim().toLowerCase();
+      return jornada === 'rodaje' || jornada === 'rodaje festivo';
+    });
+    if (hasShootDay) {
+      selectedFields.add('shootDay');
+    }
     
     // Generar solo las filas seleccionadas (con o sin vacías)
     return rowGenerators

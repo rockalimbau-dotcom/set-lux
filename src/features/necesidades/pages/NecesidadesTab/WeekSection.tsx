@@ -417,7 +417,7 @@ export function WeekSection({
                   selectedDayIdxs.length > 0 && selectedDayIdxs.length < columnKeys.length
                     ? selectedDayIdxs
                     : undefined;
-                const includeEmptyRows = allRowsSelected && (allColumnsSelected || !!useSelectedDays);
+                const includeEmptyRows = false;
                 exportWeekPDF(
                   wid,
                   selectedRowKeys.length > 0 ? selectedRowKeys : undefined,

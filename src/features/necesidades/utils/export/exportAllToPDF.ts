@@ -79,15 +79,27 @@ export async function exportAllToPDF(
             if (fieldKey === 'crewList') {
               filteredDay.crewList = day.crewList;
               filteredDay.crewTxt = day.crewTxt;
+              filteredDay.crewTipo = day.crewTipo ?? day.tipo;
+              filteredDay.crewStart = day.crewStart ?? day.start;
+              filteredDay.crewEnd = day.crewEnd ?? day.end;
             } else if (fieldKey === 'preList') {
               filteredDay.preList = day.preList;
               filteredDay.preNote = day.preNote ?? day.preTxt;
+              filteredDay.prelightTipo = day.prelightTipo ?? day.preTipo;
+              filteredDay.preStart = day.preStart ?? day.prelightStart;
+              filteredDay.preEnd = day.preEnd ?? day.prelightEnd;
             } else if (fieldKey === 'pickList') {
               filteredDay.pickList = day.pickList;
               filteredDay.pickNote = day.pickNote ?? day.pickTxt;
+              filteredDay.pickupTipo = day.pickupTipo ?? day.pickTipo;
+              filteredDay.pickStart = day.pickStart ?? day.pickupStart;
+              filteredDay.pickEnd = day.pickEnd ?? day.pickupEnd;
             } else if (fieldKey === 'refList') {
               filteredDay.refList = day.refList;
               filteredDay.refTxt = day.refTxt;
+              filteredDay.refTipo = day.refTipo;
+              filteredDay.refStart = day.refStart;
+              filteredDay.refEnd = day.refEnd;
             } else {
               filteredDay[fieldKey] = day[fieldKey];
             }

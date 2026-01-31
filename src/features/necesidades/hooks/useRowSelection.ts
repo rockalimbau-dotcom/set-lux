@@ -31,6 +31,14 @@ export function useRowSelection({ persistKey, rowKeys }: UseRowSelectionProps) {
     }
   }, [rowKeys.length, selectedRowsArray.length, setSelectedRowsArray, rowKeys]);
 
+  // Si aparecen nuevas filas (p.ej. nuevas claves de exportación), añadirlas por defecto
+  useEffect(() => {
+    if (rowKeys.length === 0) return;
+    const missing = rowKeys.filter(key => !selectedRowsArray.includes(key));
+    if (missing.length === 0) return;
+    setSelectedRowsArray([...selectedRowsArray, ...missing]);
+  }, [rowKeys, selectedRowsArray, setSelectedRowsArray]);
+
   const toggleRowSelection = (rowKey: string) => {
     setSelectedRowsArray(prev => {
       const prevSet = new Set(prev);
