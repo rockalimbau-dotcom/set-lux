@@ -26,6 +26,7 @@ interface UseEnrichedRowsProps {
     workedPick: number;
     holidayDays: number;
     rodaje?: number;
+    pruebasCamara?: number;
     oficina?: number;
     travelDay?: number;
     carga?: number;
@@ -71,6 +72,7 @@ export function useEnrichedRows({
         workedPick,
         holidayDays,
         rodaje,
+        pruebasCamara,
         oficina,
         travelDay,
         carga,
@@ -103,6 +105,7 @@ export function useEnrichedRows({
         calculateWorkingDaysInMonthValue,
         workedDays,
         rodaje,
+        pruebasCamara,
         oficina,
         prelight,
         recogida,
@@ -182,6 +185,7 @@ export function useEnrichedRows({
       if (projectMode === 'diario') {
         const publicidadTotals = calculateDiarioTotals(
           rodaje,
+          pruebasCamara,
           oficina,
           localizar,
           carga,
@@ -250,6 +254,9 @@ export function useEnrichedRows({
 
       const dietasLabel = buildDietasLabel(dietasMap, ticketValue, otherValue);
 
+      const displayWorkedDays =
+        projectMode === 'mensual' ? workedDays : totalDiasTrabajados;
+
       return {
         ...r,
         role: roleDisplay,
@@ -264,13 +271,14 @@ export function useEnrichedRows({
         dietasCount: dietasMap,
         ticketTotal: ticketValue,
         otherTotal: otherValue,
-        _worked: totalDiasTrabajados,
+        _worked: displayWorkedDays,
         _travel: travelDays,
         _holidays: holidayDays,
         _workedBase: workedBase,
         _workedPre: workedPre,
         _workedPick: workedPick,
         _rodaje: rodaje,
+        _pruebasCamara: pruebasCamara,
         _oficina: oficina,
         _travelDay: travelDay,
         _carga: carga,

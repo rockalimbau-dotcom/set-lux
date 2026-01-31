@@ -190,6 +190,11 @@ html input[style*="borderWidth"] {
   border-bottom: 1px solid var(--bg) !important;
 }
 
+/* Block headers in needs table (light mode) */
+[data-theme='light'] .phase-content td.phase-block {
+  background: var(--bg) !important; /* same as table header */
+}
+
 /* Inputs y celdas (hover/focus) dentro de fases en modo claro */
 [data-theme='light'] .phase-content input:hover,
 [data-theme='light'] .phase-content select:hover,

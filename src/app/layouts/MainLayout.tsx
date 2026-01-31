@@ -132,12 +132,12 @@ export default function MainLayout({ project, onBack }: MainLayoutProps) {
         {!isIndex && (
           <nav className='pt-2 space-y-2'>
             <NavLink
-              to={`/project/${pid}/planificacion`}
+              to={`/project/${pid}/calendario`}
               className={linkCls}
               end
               onClick={() => setSidebarOpen(false)}
             >
-              {t('navigation.planning')}
+              {t('navigation.needs')}
             </NavLink>
             <NavLink
               to={`/project/${pid}/equipo`}
@@ -146,14 +146,6 @@ export default function MainLayout({ project, onBack }: MainLayoutProps) {
               onClick={() => setSidebarOpen(false)}
             >
               {t('navigation.team')}
-            </NavLink>
-            <NavLink
-              to={`/project/${pid}/necesidades`}
-              className={linkCls}
-              end
-              onClick={() => setSidebarOpen(false)}
-            >
-              {t('navigation.needs')}
             </NavLink>
             <NavLink
               to={`/project/${pid}/reportes`}

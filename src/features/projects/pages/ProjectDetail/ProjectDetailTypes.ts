@@ -44,5 +44,5 @@ export interface ProjectDetailProps {
   initialTab?: string | null;
 }
 
-export type ProjectTab = 'equipo' | 'planificacion' | 'reportes' | 'nomina' | 'necesidades' | 'condiciones';
+export type ProjectTab = 'equipo' | 'reportes' | 'nomina' | 'necesidades' | 'condiciones';
 

@@ -15,7 +15,7 @@ export function usePersonScheduledChecker({
   findWeekAndDay,
 }: UsePersonScheduledCheckerProps) {
   return useMemo(
-    () => (iso: string, role: string, name: string, findFn: any, block?: 'base' | 'pre' | 'pick') => {
+    () => (iso: string, role: string, name: string, findFn: any, block?: 'base' | 'pre' | 'pick' | 'extra') => {
       const { day } = findFn(iso);
       if (!day || day.tipo === 'Descanso') return false;
       // Si el rol es REF o empieza con REF (REFG, REFBB, etc.), usar lógica de refuerzo
@@ -32,6 +32,11 @@ export function usePersonScheduledChecker({
             m => String(m?.name || '') === String(name || '') && isMemberRefuerzo(m)
           ) : false;
         }
+        if (block === 'extra') {
+          return Array.isArray(day.refList) ? day.refList.some(
+            m => String(m?.name || '') === String(name || '') && isMemberRefuerzo(m)
+          ) : false;
+        }
         // block === 'base' o undefined: buscar en todos los bloques
         const any = (arr: AnyRecord[]) =>
           (arr || []).some(
@@ -39,14 +44,16 @@ export function usePersonScheduledChecker({
               String(m?.name || '') === String(name || '') &&
               isMemberRefuerzo(m)
           );
-        return any(day.team) || any(day.prelight) || any(day.pickup);
+        return any(day.team) || any(day.prelight) || any(day.pickup) || any(day.refList);
       }
       // Determinar el bloque a buscar basado en el parámetro block o el sufijo del rol
-      let suffix: 'team' | 'prelight' | 'pickup';
+      let suffix: 'team' | 'prelight' | 'pickup' | 'refList';
       if (block === 'pre') {
         suffix = 'prelight';
       } else if (block === 'pick') {
         suffix = 'pickup';
+      } else if (block === 'extra') {
+        suffix = 'refList';
       } else {
         // Si no se especifica block, usar el sufijo del rol
         suffix = hasRoleGroupSuffix(role || '')

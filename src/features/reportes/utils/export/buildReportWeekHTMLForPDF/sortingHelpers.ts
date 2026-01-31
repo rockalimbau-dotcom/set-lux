@@ -2,11 +2,12 @@ import { rolePriorityForReports } from '../dataHelpers';
 import { stripRoleSuffix, stripRefuerzoSuffix } from '@shared/constants/roles';
 
 /**
- * Get block type from person key (base, pre, pick)
+ * Get block type from person key (base, extra, pre, pick)
  */
-function getBlockFromKey(key: string): 'base' | 'pre' | 'pick' {
+function getBlockFromKey(key: string): 'base' | 'extra' | 'pre' | 'pick' {
   if (/\.pre__/.test(key) || /REF\.pre__/.test(key)) return 'pre';
   if (/\.pick__/.test(key) || /REF\.pick__/.test(key)) return 'pick';
+  if (/\.extra__/.test(key) || /REF\.extra__/.test(key)) return 'extra';
   return 'base';
 }
 
@@ -38,7 +39,7 @@ function getBaseRolePriority(role: string): number {
  */
 function sortByRoleHierarchy(
   keys: string[],
-  block: 'base' | 'pre' | 'pick'
+  block: 'base' | 'extra' | 'pre' | 'pick'
 ): string[] {
   return keys.sort((a, b) => {
     // Parsear roles de las claves (pueden tener formato "role.pre__name" o "role__name")
@@ -49,6 +50,8 @@ function sortByRoleHierarchy(
       roleA = a.split('.pre__')[0];
     } else if (a.includes('.pick__')) {
       roleA = a.split('.pick__')[0];
+    } else if (a.includes('.extra__')) {
+      roleA = a.split('.extra__')[0];
     } else {
       roleA = a.split('__')[0];
     }
@@ -57,6 +60,8 @@ function sortByRoleHierarchy(
       roleB = b.split('.pre__')[0];
     } else if (b.includes('.pick__')) {
       roleB = b.split('.pick__')[0];
+    } else if (b.includes('.extra__')) {
+      roleB = b.split('.extra__')[0];
     } else {
       roleB = b.split('__')[0];
     }
@@ -78,6 +83,8 @@ function sortByRoleHierarchy(
         nameA = a.split('.pre__')[1] || '';
       } else if (a.includes('.pick__')) {
         nameA = a.split('.pick__')[1] || '';
+      } else if (a.includes('.extra__')) {
+        nameA = a.split('.extra__')[1] || '';
       } else {
         nameA = a.split('__').slice(1).join('__') || '';
       }
@@ -86,6 +93,8 @@ function sortByRoleHierarchy(
         nameB = b.split('.pre__')[1] || '';
       } else if (b.includes('.pick__')) {
         nameB = b.split('.pick__')[1] || '';
+      } else if (b.includes('.extra__')) {
+        nameB = b.split('.extra__')[1] || '';
       } else {
         nameB = b.split('__').slice(1).join('__') || '';
       }
@@ -109,6 +118,8 @@ function sortByRoleHierarchy(
       nameA = a.split('.pre__')[1] || '';
     } else if (a.includes('.pick__')) {
       nameA = a.split('.pick__')[1] || '';
+    } else if (a.includes('.extra__')) {
+      nameA = a.split('.extra__')[1] || '';
     } else {
       nameA = a.split('__').slice(1).join('__') || '';
     }
@@ -117,6 +128,8 @@ function sortByRoleHierarchy(
       nameB = b.split('.pre__')[1] || '';
     } else if (b.includes('.pick__')) {
       nameB = b.split('.pick__')[1] || '';
+    } else if (b.includes('.extra__')) {
+      nameB = b.split('.extra__')[1] || '';
     } else {
       nameB = b.split('__').slice(1).join('__') || '';
     }
@@ -131,11 +144,12 @@ function sortByRoleHierarchy(
  * sin separar refuerzos, para que los bloques se paginen completos
  */
 export function groupAndSortPersonsByBlock(data: any, preserveOrder: boolean = false): {
-  personsByBlock: { base: string[]; pre: string[]; pick: string[] };
+  personsByBlock: { base: string[]; extra: string[]; pre: string[]; pick: string[] };
   finalPersonKeys: string[];
 } {
   const personsByBlock = {
     base: [] as string[],
+    extra: [] as string[],
     pre: [] as string[],
     pick: [] as string[],
   };
@@ -155,18 +169,21 @@ export function groupAndSortPersonsByBlock(data: any, preserveOrder: boolean = f
     // IMPORTANTE: Ordenar por jerarquía pero mantener refuerzos al final dentro de cada bloque
     // Esto asegura el orden correcto (G, BB, E, etc.) y evita que los refuerzos aparezcan primero
     personsByBlock.base = sortByRoleHierarchy(personsByBlock.base, 'base');
+    personsByBlock.extra = sortByRoleHierarchy(personsByBlock.extra, 'extra');
     personsByBlock.pre = sortByRoleHierarchy(personsByBlock.pre, 'pre');
     personsByBlock.pick = sortByRoleHierarchy(personsByBlock.pick, 'pick');
   } else {
     // Ordenar por jerarquía (comportamiento normal para visualización)
     personsByBlock.base = sortByRoleHierarchy(personsByBlock.base, 'base');
+    personsByBlock.extra = sortByRoleHierarchy(personsByBlock.extra, 'extra');
     personsByBlock.pre = sortByRoleHierarchy(personsByBlock.pre, 'pre');
     personsByBlock.pick = sortByRoleHierarchy(personsByBlock.pick, 'pick');
   }
 
-  // Maintain order: base, pre, pick
+  // Maintain order: base, extra, pre, pick
   const finalPersonKeys = [
     ...personsByBlock.base,
+    ...personsByBlock.extra,
     ...personsByBlock.pre,
     ...personsByBlock.pick,
   ];

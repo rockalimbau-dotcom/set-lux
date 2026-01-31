@@ -48,9 +48,11 @@ export const personaKeyFrom = (
   if (role === 'REF' || (role && role.startsWith('REF') && role.length > 3)) {
     if (block === 'pre') pLike.__block = 'pre';
     if (block === 'pick') pLike.__block = 'pick';
+    if (block === 'extra') pLike.__block = 'extra';
   } else {
     if (block === 'pre') pLike.__block = 'pre';
     if (block === 'pick') pLike.__block = 'pick';
+    if (block === 'extra') pLike.__block = 'extra';
   }
   return buildPersonaKey(pLike);
 };

@@ -66,15 +66,6 @@ export default function AppRouter({
             })}
           />
           <Route
-            path='planificacion'
-            element={createProjectDetailElement({
-              activeProject: activeProject as any,
-              userName,
-              initialTab: 'planificacion',
-              handlers,
-            })}
-          />
-          <Route
             path='equipo'
             element={createProjectDetailElement({
               activeProject: activeProject as any,
@@ -84,7 +75,15 @@ export default function AppRouter({
             })}
           />
           <Route
+            path='planificacion'
+            element={<Navigate to='../calendario' replace />}
+          />
+          <Route
             path='necesidades'
+            element={<Navigate to='../calendario' replace />}
+          />
+          <Route
+            path='calendario'
             element={
               <ErrorBoundary>
                 <React.Suspense fallback={null}>

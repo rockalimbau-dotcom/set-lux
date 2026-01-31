@@ -13,7 +13,7 @@ function EmptyStateMessages({ projectId, readOnly = false, hasWeeks, hasTeam }: 
   const { t } = useTranslation();
   const navigate = useNavigate();
   
-  const planificacionPath = projectId ? `/project/${projectId}/planificacion` : '/projects';
+  const planificacionPath = projectId ? `/project/${projectId}/calendario` : '/projects';
   const equipoPath = projectId ? `/project/${projectId}/equipo` : '/projects';
 
   // Caso 1: Faltan ambas cosas (semanas Y equipo)
@@ -32,7 +32,7 @@ function EmptyStateMessages({ projectId, readOnly = false, hasWeeks, hasTeam }: 
             style={{color: 'var(--brand)'}}
             title={readOnly ? t('conditions.projectClosed') : t('reports.goToPlanning')}
           >
-            {t('navigation.planning')}
+            {t('navigation.needs')}
           </button>
           {' '}{t('reports.andTeamIn')}{' '}
           <button
@@ -66,7 +66,7 @@ function EmptyStateMessages({ projectId, readOnly = false, hasWeeks, hasTeam }: 
             style={{color: 'var(--brand)'}}
             title={readOnly ? t('conditions.projectClosed') : t('reports.goToPlanning')}
           >
-            {t('navigation.planning')}
+            {t('navigation.needs')}
           </button>
           {' '}{t('reports.toAppearHere')}
         </p>

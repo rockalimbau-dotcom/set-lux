@@ -105,15 +105,17 @@ export default function ReportesSemana({
     getPlanAllWeeks,
     weekPrelightActive,
     weekPickupActive,
+    weekExtraActive,
     peopleBase,
     peoplePre,
     peoplePick,
+    peopleExtra,
     safePersonas,
   } = useWeekData(project, semana, personasWithGender);
 
   const dietasOpciones = useDietasOpciones(mode);
 
-  const { horarioTexto, horarioPrelight, horarioPickup } = createHorarioHelpers(findWeekAndDay, t);
+  const { horarioTexto, horarioPrelight, horarioPickup, horarioExtra } = createHorarioHelpers(findWeekAndDay, t);
 
   const filteredSemana = useFilteredSemana({
     safeSemana,
@@ -244,7 +246,7 @@ export default function ReportesSemana({
     prevOpenRef.current = open;
   }, [open]);
 
-  const renderPersonRows = (list: AnyRecord[], block: 'base' | 'pre' | 'pick') => (
+  const renderPersonRows = (list: AnyRecord[], block: 'base' | 'pre' | 'pick' | 'extra') => (
     <ReportPersonRows
       list={list}
       block={block}
@@ -291,7 +293,7 @@ export default function ReportesSemana({
           role='region'
           aria-label={t('reports.weekContent')}
         >
-          <table className='min-w-[600px] sm:min-w-[720px] md:min-w-[920px] w-full border-collapse text-[9px] sm:text-[10px] md:text-xs lg:text-sm'>
+          <table className='min-w-[720px] sm:min-w-[860px] md:min-w-[1100px] w-full border-collapse text-[9px] sm:text-[10px] md:text-xs lg:text-sm'>
             <ReportTableHead
               semana={[...filteredSemana]}
               dayNameFromISO={dayNameTranslator}
@@ -302,6 +304,15 @@ export default function ReportesSemana({
 
             <tbody>
               {renderPersonRows(peopleBase, 'base')}
+
+              {weekExtraActive && (
+                <ReportBlockScheduleRow
+                  label={t('reports.extraSchedule')}
+                  semana={[...filteredSemana]}
+                  valueForISO={horarioExtra}
+                />
+              )}
+              {renderPersonRows(peopleExtra, 'extra')}
 
               {peoplePre.length > 0 && (
                 <ReportBlockScheduleRow

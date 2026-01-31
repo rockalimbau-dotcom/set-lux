@@ -143,7 +143,7 @@ export const deduplicateData = (data: any): any => {
   
   Object.keys(data || {}).forEach(k => {
     if (String(k).startsWith('__')) return;
-    // Parsear la clave: puede ser "role__name", "role.pre__name", "role.pick__name"
+    // Parsear la clave: puede ser "role__name", "role.pre__name", "role.pick__name", "role.extra__name"
     let role = '';
     let name = '';
     let block = '';
@@ -158,6 +158,11 @@ export const deduplicateData = (data: any): any => {
       role = rolePart || '';
       name = nameParts.join('.pick__') || '';
       block = 'pick';
+    } else if (k.includes('.extra__')) {
+      const [rolePart, ...nameParts] = k.split('.extra__');
+      role = rolePart || '';
+      name = nameParts.join('.extra__') || '';
+      block = 'extra';
     } else {
       const [rolePart, ...nameParts] = k.split('__');
       role = rolePart || '';
@@ -190,6 +195,8 @@ export const deduplicateData = (data: any): any => {
           ? originalKey.split('.pre__')[0]
           : originalKey.includes('.pick__')
           ? originalKey.split('.pick__')[0]
+          : originalKey.includes('.extra__')
+          ? originalKey.split('.extra__')[0]
           : originalKey.split('__')[0];
         
         // Si el original es REF genérico y este es código completo, reemplazar
@@ -260,7 +267,7 @@ export const deduplicateData = (data: any): any => {
  */
 export const sortPersonKeysByRole = (personKeys: string[]): string[] => {
   return personKeys.sort((a, b) => {
-    // Parsear roles de las claves (pueden tener formato "role.pre__name" o "role__name")
+    // Parsear roles de las claves (pueden tener formato "role.pre__name", "role.pick__name", "role.extra__name" o "role__name")
     let roleA = '';
     let roleB = '';
     
@@ -268,6 +275,8 @@ export const sortPersonKeysByRole = (personKeys: string[]): string[] => {
       roleA = a.split('.pre__')[0];
     } else if (a.includes('.pick__')) {
       roleA = a.split('.pick__')[0];
+    } else if (a.includes('.extra__')) {
+      roleA = a.split('.extra__')[0];
     } else {
       roleA = a.split('__')[0];
     }
@@ -276,6 +285,8 @@ export const sortPersonKeysByRole = (personKeys: string[]): string[] => {
       roleB = b.split('.pre__')[0];
     } else if (b.includes('.pick__')) {
       roleB = b.split('.pick__')[0];
+    } else if (b.includes('.extra__')) {
+      roleB = b.split('.extra__')[0];
     } else {
       roleB = b.split('__')[0];
     }
@@ -297,6 +308,8 @@ export const sortPersonKeysByRole = (personKeys: string[]): string[] => {
         nameA = a.split('.pre__')[1] || '';
       } else if (a.includes('.pick__')) {
         nameA = a.split('.pick__')[1] || '';
+      } else if (a.includes('.extra__')) {
+        nameA = a.split('.extra__')[1] || '';
       } else {
         nameA = a.split('__').slice(1).join('__') || '';
       }
@@ -305,6 +318,8 @@ export const sortPersonKeysByRole = (personKeys: string[]): string[] => {
         nameB = b.split('.pre__')[1] || '';
       } else if (b.includes('.pick__')) {
         nameB = b.split('.pick__')[1] || '';
+      } else if (b.includes('.extra__')) {
+        nameB = b.split('.extra__')[1] || '';
       } else {
         nameB = b.split('__').slice(1).join('__') || '';
       }
@@ -328,6 +343,8 @@ export const sortPersonKeysByRole = (personKeys: string[]): string[] => {
       nameA = a.split('.pre__')[1] || '';
     } else if (a.includes('.pick__')) {
       nameA = a.split('.pick__')[1] || '';
+    } else if (a.includes('.extra__')) {
+      nameA = a.split('.extra__')[1] || '';
     } else {
       nameA = a.split('__').slice(1).join('__') || '';
     }
@@ -336,6 +353,8 @@ export const sortPersonKeysByRole = (personKeys: string[]): string[] => {
       nameB = b.split('.pre__')[1] || '';
     } else if (b.includes('.pick__')) {
       nameB = b.split('.pick__')[1] || '';
+    } else if (b.includes('.extra__')) {
+      nameB = b.split('.extra__')[1] || '';
     } else {
       nameB = b.split('__').slice(1).join('__') || '';
     }

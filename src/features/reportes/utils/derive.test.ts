@@ -118,7 +118,9 @@ describe('derive', () => {
         true, // weekPrelightActive
         prelightPeople,
         true, // weekPickupActive
-        pickupPeople
+        pickupPeople,
+        false,
+        []
       );
 
       expect(result).toHaveLength(4);
@@ -145,6 +147,8 @@ describe('derive', () => {
         true,
         prelightPeople,
         false,
+        [],
+        false,
         []
       );
 
@@ -162,7 +166,7 @@ describe('derive', () => {
         { role: 'REF', name: 'Carlos' },
       ];
 
-      const result = buildSafePersonas(providedPersonas, false, [], false, []);
+      const result = buildSafePersonas(providedPersonas, false, [], false, [], false, []);
 
       expect(result).toEqual([
         { role: 'REF', name: 'María' },
@@ -180,7 +184,9 @@ describe('derive', () => {
         false, // weekPrelightActive
         prelightPeople,
         false, // weekPickupActive
-        pickupPeople
+        pickupPeople,
+        false,
+        []
       );
 
       expect(result).toHaveLength(1);

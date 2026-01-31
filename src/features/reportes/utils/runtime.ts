@@ -69,12 +69,14 @@ export function readCondParams(project: Project, mode?: 'semanal' | 'mensual' | 
   };
 }
 
-export function getBlockWindow(day: any, block: 'base' | 'pre' | 'pick'): { start: string | null; end: string | null } {
+export function getBlockWindow(day: any, block: 'base' | 'pre' | 'pick' | 'extra'): { start: string | null; end: string | null } {
   if (!day || day.tipo === 'Descanso') return { start: null, end: null };
   if (block === 'pre')
     return { start: day.prelightStart || null, end: day.prelightEnd || null };
   if (block === 'pick')
     return { start: day.pickupStart || null, end: day.pickupEnd || null };
+  if (block === 'extra')
+    return { start: day.refStart || null, end: day.refEnd || null };
   return { start: day.start || null, end: day.end || null };
 }
 

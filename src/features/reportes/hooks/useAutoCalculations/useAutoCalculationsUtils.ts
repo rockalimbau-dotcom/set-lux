@@ -28,6 +28,7 @@ export function generatePlanWindowsSignature(
     const b = getBlockWindow(ctx?.day, 'base') || { start: null, end: null };
     const p = getBlockWindow(ctx?.day, 'pre') || { start: null, end: null };
     const k = getBlockWindow(ctx?.day, 'pick') || { start: null, end: null };
+    const e = getBlockWindow(ctx?.day, 'extra') || { start: null, end: null };
     return {
       iso,
       bS: b.start || '',
@@ -36,6 +37,8 @@ export function generatePlanWindowsSignature(
       pE: p.end || '',
       kS: k.start || '',
       kE: k.end || '',
+      eS: e.start || '',
+      eE: e.end || '',
     };
   }));
 }
@@ -65,7 +68,7 @@ export function normalizeParams(params: AutoCalculationsParams): {
  */
 export function findPrevISOForBlock(
   currISO: string,
-  block: 'base' | 'pre' | 'pick',
+  block: 'base' | 'pre' | 'pick' | 'extra',
   findWeekAndDay: (iso: string) => WeekAndDay | any,
   getBlockWindow: (day: any, block: string) => BlockWindow
 ): string | null {
@@ -88,11 +91,12 @@ export function findPrevISOForBlock(
  */
 export function determineRowBlock(
   pk: string,
-  explicitBlock?: 'pre' | 'pick'
-): 'base' | 'pre' | 'pick' {
+  explicitBlock?: 'pre' | 'pick' | 'extra'
+): 'base' | 'pre' | 'pick' | 'extra' {
   if (explicitBlock) return explicitBlock;
   if (/\.pre__/.test(pk) || /REF\.pre__/.test(pk)) return 'pre';
   if (/\.pick__/.test(pk) || /REF\.pick__/.test(pk)) return 'pick';
+  if (/\.extra__/.test(pk) || /REF\.extra__/.test(pk)) return 'extra';
   return 'base';
 }
 
@@ -101,12 +105,13 @@ export function determineRowBlock(
  */
 export function determineRoleForCheck(
   role: string,
-  rowBlock: 'base' | 'pre' | 'pick'
+  rowBlock: 'base' | 'pre' | 'pick' | 'extra'
 ): string {
   // Si el rol es REF o empieza con REF (REFG, REFBB, etc.), devolver 'REF'
   if (role === 'REF' || (role && role.startsWith('REF') && role.length > 3)) return 'REF';
   if (rowBlock === 'pre') return `${role}P`;
   if (rowBlock === 'pick') return `${role}R`;
+  if (rowBlock === 'extra') return role;
   return role;
 }
 

@@ -6,14 +6,15 @@ interface PhaseCardProps {
   desc: string;
   onClick: () => void;
   tutorialId?: string;
+  className?: string;
 }
 
-export function PhaseCard({ title, icon, desc, onClick, tutorialId }: PhaseCardProps) {
+export function PhaseCard({ title, icon, desc, onClick, tutorialId, className }: PhaseCardProps) {
   return (
     <button
       onClick={onClick}
       data-tutorial={tutorialId}
-      className='group text-left rounded sm:rounded-md md:rounded-lg lg:rounded-xl xl:rounded-2xl border border-neutral-border p-2 sm:p-3 md:p-4 lg:p-5 xl:p-6 transition hover:border-[var(--hover-border)]'
+      className={`group text-left rounded sm:rounded-md md:rounded-lg lg:rounded-xl xl:rounded-2xl border border-neutral-border p-2 sm:p-3 md:p-4 lg:p-5 xl:p-6 transition hover:border-[var(--hover-border)] ${className || ''}`}
       style={{
         backgroundColor: 'var(--panel)',
         borderColor: (typeof document!=='undefined' && document.documentElement.getAttribute('data-theme')==='light') ? 'rgba(229,231,235,0.6)' : 'var(--border)'

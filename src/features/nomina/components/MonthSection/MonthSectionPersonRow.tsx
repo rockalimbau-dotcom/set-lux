@@ -144,6 +144,7 @@ export function MonthSectionPersonRow({
               descarga={projectMode === 'diario' ? 0 : (r._descarga || 0)}
               localizar={r._localizar || 0}
               rodaje={r._rodaje || 0}
+              pruebasCamara={r._pruebasCamara || 0}
               oficina={r._oficina || 0}
               prelight={r._prelight || 0}
               recogida={r._recogida || 0}

@@ -2,15 +2,13 @@ import CondicionesTab from '@features/condiciones/pages/CondicionesTab.jsx';
 import EquipoTab from '@features/equipo/pages/EquipoTab.jsx';
 import NecesidadesTab from '@features/necesidades/pages/NecesidadesTab.jsx';
 import NominaTab from '@features/nomina/pages/NominaTab.jsx';
-import PlanificacionTab from '@features/planificacion/pages/PlanificacionTab.jsx';
 import ReportesTab from '@features/reportes/pages/ReportesTab.jsx';
-import { Project, ProjectTab, ProjectTeam, TeamMember, ProjectMode } from './ProjectDetailTypes';
+import { Project, ProjectTab, ProjectTeam, ProjectMode } from './ProjectDetailTypes';
 
 interface ProjectDetailContentProps {
   activeTab: ProjectTab;
   project: Project;
   user: { nombreCompleto: string; roleCode: string };
-  teamList: TeamMember[];
   condTipo: ProjectMode;
   isActive: boolean;
   onTeamChange: (team: ProjectTeam) => void;
@@ -21,7 +19,6 @@ export function ProjectDetailContent({
   activeTab,
   project,
   user,
-  teamList,
   condTipo,
   isActive,
   onTeamChange,
@@ -35,19 +32,6 @@ export function ProjectDetailContent({
         borderColor: (document.documentElement.getAttribute('data-theme')||'dark')==='light' ? 'rgba(229,231,235,0.6)' : 'var(--border)'
       }}
     >
-      {activeTab === 'planificacion' && (
-        <PlanificacionTab
-          project={project}
-          conditions={project?.conditions}
-          baseTeam={project?.team?.base || []}
-          prelightTeam={project?.team?.prelight || []}
-          pickupTeam={project?.team?.pickup || []}
-          reinforcements={project?.team?.reinforcements || []}
-          teamList={teamList}
-          readOnly={!isActive}
-        />
-      )}
-
       {activeTab === 'equipo' && (
         <EquipoTab
           project={project}

@@ -2,7 +2,7 @@
 import { norm } from './text';
 import { hasRoleGroupSuffix, stripRoleSuffix } from '@shared/constants/roles';
 
-export const BLOCKS = { base: 'base', pre: 'pre', pick: 'pick' } as const;
+export const BLOCKS = { base: 'base', pre: 'pre', pick: 'pick', extra: 'extra' } as const;
 
 export const isMemberRefuerzo = (m: any): boolean => {
   const r = String(m?.role || '');
@@ -26,6 +26,7 @@ export function refWorksOnBlock(
     (arr || []).some(m => norm(m?.name) === norm(name) && isMemberRefuerzo(m));
   if (block === BLOCKS.pre) return any(day.prelight);
   if (block === BLOCKS.pick) return any(day.pickup);
+  if (block === BLOCKS.extra) return any(day.refList);
   return any(day.team); // base
 }
 
@@ -52,7 +53,14 @@ export function isPersonScheduledOnBlock(
   }
 
   const baseRole = stripRoleSuffix(String(roleLabel || ''));
-  const suffix = block === BLOCKS.pre ? 'prelight' : block === BLOCKS.pick ? 'pickup' : 'team';
+  const suffix =
+    block === BLOCKS.pre
+      ? 'prelight'
+      : block === BLOCKS.pick
+      ? 'pickup'
+      : block === BLOCKS.extra
+      ? 'refList'
+      : 'team';
   const list: Array<{ name?: string; role?: string }> = Array.isArray((day as any)[suffix]) ? (day as any)[suffix] : [];
   return list.some(
     (m: { name?: string; role?: string }) => {
@@ -83,6 +91,10 @@ export function blockKeyForPerson(
       isPersonScheduledOnBlock(iso, 'REF', name, findWeekAndDayFn, BLOCKS.pick)
     )
       return 'pick';
+    if (
+      isPersonScheduledOnBlock(iso, 'REF', name, findWeekAndDayFn, BLOCKS.extra)
+    )
+      return 'extra';
     return 'base';
   }
   if (hasRoleGroupSuffix(r) && /P$/i.test(r)) return 'pre';

@@ -45,7 +45,7 @@ function ReportTableHead({
       </tr>
 
       <tr>
-        <Th scope='col' align='left'>{t('reports.schedule')}</Th>
+        <Th scope='col' align='left'>{t('reports.scheduleBase')}</Th>
         {semana.map((iso, i) => (
           <Th key={`hor_${iso}`} scope='col' align='center'>
             {horarios[i]}

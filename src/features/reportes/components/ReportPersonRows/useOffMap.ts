@@ -32,12 +32,17 @@ export function useOffMap({
       const name = (p as AnyRecord)?.name || '';
       semana.forEach(fecha => {
         try {
+          const isRef =
+            visualRole === 'REF' ||
+            (visualRole && visualRole.startsWith('REF') && visualRole.length > 3);
+          const blockForCheck =
+            block === 'extra' ? 'extra' : isRef ? (block as any) || 'base' : undefined;
           const workedThisBlock = isPersonScheduledOnBlock(
             fecha,
             visualRole,
             name,
             findWeekAndDay,
-            (visualRole === 'REF' || (visualRole && visualRole.startsWith('REF') && visualRole.length > 3)) ? (block as any) || 'base' : undefined
+            blockForCheck
           );
           const key = `${visualRole}_${name}_${fecha}_${block}`;
           map.set(key, !workedThisBlock);

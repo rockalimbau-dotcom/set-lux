@@ -65,6 +65,7 @@ export interface AutoByDate {
     base: AutoResult;
     pre: AutoResult;
     pick: AutoResult;
+    extra: AutoResult;
   };
 }
 

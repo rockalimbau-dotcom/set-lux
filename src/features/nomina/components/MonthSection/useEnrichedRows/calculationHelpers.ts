@@ -3,6 +3,7 @@
  */
 export function calculateDiarioTotals(
   rodaje: number | undefined,
+  pruebasCamara: number | undefined,
   oficina: number | undefined,
   localizar: number | undefined,
   carga: number | undefined,
@@ -31,7 +32,7 @@ export function calculateDiarioTotals(
   totalBruto: number;
 } {
   // Para los cálculos de precio, prelight y recogida se cuentan como rodaje
-  const rodajeDays = (rodaje || 0) + (oficina || 0) + (prelight || 0) + (recogida || 0);
+  const rodajeDays = (rodaje || 0) + (pruebasCamara || 0) + (oficina || 0) + (prelight || 0) + (recogida || 0);
   const totalDias = rodajeDays * (effectivePr.jornada || 0);
 
   const localizacionDays = localizar || 0;

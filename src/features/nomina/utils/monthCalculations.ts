@@ -56,18 +56,23 @@ export const calculateWorkingDaysInMonth = (
   const finAffectsThisMonth = finDayISO && finDayMonthKey && finDayMonthKey <= monthKey;
   
   // Obtener todos los días ISO de las semanas del mes que pertenecen AL MES ACTUAL
-  // Esto es crítico: aunque una semana cruce meses, solo contamos los días del mes actual
+  // Solo contar días con tipo real (no Descanso/Fin) para evitar sumar descansos
   const allDays: string[] = [];
   for (const week of weeksForMonth) {
     const weekDays = weekISOdays(week);
     for (let idx = 0; idx < (week.days || []).length; idx++) {
       const iso = weekDays[idx];
+      const day = (week.days || [])[idx] || {};
       const dayMonthKey = monthKeyFromISO(iso);
       // Solo añadir días que pertenecen al mes actual
       if (dayMonthKey === monthKey) {
         // Si encontramos "Fin" antes o en este día, no añadir este día ni los siguientes
         if (finAffectsThisMonth && finDayISO && iso >= finDayISO) {
           break;
+        }
+        const tipo = String(day?.tipo || '').trim();
+        if (!tipo || tipo === 'Descanso' || tipo === 'Fin') {
+          continue;
         }
         allDays.push(iso);
       }

@@ -1,5 +1,5 @@
 // Monochrome project icons (orange/blue friendly). Using currentColor so parent can control color
-export function PhaseIcon({ name, color = '#60a5fa', stroke = '#ffffff' }: { name: 'condiciones' | 'equipo' | 'planificacion' | 'reportes' | 'nomina' | 'necesidades'; color?: string; stroke?: string }) {
+export function PhaseIcon({ name, color = '#60a5fa', stroke = '#ffffff' }: { name: 'condiciones' | 'equipo' | 'reportes' | 'nomina' | 'necesidades'; color?: string; stroke?: string }) {
   const common = { width: 24, height: 24, viewBox: '0 0 24 24' } as const;
   const themeNow = (typeof document !== 'undefined' && document.documentElement.getAttribute('data-theme')) || 'light';
   const fill = themeNow === 'light' ? '#f97316' : color;
@@ -15,12 +15,6 @@ export function PhaseIcon({ name, color = '#60a5fa', stroke = '#ffffff' }: { nam
       return (
         <svg {...common} fill={fill} xmlns='http://www.w3.org/2000/svg'>
           <path d='M8 10a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm8 0a3 3 0 1 1 0-6 3 3 0 0 1 0 6zM2 20a6 6 0 0 1 12 0v2H2v-2zm12 2v-2a6 6 0 0 1 10 0v2H14z' stroke={strokeColor} strokeWidth='1'/>
-        </svg>
-      );
-    case 'planificacion':
-      return (
-        <svg {...common} fill={fill} xmlns='http://www.w3.org/2000/svg'>
-          <path d='M7 2h2v2h6V2h2v2h2a2 2 0 0 1 2 2v3H3V6a2 2 0 0 1 2-2h2V2zm15 8v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-8h20zM7 14h4v4H7v-4z' stroke={strokeColor} strokeWidth='1'/>
         </svg>
       );
     case 'reportes':

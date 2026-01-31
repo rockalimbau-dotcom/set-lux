@@ -13,6 +13,7 @@ import { personaKey, normalizePersonaKey } from '../model';
 import { norm } from '../text';
 import html2canvas from 'html2canvas';
 import { shareOrSavePDF } from '@shared/utils/pdfShare';
+import { needsDataToPlanData } from '@shared/utils/needsPlanAdapter';
 
 export async function exportReportRangeToPDF(params: ExportReportRangeParams) {
   const {
@@ -37,6 +38,7 @@ export async function exportReportRangeToPDF(params: ExportReportRangeParams) {
       buildPeopleBase,
       buildPeoplePre,
       buildPeoplePick,
+      buildPeopleExtra,
       collectWeekTeamWithSuffixFactory,
       collectRefNamesForBlock,
       collectRefRolesForBlock,
@@ -45,11 +47,11 @@ export async function exportReportRangeToPDF(params: ExportReportRangeParams) {
     // Initialize helper functions
     const getPlanAllWeeks = () => {
       const { storage } = require('@shared/services/localStorage.service');
-      const planKey = `plan_${project?.id || project?.nombre || 'demo'}`;
+      const planKey = `needs_${project?.id || project?.nombre || 'demo'}`;
       try {
         const obj = storage.getJSON<any>(planKey);
         if (!obj) return { pre: [], pro: [] };
-        return obj || { pre: [], pro: [] };
+        return needsDataToPlanData(obj);
       } catch {
         return { pre: [], pro: [] };
       }
@@ -169,6 +171,15 @@ export async function exportReportRangeToPDF(params: ExportReportRangeParams) {
       
       const weekPickupActive = weekPickupActiveFromPlan || hasPickupPeople;
 
+      const weekExtraActive = filteredWeekDays.some(iso => {
+        const { day } = findWeekAndDay(iso);
+        return !!(
+          day &&
+          day.tipo !== 'Descanso' &&
+          ((day.refList || []).length > 0 || day.refStart || day.refEnd)
+        );
+      });
+
       const collectWeekTeamWithSuffix = collectWeekTeamWithSuffixFactory(
         findWeekAndDay,
         [...filteredWeekDays]
@@ -176,6 +187,7 @@ export async function exportReportRangeToPDF(params: ExportReportRangeParams) {
 
       const prelightPeople = weekPrelightActive ? collectWeekTeamWithSuffix('prelight', 'P') : [];
       const pickupPeople = weekPickupActive ? collectWeekTeamWithSuffix('pickup', 'R') : [];
+      const extraPeople = weekExtraActive ? collectWeekTeamWithSuffix('refList', '') : [];
       
       // IMPORTANTE: Obtener también el equipo base directamente del plan para tener los roles completos
       // Esto es similar a prelight y pickup, pero sin sufijo (solo para refuerzos)
@@ -344,20 +356,31 @@ export async function exportReportRangeToPDF(params: ExportReportRangeParams) {
       // Usar combinedBasePeople (del plan o fallback) directamente, igual que prelight y pickup
       // IMPORTANTE: NO usar refNamesBase porque collectWeekTeamWithSuffix ya procesa
       // TODOS los miembros del equipo base, incluyendo refuerzos. Usar refNamesBase causaría duplicados.
-      const peopleBase = buildPeopleBase(combinedBasePeople, new Set<string>());
+      const extraKeySet = new Set(
+        (extraPeople || []).map(p => `${String(p.role || '')}__${String(p.name || '')}`)
+      );
+      const cleanedBasePeople = (combinedBasePeople || []).filter(p => {
+        const key = `${String(p.role || '')}__${String(p.name || '')}`;
+        return !extraKeySet.has(key);
+      });
+      const peopleBase = buildPeopleBase(cleanedBasePeople, new Set<string>());
       const peoplePre = buildPeoplePre(weekPrelightActive || combinedPrelightPeople.length > 0, combinedPrelightPeople, new Set<string>());
       const peoplePick = buildPeoplePick(weekPickupActive || combinedPickupPeople.length > 0, combinedPickupPeople, new Set<string>());
+      const peopleExtra = buildPeopleExtra(extraPeople, new Set<string>());
       
       // Convertir PersonaWithBlock[] a Persona[] para buildSafePersonas
       const prelightPeopleProcessed = peoplePre.map(p => ({ role: p.role, name: p.name }));
       const pickupPeopleProcessed = peoplePick.map(p => ({ role: p.role, name: p.name }));
+      const extraPeopleProcessed = peopleExtra.map(p => ({ role: p.role, name: p.name }));
 
       const safePersonas = buildSafePersonas(
         peopleBase, // Usar peopleBase procesado (del plan o fallback) en lugar de providedPersonas
         weekPrelightActive,
         prelightPeopleProcessed,
         weekPickupActive,
-        pickupPeopleProcessed
+        pickupPeopleProcessed,
+        weekExtraActive,
+        extraPeopleProcessed
       );
 
       // Preparar datos de la semana usando los 7 días completos (no filtrados)

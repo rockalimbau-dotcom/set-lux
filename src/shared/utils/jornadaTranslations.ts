@@ -6,6 +6,7 @@
 type JornadaType = 
   | 'Rodaje' 
   | 'Oficina' 
+  | 'Pruebas de cámara'
   | 'Carga' 
   | 'Descarga' 
   | 'Localizar' 
@@ -35,6 +36,7 @@ export function translateJornadaType(
   const typeMap: Record<string, string> = {
     'Rodaje': translateFn('planning.shooting', 'Rodaje'),
     'Oficina': translateFn('planning.office', 'Oficina'),
+    'Pruebas de cámara': translateFn('planning.cameraTests', 'Pruebas de cámara'),
     'Carga': translateFn('planning.loading', 'Carga'),
     'Descarga': translateFn('planning.unloading', 'Descarga'),
     'Localizar': translateFn('planning.location', 'Localizar'),

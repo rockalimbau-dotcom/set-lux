@@ -33,7 +33,7 @@ export function generateScheduleHeader(
 ): string {
   return `
       <tr>
-        <th style="border:1px solid #999;padding:6px;text-align:left;background:#1e40af;color:#fff;">${esc(getTranslation('planning.schedule', 'Horario'))}</th>
+        <th style="border:1px solid #999;padding:6px;text-align:left;background:#1e40af;color:#fff;">${esc(getTranslation('reports.scheduleBase', 'Horario equipo base'))}</th>
         ${safeSemanaWithData
           .map(
             iso =>

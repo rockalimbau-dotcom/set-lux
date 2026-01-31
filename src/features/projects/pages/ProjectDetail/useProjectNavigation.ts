@@ -61,16 +61,16 @@ export function useProjectNavigation({
       const path = String(location.pathname || '');
       const m = path.match(/\/project\/[^/]+\/?([^/?#]+)?/);
       const seg = (m && m[1]) || '';
+      const segNormalized = seg === 'calendario' ? 'necesidades' : seg;
       const valid = new Set<ProjectTab>([
         'equipo',
-        'planificacion',
         'reportes',
         'nomina',
         'necesidades',
         'condiciones',
       ]);
-      if (seg && valid.has(seg as ProjectTab)) {
-        if (activeTab !== seg) setActiveTabState(seg as ProjectTab);
+      if (segNormalized && valid.has(segNormalized as ProjectTab)) {
+        if (activeTab !== segNormalized) setActiveTabState(segNormalized as ProjectTab);
       } else if (!seg && activeTab !== null) {
         setActiveTabState(null);
       }
@@ -81,7 +81,9 @@ export function useProjectNavigation({
   // Pestaña -> ruta (sin cambiar UI)
   useEffect(() => {
     const base = `/project/${pid}`;
-    const want = activeTab ? `${base}/${activeTab}` : base;
+    const want = activeTab
+      ? `${base}/${activeTab === 'necesidades' ? 'calendario' : activeTab}`
+      : base;
     if (location.pathname !== want) {
       isNavigatingRef.current = true;
       navigate(want, { replace: true });

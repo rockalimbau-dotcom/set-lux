@@ -8,7 +8,7 @@ import { generateTeamBlockTitle } from './tableHelpers';
  * Generate body HTML grouped by blocks
  */
 export function generateBodyByBlocks(
-  personsByBlock: { base: string[]; pre: string[]; pick: string[] },
+  personsByBlock: { base: string[]; extra: string[]; pre: string[]; pick: string[] },
   safeSemanaWithData: string[],
   conceptosConDatos: string[],
   finalData: any,
@@ -32,6 +32,19 @@ export function generateBodyByBlocks(
     );
     bodyParts.push(baseTitle);
     bodyParts.push(...basePersons.map(pk => generatePersonHTML(pk, conceptosConDatos, safeSemanaWithData, finalData, genderMap)));
+  }
+
+  // Extra team
+  const extraPersons = filterPersonsWithData(personsByBlock.extra);
+  if (extraPersons.length > 0) {
+    const extraTitle = generateTeamBlockTitle(
+      getTranslation('payroll.teamExtra', 'EQUIPO EXTRA'),
+      safeSemanaWithData.length + 2,
+      '#fff3e0',
+      '#e65100'
+    );
+    bodyParts.push(extraTitle);
+    bodyParts.push(...extraPersons.map(pk => generatePersonHTML(pk, conceptosConDatos, safeSemanaWithData, finalData, genderMap)));
   }
 
   // Prelight team

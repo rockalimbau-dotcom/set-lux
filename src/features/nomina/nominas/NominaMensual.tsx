@@ -31,7 +31,7 @@ export default function NominaMensual({ project, readOnly = false }: NominaMensu
   const hasTeam = useHasTeam(project, baseId);
   const hasWeeks = allWeeks.length > 0;
   const projectId = project?.id || project?.nombre;
-  const planificacionPath = projectId ? `/project/${projectId}/planificacion` : '/projects';
+  const planificacionPath = projectId ? `/project/${projectId}/calendario` : '/projects';
   const equipoPath = projectId ? `/project/${projectId}/equipo` : '/projects';
 
   // Caso 1: Faltan ambas cosas (semanas Y equipo)
@@ -42,7 +42,7 @@ export default function NominaMensual({ project, readOnly = false }: NominaMensu
         message={t('payroll.addWeeksInPlanningAndTeam')}
         planificacionPath={planificacionPath}
         equipoPath={equipoPath}
-        planningLabel={t('payroll.planning')}
+        planningLabel={t('navigation.needs')}
         teamLabel={t('navigation.team')}
         andLabel={t('payroll.andTeamIn')}
         toLabel={t('payroll.toCalculatePayroll')}
@@ -57,7 +57,7 @@ export default function NominaMensual({ project, readOnly = false }: NominaMensu
         title={t('payroll.noWeeksInPlanning')}
         message={t('payroll.addWeeksInPlanningForPayroll')}
         planificacionPath={planificacionPath}
-        planningLabel={t('payroll.planning')}
+        planningLabel={t('navigation.needs')}
         toLabel={t('payroll.toAppearHerePayroll')}
       />
     );
@@ -88,7 +88,7 @@ export default function NominaMensual({ project, readOnly = false }: NominaMensu
           plural: allWeeks.length !== 1 ? 's' : '',
         })}
         planificacionPath={planificacionPath}
-        planningLabel={t('payroll.planning')}
+        planningLabel={t('navigation.needs')}
         toLabel={t('payroll.butNoPeopleAssigned')}
       />
     );

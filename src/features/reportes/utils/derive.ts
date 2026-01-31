@@ -159,7 +159,9 @@ export function buildSafePersonas(
   weekPrelightActive: boolean,
   prelightPeople: Persona[],
   weekPickupActive: boolean,
-  pickupPeople: Persona[]
+  pickupPeople: Persona[],
+  weekExtraActive: boolean,
+  extraPeople: Persona[]
 ): Persona[] {
   const base = Array.isArray(providedPersonas) ? [...providedPersonas] : [];
   const seen = new Set<string>();
@@ -171,7 +173,7 @@ export function buildSafePersonas(
   };
   for (const p of base) seen.add(keyOf(p));
 
-  const add = (arr: Persona[], block?: 'pre' | 'pick') => {
+  const add = (arr: Persona[], block?: 'pre' | 'pick' | 'extra') => {
     for (const m of arr || []) {
       const isRef = String(m.role || '') === 'REF' || /^REF/.test(String(m.role || '')) || isMemberRefuerzo(m as any);
       let role: string;
@@ -198,9 +200,10 @@ export function buildSafePersonas(
     }
   };
 
-  // Añadir personas detectadas en prelight/pickup, marcando REF con __block
+  // Añadir personas detectadas en prelight/pickup/extra, marcando REF con __block
   if (weekPrelightActive) add(prelightPeople, 'pre');
   if (weekPickupActive) add(pickupPeople, 'pick');
+  if (weekExtraActive) add(extraPeople, 'extra');
 
   // IMPORTANTE: NO normalizar roles REF a 'REF' genérico - mantener códigos completos (REFG, REFBB, etc.)
   // Solo normalizar si es exactamente 'REF' sin código base
@@ -210,7 +213,7 @@ export function buildSafePersonas(
   const hasBlock = new Set<string>();
   for (const p of base) {
     const blk = (p as any)?.__block;
-    if (blk === 'pre' || blk === 'pick') {
+    if (blk === 'pre' || blk === 'pick' || blk === 'extra') {
       hasBlock.add(`${String(personaRole(p) || '')}__${String(personaName(p) || '')}`);
     }
   }
@@ -223,6 +226,14 @@ export function buildSafePersonas(
     return true;
   });
   return filtered;
+}
+
+export function buildPeopleExtra(
+  extraPeople: Persona[],
+  refNamesExtra: Set<string>
+): PersonaWithBlock[] {
+  const base = buildPeopleBase(extraPeople, refNamesExtra);
+  return base.map(p => ({ ...p, __block: 'extra' }));
 }
 
 export function buildPeopleBase(

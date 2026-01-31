@@ -35,7 +35,7 @@ export default function useReportData(
   safePersonas: Persona[],
   safeSemana: string[],
   CONCEPTS: string[],
-  isPersonScheduledOn: (fecha: string, role: string, name: string, findWeekAndDay: (iso: string) => WeekAndDay, block?: 'base' | 'pre' | 'pick') => boolean,
+  isPersonScheduledOn: (fecha: string, role: string, name: string, findWeekAndDay: (iso: string) => WeekAndDay, block?: 'base' | 'pre' | 'pick' | 'extra') => boolean,
   findWeekAndDay: (iso: string) => WeekAndDay
 ): UseReportDataReturn {
   const normalizeRole = (role: string) => (String(role || '').toUpperCase() === 'RIG' ? 'RE' : role);
@@ -50,6 +50,11 @@ export default function useReportData(
       const [rolePart, ...nameParts] = key.split('.pick__');
       const role = normalizeRole(rolePart);
       return `${role}.pick__${nameParts.join('.pick__')}`;
+    }
+    if (key.includes('.extra__')) {
+      const [rolePart, ...nameParts] = key.split('.extra__');
+      const role = normalizeRole(rolePart);
+      return `${role}.extra__${nameParts.join('.extra__')}`;
     }
     const [rolePart, ...nameParts] = key.split('__');
     const role = normalizeRole(rolePart);
@@ -192,13 +197,18 @@ export default function useReportData(
       setData((prev: ReportData) => {
         const copy = { ...(prev || {}) };
         // Determinar bloque del originador para propagar sólo en su bloque
-        const srcBlock: 'base' | 'pre' | 'pick' = /\.pre__/.test(pKey) || /REF\.pre__/.test(pKey)
-          ? 'pre'
-          : (/\.pick__/.test(pKey) || /REF\.pick__/.test(pKey) ? 'pick' : 'base');
-        const blockOf = (key: string): 'base' | 'pre' | 'pick' =>
+        const srcBlock: 'base' | 'pre' | 'pick' | 'extra' =
+          /\.pre__/.test(pKey) || /REF\.pre__/.test(pKey)
+            ? 'pre'
+            : (/\.pick__/.test(pKey) || /REF\.pick__/.test(pKey)
+              ? 'pick'
+              : (/\.extra__/.test(pKey) || /REF\.extra__/.test(pKey) ? 'extra' : 'base'));
+        const blockOf = (key: string): 'base' | 'pre' | 'pick' | 'extra' =>
           /\.pre__/.test(key) || /REF\.pre__/.test(key)
             ? 'pre'
-            : (/\.pick__/.test(key) || /REF\.pick__/.test(key) ? 'pick' : 'base');
+            : (/\.pick__/.test(key) || /REF\.pick__/.test(key)
+              ? 'pick'
+              : (/\.extra__/.test(key) || /REF\.extra__/.test(key) ? 'extra' : 'base'));
         for (const p of safePersonas) {
           const k = personaKey(p);
           if (k === pKey) continue;
@@ -212,7 +222,8 @@ export default function useReportData(
           const roleForCheck = isRefRole
             ? 'REF'
             : (tgtBlock === 'pre' ? `${r}P` : (tgtBlock === 'pick' ? `${r}R` : r));
-          const blockForRef: 'base' | 'pre' | 'pick' | undefined = isRefRole ? tgtBlock : undefined;
+          const blockForRef: 'base' | 'pre' | 'pick' | 'extra' | undefined =
+            isRefRole ? tgtBlock : (tgtBlock === 'extra' ? 'extra' : undefined);
           const isScheduled = isPersonScheduledOn(fecha, roleForCheck, n, findWeekAndDay, blockForRef);
           if (isScheduled) {
             copy[k] = { ...(copy[k] || {}) };

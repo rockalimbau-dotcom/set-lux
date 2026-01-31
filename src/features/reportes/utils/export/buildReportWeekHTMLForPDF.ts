@@ -26,13 +26,19 @@ export function buildReportWeekHTMLForPDF({
 
   // IMPORTANTE: Si data tiene bloques pre-agrupados (desde exportReportRangeToPDF),
   // usar esos bloques directamente para respetar la paginación por bloques
-  let personsByBlock: { base: string[]; pre: string[]; pick: string[] };
+  let personsByBlock: { base: string[]; extra: string[]; pre: string[]; pick: string[] };
   let finalPersonKeys: string[];
   
   if ((data as any).__blocks) {
     // Usar bloques pre-agrupados de la paginación
-    personsByBlock = (data as any).__blocks;
-    finalPersonKeys = [...personsByBlock.base, ...personsByBlock.pre, ...personsByBlock.pick];
+    const rawBlocks = (data as any).__blocks || {};
+    personsByBlock = {
+      base: rawBlocks.base || [],
+      extra: rawBlocks.extra || [],
+      pre: rawBlocks.pre || [],
+      pick: rawBlocks.pick || [],
+    };
+    finalPersonKeys = [...personsByBlock.base, ...personsByBlock.extra, ...personsByBlock.pre, ...personsByBlock.pick];
     // Eliminar la propiedad especial del finalData para no afectar el procesamiento
     delete finalData.__blocks;
   } else {

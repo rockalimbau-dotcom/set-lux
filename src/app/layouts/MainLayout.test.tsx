@@ -73,7 +73,7 @@ describe('MainLayout', () => {
 
   it('shows navigation links when not on index page', () => {
     mockUseLocation.mockReturnValue({
-      pathname: '/project/test-project-1/planificacion',
+      pathname: '/project/test-project-1/calendario',
     });
 
     render(
@@ -82,9 +82,8 @@ describe('MainLayout', () => {
       </BrowserRouter>
     );
 
-    expect(screen.getByText('Planificación')).toBeInTheDocument();
     expect(screen.getByText('Equipo')).toBeInTheDocument();
-    expect(screen.getByText('Necesidades')).toBeInTheDocument();
+    expect(screen.getByText('Calendario')).toBeInTheDocument();
     expect(screen.getByText('Reportes')).toBeInTheDocument();
     expect(screen.getByText('Nómina')).toBeInTheDocument();
   });
@@ -98,7 +97,6 @@ describe('MainLayout', () => {
       </BrowserRouter>
     );
 
-    expect(screen.queryByText('Planificación')).not.toBeInTheDocument();
     expect(screen.queryByText('Equipo')).not.toBeInTheDocument();
   });
 

@@ -17,6 +17,7 @@ import {
   computeBaseTurnAround,
   computePrelightTurnAround,
   computePickupTurnAround,
+  computeExtraTurnAround,
 } from './useAutoCalculations/turnAroundCalculations';
 import { calculateHorasExtra } from './useAutoCalculations/horasExtraCalculations';
 import { calculateNocturnidad } from './useAutoCalculations/nocturnidadCalculations';
@@ -122,6 +123,17 @@ export default function useAutoCalculations({
             params,
             debugEnabled
           );
+        } else if (block === 'extra') {
+          taHours = computeExtraTurnAround(
+            iso,
+            start,
+            findWeekAndDay,
+            getBlockWindow,
+            buildDateTime,
+            findPrevWorkingContext,
+            params,
+            debugEnabled
+          );
         }
 
         // Calcular nocturnidad
@@ -139,6 +151,7 @@ export default function useAutoCalculations({
         base: computeForBlock('base'),
         pre: computeForBlock('pre'),
         pick: computeForBlock('pick'),
+        extra: computeForBlock('extra'),
       };
     }
 
@@ -162,7 +175,7 @@ export default function useAutoCalculations({
 
         for (const iso of safeSemana as string[]) {
           // Determinar el bloque de la fila
-          const explicitBlock = ((p as any)?.__block as 'pre' | 'pick' | undefined) || undefined;
+          const explicitBlock = ((p as any)?.__block as 'pre' | 'pick' | 'extra' | undefined) || undefined;
           const rowBlock = determineRowBlock(pk, explicitBlock);
 
           const auto = (autoByDate[iso] && (autoByDate[iso] as any)[rowBlock]) || {

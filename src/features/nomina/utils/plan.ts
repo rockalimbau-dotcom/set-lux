@@ -2,20 +2,18 @@ import { useMemo } from 'react';
 import { storage } from '@shared/services/localStorage.service';
 import { parseYYYYMMDD, toYYYYMMDD, addDays } from '@shared/utils/date';
 import { stripRoleSuffix } from '@shared/constants/roles';
+import { needsDataToPlanData } from '@shared/utils/needsPlanAdapter';
 
 export function usePlanWeeks(project: { id?: string; nombre?: string } | null) {
   const storageKey = useMemo(() => {
     const base = project?.id || project?.nombre || 'demo';
-    return `plan_${base}`;
+    return `needs_${base}`;
   }, [project?.id, project?.nombre]);
 
   return useMemo(() => {
     try {
       const data = storage.getJSON<any>(storageKey) || {};
-      return {
-        pre: Array.isArray(data.pre) ? data.pre : [],
-        pro: Array.isArray(data.pro) ? data.pro : [],
-      } as { pre: any[]; pro: any[] };
+      return needsDataToPlanData(data);
     } catch {
       return { pre: [], pro: [] } as { pre: any[]; pro: any[] };
     }

@@ -43,13 +43,10 @@ describe('ProjectDetail (smoke)', () => {
     // Phase cards (select label text and assert the wrapping button exists)
     expect(screen.getByText('Equipo').closest('button')).toBeInTheDocument();
     expect(
-      screen.getByText('Planificación').closest('button')
+      screen.getByText('Calendario').closest('button')
     ).toBeInTheDocument();
     expect(screen.getByText('Reportes').closest('button')).toBeInTheDocument();
     expect(screen.getByText('Nómina').closest('button')).toBeInTheDocument();
-    expect(
-      screen.getByText('Necesidades de rodaje').closest('button')
-    ).toBeInTheDocument();
     expect(screen.getByText(/Condiciones/)).toBeInTheDocument();
 
     // Breadcrumb navigation exists

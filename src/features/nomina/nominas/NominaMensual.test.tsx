@@ -5,8 +5,9 @@ import { MemoryRouter } from 'react-router-dom';
 import NominaMensual from './NominaMensual';
 
 // Mock the hooks and utilities
-vi.mock('@features/planificacion/hooks/usePlanWeeks', () => ({
-  default: () => ({ pre: [], pro: [] }),
+vi.mock('../utils/plan', () => ({
+  usePlanWeeks: () => ({ pre: [], pro: [] }),
+  weekAllPeopleActive: () => [],
 }));
 
 vi.mock('@shared/hooks/useLocalStorage', () => ({

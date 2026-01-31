@@ -30,6 +30,10 @@ function parsePersonKeyForDisplay(pk: string): { role: string; name: string } {
     if (!isRefuerzo) {
       role = `${role}R`;
     }
+  } else if (pk.includes('.extra__')) {
+    const [rolePart, ...nameParts] = pk.split('.extra__');
+    role = rolePart || '';
+    name = nameParts.join('.extra__');
   } else {
     const [rolePart, ...nameParts] = pk.split('__');
     role = rolePart || '';
@@ -88,7 +92,7 @@ export function buildReportWeekHTML({
 
   const headHorario = `
       <tr>
-        <th style="border:1px solid #999;padding:6px;text-align:left;background:#1e40af;color:#fff;">${esc(getTranslation('planning.schedule', 'Horario'))}</th>
+        <th style="border:1px solid #999;padding:6px;text-align:left;background:#1e40af;color:#fff;">${esc(getTranslation('reports.scheduleBase', 'Horario equipo base'))}</th>
         ${safeSemanaWithData
           .map(
             iso =>

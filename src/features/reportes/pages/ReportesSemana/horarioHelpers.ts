@@ -7,8 +7,10 @@ export const createHorarioHelpers = (
 ) => {
   const horarioTexto = (iso: string) => {
     const { day } = findWeekAndDay(iso);
-    if (!day) return t('reports.addInPlanning');
+    if (!day) return '';
     if ((day.tipo || '') === 'Descanso') return t('reports.rest');
+    const hasBase = Array.isArray(day.crewList) && day.crewList.length > 0;
+    if (!hasBase) return '';
     
     const translateJornadaType = (tipo: string): string => {
       return translateJornadaTypeUtil(tipo, t);
@@ -23,7 +25,8 @@ export const createHorarioHelpers = (
 
   const horarioPrelight = (iso: string) => {
     const { day } = findWeekAndDay(iso);
-    if (!day || day.tipo === 'Descanso') return '—';
+    if (!day || day.tipo === 'Descanso') return '';
+    if (!Array.isArray(day.preList) || day.preList.length === 0) return '';
     if (!day.prelightStart || !day.prelightEnd)
       return t('reports.addInPlanning');
     return `${day.prelightStart}–${day.prelightEnd}`;
@@ -31,11 +34,20 @@ export const createHorarioHelpers = (
   
   const horarioPickup = (iso: string) => {
     const { day } = findWeekAndDay(iso);
-    if (!day || day.tipo === 'Descanso') return '—';
+    if (!day || day.tipo === 'Descanso') return '';
+    if (!Array.isArray(day.pickList) || day.pickList.length === 0) return '';
     if (!day.pickupStart || !day.pickupEnd) return t('reports.addInPlanning');
     return `${day.pickupStart}–${day.pickupEnd}`;
   };
 
-  return { horarioTexto, horarioPrelight, horarioPickup };
+  const horarioExtra = (iso: string) => {
+    const { day } = findWeekAndDay(iso);
+    if (!day || day.tipo === 'Descanso') return '';
+    if (!Array.isArray(day.refList) || day.refList.length === 0) return '';
+    if (!day.refStart || !day.refEnd) return t('reports.addInPlanning');
+    return `${day.refStart}–${day.refEnd}`;
+  };
+
+  return { horarioTexto, horarioPrelight, horarioPickup, horarioExtra };
 };
 

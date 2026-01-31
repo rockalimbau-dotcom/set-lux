@@ -6,16 +6,17 @@ interface WorkedDaysSummaryProps {
   descarga: number;
   localizar: number;
   rodaje: number;
+  pruebasCamara?: number;
   oficina: number;
   prelight?: number;
   recogida?: number;
 }
 
-export default function WorkedDaysSummary({ carga, descarga, localizar, rodaje, oficina, prelight = 0, recogida = 0 }: WorkedDaysSummaryProps) {
+export default function WorkedDaysSummary({ carga, descarga, localizar, rodaje, pruebasCamara = 0, oficina, prelight = 0, recogida = 0 }: WorkedDaysSummaryProps) {
   const { t } = useTranslation();
   const parts: string[] = [];
   
-  // Orden: Localizar, Oficina, Carga, Rodaje, Prelight, Recogida, Descarga
+  // Orden: Localizar, Oficina, Carga, Pruebas de cámara, Rodaje, Prelight, Recogida, Descarga
   if (localizar > 0) {
     parts.push(`${t('payroll.dayTypes.location')} x${localizar}`);
   }
@@ -26,6 +27,10 @@ export default function WorkedDaysSummary({ carga, descarga, localizar, rodaje, 
   
   if (carga > 0) {
     parts.push(`${t('payroll.dayTypes.loading')} x${carga}`);
+  }
+
+  if (pruebasCamara > 0) {
+    parts.push(`${t('payroll.dayTypes.cameraTests')} x${pruebasCamara}`);
   }
   
   if (rodaje > 0) {

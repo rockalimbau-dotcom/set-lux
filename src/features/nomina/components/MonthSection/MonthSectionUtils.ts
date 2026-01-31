@@ -149,7 +149,7 @@ export function detectMissingPrices(
   } = {};
 
   if (projectMode === 'diario') {
-    const rodajeDays = (data.rodaje || 0) + (data.oficina || 0);
+    const rodajeDays = (data.rodaje || 0) + (data.pruebasCamara || 0) + (data.oficina || 0);
     if (rodajeDays > 0 && (effectivePr.jornada || 0) === 0) {
       missingPrices.jornada = true;
     }

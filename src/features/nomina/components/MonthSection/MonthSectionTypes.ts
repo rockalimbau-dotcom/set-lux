@@ -72,6 +72,7 @@ export interface MonthSectionProps {
     workedPick: number; 
     holidayDays: number;
     rodaje?: number;
+    pruebasCamara?: number;
     oficina?: number;
     travelDay?: number;
     carga?: number;

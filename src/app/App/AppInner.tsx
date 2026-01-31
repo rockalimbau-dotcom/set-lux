@@ -204,7 +204,7 @@ function AppInner() {
       id: 'planning-card',
       title: t('tutorial.steps.planning.title'),
       description: t('tutorial.steps.planning.body'),
-      selector: '[data-tutorial="phase-planificacion"]',
+      selector: '[data-tutorial="phase-necesidades"]',
     },
     {
       id: 'planning-add-week',
@@ -281,21 +281,6 @@ function AppInner() {
       tooltipPlacement: 'bottom',
       tooltipMaxWidth: 360,
       noScroll: true,
-    },
-    {
-      id: 'needs-card',
-      title: t('tutorial.steps.needs.title'),
-      description: t('tutorial.steps.needs.body'),
-      selector: '[data-tutorial="phase-necesidades"]',
-    },
-    {
-      id: 'needs-week',
-      title: t('tutorial.steps.needsWeek.title'),
-      description: t('tutorial.steps.needsWeek.body'),
-      selector: '[data-tutorial="needs-week"]',
-      noScroll: true,
-      tooltipPlacement: 'bottom',
-      tooltipShiftY: -665,
     },
     {
       id: 'status',
@@ -683,7 +668,7 @@ function AppInner() {
             if (activeProject?.id) navigate(`/project/${activeProject.id}/condiciones`);
           }
           if (currentId === 'planning-card' && nextId === 'planning-add-week') {
-            if (activeProject?.id) navigate(`/project/${activeProject.id}/planificacion`);
+            if (activeProject?.id) navigate(`/project/${activeProject.id}/calendario`);
           }
           if (currentId === 'planning-add-week' && nextId === 'planning-card') {
             if (activeProject?.id) navigate(`/project/${activeProject.id}`);
@@ -698,7 +683,7 @@ function AppInner() {
             if (activeProject?.id) navigate(`/project/${activeProject.id}`);
           }
           if (currentId === 'reports-card' && nextId === 'planning-week') {
-            if (activeProject?.id) navigate(`/project/${activeProject.id}/planificacion`);
+            if (activeProject?.id) navigate(`/project/${activeProject.id}/calendario`);
           }
           if (currentId === 'conditions-prices' && nextId === 'planning-card') {
             const priceInput = document.querySelector('[data-tutorial="conditions-price-input"] input') as HTMLInputElement | null;
@@ -737,15 +722,6 @@ function AppInner() {
           if (currentId === 'payroll-table' && nextId === 'payroll-range') {
             if (activeProject?.id) navigate(`/project/${activeProject.id}/nomina`);
           }
-          if (currentId === 'payroll-range' && nextId === 'needs-card') {
-            if (activeProject?.id) navigate(`/project/${activeProject.id}`);
-          }
-          if (currentId === 'needs-card' && nextId === 'payroll-range') {
-            if (activeProject?.id) navigate(`/project/${activeProject.id}/nomina`);
-          }
-          if (currentId === 'payroll-table' && nextId === 'needs-card') {
-            if (activeProject?.id) navigate(`/project/${activeProject.id}`);
-          }
           if (currentId === 'reports-range' && nextId === 'payroll-card') {
             if (activeProject?.id) navigate(`/project/${activeProject.id}`);
           }
@@ -761,17 +737,8 @@ function AppInner() {
           if (currentId === 'payroll-table' && nextId === 'payroll-card') {
             if (activeProject?.id) navigate(`/project/${activeProject.id}`);
           }
-          if (currentId === 'needs-card' && nextId === 'needs-week') {
-            if (activeProject?.id) navigate(`/project/${activeProject.id}/necesidades`);
-          }
-          if (currentId === 'needs-week' && nextId === 'needs-card') {
+          if (nextId === 'status') {
             if (activeProject?.id) navigate(`/project/${activeProject.id}`);
-          }
-          if (currentId === 'needs-week' && nextId === 'status') {
-            if (activeProject?.id) navigate(`/project/${activeProject.id}`);
-          }
-          if (currentId === 'status' && nextId === 'needs-week') {
-            if (activeProject?.id) navigate(`/project/${activeProject.id}/necesidades`);
           }
           setTutorialStep(nextIndex);
         }}

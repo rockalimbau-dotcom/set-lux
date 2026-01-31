@@ -11,7 +11,6 @@ import { NameValidationModal } from './ProjectDetail/NameValidationModal';
 import { ProjectDetailHeader } from './ProjectDetail/ProjectDetailHeader';
 import { PhaseGrid } from './ProjectDetail/PhaseGrid';
 import { ProjectDetailContent } from './ProjectDetail/ProjectDetailContent';
-import { useTeamList } from './ProjectDetail/useTeamList';
 import { useProjectStorage } from './ProjectDetail/useProjectStorage';
 import { useProjectNavigation } from './ProjectDetail/useProjectNavigation';
 import { useProjectModals } from './ProjectDetail/useProjectModals';
@@ -82,9 +81,6 @@ export default function ProjectDetail({
   const themeGlobal = (typeof document !== 'undefined' && document.documentElement.getAttribute('data-theme')) || 'light';
   const estadoBg = isActive ? (themeGlobal === 'light' ? '#0468BF' : '#F27405') : '#64748b';
 
-  // Lista de equipo simplificada para Planificación
-  const teamList = useTeamList(proj);
-
   // Lee el modo (nuevo: conditions.tipo). Mantén compat con "mode" si existiera.
   const condModeRaw =
     proj?.conditions?.tipo || proj?.conditionsMode || proj?.conditions?.mode;
@@ -100,7 +96,6 @@ export default function ProjectDetail({
       return `Condiciones ${condModeLabel}`;
     }
     if (activeTab === 'nomina') return t('navigation.payroll');
-    if (activeTab === 'planificacion') return t('navigation.planning');
     if (activeTab === 'necesidades') return t('needs.title');
     if (activeTab === 'equipo') return t('navigation.team');
     if (activeTab === 'reportes') return t('navigation.reports');
@@ -139,7 +134,6 @@ export default function ProjectDetail({
               activeTab={activeTab}
               project={proj}
               user={user}
-              teamList={teamList}
               condTipo={condTipo}
               isActive={isActive}
               onTeamChange={handleTeamChange}

@@ -1,6 +1,7 @@
 import { storage } from '@shared/services/localStorage.service';
 import { getTranslation } from './translationHelpers';
 import { translateJornadaType as translateJornadaTypeUtil } from '@shared/utils/jornadaTranslations';
+import { needsDataToPlanData } from '@shared/utils/needsPlanAdapter';
 
 interface InitializeExportHelpersParams {
   project: any;
@@ -28,12 +29,12 @@ export async function initializeExportHelpers({
 }: InitializeExportHelpersParams): Promise<InitializeExportHelpersReturn> {
   const { horarioPrelightFactory, horarioPickupFactory } = await import('../derive');
 
-  const planKey = `plan_${project?.id || project?.nombre || 'demo'}`;
+  const planKey = `needs_${project?.id || project?.nombre || 'demo'}`;
   const getPlanAllWeeks = () => {
     try {
       const obj = storage.getJSON<any>(planKey);
       if (!obj) return { pre: [], pro: [] };
-      return obj || { pre: [], pro: [] };
+      return needsDataToPlanData(obj);
     } catch {
       return { pre: [], pro: [] };
     }
@@ -45,9 +46,11 @@ export async function initializeExportHelpers({
 
   const horarioTexto = (iso: string) => {
     const { day } = findWeekAndDay(iso);
-    const addInPlanning = getTranslation('reports.addInPlanning', 'Añadelo en Planificación');
-    if (!day) return addInPlanning;
+    const addInPlanning = getTranslation('reports.addInPlanning', 'Añadelo en Calendario');
+    if (!day) return '';
     if ((day.tipo || '') === 'Descanso') return getTranslation('planning.rest', 'DESCANSO');
+    const hasBase = Array.isArray(day.crewList) && day.crewList.length > 0;
+    if (!hasBase) return '';
     const etiqueta = day.tipo && day.tipo !== 'Rodaje' && day.tipo !== 'Oficina' && day.tipo !== 'Rodaje Festivo' ? `${translateJornadaType(day.tipo)}: ` : '';
     if (!day.start || !day.end) return `${etiqueta}${addInPlanning}`;
     return `${etiqueta}${day.start}–${day.end}`;

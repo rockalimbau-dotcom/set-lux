@@ -25,6 +25,11 @@ export function normalizePersonaKey(key: string): string {
     role = rolePart || '';
     name = nameParts.join('.pick__') || '';
     block = 'pick';
+  } else if (key.includes('.extra__')) {
+    const [rolePart, ...nameParts] = key.split('.extra__');
+    role = rolePart || '';
+    name = nameParts.join('.extra__') || '';
+    block = 'extra';
   } else {
     const [rolePart, ...nameParts] = key.split('__');
     role = rolePart || '';
@@ -42,6 +47,8 @@ export function normalizePersonaKey(key: string): string {
     return `${role}.pre__${name}`;
   } else if (block === 'pick') {
     return `${role}.pick__${name}`;
+  } else if (block === 'extra') {
+    return `${role}.extra__${name}`;
   } else {
     return `${role}__${name}`;
   }
@@ -94,6 +101,7 @@ export function personaKey(p: any): string {
     const block = (p && (p.__block || p.block)) || '';
     if (block === 'pre') return `${role}.pre__${name}`; // REFE.pre__name, REFG.pre__name, etc.
     if (block === 'pick') return `${role}.pick__${name}`; // REFE.pick__name, REFG.pick__name, etc.
+    if (block === 'extra') return `${role}.extra__${name}`; // REFE.extra__name, REFG.extra__name, etc.
     return `${role}__${name}`; // REFE__name, REFG__name, etc.
   }
   
@@ -101,6 +109,7 @@ export function personaKey(p: any): string {
   const block = (p && (p.__block || p.block)) || '';
   if (block === 'pre') return `${role}.pre__${name}`;
   if (block === 'pick') return `${role}.pick__${name}`;
+  if (block === 'extra') return `${role}.extra__${name}`;
   return `${role}__${name}`;
 }
 

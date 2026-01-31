@@ -70,6 +70,9 @@ export const generateWorkedDaysText = (r: any): string => {
   if ((r._rodaje || 0) > 0) {
     parts.push(`${i18n.t('payroll.dayTypes.shooting')} x${r._rodaje}`);
   }
+  if ((r._pruebasCamara || 0) > 0) {
+    parts.push(`${i18n.t('payroll.dayTypes.cameraTests')} x${r._pruebasCamara}`);
+  }
   
   if ((r._prelight || 0) > 0) {
     parts.push(`${i18n.t('payroll.dayTypes.prelight', 'Prelight')} x${r._prelight}`);
