@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { btnExport } from '@shared/utils/tailwindClasses';
 import { storage } from '@shared/services/localStorage.service';
+import { useTheme } from '@shared/hooks/useTheme';
 
 type MonthSectionHeaderProps = {
   monthLabel: string;
@@ -16,6 +17,8 @@ type MonthSectionHeaderProps = {
   setDateTo: (value: string) => void;
   dateRangeKey: string;
   onExportPDF: () => void | Promise<void>;
+  showRowSelection: boolean;
+  setShowRowSelection: (value: boolean | ((prev: boolean) => boolean)) => void;
   readOnly?: boolean;
 };
 
@@ -32,10 +35,13 @@ export function MonthSectionHeader({
   setDateTo,
   dateRangeKey,
   onExportPDF,
+  showRowSelection,
+  setShowRowSelection,
   readOnly = false,
 }: MonthSectionHeaderProps) {
   const { t } = useTranslation();
   const [isHelpOpen, setIsHelpOpen] = useState(false);
+  const theme = useTheme();
 
   const btnExportCls = btnExport;
   const btnExportStyle: React.CSSProperties = {
@@ -142,6 +148,23 @@ export function MonthSectionHeader({
             </div>
           </>
         )}
+        <button
+          className='px-2 sm:px-2.5 md:px-3 py-1 sm:py-1.5 md:py-2 rounded sm:rounded-md md:rounded-lg border text-[10px] sm:text-xs md:text-sm font-semibold whitespace-nowrap text-left transition-colors bg-neutral-panel/95 text-gray-900 dark:text-zinc-300'
+          onClick={() => {
+            if (!readOnly) {
+              setShowRowSelection(v => !v);
+            }
+          }}
+          disabled={readOnly}
+          title={readOnly ? t('conditions.projectClosed') : (showRowSelection ? t('payroll.hideSelection') : t('payroll.selectFromPayroll'))}
+          aria-label={showRowSelection ? t('payroll.hideSelection') : t('payroll.selectFromPayroll')}
+          type='button'
+          style={{
+            borderColor: 'var(--border)',
+          }}
+        >
+          {showRowSelection ? '☑' : '☐'}
+        </button>
         <button
           className='ml-auto lg:ml-0 px-1.5 py-1 sm:px-2 sm:py-1.5 md:px-2.5 md:py-2 rounded sm:rounded-md md:rounded-lg text-[10px] sm:text-xs md:text-sm font-semibold btn-pdf'
           style={{ background: '#f59e0b', color: '#FFFFFF', border: '1px solid rgba(255,255,255,0.08)' }}

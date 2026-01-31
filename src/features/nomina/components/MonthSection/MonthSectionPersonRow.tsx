@@ -29,6 +29,7 @@ type MonthSectionPersonRowProps = {
     km: boolean;
     dietas: boolean;
   };
+  showRowSelection: boolean;
   readOnly?: boolean;
 };
 
@@ -46,6 +47,7 @@ export function MonthSectionPersonRow({
   hasLocalizacionData,
   hasCargaDescargaData,
   columnVisibility,
+  showRowSelection,
   readOnly = false,
 }: MonthSectionPersonRowProps) {
   const { t, i18n } = useTranslation();
@@ -99,18 +101,20 @@ export function MonthSectionPersonRow({
 
   return (
     <tr>
-      <Td align='middle'>
-        <div className='flex justify-center'>
-          <input
-            type='checkbox'
-            checked={isSelected}
-            onChange={() => !readOnly && toggleRowSelection(pKey)}
-            disabled={readOnly}
-            title={readOnly ? t('conditions.projectClosed') : (isSelected ? t('payroll.deselectForExport') : t('payroll.selectForExport'))}
-            className={`accent-blue-500 dark:accent-[#f59e0b] ${readOnly ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-          />
-        </div>
-      </Td>
+      {showRowSelection && (
+        <Td align='middle'>
+          <div className='flex justify-center'>
+            <input
+              type='checkbox'
+              checked={isSelected}
+              onChange={() => !readOnly && toggleRowSelection(pKey)}
+              disabled={readOnly}
+              title={readOnly ? t('conditions.projectClosed') : (isSelected ? t('payroll.deselectForExport') : t('payroll.selectForExport'))}
+              className={`accent-blue-500 dark:accent-[#f59e0b] ${readOnly ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+            />
+          </div>
+        </Td>
+      )}
       <Td className='whitespace-nowrap align-middle'>
         <div className='flex items-center gap-1 sm:gap-1.5 md:gap-2'>
         <span

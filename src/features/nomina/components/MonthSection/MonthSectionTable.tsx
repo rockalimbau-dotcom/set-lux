@@ -18,6 +18,7 @@ type MonthSectionTableProps = {
     km: boolean;
     dietas: boolean;
   };
+  showRowSelection: boolean;
   isRowSelected: (key: string) => boolean;
   toggleRowSelection: (key: string) => void;
   received: Record<string, { ok?: boolean; note?: string }>;
@@ -34,6 +35,7 @@ export function MonthSectionTable({
   hasLocalizacionData,
   hasCargaDescargaData,
   columnVisibility,
+  showRowSelection,
   isRowSelected,
   toggleRowSelection,
   received,
@@ -46,7 +48,7 @@ export function MonthSectionTable({
 
   // Calcular número de columnas para colSpan
   const colSpanCount =
-    2 + // Checkbox, Persona
+    (showRowSelection ? 2 : 1) + // Checkbox (optional), Persona
     (hasWorkedDaysData ? 2 : 0) + // Días trabajados, Total días
     (hasLocalizacionData ? 2 : 0) + // Localización técnica, Total
     (hasCargaDescargaData ? 2 : 0) + // Carga/Descarga, Total
@@ -132,47 +134,49 @@ export function MonthSectionTable({
       <table className='min-w-[800px] sm:min-w-[1000px] md:min-w-[1200px] w-full border-collapse text-[9px] sm:text-[10px] md:text-xs lg:text-sm'>
         <thead>
           <tr>
-            <Th align='center'>
-              <div className='flex justify-center'>
-                <input
-                  type='checkbox'
-                  checked={enriched.length > 0 && enriched.every(r => {
-                    const pKey = `${r.role}__${r.name}`;
-                    return isRowSelected(pKey);
-                  })}
-                  onChange={e => {
-                    if (readOnly) return;
-                    if (e.target.checked) {
-                      // Seleccionar todas
-                      const allKeys = enriched.map(r => `${r.role}__${r.name}`);
-                      enriched.forEach(r => {
-                        const pKey = `${r.role}__${r.name}`;
-                        if (!isRowSelected(pKey)) {
-                          toggleRowSelection(pKey);
-                        }
-                      });
-                    } else {
-                      // Deseleccionar todas
-                      enriched.forEach(r => {
-                        const pKey = `${r.role}__${r.name}`;
-                        if (isRowSelected(pKey)) {
-                          toggleRowSelection(pKey);
-                        }
-                      });
-                    }
-                  }}
-                  disabled={readOnly}
-                  onClick={e => {
-                    e.stopPropagation();
-                  }}
-                  title={enriched.length > 0 && enriched.every(r => {
-                    const pKey = `${r.role}__${r.name}`;
-                    return isRowSelected(pKey);
-                  }) ? t('payroll.deselectAll') : t('payroll.selectAll')}
-                  className='accent-blue-500 dark:accent-[#f59e0b] cursor-pointer'
-                />
-              </div>
-            </Th>
+            {showRowSelection && (
+              <Th align='center'>
+                <div className='flex justify-center'>
+                  <input
+                    type='checkbox'
+                    checked={enriched.length > 0 && enriched.every(r => {
+                      const pKey = `${r.role}__${r.name}`;
+                      return isRowSelected(pKey);
+                    })}
+                    onChange={e => {
+                      if (readOnly) return;
+                      if (e.target.checked) {
+                        // Seleccionar todas
+                        const allKeys = enriched.map(r => `${r.role}__${r.name}`);
+                        enriched.forEach(r => {
+                          const pKey = `${r.role}__${r.name}`;
+                          if (!isRowSelected(pKey)) {
+                            toggleRowSelection(pKey);
+                          }
+                        });
+                      } else {
+                        // Deseleccionar todas
+                        enriched.forEach(r => {
+                          const pKey = `${r.role}__${r.name}`;
+                          if (isRowSelected(pKey)) {
+                            toggleRowSelection(pKey);
+                          }
+                        });
+                      }
+                    }}
+                    disabled={readOnly}
+                    onClick={e => {
+                      e.stopPropagation();
+                    }}
+                    title={enriched.length > 0 && enriched.every(r => {
+                      const pKey = `${r.role}__${r.name}`;
+                      return isRowSelected(pKey);
+                    }) ? t('payroll.deselectAll') : t('payroll.selectAll')}
+                    className='accent-blue-500 dark:accent-[#f59e0b] cursor-pointer'
+                  />
+                </div>
+              </Th>
+            )}
             <Th align='center'>{t('payroll.person')}</Th>
             {hasWorkedDaysData && <Th align='center'>{t('payroll.workedDays')}</Th>}
             {hasWorkedDaysData && <Th align='center'>{t('payroll.totalDays')}</Th>}
@@ -230,6 +234,7 @@ export function MonthSectionTable({
                     hasLocalizacionData={hasLocalizacionData}
                     hasCargaDescargaData={hasCargaDescargaData}
                     columnVisibility={columnVisibility}
+                    showRowSelection={showRowSelection}
                     readOnly={readOnly}
                   />
                 );
@@ -240,7 +245,7 @@ export function MonthSectionTable({
           {enriched.length === 0 && (
             <tr>
               <Td colSpan={
-                6 + // Base columns: Checkbox, Persona, Días trabajados, Total días, TOTAL BRUTO, Nómina recibida
+                (showRowSelection ? 6 : 5) + // Base columns (checkbox optional)
                 (columnVisibility.holidays ? 2 : 0) + // Días festivos + Total días festivos
                 (columnVisibility.travel ? 2 : 0) + // Travel Day + Total travel days
                 (columnVisibility.extras ? 2 : 0) + // Horas extra + Total horas extra

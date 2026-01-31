@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useLocalStorage } from '@shared/hooks/useLocalStorage';
 import { getDaysInMonth, calculateWorkingDaysInMonth } from '../utils/monthCalculations';
 import { MonthSectionHeader } from './MonthSection/MonthSectionHeader';
@@ -113,6 +113,8 @@ function MonthSection({
     });
   };
 
+  const [showRowSelection, setShowRowSelection] = useState(false);
+
   const refuerzoSet = useMemo(
     () => buildRefuerzoIndex(weeksForMonth),
     [weeksForMonth, buildRefuerzoIndex]
@@ -165,11 +167,13 @@ function MonthSection({
   });
 
   const doExport = () => {
-    const selectedEnriched = enriched.filter(r => {
-      const pKey = `${r.role}__${r.name}`;
-      return isRowSelected(pKey);
-    });
-    onExport?.(monthKey, selectedEnriched);
+    const rowsToExport = showRowSelection
+      ? enriched.filter(r => {
+          const pKey = `${r.role}__${r.name}`;
+          return isRowSelected(pKey);
+        })
+      : enriched;
+    onExport?.(monthKey, rowsToExport);
   };
   
   const doExportPDF = async () => {
@@ -178,13 +182,15 @@ function MonthSection({
       return;
     }
     
-    const selectedEnriched = enriched.filter(r => {
-      const pKey = `${r.role}__${r.name}`;
-      return isRowSelected(pKey);
-    });
+    const selectedEnriched = showRowSelection
+      ? enriched.filter(r => {
+          const pKey = `${r.role}__${r.name}`;
+          return isRowSelected(pKey);
+        })
+      : enriched;
     
     // Si no hay filas seleccionadas, exportar todas
-    const rowsToExport = selectedEnriched.length > 0 ? selectedEnriched : enriched;
+    const rowsToExport = showRowSelection && selectedEnriched.length > 0 ? selectedEnriched : enriched;
     
     if (!rowsToExport || rowsToExport.length === 0) {
       console.warn('No hay filas para exportar', { enriched, selectedEnriched, rowsToExport });
@@ -213,6 +219,8 @@ function MonthSection({
         setDateTo={setDateTo}
         dateRangeKey={dateRangeKey}
         onExportPDF={doExportPDF}
+        showRowSelection={showRowSelection}
+        setShowRowSelection={setShowRowSelection}
         readOnly={readOnly}
       />
 
@@ -224,6 +232,7 @@ function MonthSection({
           hasLocalizacionData={hasLocalizacionData}
           hasCargaDescargaData={hasCargaDescargaData}
           columnVisibility={columnVisibility}
+          showRowSelection={showRowSelection}
           isRowSelected={isRowSelected}
           toggleRowSelection={toggleRowSelection}
           received={received}
