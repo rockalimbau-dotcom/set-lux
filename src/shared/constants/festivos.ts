@@ -49,7 +49,7 @@ export function generateFestivosText(festivos: string[]): string {
     })
     .join(', ');
   
-  const year = festivos[0]?.split('-')[0] || new Date().getFullYear();
+  const year = 2026;
   return i18n.t('conditions.defaultHolidays', { year, festivos: festivosFormatted });
 }
 

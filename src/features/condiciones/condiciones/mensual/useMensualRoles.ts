@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { AnyRecord } from '@shared/types/common';
 import { PRICE_ROLES } from '../shared.constants';
 import { computeFromMonthly } from './mensualUtils';
@@ -20,6 +20,73 @@ interface UseMensualRolesReturn {
  */
 export function useMensualRoles({ model, setModel }: UseMensualRolesProps): UseMensualRolesReturn {
   const roles = useMemo(() => model.roles || PRICE_ROLES, [model.roles]);
+  const paramsKey = useMemo(() => JSON.stringify(model.params || {}), [model.params]);
+  const monthlyKey = useMemo(() => {
+    const extract = (prices: AnyRecord | undefined) => {
+      if (!prices) return {};
+      const out: AnyRecord = {};
+      Object.keys(prices).sort().forEach(role => {
+        out[role] = prices[role]?.['Precio mensual'] ?? '';
+      });
+      return out;
+    };
+    return JSON.stringify({
+      base: extract(model.prices),
+      pre: extract(model.pricesPrelight),
+      pick: extract(model.pricesPickup),
+    });
+  }, [model.prices, model.pricesPrelight, model.pricesPickup]);
+
+  useEffect(() => {
+    setModel((m: AnyRecord) => {
+      const applyDerived = (prices: AnyRecord | undefined) => {
+        if (!prices) return { next: prices, changed: false };
+        let changed = false;
+        const nextPrices: AnyRecord = { ...prices };
+        Object.keys(nextPrices).forEach(role => {
+          const row: AnyRecord = { ...(nextPrices[role] || {}) };
+          const monthlyVal = row['Precio mensual'];
+          if (!monthlyVal) return;
+          const derived = computeFromMonthly(monthlyVal, m.params);
+          const keys = [
+            'Precio semanal',
+            'Precio diario',
+            'Precio jornada',
+            'Precio Día extra/Festivo',
+            'Travel day',
+            'Horas extras',
+          ];
+          let rowChanged = false;
+          for (const key of keys) {
+            if (row[key] !== derived[key]) {
+              row[key] = derived[key];
+              rowChanged = true;
+            }
+          }
+          if (rowChanged) {
+            nextPrices[role] = row;
+            changed = true;
+          }
+        });
+        return { next: nextPrices, changed };
+      };
+
+      const baseResult = applyDerived(m.prices);
+      const preResult = applyDerived(m.pricesPrelight);
+      const pickResult = applyDerived(m.pricesPickup);
+
+      if (!baseResult.changed && !preResult.changed && !pickResult.changed) {
+        return m;
+      }
+
+      return {
+        ...m,
+        prices: baseResult.next ?? m.prices,
+        pricesPrelight: preResult.next ?? m.pricesPrelight,
+        pricesPickup: pickResult.next ?? m.pricesPickup,
+      };
+    });
+  }, [paramsKey, monthlyKey, setModel]);
 
   const addRole = (newRole: string) => {
     if (!newRole) return;

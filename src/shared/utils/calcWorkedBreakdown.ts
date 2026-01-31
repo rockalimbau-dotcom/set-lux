@@ -10,6 +10,7 @@ export interface WorkedBreakdownResult {
   workedPick: number;
   holidayDays: number;
   rodaje?: number;
+  pruebasCamara?: number;
   oficina?: number;
   travelDay?: number;
   carga?: number;
@@ -53,6 +54,7 @@ export function calcWorkedBreakdown(
   let holidayDays = 0;
   // Contadores por tipo de día
   let rodaje = 0;
+  let pruebasCamara = 0;
   let oficina = 0;
   let travelDay = 0;
   let carga = 0;
@@ -135,6 +137,8 @@ export function calcWorkedBreakdown(
         dayTypeForSkip = day.pickupTipo;
       }
       
+      // Si no hay tipo definido, no contar el día
+      if (!dayTypeForSkip) continue;
       // Saltar si es Descanso o Fin (usando el tipo específico si existe)
       if (dayTypeForSkip === 'Descanso' || dayTypeForSkip === 'Fin') continue;
         
@@ -156,6 +160,9 @@ export function calcWorkedBreakdown(
         // En publicidad: solo Rodaje y Oficina cuentan en workedDays
         if (dayType === 'Rodaje') {
           rodaje += 1;
+          workedDays += 1;
+        } else if (dayType === 'Pruebas de cámara') {
+          pruebasCamara += 1;
           workedDays += 1;
         } else if (dayType === 'Prelight') {
           prelight += 1;
@@ -190,6 +197,9 @@ export function calcWorkedBreakdown(
         // En semanal y mensual: todos los tipos cuentan en workedDays excepto Travel Day
         if (dayType === 'Rodaje') {
           rodaje += 1;
+          workedDays += 1;
+        } else if (dayType === 'Pruebas de cámara') {
+          pruebasCamara += 1;
           workedDays += 1;
         } else if (dayType === 'Prelight') {
           prelight += 1;
@@ -240,6 +250,7 @@ export function calcWorkedBreakdown(
       workedPick, 
       holidayDays,
       rodaje,
+      pruebasCamara,
       oficina,
       localizar,
       carga,
@@ -256,6 +267,7 @@ export function calcWorkedBreakdown(
       workedPick, 
       holidayDays,
       rodaje,
+      pruebasCamara,
       oficina,
       travelDay,
       carga,

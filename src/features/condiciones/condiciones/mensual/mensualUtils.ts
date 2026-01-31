@@ -5,6 +5,7 @@ function parseNum(input: unknown): number {
     .replace(/\u00A0/g, '')
     .replace(/[€%]/g, '')
     .replace(/\s+/g, '');
+  if (!s) return NaN;
   if (s.includes('.') && s.includes(',')) {
     s = s.replace(/\./g, '').replace(',', '.');
   } else if (s.includes(',')) {
@@ -14,11 +15,16 @@ function parseNum(input: unknown): number {
   return isFinite(n) ? n : NaN;
 }
 
+function getParamNumber(value: unknown, fallback: number): number {
+  const parsed = parseNum(value);
+  return isFinite(parsed) ? parsed : fallback;
+}
+
 function fmtMoney(n: number): string {
   if (!isFinite(n)) return '';
   const r = Math.round(n * 100) / 100;
-  if (Number.isInteger(r)) return String(r);
-  return r.toFixed(2).replace('.', ',');
+  if (Math.abs(r % 1) < 1e-9) return String(Math.round(r));
+  return r.toFixed(2).replace(/\.?0+$/, '');
 }
 
 export function computeFromMonthly(monthlyStr: string, params: any) {
@@ -34,33 +40,32 @@ export function computeFromMonthly(monthlyStr: string, params: any) {
     };
   }
 
-  const semanasMes = parseNum(params?.semanasMes ?? '4');
-  const diasJornada = parseNum(params?.diasJornada ?? '5');
-  const factorFestivo = parseNum(params?.factorFestivo ?? '1.75');
-  const divTravel = parseNum(params?.divTravel ?? '2');
-  const horasSemana = parseNum(params?.horasSemana ?? '45');
-  const factorHoraExtra = parseNum(params?.factorHoraExtra ?? '1.5');
+  const semanasMes = getParamNumber(params?.semanasMes, 4);
+  const diasJornada = getParamNumber(params?.diasJornada, 5);
+  const diasDiario = getParamNumber(params?.diasDiario, 7);
+  const horasSemana = getParamNumber(params?.horasSemana, 45);
+  const factorFestivo = getParamNumber(params?.factorFestivo, 1.75);
+  const divTravel = getParamNumber(params?.divTravel, 2);
+  const factorHoraExtra = getParamNumber(params?.factorHoraExtra, 1.5);
 
   const mensualOk = isFinite(pm) ? pm : NaN;
-  const semOk = isFinite(semanasMes) && semanasMes > 0 ? semanasMes : NaN;
-  const djOk = isFinite(diasJornada) && diasJornada > 0 ? diasJornada : NaN;
-  const divTravelOk = isFinite(divTravel) && divTravel > 0 ? divTravel : NaN;
-  const hsOk = isFinite(horasSemana) && horasSemana > 0 ? horasSemana : NaN;
+  const semOk = semanasMes > 0 ? semanasMes : NaN;
+  const djOk = diasJornada > 0 ? diasJornada : NaN;
+  const ddOk = diasDiario > 0 ? diasDiario : NaN;
+  const hsOk = horasSemana > 0 ? horasSemana : NaN;
+  const divTravelOk = divTravel > 0 ? divTravel : NaN;
   const ffOk = isFinite(factorFestivo) ? factorFestivo : NaN;
   const fheOk = isFinite(factorHoraExtra) ? factorHoraExtra : NaN;
 
   const semanal = isFinite(mensualOk / semOk) ? mensualOk / semOk : NaN;
-  const diario = isFinite(mensualOk / 30) ? mensualOk / 30 : NaN;
-  const jornada = isFinite(mensualOk / (djOk * semOk))
-    ? mensualOk / (djOk * semOk)
+  const diario = isFinite(semanal / ddOk) ? semanal / ddOk : NaN;
+  const jornada = isFinite(semanal / djOk) ? semanal / djOk
     : NaN;
   const festivo = isFinite(jornada * ffOk) ? jornada * ffOk : NaN;
   const travel = isFinite(jornada / divTravelOk)
     ? jornada / divTravelOk
     : NaN;
-  const baseHora = isFinite(mensualOk / (hsOk * semOk))
-    ? mensualOk / (hsOk * semOk)
-    : NaN;
+  const baseHora = isFinite(mensualOk / (hsOk * semOk)) ? mensualOk / (hsOk * semOk) : NaN;
   const horaExtra = isFinite(baseHora * fheOk) ? baseHora * fheOk : NaN;
 
   return {
