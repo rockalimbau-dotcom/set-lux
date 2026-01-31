@@ -5,9 +5,10 @@ type TextAreaAutoProps = {
   onChange?: (value: string) => void;
   placeholder?: string;
   readOnly?: boolean;
+  minHeightClass?: string;
 };
 
-export default function TextAreaAuto({ value, onChange, placeholder, readOnly = false }: TextAreaAutoProps) {
+export default function TextAreaAuto({ value, onChange, placeholder, readOnly = false, minHeightClass }: TextAreaAutoProps) {
   const [v, setV] = useState<string>(value || '');
   const ref = useRef<HTMLTextAreaElement | null>(null);
   const rafRef = useRef<number | null>(null);
@@ -50,7 +51,7 @@ export default function TextAreaAuto({ value, onChange, placeholder, readOnly = 
       }}
       disabled={readOnly}
       readOnly={readOnly}
-      className={`w-full min-h-[32px] sm:min-h-[40px] md:min-h-[48px] leading-relaxed whitespace-pre-wrap px-1.5 py-1 sm:px-2 sm:py-1.5 md:px-3 md:py-2 rounded sm:rounded-md md:rounded-lg lg:rounded-xl bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-[9px] sm:text-[10px] md:text-xs lg:text-sm text-left ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+      className={`w-full ${minHeightClass || 'min-h-[24px] sm:min-h-[28px] md:min-h-[32px]'} leading-relaxed whitespace-pre-wrap px-1.5 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-1.5 rounded sm:rounded-md md:rounded-lg lg:rounded-xl bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-[9px] sm:text-[10px] md:text-xs text-left ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
       style={{ overflow: 'hidden', resize: 'none' }}
       rows={1}
       onInput={e => {

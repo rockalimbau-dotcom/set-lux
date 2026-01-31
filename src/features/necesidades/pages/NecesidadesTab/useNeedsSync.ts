@@ -147,18 +147,46 @@ export function useNeedsSync({
               } else {
                 day.loc = day.loc || '';
               }
+              if (planDay.tipo !== undefined) {
+                day.tipo = planDay.tipo || '';
+              } else {
+                day.tipo = day.tipo || '';
+              }
+              if (planDay.start !== undefined) {
+                day.start = planDay.start || '';
+              } else {
+                day.start = day.start || '';
+              }
+              if (planDay.end !== undefined) {
+                day.end = planDay.end || '';
+              } else {
+                day.end = day.end || '';
+              }
               day.seq = day.seq || '';
               day.needLoc = day.needLoc || '';
               day.needProd = day.needProd || '';
               day.needTransport = day.needTransport || '';
+              day.transportExtra = day.transportExtra || '';
               day.needGroups = day.needGroups || '';
+              day.needCranes = day.needCranes || '';
               day.needLight = day.needLight || '';
               day.extraMat = day.extraMat || '';
               day.precall = day.precall || '';
               day.obs = day.obs || '';
               day.crewTxt = day.crewTxt || '';
+              day.refList = Array.isArray(day.refList) ? day.refList : [];
+              day.refTxt = day.refTxt || '';
+              day.refTipo = day.refTipo || '';
+              day.refStart = day.refStart || '';
+              day.refEnd = day.refEnd || '';
               day.preTxt = day.preTxt || '';
+              day.prelightTipo = day.prelightTipo || (day as AnyRecord).preTipo || '';
+              day.preStart = day.preStart || '';
+              day.preEnd = day.preEnd || '';
               day.pickTxt = day.pickTxt || '';
+              day.pickupTipo = day.pickupTipo || (day as AnyRecord).pickTipo || '';
+              day.pickStart = day.pickStart || '';
+              day.pickEnd = day.pickEnd || '';
 
               (next[w.id as string].days as AnyRecord)[i] = day;
             }

@@ -11,8 +11,17 @@ export interface DayInfo {
   name: string;
 }
 
-export interface WeekEntry {
-  wid: string;
-  wk: AnyRecord;
+export interface NeedsWeek extends AnyRecord {
+  id: string;
+  label?: string;
+  startDate?: string;
+  days?: AnyRecord[];
+  customRows?: AnyRecord[];
+  open?: boolean;
+}
+
+export interface NeedsState {
+  pre: NeedsWeek[];
+  pro: NeedsWeek[];
 }
 

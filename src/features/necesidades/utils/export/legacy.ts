@@ -1,4 +1,5 @@
 import i18n from '../../../../i18n/config';
+import { AnyRecord } from '@shared/types/common';
 import { DayValues, WeekEntry, NeedsData } from './types';
 import { buildNecesidadesHTML } from './htmlBuilders';
 import { esc } from './helpers';
@@ -20,12 +21,12 @@ export function renderExportHTML(
  */
 export function renderExportAllHTML(
   projectName: string, 
-  weekEntries: [string, WeekEntry][], 
+  weekEntries: WeekEntry[], 
   needs: NeedsData
 ): string {
-  const parts = weekEntries.map(([wid, wk]) => {
+  const parts = weekEntries.map((wk) => {
     const valuesByDay = Array.from({ length: 7 }).map(
-      (_, i) => needs[wid]?.days?.[i] || {}
+      (_, i) => (wk as AnyRecord)?.days?.[i] || {}
     );
     return buildNecesidadesHTML(
       { nombre: projectName },

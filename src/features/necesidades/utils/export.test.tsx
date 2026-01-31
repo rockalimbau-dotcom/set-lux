@@ -23,9 +23,9 @@ const mockValuesByDay = [
   {
     loc: 'Estudio A',
     seq: 'Secuencia 1',
-    needLoc: 'Necesidades loc',
-    needProd: 'Necesidades prod',
-    needLight: 'Necesidades light',
+    needLoc: 'Calendario loc',
+    needProd: 'Calendario prod',
+    needLight: 'Calendario light',
     extraMat: 'Material extra',
     precall: 'Precall info',
     obs: 'Observaciones',
@@ -49,13 +49,13 @@ const mockValuesByDay = [
 ];
 
 const mockWeekEntries = [
-  ['2024-01-15', { label: 'Semana 1', start: '2024-01-15' }],
-  ['2024-01-22', { label: 'Semana 2', start: '2024-01-22' }],
+  { id: '2024-01-15', label: 'Semana 1', startDate: '2024-01-15', days: mockValuesByDay },
+  { id: '2024-01-22', label: 'Semana 2', startDate: '2024-01-22', days: mockValuesByDay },
 ];
 
 const mockNeeds = {
-  '2024-01-15': mockValuesByDay[0],
-  '2024-01-22': mockValuesByDay[0],
+  pre: [],
+  pro: [],
 };
 
 describe('necesidades/utils/export', () => {
@@ -82,9 +82,9 @@ describe('necesidades/utils/export', () => {
         mockValuesByDay
       );
       expect(html).toContain(
-        `<title>${mockProjectName} – Necesidades de Rodaje (${mockWeekLabel})</title>`
+        `<title>${mockProjectName} – Calendario (${mockWeekLabel})</title>`
       );
-      expect(html).toContain('<h1>Necesidades - Producción</h1>');
+      expect(html).toContain('<h1>Calendario - Producción</h1>');
     });
 
     it('should render table with correct structure', () => {
@@ -124,13 +124,10 @@ describe('necesidades/utils/export', () => {
         mockValuesByDay
       );
       expect(html).toContain(
-        '<tr><td style="border:1px solid #999;padding:6px;font-weight:600;background:#f8fafc;">Localización</td>'
+        '<tr><td style="border:1px solid #999;padding:6px;font-weight:600;background:#f8fafc;">Localización y secuencias</td>'
       );
       expect(html).toContain(
-        '<tr><td style="border:1px solid #999;padding:6px;font-weight:600;background:#f8fafc;">Secuencias</td>'
-      );
-      expect(html).toContain(
-        '<tr><td style="border:1px solid #999;padding:6px;font-weight:600;background:#f8fafc;">Necesidades localizaciones</td>'
+        '<tr><td style="border:1px solid #999;padding:6px;font-weight:600;background:#f8fafc;">Transporte</td>'
       );
     });
 
@@ -142,13 +139,16 @@ describe('necesidades/utils/export', () => {
         mockValuesByDay
       );
       expect(html).toContain(
-        '<tr><td style="border:1px solid #999;padding:6px;font-weight:600;background:#f8fafc;">Equipo técnico</td>'
+        '<tr><td style="border:1px solid #999;padding:6px;font-weight:600;background:#f8fafc;">Equipo base</td>'
       );
       expect(html).toContain(
-        '<tr><td style="border:1px solid #999;padding:6px;font-weight:600;background:#f8fafc;">Equipo Prelight</td>'
+        '<tr><td style="border:1px solid #999;padding:6px;font-weight:600;background:#f8fafc;">Equipo extra</td>'
       );
       expect(html).toContain(
-        '<tr><td style="border:1px solid #999;padding:6px;font-weight:600;background:#f8fafc;">Equipo Recogida</td>'
+        '<tr><td style="border:1px solid #999;padding:6px;font-weight:600;background:#f8fafc;">Prelight</td>'
+      );
+      expect(html).toContain(
+        '<tr><td style="border:1px solid #999;padding:6px;font-weight:600;background:#f8fafc;">Recogida</td>'
       );
     });
 
@@ -204,7 +204,7 @@ describe('necesidades/utils/export', () => {
         mockNeeds
       );
       expect(html).toContain('Test Project');
-      expect(html).toContain('Necesidades');
+      expect(html).toContain('Calendario');
     });
 
     it('should render multiple weeks', () => {

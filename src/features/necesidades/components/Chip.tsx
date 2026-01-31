@@ -70,7 +70,7 @@ export default function Chip({ role, name, gender, onRemove, context, readOnly =
     : 'min-w-[20px] sm:min-w-[24px] md:min-w-[28px] px-1.5 sm:px-2 md:px-2.5';
   
   return (
-    <span className='inline-flex items-center gap-1 sm:gap-1.5 md:gap-2 px-1 py-0.5 sm:px-1.5 sm:py-0.5 md:px-2 md:py-1 rounded sm:rounded-md md:rounded-lg border border-neutral-border bg-black/40'>
+    <span className='inline-flex items-center gap-1 sm:gap-1.5 md:gap-2 px-0.5 py-0.5 sm:px-1 sm:py-0.5 md:px-1.5 md:py-0.5 rounded sm:rounded-md md:rounded-lg border border-neutral-border bg-black/40'>
       <span
         className={`inline-flex items-center justify-center h-3.5 sm:h-4 md:h-5 rounded sm:rounded-md md:rounded-lg font-bold text-[8px] sm:text-[9px] md:text-[10px] ${badgeWidthClass}`}
         style={{ 

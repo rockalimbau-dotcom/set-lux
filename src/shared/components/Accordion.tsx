@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import ToggleIconButton from '../../../shared/components/ToggleIconButton';
+import ToggleIconButton from '@shared/components/ToggleIconButton';
 
 type AccordionProps = {
   title: React.ReactNode;
@@ -31,9 +31,7 @@ export default function Accordion({
   const isPreproduction = title === t('planning.preproduction') || title === 'Preproducción';
   const isProduction = title === t('planning.production') || title === 'Producción';
   
-  // Optimizar el handler de toggle para evitar reflows forzados
   const handleToggle = React.useCallback(() => {
-    // Usar requestAnimationFrame para diferir el trabajo pesado
     requestAnimationFrame(() => {
       onToggle();
     });

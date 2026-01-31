@@ -91,13 +91,13 @@ export const translateLocationValue = (value: string): string => {
  */
 export const getNeedsLabel = (): string => {
   const currentLang = i18n?.language || 'es';
-  let needsLabel = 'NecesidadesRodaje';
+  let needsLabel = 'Calendario';
   if (i18n?.store?.data?.[currentLang]?.translation?.needs?.shootingNeeds) {
     const shootingNeeds = i18n.store.data[currentLang].translation.needs.shootingNeeds;
     needsLabel = shootingNeeds.replace(/\s+/g, '');
   } else {
-    if (currentLang === 'en') needsLabel = 'ShootingNeeds';
-    else if (currentLang === 'ca') needsLabel = 'NecessitatsRodatge';
+    if (currentLang === 'en') needsLabel = 'Calendar';
+    else if (currentLang === 'ca') needsLabel = 'Calendari';
   }
   return needsLabel;
 };

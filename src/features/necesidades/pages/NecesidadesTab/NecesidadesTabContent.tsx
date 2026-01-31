@@ -1,17 +1,27 @@
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
 import { AnyRecord } from '@shared/types/common';
-import { btnExport } from '@shared/utils/tailwindClasses';
-import { DayInfo, WeekEntry } from './NecesidadesTabTypes';
+import { DayInfo, NeedsWeek } from './NecesidadesTabTypes';
 import { WeekSection } from './WeekSection';
 import { useColumnSwap } from '../../hooks/useColumnSwap';
+import Accordion from '@shared/components/Accordion';
+import EmptyHint from '@shared/components/EmptyHint';
 
 interface NecesidadesTabContentProps {
-  weekEntries: WeekEntry[];
+  preEntries: NeedsWeek[];
+  proEntries: NeedsWeek[];
   DAYS: DayInfo[];
-  project?: AnyRecord;
   readOnly: boolean;
+  openPre: boolean;
+  openPro: boolean;
+  setOpenPre: (value: boolean | ((prev: boolean) => boolean)) => void;
+  setOpenPro: (value: boolean | ((prev: boolean) => boolean)) => void;
+  baseRoster?: AnyRecord[];
+  preRoster?: AnyRecord[];
+  pickRoster?: AnyRecord[];
+  refsRoster?: AnyRecord[];
+  shootingDayOffsets?: Record<string, number>;
   setCell: (weekId: string, dayIdx: number, fieldKey: string, value: unknown) => void;
+  setWeekStart: (weekId: string, date: string) => void;
   removeFromList: (weekId: string, dayIdx: number, listKey: string, idx: number) => void;
   setWeekOpen: (weekId: string, isOpen: boolean) => void;
   exportWeekPDF: (
@@ -20,121 +30,150 @@ interface NecesidadesTabContentProps {
     selectedDayIdxs?: number[],
     includeEmptyRows?: boolean
   ) => void;
+  addWeek: (scope: 'pre' | 'pro') => void;
+  duplicateWeek: (scope: 'pre' | 'pro', weekId: string) => void;
+  deleteWeek: (scope: 'pre' | 'pro', weekId: string) => void;
   addCustomRow: (weekId: string) => string | null;
   updateCustomRowLabel: (weekId: string, rowId: string, label: string) => void;
   removeCustomRow: (weekId: string, rowId: string) => void;
   exportAllNeedsPDF: () => void;
+  exportScopePDF: (scope: 'pre' | 'pro') => void;
   swapDays: (weekId1: string, dayIdx1: number, weekId2: string, dayIdx2: number) => void;
 }
 
 export function NecesidadesTabContent({
-  weekEntries,
+  preEntries,
+  proEntries,
   DAYS,
-  project,
   readOnly,
+  openPre,
+  openPro,
+  setOpenPre,
+  setOpenPro,
+  baseRoster = [],
+  preRoster = [],
+  pickRoster = [],
+  refsRoster = [],
+  shootingDayOffsets = {},
   setCell,
+  setWeekStart,
   removeFromList,
   setWeekOpen,
   exportWeekPDF,
+  addWeek,
+  duplicateWeek,
+  deleteWeek,
   exportAllNeedsPDF,
+  exportScopePDF,
   swapDays,
   addCustomRow,
   updateCustomRowLabel,
   removeCustomRow,
 }: NecesidadesTabContentProps) {
   const { t } = useTranslation();
-  const navigate = useNavigate();
   
   // Hook compartido para gestión de intercambio de columnas
   const { selectedDay, selectDayForSwap, clearSelection, isDaySelected } = useColumnSwap();
 
-  const btnExportCls = btnExport;
   const btnExportStyle = {
     background: '#f59e0b',
     color: '#FFFFFF',
     border: '1px solid rgba(255,255,255,0.08)',
   } as React.CSSProperties;
 
-  if (weekEntries.length === 0) {
-    return (
-      <div className='flex flex-col items-center justify-center py-16 px-8 text-center'>
-        <h2 className='text-3xl font-bold mb-4' style={{color: 'var(--text)'}}>
-          {t('needs.noWeeksInPlanning')}
-        </h2>
-        <p className='text-xl max-w-2xl mb-4' style={{color: 'var(--text)', opacity: 0.8}}>
-          {t('needs.createWeeksIn')}{' '}
-          <button
-            onClick={() => {
-              if (readOnly) return;
-              const projectId = project?.id || project?.nombre;
-              const planificacionPath = projectId ? `/project/${projectId}/planificacion` : '/projects';
-              navigate(planificacionPath);
-            }}
-            disabled={readOnly}
-            className={`underline font-semibold hover:opacity-80 transition-opacity ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
-            style={{color: 'var(--brand)'}}
-            title={readOnly ? t('conditions.projectClosed') : t('reports.goToPlanning')}
-          >
-            {t('needs.planning')}
-          </button>
-          {' '}{t('needs.toAppearHere')}
-        </p>
-      </div>
-    );
-  }
+  const allEntries = [...preEntries, ...proEntries];
+
+  const renderScope = (
+    title: string,
+    scope: 'pre' | 'pro',
+    entries: NeedsWeek[],
+    open: boolean,
+    onToggle: () => void
+  ) => (
+    <Accordion
+      title={title}
+      open={open}
+      onToggle={onToggle}
+      onAdd={() => addWeek(scope)}
+      onExport={() => {}}
+      onExportPDF={() => exportScopePDF(scope)}
+      readOnly={readOnly}
+    >
+      {entries.length === 0 ? (
+        <EmptyHint
+          title={scope === 'pre' ? t('planning.noPreproductionWeeks') : t('planning.noProductionWeeks')}
+          body={scope === 'pre' ? t('planning.preEmptyBody') : t('planning.proEmptyBody')}
+          subtext={scope === 'pre' ? t('planning.preEmptySubtext') : t('planning.proEmptySubtext')}
+        />
+      ) : (
+        entries.map((wk, index) => {
+          try {
+            const wid = wk.id;
+            return (
+              <WeekSection
+                key={wid}
+                wid={wid}
+                wk={wk as AnyRecord}
+                scope={scope}
+                DAYS={DAYS}
+                baseRoster={baseRoster}
+                preRoster={preRoster}
+                pickRoster={pickRoster}
+                refsRoster={refsRoster}
+                shootingDayOffset={shootingDayOffsets[wid] || 0}
+                setCell={setCell}
+                setWeekStart={setWeekStart}
+                removeFromList={removeFromList}
+                setWeekOpen={setWeekOpen}
+                exportWeekPDF={exportWeekPDF}
+                duplicateWeek={duplicateWeek}
+                deleteWeek={deleteWeek}
+                readOnly={readOnly}
+                swapDays={swapDays}
+                selectedDayForSwap={selectedDay}
+                selectDayForSwap={selectDayForSwap}
+                clearSelection={clearSelection}
+                isDaySelected={isDaySelected}
+                weekEntries={allEntries}
+                addCustomRow={addCustomRow}
+                updateCustomRowLabel={updateCustomRowLabel}
+                removeCustomRow={removeCustomRow}
+                tutorialId={scope === 'pro' && index === 0 ? 'planning-week' : undefined}
+              />
+            );
+          } catch (error) {
+            console.error(`Error rendering week ${wk.id}:`, error);
+            return (
+              <section key={wk.id} className='rounded-2xl border border-red-800 bg-red-950/30 p-4'>
+                <div className='text-red-400 text-sm'>
+                  {t('needs.errorLoadingWeek', { weekId: wk.id })}
+                </div>
+              </section>
+            );
+          }
+        })
+      )}
+    </Accordion>
+  );
 
   return (
     <>
-      <div className='flex items-center justify-between gap-2 mb-2 sm:mb-3 md:mb-4'>
+      <div className='no-pdf flex items-center justify-between gap-1 sm:gap-1.5 md:gap-2'>
         <span className='text-[9px] sm:text-[10px] md:text-xs text-zinc-400 dark:text-white'>
           <strong>Tip:</strong> {t('planning.scrollTip')}
         </span>
         <button
-          className='px-1.5 py-1 sm:px-2 sm:py-1.5 md:px-2.5 md:py-2 rounded sm:rounded-md md:rounded-lg text-[10px] sm:text-xs md:text-sm font-semibold btn-pdf'
+          className='px-1.5 py-1 sm:px-2 sm:py-1.5 md:px-2.5 md:py-2 rounded text-[10px] sm:text-xs md:text-sm font-semibold'
           style={btnExportStyle}
           onClick={exportAllNeedsPDF}
           title={t('needs.exportAllWeeksPDF')}
         >
-          {t('needs.exportFullPDF')}
+          {t('planning.pdfFull')}
         </button>
       </div>
 
-      {weekEntries.map(([wid, wk], index) => {
-        try {
-          return (
-            <WeekSection
-              key={wid}
-              wid={wid}
-              wk={wk as AnyRecord}
-              DAYS={DAYS}
-              setCell={setCell}
-              removeFromList={removeFromList}
-              setWeekOpen={setWeekOpen}
-              exportWeekPDF={exportWeekPDF}
-              readOnly={readOnly}
-              swapDays={swapDays}
-              selectedDayForSwap={selectedDay}
-              selectDayForSwap={selectDayForSwap}
-              clearSelection={clearSelection}
-              isDaySelected={isDaySelected}
-              weekEntries={weekEntries}
-              addCustomRow={addCustomRow}
-              updateCustomRowLabel={updateCustomRowLabel}
-              removeCustomRow={removeCustomRow}
-              tutorialId={index === 0 ? 'needs-week' : undefined}
-            />
-          );
-        } catch (error) {
-          console.error(`Error rendering week ${wid}:`, error);
-          return (
-            <section key={wid} className='rounded-2xl border border-red-800 bg-red-950/30 p-4'>
-              <div className='text-red-400 text-sm'>
-                {t('needs.errorLoadingWeek', { weekId: wid })}
-              </div>
-            </section>
-          );
-        }
-      })}
+      {renderScope(t('planning.preproduction'), 'pre', preEntries, openPre, () => setOpenPre(v => !v))}
+      {renderScope(t('planning.production'), 'pro', proEntries, openPro, () => setOpenPro(v => !v))}
     </>
   );
 }

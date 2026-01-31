@@ -26,6 +26,12 @@ export const addDays = (date: Date, days: number): Date => {
 export const formatDDMM = (date: Date): string => `${pad2(date.getDate())}/${pad2(date.getMonth() + 1)}`;
 
 /**
+ * Format date to DD/MM/YYYY
+ */
+export const formatDDMMYYYY = (date: Date): string =>
+  `${pad2(date.getDate())}/${pad2(date.getMonth() + 1)}/${date.getFullYear()}`;
+
+/**
  * Translate week label
  */
 export function translateWeekLabel(label: string, t: (key: string, options?: any) => string): string {

@@ -1,7 +1,12 @@
 import { useMemo } from 'react';
 import { storage } from '@shared/services/localStorage.service';
 import { AnyRecord } from '@shared/types/common';
-import { TeamMember } from './PlanificacionTabTypes';
+
+interface TeamMember {
+  role?: string;
+  name?: string;
+  [key: string]: any;
+}
 
 export function useRoster(
   project: AnyRecord | undefined,
@@ -67,4 +72,3 @@ export function useRoster(
     reinforcements,
   ]);
 }
-

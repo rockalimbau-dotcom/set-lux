@@ -121,9 +121,10 @@ type ListRowProps = {
   rowKey?: string; // Clave única para identificar esta fila
   isSelected?: boolean; // Si la fila está seleccionada
   toggleRowSelection?: (rowKey: string) => void; // Función para alternar selección
+  showSelection?: boolean;
 };
 
-export default function ListRow({ label, listKey, notesKey, weekId, weekObj, context, removeFromList, setCell, readOnly = false, rowKey, isSelected, toggleRowSelection }: ListRowProps) {
+export default function ListRow({ label, listKey, notesKey, weekId, weekObj, context, removeFromList, setCell, readOnly = false, rowKey, isSelected, toggleRowSelection, showSelection = true }: ListRowProps) {
   const { t } = useTranslation();
   const [memberToRemove, setMemberToRemove] = useState<{
     weekId: string;
@@ -147,8 +148,8 @@ export default function ListRow({ label, listKey, notesKey, weekId, weekObj, con
     <>
       <tr>
         {/* Checkbox para selección de fila - primera columna */}
-        {rowKey && toggleRowSelection && (
-          <Td align='middle' className='text-center'>
+      {showSelection && rowKey && toggleRowSelection && (
+        <Td align='middle' className='text-center w-6 sm:w-7 md:w-8 px-0.5'>
             <div className='flex justify-center'>
               <input
                 type='checkbox'
@@ -156,13 +157,15 @@ export default function ListRow({ label, listKey, notesKey, weekId, weekObj, con
                 onChange={() => !readOnly && toggleRowSelection(rowKey)}
                 disabled={readOnly}
                 title={readOnly ? t('conditions.projectClosed') : (isSelected ? t('needs.deselectForExport') : t('needs.selectForExport'))}
-                className={`accent-blue-500 dark:accent-[#f59e0b] ${readOnly ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+              className={`accent-blue-500 dark:accent-[#f59e0b] scale-90 transition ${
+                readOnly ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+              } opacity-70 hover:opacity-100`}
               />
             </div>
           </Td>
         )}
         {/* Etiqueta de la fila */}
-        <Td className='border border-neutral-border px-1 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-1 font-semibold bg-white/5 whitespace-nowrap text-[9px] sm:text-[10px] md:text-xs lg:text-sm align-middle'>
+        <Td className='border border-neutral-border px-1 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-1 font-semibold bg-white/5 whitespace-normal break-words text-[9px] sm:text-[10px] md:text-xs lg:text-sm align-middle'>
           {label}
         </Td>
         {DAYS.map((d, i) => {
@@ -170,7 +173,7 @@ export default function ListRow({ label, listKey, notesKey, weekId, weekObj, con
           const list = Array.isArray(day[listKey]) ? (day[listKey] as AnyRecord[]) : [];
           return (
             <Td key={d.key} align='middle' className='text-center'>
-              <div className='flex flex-wrap gap-1 sm:gap-1.5 md:gap-2 mb-1 sm:mb-1.5 md:mb-2 justify-center'>
+              <div className='flex flex-wrap gap-0.5 sm:gap-1 md:gap-1.5 mb-0.5 sm:mb-1 md:mb-1.5 justify-center'>
                 {list.length === 0 && (
                   <span className='text-[9px] sm:text-[10px] md:text-xs text-zinc-400'>—</span>
                 )}

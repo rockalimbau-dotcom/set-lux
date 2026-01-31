@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { fetchHolidays } from '@shared/services/holidays.service';
-import { mdKey } from '../../constants';
+import { mdKey } from '@shared/utils/dateKey';
 
 export function useHolidays(country: string, region: string) {
   const [holidayFull, setHolidayFull] = useState<Set<string>>(new Set());
@@ -12,10 +12,10 @@ export function useHolidays(country: string, region: string) {
     const load = async () => {
       try {
         const year = new Date().getFullYear();
-        const { holidays } = await fetchHolidays({ 
-          country, 
-          year, 
-          region: region || undefined 
+        const { holidays } = await fetchHolidays({
+          country,
+          year,
+          region: region || undefined,
         });
         const dates = (holidays || []).map(h => String(h.date));
         const full = new Set<string>(dates);
@@ -28,7 +28,6 @@ export function useHolidays(country: string, region: string) {
         setHolidayFull(full);
         setHolidayMD(md);
       } catch {
-        // Mantener sets vacíos si falla
         if (!alive) return;
         setHolidayFull(new Set());
         setHolidayMD(new Set());
@@ -44,4 +43,3 @@ export function useHolidays(country: string, region: string) {
 
   return { holidayFull, holidayMD };
 }
-

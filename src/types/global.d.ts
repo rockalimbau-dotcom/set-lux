@@ -20,11 +20,6 @@ declare module '@features/nomina/pages/NominaTab.jsx' {
   export default NominaTab;
 }
 
-declare module '@features/planificacion/pages/PlanificacionTab.jsx' {
-  const PlanificacionTab: React.ComponentType<any>;
-  export default PlanificacionTab;
-}
-
 declare module '@features/reportes/pages/ReportesTab.jsx' {
   const ReportesTab: React.ComponentType<any>;
   export default ReportesTab;

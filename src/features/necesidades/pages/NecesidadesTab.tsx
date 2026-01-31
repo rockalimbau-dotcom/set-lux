@@ -1,12 +1,14 @@
 import { useLocalStorage } from '@shared/hooks/useLocalStorage';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AnyRecord } from '@shared/types/common';
 import { exportToPDF, exportAllToPDF } from '../utils/export';
-import { NecesidadesTabProps, DayInfo } from './NecesidadesTab/NecesidadesTabTypes';
-import { useNeedsSync } from './NecesidadesTab/useNeedsSync';
+import { NecesidadesTabProps, DayInfo, NeedsState, NeedsWeek } from './NecesidadesTab/NecesidadesTabTypes';
 import { useNeedsData } from './NecesidadesTab/useNeedsData';
 import { useNeedsActions } from './NecesidadesTab/useNeedsActions';
+import { useRoster } from '@shared/hooks/useRoster';
+import { useHolidays } from '@shared/hooks/useHolidays';
+import { syncDayListWithRosterBlankOnly } from '@shared/utils/rosterSync';
 import { NecesidadesTabContent } from './NecesidadesTab/NecesidadesTabContent';
 
 export default function NecesidadesTab({ project, readOnly = false }: NecesidadesTabProps) {
@@ -27,16 +29,6 @@ export default function NecesidadesTab({ project, readOnly = false }: Necesidade
   const [hasError, setHasError] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string>('');
 
-  const planKey = useMemo(() => {
-    try {
-      const base = (project as AnyRecord)?.id || (project as AnyRecord)?.nombre || 'demo';
-      return `plan_${base}`;
-    } catch (error) {
-      console.error('Error creating planKey:', error);
-      return 'plan_demo';
-    }
-  }, [(project as AnyRecord)?.id, (project as AnyRecord)?.nombre]);
-
   const storageKey = useMemo(() => {
     try {
       const base = (project as AnyRecord)?.id || (project as AnyRecord)?.nombre || 'demo';
@@ -47,32 +39,165 @@ export default function NecesidadesTab({ project, readOnly = false }: Necesidade
     }
   }, [(project as AnyRecord)?.id, (project as AnyRecord)?.nombre]);
 
-  const [needs, setNeeds] = useLocalStorage(storageKey, {} as AnyRecord);
+  const [needs, setNeeds] = useLocalStorage<NeedsState>(storageKey, { pre: [], pro: [] });
+  const [openPre, setOpenPre] = useLocalStorage<boolean>(`needs_open_pre_${storageKey}`, true);
+  const [openPro, setOpenPro] = useLocalStorage<boolean>(`needs_open_pro_${storageKey}`, true);
 
-  // Sync from planificación
-  useNeedsSync({
-    planKey,
-    storageKey,
-    setNeeds,
-    setHasError,
-    setErrorMessage,
-  });
+  const projectCountry = (project as AnyRecord)?.country || 'ES';
+  const projectRegion = (project as AnyRecord)?.region || 'CT';
+  const { holidayFull, holidayMD } = useHolidays(projectCountry, projectRegion);
 
   // Manage needs data
-  const { weekEntries } = useNeedsData({
+  const { isLoaded, preEntries, proEntries } = useNeedsData({
     needs,
     storageKey,
     setNeeds,
     setHasError,
     setErrorMessage,
+    holidayFull,
+    holidayMD,
   });
 
+  const shootingDayOffsets = useMemo(() => {
+    let count = 0;
+    const map: Record<string, number> = {};
+    const allWeeks: NeedsWeek[] = [...preEntries, ...proEntries].sort((a, b) => {
+      const dateA = new Date((a as AnyRecord).startDate || 0).getTime();
+      const dateB = new Date((b as AnyRecord).startDate || 0).getTime();
+      return dateA - dateB;
+    });
+    for (const wk of allWeeks) {
+      map[wk.id] = count;
+      const days = (wk as AnyRecord)?.days || [];
+      for (let i = 0; i < 7; i++) {
+        const day: AnyRecord = (days as AnyRecord[])[i] || {};
+        const jornadaRaw = day?.crewTipo ?? day?.tipo ?? '';
+        const jornada = String(jornadaRaw).trim().toLowerCase();
+        if (jornada === 'rodaje' || jornada === 'rodaje festivo') {
+          count += 1;
+        }
+      }
+    }
+    return map;
+  }, [preEntries, proEntries]);
+
+  const { baseRoster, preRoster, pickRoster, refsRoster } = useRoster(
+    project as AnyRecord | undefined,
+    [],
+    [],
+    [],
+    []
+  );
+
+  const rosterKey = useMemo(
+    () => JSON.stringify({ baseRoster, preRoster, pickRoster, refsRoster }),
+    [baseRoster, preRoster, pickRoster, refsRoster]
+  );
+
+  useEffect(() => {
+    if (!isLoaded) return;
+    if (
+      (!Array.isArray(baseRoster) || baseRoster.length === 0) &&
+      (!Array.isArray(preRoster) || preRoster.length === 0) &&
+      (!Array.isArray(pickRoster) || pickRoster.length === 0) &&
+      (!Array.isArray(refsRoster) || refsRoster.length === 0)
+    ) return;
+
+    setNeeds(prev => {
+      let changed = false;
+      const syncWeeks = (weeks: AnyRecord[] = []) =>
+        weeks.map(w => {
+          const days = Array.isArray(w.days) ? w.days : [];
+          const nextDays = days.map((d: AnyRecord) => {
+            const tipo = String(d?.crewTipo || '').trim();
+            if (tipo === 'Descanso' || tipo === 'Fin') {
+              if (Array.isArray(d?.crewList) && d.crewList.length > 0) changed = true;
+              if (Array.isArray(d?.preList) && d.preList.length > 0) changed = true;
+              if (Array.isArray(d?.pickList) && d.pickList.length > 0) changed = true;
+              if (Array.isArray(d?.refList) && d.refList.length > 0) changed = true;
+              return { ...d, crewList: [], preList: [], pickList: [], refList: [] };
+            }
+            const current = Array.isArray(d?.crewList) ? d.crewList : [];
+            const synced = current.length === 0
+              ? (baseRoster || []).map((m: AnyRecord) => ({
+                  role: m?.role,
+                  name: m?.name || '',
+                  gender: m?.gender,
+                  source: 'base',
+                }))
+              : syncDayListWithRosterBlankOnly(current, baseRoster, 'base');
+            const sameLength = current.length === synced.length;
+            const sameMembers = sameLength && current.every((m: AnyRecord, idx: number) => {
+              const s = synced[idx];
+              return (m?.role || '') === (s?.role || '') &&
+                (m?.name || '') === (s?.name || '') &&
+                (m?.gender || '') === (s?.gender || '');
+            });
+            if (!sameMembers) changed = true;
+            const currentPre = Array.isArray(d?.preList) ? d.preList : [];
+            const syncedPre =
+              currentPre.length === 0
+                ? currentPre
+                : syncDayListWithRosterBlankOnly(currentPre, preRoster || [], 'pre');
+            const samePre = currentPre.length === syncedPre.length &&
+              currentPre.every((m: AnyRecord, idx: number) => {
+                const s = syncedPre[idx];
+                return (m?.role || '') === (s?.role || '') &&
+                  (m?.name || '') === (s?.name || '') &&
+                  (m?.gender || '') === (s?.gender || '');
+              });
+            if (!samePre) changed = true;
+
+            const currentPick = Array.isArray(d?.pickList) ? d.pickList : [];
+            const syncedPick =
+              currentPick.length === 0
+                ? currentPick
+                : syncDayListWithRosterBlankOnly(currentPick, pickRoster || [], 'pick');
+            const samePick = currentPick.length === syncedPick.length &&
+              currentPick.every((m: AnyRecord, idx: number) => {
+                const s = syncedPick[idx];
+                return (m?.role || '') === (s?.role || '') &&
+                  (m?.name || '') === (s?.name || '') &&
+                  (m?.gender || '') === (s?.gender || '');
+              });
+            if (!samePick) changed = true;
+
+            const currentRef = Array.isArray(d?.refList) ? d.refList : [];
+            const syncedRef =
+              currentRef.length === 0
+                ? currentRef
+                : syncDayListWithRosterBlankOnly(currentRef, refsRoster || [], 'ref');
+            const sameRef = currentRef.length === syncedRef.length &&
+              currentRef.every((m: AnyRecord, idx: number) => {
+                const s = syncedRef[idx];
+                return (m?.role || '') === (s?.role || '') &&
+                  (m?.name || '') === (s?.name || '') &&
+                  (m?.gender || '') === (s?.gender || '');
+              });
+            if (!sameRef) changed = true;
+
+            return { ...d, crewList: synced, preList: syncedPre, pickList: syncedPick, refList: syncedRef };
+          });
+          return { ...w, days: nextDays };
+        });
+
+      if (!changed) return prev;
+      return {
+        ...prev,
+        pre: syncWeeks(prev.pre || []),
+        pro: syncWeeks(prev.pro || []),
+      };
+    });
+  }, [isLoaded, rosterKey, baseRoster, setNeeds]);
+
   // Actions
-  const { setCell, removeFromList, setWeekOpen, swapDays, addCustomRow, updateCustomRowLabel, removeCustomRow } = useNeedsActions({
-    planKey,
+  const { setCell, setWeekStart, removeFromList, setWeekOpen, swapDays, addCustomRow, updateCustomRowLabel, removeCustomRow, addWeek, duplicateWeek, deleteWeek } = useNeedsActions({
     storageKey,
     readOnly,
     setNeeds,
+    baseRoster,
+    holidayFull,
+    holidayMD,
   });
 
   // Export functions
@@ -83,27 +208,32 @@ export default function NecesidadesTab({ project, readOnly = false }: Necesidade
     includeEmptyRows?: boolean
   ) => {
     try {
-      const w: AnyRecord = needs[weekId];
+      const w: AnyRecord | undefined =
+        preEntries.find(wk => wk.id === weekId) ||
+        proEntries.find(wk => wk.id === weekId);
       if (!w) {
         console.error('Week not found:', weekId);
         alert(t('needs.weekNotFound'));
         return;
       }
+      const shootingDayOffset = shootingDayOffsets[weekId] || 0;
       
       // Mapeo de claves de fila a fieldKey/listKey
       const rowKeyToFieldKey: Record<string, string> = {
         [`${weekId}_loc`]: 'loc',
         [`${weekId}_seq`]: 'seq',
+        [`${weekId}_shootDay`]: 'shootDay',
         [`${weekId}_crewList`]: 'crewList',
-        [`${weekId}_needLoc`]: 'needLoc',
-        [`${weekId}_needProd`]: 'needProd',
+        [`${weekId}_refList`]: 'refList',
         [`${weekId}_needTransport`]: 'needTransport',
+        [`${weekId}_transportExtra`]: 'transportExtra',
         [`${weekId}_needGroups`]: 'needGroups',
-        [`${weekId}_needLight`]: 'needLight',
+        [`${weekId}_needCranes`]: 'needCranes',
         [`${weekId}_extraMat`]: 'extraMat',
         [`${weekId}_precall`]: 'precall',
         [`${weekId}_preList`]: 'preList',
         [`${weekId}_pickList`]: 'pickList',
+        [`${weekId}_needLight`]: 'needLight',
         [`${weekId}_obs`]: 'obs',
       };
       const customRows = Array.isArray(w?.customRows) ? w.customRows : [];
@@ -121,6 +251,7 @@ export default function NecesidadesTab({ project, readOnly = false }: Necesidade
         const selectedFields = selectedRowKeys
           .map(key => rowKeyToFieldKey[key])
           .filter(Boolean);
+        const needsTipo = selectedFields.includes('shootDay');
         
         // Filtrar los datos para incluir solo las filas seleccionadas
         valuesByDay = valuesByDay.map(day => {
@@ -133,14 +264,20 @@ export default function NecesidadesTab({ project, readOnly = false }: Necesidade
               filteredDay.crewTxt = day.crewTxt;
             } else if (fieldKey === 'preList') {
               filteredDay.preList = day.preList;
-              filteredDay.preTxt = day.preTxt;
+              filteredDay.preNote = day.preNote ?? day.preTxt;
             } else if (fieldKey === 'pickList') {
               filteredDay.pickList = day.pickList;
-              filteredDay.pickTxt = day.pickTxt;
+              filteredDay.pickNote = day.pickNote ?? day.pickTxt;
+            } else if (fieldKey === 'refList') {
+              filteredDay.refList = day.refList;
+              filteredDay.refTxt = day.refTxt;
             } else {
               filteredDay[fieldKey] = day[fieldKey];
             }
           });
+          if (needsTipo) {
+            filteredDay.crewTipo = day.crewTipo ?? day.tipo;
+          }
           
           return filteredDay;
         });
@@ -154,7 +291,8 @@ export default function NecesidadesTab({ project, readOnly = false }: Necesidade
         selectedRowKeys, // Pasar las filas seleccionadas para que el HTML solo muestre esas filas
         selectedDayIdxs, // Pasar columnas seleccionadas (días)
         includeEmptyRows, // Incluir filas vacías cuando todo está activo
-        customRows
+        customRows,
+        shootingDayOffset
       );
     } catch (error) {
       console.error('Error exporting PDF:', error);
@@ -164,13 +302,28 @@ export default function NecesidadesTab({ project, readOnly = false }: Necesidade
 
   const exportAllNeedsPDF = async () => {
     try {
+      const allEntries = [...preEntries, ...proEntries];
       await exportAllToPDF(
         project,
-        weekEntries,
-        needs
+        allEntries
       );
     } catch (error) {
       console.error('Error exporting all needs PDF:', error);
+      alert(t('needs.errorGeneratingPDF'));
+    }
+  };
+
+  const exportScopePDF = async (scope: 'pre' | 'pro') => {
+    try {
+      const entries = scope === 'pre' ? preEntries : proEntries;
+      const sortedEntries = [...entries].sort((a, b) => {
+        const dateA = new Date((a as AnyRecord).startDate || 0).getTime();
+        const dateB = new Date((b as AnyRecord).startDate || 0).getTime();
+        return dateA - dateB;
+      });
+      await exportAllToPDF(project, sortedEntries);
+    } catch (error) {
+      console.error('Error exporting scope PDF:', error);
       alert(t('needs.errorGeneratingPDF'));
     }
   };
@@ -198,17 +351,31 @@ export default function NecesidadesTab({ project, readOnly = false }: Necesidade
   }
 
   return (
-    <div className='space-y-2 sm:space-y-3 md:space-y-4'>
+    <div id='print-root' className='space-y-2 sm:space-y-3 md:space-y-4 lg:space-y-6'>
       <NecesidadesTabContent
-        weekEntries={weekEntries}
+        preEntries={preEntries}
+        proEntries={proEntries}
         DAYS={DAYS}
-        project={project}
         readOnly={readOnly}
+        openPre={openPre}
+        openPro={openPro}
+        setOpenPre={setOpenPre}
+        setOpenPro={setOpenPro}
+        baseRoster={baseRoster}
+        preRoster={preRoster}
+        pickRoster={pickRoster}
+        refsRoster={refsRoster}
+        shootingDayOffsets={shootingDayOffsets}
         setCell={setCell}
+        setWeekStart={setWeekStart}
         removeFromList={removeFromList}
         setWeekOpen={setWeekOpen}
         exportWeekPDF={exportWeekPDF}
+        addWeek={addWeek}
+        duplicateWeek={duplicateWeek}
+        deleteWeek={deleteWeek}
         exportAllNeedsPDF={exportAllNeedsPDF}
+        exportScopePDF={exportScopePDF}
         swapDays={swapDays}
         addCustomRow={addCustomRow}
         updateCustomRowLabel={updateCustomRowLabel}

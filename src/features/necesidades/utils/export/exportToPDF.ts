@@ -17,7 +17,8 @@ export async function exportToPDF(
   selectedRowKeys?: string[], // Filas seleccionadas para filtrar qué mostrar
   selectedDayIdxs?: number[], // Columnas seleccionadas (días)
   includeEmptyRows?: boolean, // Incluir filas vacías
-  customRows?: CustomRow[]
+  customRows?: CustomRow[],
+  shootingDayOffset: number = 0
 ): Promise<void> {
   try {
     const html = buildNecesidadesHTMLForPDF(
@@ -28,7 +29,8 @@ export async function exportToPDF(
       selectedRowKeys,
       selectedDayIdxs,
       includeEmptyRows,
-      customRows
+      customRows,
+      shootingDayOffset
     );
     
     const tempContainer = document.createElement('div');

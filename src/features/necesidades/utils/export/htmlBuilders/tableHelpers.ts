@@ -27,8 +27,33 @@ function fieldRow(
 ): string {
   const tds = DAYS.map((_, i) => {
     const rawValue = valuesByDay[i]?.[key] || '';
-    // Only translate if it's the location field (key === 'loc')
     const displayValue = key === 'loc' ? translateLocationValue(rawValue) : rawValue;
+    return `<td style="border:1px solid #999;padding:6px;vertical-align:top;">${renderCell(displayValue)}</td>`;
+  }).join('');
+  return `<tr><td style="border:1px solid #999;padding:6px;font-weight:600;background:#f8fafc;">${esc(label)}</td>${tds}</tr>`;
+}
+
+function mergedLocSeqRow(
+  label: string,
+  DAYS: ReturnType<typeof getDays>,
+  valuesByDay: DayValues[]
+): string {
+  const tds = DAYS.map((_, i) => {
+    const loc = translateLocationValue(valuesByDay[i]?.loc || '');
+    const seq = valuesByDay[i]?.seq || '';
+    const combined = seq ? [loc, seq].filter(Boolean).join('\n') : loc;
+    return `<td style="border:1px solid #999;padding:6px;vertical-align:top;">${renderCell(combined)}</td>`;
+  }).join('');
+  return `<tr><td style="border:1px solid #999;padding:6px;font-weight:600;background:#f8fafc;">${esc(label)}</td>${tds}</tr>`;
+}
+
+function simpleRow(
+  label: string,
+  DAYS: ReturnType<typeof getDays>,
+  values: string[]
+): string {
+  const tds = DAYS.map((_, i) => {
+    const displayValue = values[i] || '';
     return `<td style="border:1px solid #999;padding:6px;vertical-align:top;">${renderCell(displayValue)}</td>`;
   }).join('');
   return `<tr><td style="border:1px solid #999;padding:6px;font-weight:600;background:#f8fafc;">${esc(label)}</td>${tds}</tr>`;
@@ -65,6 +90,60 @@ function listRow(
   return `<tr><td style="border:1px solid #999;padding:6px;font-weight:600;background:#f8fafc;">${esc(label)}</td>${tds}</tr>`;
 }
 
+function listRowWithSchedule(
+  label: string,
+  listKey: string,
+  notesKey: string,
+  tipoKey: string,
+  startKey: string,
+  endKey: string,
+  DAYS: ReturnType<typeof getDays>,
+  valuesByDay: DayValues[]
+): string {
+  const tds = DAYS.map((_, i) => {
+    const list = Array.isArray(valuesByDay[i]?.[listKey]) ? valuesByDay[i][listKey] : [];
+    const notes = valuesByDay[i]?.[notesKey] || '';
+    const tipo = valuesByDay[i]?.[tipoKey] || '';
+    const start = valuesByDay[i]?.[startKey] || '';
+    const end = valuesByDay[i]?.[endKey] || '';
+    const scheduleLine = [tipo, start || end ? `${start}${start && end ? ' - ' : ''}${end}` : '']
+      .filter(Boolean)
+      .join(' | ');
+    const chips = list
+      .map(m => {
+        const role = (m?.role || '').toUpperCase();
+        const isRefRole = role === 'REF' || (role && role.startsWith('REF') && role.length > 3);
+        const suffix = !isRefRole && listKey === 'preList' ? 'P' : !isRefRole && listKey === 'pickList' ? 'R' : '';
+        const baseBadge = getRoleBadgeCode(role, i18n.language);
+        const badgeWithSuffix = isRefRole ? baseBadge : `${baseBadge}${suffix}`;
+        const badgeDisplay = applyGenderToBadge(badgeWithSuffix, m?.gender);
+        const name = m?.name || '';
+        return `<div>• ${esc(badgeDisplay ? `${badgeDisplay}: ` : '')}${esc(name)}</div>`;
+      })
+      .join('');
+    const header = scheduleLine ? `<div style="margin-bottom:6px;font-weight:600;">${esc(scheduleLine)}</div>` : '';
+    const block = `${header}${chips}${notes ? `<hr style="margin:6px 0;border:none;border-top:1px solid #ddd;"/>` : ''}${renderCell(notes)}`;
+    return `<td style="border:1px solid #999;padding:6px;vertical-align:top;">${block}</td>`;
+  }).join('');
+  return `<tr><td style="border:1px solid #999;padding:6px;font-weight:600;background:#f8fafc;">${esc(label)}</td>${tds}</tr>`;
+}
+
+function fieldRowWithTime(
+  key: string,
+  timeKey: string,
+  label: string,
+  DAYS: ReturnType<typeof getDays>,
+  valuesByDay: DayValues[]
+): string {
+  const tds = DAYS.map((_, i) => {
+    const value = valuesByDay[i]?.[key] || '';
+    const time = valuesByDay[i]?.[timeKey] || '';
+    const header = time ? `<div style="margin-bottom:6px;font-weight:600;">${esc(time)}</div>` : '';
+    return `<td style="border:1px solid #999;padding:6px;vertical-align:top;">${header}${renderCell(value)}</td>`;
+  }).join('');
+  return `<tr><td style="border:1px solid #999;padding:6px;font-weight:600;background:#f8fafc;">${esc(label)}</td>${tds}</tr>`;
+}
+
 /**
  * Check if a field row is empty (all days have empty values)
  */
@@ -94,22 +173,95 @@ export function generateTableBody(
   valuesByDay: DayValues[],
   selectedRowKeys?: string[], // Filas seleccionadas para filtrar qué mostrar
   includeEmptyRows: boolean = false,
-  customRows: CustomRow[] = []
+  customRows: CustomRow[] = [],
+  shootingDayOffset: number = 0
 ): string {
   // Mapeo de fieldKey/listKey a función de generación
   const rowGenerators: Array<{ key: string; generate: () => string; isEmpty: () => boolean }> = [
-    { key: 'loc', generate: () => fieldRow('loc', i18n.t('needs.location'), DAYS, valuesByDay), isEmpty: () => isFieldRowEmpty('loc', valuesByDay) },
-    { key: 'seq', generate: () => fieldRow('seq', i18n.t('needs.sequences'), DAYS, valuesByDay), isEmpty: () => isFieldRowEmpty('seq', valuesByDay) },
-    { key: 'crewList', generate: () => listRow(i18n.t('needs.technicalTeam'), 'crewList', 'crewTxt', DAYS, valuesByDay), isEmpty: () => isListRowEmpty('crewList', 'crewTxt', valuesByDay) },
-    { key: 'needLoc', generate: () => fieldRow('needLoc', i18n.t('needs.locationNeeds'), DAYS, valuesByDay), isEmpty: () => isFieldRowEmpty('needLoc', valuesByDay) },
-    { key: 'needProd', generate: () => fieldRow('needProd', i18n.t('needs.productionNeeds'), DAYS, valuesByDay), isEmpty: () => isFieldRowEmpty('needProd', valuesByDay) },
-    { key: 'needTransport', generate: () => fieldRow('needTransport', i18n.t('needs.transportNeeds'), DAYS, valuesByDay), isEmpty: () => isFieldRowEmpty('needTransport', valuesByDay) },
-    { key: 'needGroups', generate: () => fieldRow('needGroups', i18n.t('needs.groupsNeeds'), DAYS, valuesByDay), isEmpty: () => isFieldRowEmpty('needGroups', valuesByDay) },
-    { key: 'needLight', generate: () => fieldRow('needLight', i18n.t('needs.lightNeeds'), DAYS, valuesByDay), isEmpty: () => isFieldRowEmpty('needLight', valuesByDay) },
-    { key: 'extraMat', generate: () => fieldRow('extraMat', i18n.t('needs.extraMaterial'), DAYS, valuesByDay), isEmpty: () => isFieldRowEmpty('extraMat', valuesByDay) },
+    {
+      key: 'loc',
+      generate: () => mergedLocSeqRow(i18n.t('needs.locationSequences'), DAYS, valuesByDay),
+      isEmpty: () => isFieldRowEmpty('loc', valuesByDay) && isFieldRowEmpty('seq', valuesByDay),
+    },
+    { key: 'shootDay', generate: () => {
+      let count = shootingDayOffset;
+      const labels = valuesByDay.map(day => {
+        const jornada = String(day?.crewTipo || '').trim().toLowerCase();
+        if (jornada === 'rodaje' || jornada === 'rodaje festivo') {
+          count += 1;
+          return `DÍA ${count}`;
+        }
+        return '';
+      });
+      return simpleRow(i18n.t('needs.shootingDay'), DAYS, labels);
+    }, isEmpty: () => false },
+    {
+      key: 'crewList',
+      generate: () =>
+        listRowWithSchedule(
+          i18n.t('needs.technicalTeam'),
+          'crewList',
+          'crewTxt',
+          'crewTipo',
+          'crewStart',
+          'crewEnd',
+          DAYS,
+          valuesByDay
+        ),
+      isEmpty: () => isListRowEmpty('crewList', 'crewTxt', valuesByDay),
+    },
+    {
+      key: 'refList',
+      generate: () =>
+        listRowWithSchedule(
+          i18n.t('needs.reinforcements'),
+          'refList',
+          'refTxt',
+          'refTipo',
+          'refStart',
+          'refEnd',
+          DAYS,
+          valuesByDay
+        ),
+      isEmpty: () => isListRowEmpty('refList', 'refTxt', valuesByDay),
+    },
+    { key: 'needTransport', generate: () => fieldRow('needTransport', i18n.t('needs.transport'), DAYS, valuesByDay), isEmpty: () => isFieldRowEmpty('needTransport', valuesByDay) },
+    { key: 'transportExtra', generate: () => fieldRow('transportExtra', i18n.t('needs.transportExtra'), DAYS, valuesByDay), isEmpty: () => isFieldRowEmpty('transportExtra', valuesByDay) },
+    { key: 'needGroups', generate: () => fieldRow('needGroups', i18n.t('needs.groups'), DAYS, valuesByDay), isEmpty: () => isFieldRowEmpty('needGroups', valuesByDay) },
+    { key: 'needCranes', generate: () => fieldRow('needCranes', i18n.t('needs.cranes'), DAYS, valuesByDay), isEmpty: () => isFieldRowEmpty('needCranes', valuesByDay) },
+    { key: 'extraMat', generate: () => fieldRowWithTime('extraMat', 'extraMatTime', i18n.t('needs.extraMaterial'), DAYS, valuesByDay), isEmpty: () => isFieldRowEmpty('extraMat', valuesByDay) },
     { key: 'precall', generate: () => fieldRow('precall', i18n.t('needs.precall'), DAYS, valuesByDay), isEmpty: () => isFieldRowEmpty('precall', valuesByDay) },
-    { key: 'preList', generate: () => listRow(i18n.t('needs.prelightTeam'), 'preList', 'preTxt', DAYS, valuesByDay), isEmpty: () => isListRowEmpty('preList', 'preTxt', valuesByDay) },
-    { key: 'pickList', generate: () => listRow(i18n.t('needs.pickupTeam'), 'pickList', 'pickTxt', DAYS, valuesByDay), isEmpty: () => isListRowEmpty('pickList', 'pickTxt', valuesByDay) },
+    {
+      key: 'preList',
+      generate: () =>
+        listRowWithSchedule(
+          i18n.t('needs.prelight'),
+          'preList',
+          'preNote',
+          'prelightTipo',
+          'preStart',
+          'preEnd',
+          DAYS,
+          valuesByDay
+        ),
+      isEmpty: () => isListRowEmpty('preList', 'preNote', valuesByDay),
+    },
+    {
+      key: 'pickList',
+      generate: () =>
+        listRowWithSchedule(
+          i18n.t('needs.pickup'),
+          'pickList',
+          'pickNote',
+          'pickupTipo',
+          'pickStart',
+          'pickEnd',
+          DAYS,
+          valuesByDay
+        ),
+      isEmpty: () => isListRowEmpty('pickList', 'pickNote', valuesByDay),
+    },
+    { key: 'needLight', generate: () => fieldRow('needLight', i18n.t('needs.lightNeeds'), DAYS, valuesByDay), isEmpty: () => isFieldRowEmpty('needLight', valuesByDay) },
     { key: 'obs', generate: () => fieldRow('obs', i18n.t('needs.observations'), DAYS, valuesByDay), isEmpty: () => isFieldRowEmpty('obs', valuesByDay) },
   ];
   if (customRows.length > 0) {

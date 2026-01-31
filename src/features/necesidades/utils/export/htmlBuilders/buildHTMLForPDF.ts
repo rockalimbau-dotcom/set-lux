@@ -15,7 +15,8 @@ export function buildNecesidadesHTMLForPDF(
   selectedRowKeys?: string[], // Filas seleccionadas para filtrar qué mostrar
   selectedDayIdxs?: number[], // Columnas seleccionadas (días)
   includeEmptyRows?: boolean, // Incluir filas vacías
-  customRows?: CustomRow[]
+  customRows?: CustomRow[],
+  shootingDayOffset: number = 0
 ): string {
   const monday = parseYYYYMMDD(weekStart);
   const DAYS = getDays();
@@ -35,7 +36,8 @@ export function buildNecesidadesHTMLForPDF(
     filteredValuesByDay,
     selectedRowKeys,
     includeEmptyRows,
-    customRows
+    customRows,
+    shootingDayOffset
   );
 
   const titleSuffix = weekLabel.includes('-')

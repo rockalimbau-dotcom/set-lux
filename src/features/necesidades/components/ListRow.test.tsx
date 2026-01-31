@@ -45,7 +45,7 @@ describe('ListRow (smoke)', () => {
     const weekObj = { days: [{ crewList: [{ role: 'G', name: 'John' }] }] };
     render(
       <ListRow
-        label='Equipo técnico'
+        label='Equipo base'
         listKey='crewList'
         notesKey='crewTxt'
         weekId='w1'

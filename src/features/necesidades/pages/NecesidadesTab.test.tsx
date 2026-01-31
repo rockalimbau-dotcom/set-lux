@@ -65,8 +65,37 @@ vi.mock('../components/ListRow', () => ({
   ),
 }));
 
+vi.mock('../components/JornadaRow', () => ({
+  __esModule: true,
+  JornadaRow: ({ label }) => (
+    <tr>
+      <td>{label}</td>
+    </tr>
+  ),
+}));
+
+vi.mock('../components/ScheduleRow', () => ({
+  __esModule: true,
+  ScheduleRow: ({ label }) => (
+    <tr>
+      <td>{label}</td>
+    </tr>
+  ),
+}));
+
+vi.mock('../components/MembersRow', () => ({
+  __esModule: true,
+  MembersRow: ({ label }) => (
+    <tr>
+      <td>{label}</td>
+    </tr>
+  ),
+}));
+
 // Mock export utils to intercept HTML generation and window.open
 vi.mock('../utils/export', () => ({
+  exportToPDF: vi.fn(),
+  exportAllToPDF: vi.fn(),
   renderExportHTML: vi.fn(() => '<html></html>'),
   renderExportAllHTML: vi.fn(() => '<html></html>'),
 }));
@@ -89,10 +118,7 @@ describe('NecesidadesTab (smoke)', () => {
       </MemoryRouter>
     );
     expect(
-      screen.getByText(/No hay semanas en Planificación/i)
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText(/Crea semanas en/i)
+      screen.getByText(/No hay semanas de preproducción/i)
     ).toBeInTheDocument();
   });
 
@@ -100,11 +126,7 @@ describe('NecesidadesTab (smoke)', () => {
     // Preseed store for deterministic initial state
     // @ts-ignore
     window.__TEST_STORE__['needs_p1'] = {
-      w1: { label: 'Semana 1', startDate: '2024-01-01', open: true, days: {} },
-    };
-    // @ts-ignore
-    window.__TEST_STORE__['plan_p1'] = {
-      pre: [{ id: 'w1', label: 'Semana 1', startDate: '2024-01-01', days: [] }],
+      pre: [{ id: 'w1', label: 'Semana 1', startDate: '2024-01-01', open: true, days: {} }],
       pro: [],
     };
 

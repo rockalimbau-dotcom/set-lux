@@ -1,7 +1,8 @@
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import i18n from '../../../../i18n/config';
-import { WeekEntry, NeedsData } from './types';
+import { WeekEntry } from './types';
+import { AnyRecord } from '@shared/types/common';
 import { buildNecesidadesHTMLForPDF } from './htmlBuilders';
 import { getNeedsLabel, getCompleteLabel } from './helpers';
 import { storage } from '@shared/services/localStorage.service';
@@ -12,8 +13,7 @@ import { shareOrSavePDF } from '@shared/utils/pdfShare';
  */
 export async function exportAllToPDF(
   project: any,
-  weekEntries: [string, WeekEntry][], 
-  needs: NeedsData
+  weekEntries: WeekEntry[]
 ): Promise<void> {
   try {
     const pdf = new jsPDF({
@@ -23,8 +23,10 @@ export async function exportAllToPDF(
     });
 
     // Process each week as a separate page
+    let shootingDayOffset = 0;
     for (let i = 0; i < weekEntries.length; i++) {
-      const [wid, wk] = weekEntries[i];
+      const wk = weekEntries[i];
+      const wid = wk.id;
       
       // Obtener las filas seleccionadas para esta semana desde localStorage
       const selectedRowsKey = `needs_${wid}_selectedRows`;
@@ -34,11 +36,13 @@ export async function exportAllToPDF(
       const rowKeyToFieldKey: Record<string, string> = {
         [`${wid}_loc`]: 'loc',
         [`${wid}_seq`]: 'seq',
+        [`${wid}_shootDay`]: 'shootDay',
         [`${wid}_crewList`]: 'crewList',
-        [`${wid}_needLoc`]: 'needLoc',
-        [`${wid}_needProd`]: 'needProd',
+        [`${wid}_refList`]: 'refList',
         [`${wid}_needTransport`]: 'needTransport',
+        [`${wid}_transportExtra`]: 'transportExtra',
         [`${wid}_needGroups`]: 'needGroups',
+        [`${wid}_needCranes`]: 'needCranes',
         [`${wid}_needLight`]: 'needLight',
         [`${wid}_extraMat`]: 'extraMat',
         [`${wid}_precall`]: 'precall',
@@ -55,7 +59,7 @@ export async function exportAllToPDF(
       
       // Obtener datos de la semana
       let valuesByDay = Array.from({ length: 7 }).map(
-        (_, i) => needs[wid]?.days?.[i] || {}
+        (_, i) => (wk as AnyRecord)?.days?.[i] || {}
       );
       
       // Si hay filas seleccionadas, filtrar los datos
@@ -64,6 +68,7 @@ export async function exportAllToPDF(
         const selectedFields = selectedRowKeys
           .map(key => rowKeyToFieldKey[key])
           .filter(Boolean);
+        const needsTipo = selectedFields.includes('shootDay');
         
         // Filtrar los datos para incluir solo las filas seleccionadas
         valuesByDay = valuesByDay.map(day => {
@@ -76,14 +81,20 @@ export async function exportAllToPDF(
               filteredDay.crewTxt = day.crewTxt;
             } else if (fieldKey === 'preList') {
               filteredDay.preList = day.preList;
-              filteredDay.preTxt = day.preTxt;
+              filteredDay.preNote = day.preNote ?? day.preTxt;
             } else if (fieldKey === 'pickList') {
               filteredDay.pickList = day.pickList;
-              filteredDay.pickTxt = day.pickTxt;
+              filteredDay.pickNote = day.pickNote ?? day.pickTxt;
+            } else if (fieldKey === 'refList') {
+              filteredDay.refList = day.refList;
+              filteredDay.refTxt = day.refTxt;
             } else {
               filteredDay[fieldKey] = day[fieldKey];
             }
           });
+          if (needsTipo) {
+            filteredDay.crewTipo = day.crewTipo ?? day.tipo;
+          }
           
           return filteredDay;
         });
@@ -98,7 +109,8 @@ export async function exportAllToPDF(
         selectedRowKeys.length > 0 ? selectedRowKeys : undefined, // Pasar las filas seleccionadas
         undefined,
         false,
-        customRows
+        customRows,
+        shootingDayOffset
       );
       
       const tempContainer = document.createElement('div');
@@ -146,6 +158,16 @@ export async function exportAllToPDF(
       document.body.removeChild(tempContainer);
 
       const imgData = canvas.toDataURL('image/png');
+
+      const weekDays = (wk as AnyRecord)?.days || [];
+      for (let d = 0; d < 7; d++) {
+        const day: AnyRecord = (weekDays as AnyRecord[])[d] || {};
+        const jornadaRaw = day?.crewTipo ?? day?.tipo ?? '';
+        const jornada = String(jornadaRaw).trim().toLowerCase();
+        if (jornada === 'rodaje' || jornada === 'rodaje festivo') {
+          shootingDayOffset += 1;
+        }
+      }
       
       // Add page to PDF (except for the first page which is already created)
       if (i > 0) {
