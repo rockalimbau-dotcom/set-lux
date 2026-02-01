@@ -125,6 +125,7 @@ export const COL_CANDIDATES = {
   km: ['Kilometraje', 'KM', 'Km'] as const,
   transp: ['Transporte', 'Transportes'] as const,
   penalty: ['Penalty lunch', 'Penalty Lunch', 'Penalty', 'PL'] as const,
+  materialPropio: ['Material propio', 'Material Propio'] as const,
 } as const;
 
 /**

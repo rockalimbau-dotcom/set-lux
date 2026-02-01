@@ -87,6 +87,20 @@ export function useSemanalHandlers({ model: _model, setModel }: UseSemanalHandle
   };
 
   const handlePriceChange = (sectionKey: 'base' | 'prelight' | 'pickup', role: string, header: string, value: string) => {
+    if (header === 'Material propio') {
+      setModel((m: AnyRecord) => {
+        const priceKey = sectionKey === 'base' ? 'prices' : sectionKey === 'prelight' ? 'pricesPrelight' : 'pricesPickup';
+        const next = { ...m, [priceKey]: { ...(m[priceKey] || {}) } };
+        const row = { ...(next[priceKey][role] || {}) } as Record<string, string>;
+        row['Material propio'] = value;
+        if (!row['Material propio tipo']) {
+          row['Material propio tipo'] = 'semanal';
+        }
+        next[priceKey][role] = row;
+        return next;
+      });
+      return;
+    }
     if (header === 'Precio semanal') {
       setModel((m: AnyRecord) => {
         const priceKey = sectionKey === 'base' ? 'prices' : sectionKey === 'prelight' ? 'pricesPrelight' : 'pricesPickup';

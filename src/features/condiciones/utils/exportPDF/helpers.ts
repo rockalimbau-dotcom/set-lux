@@ -20,6 +20,7 @@ function translateHeader(header: string): string {
     'Precio diario': i18n.t('conditions.priceDaily'),
     'Precio jornada': i18n.t('conditions.priceWorkDay'),
     'Precio refuerzo': i18n.t('conditions.priceReinforcement'),
+    'Material propio': i18n.t('conditions.priceOwnMaterial'),
     'Precio Día extra/Festivo': i18n.t('conditions.priceExtraDayHoliday'),
     'Travel day': i18n.t('conditions.travelDay'),
     'Horas extras': i18n.t('conditions.extraHours'),
@@ -159,9 +160,20 @@ export function generatePriceTableHTML(
           role => `
           <tr>
             <td style="font-weight:600;">${esc(translateRoleName(role, sectionKey))}</td>
-            ${visibleHeaders.map(
-              h => `<td>${esc(prices[role]?.[h] ?? '')}</td>`
-            ).join('')}
+            ${visibleHeaders.map(h => {
+              if (h === 'Material propio') {
+                const rawVal = prices[role]?.[h] ?? '';
+                const tipo = prices[role]?.['Material propio tipo'];
+                const tipoLabel = tipo === 'semanal'
+                  ? i18n.t('common.weekly')
+                  : tipo === 'diario'
+                  ? i18n.t('common.advertising')
+                  : '';
+                const display = rawVal && tipoLabel ? `${rawVal} (${tipoLabel})` : rawVal;
+                return `<td>${esc(display)}</td>`;
+              }
+              return `<td>${esc(prices[role]?.[h] ?? '')}</td>`;
+            }).join('')}
           </tr>
         `
         ).join('')}

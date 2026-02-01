@@ -1,5 +1,6 @@
 export const PRICE_HEADERS_DIARIO = [
   'Precio jornada',
+  'Material propio',
   'Precio Día extra/Festivo',
   'Localización técnica',
   'Carga/descarga',

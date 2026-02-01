@@ -27,6 +27,7 @@ export function getEffectiveRolePrices(
       km: 0,
       cargaDescarga: 0,
       localizacionTecnica: 0,
+      materialPropioValue: 0,
       dietas: {
         Desayuno: 0,
         Comida: 0,

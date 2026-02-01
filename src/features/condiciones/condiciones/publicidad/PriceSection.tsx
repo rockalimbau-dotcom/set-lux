@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Th, Td } from '@shared/components';
 import { PRICE_HEADERS_DIARIO, PRICE_ROLES_DIARIO } from './publicidadConstants';
+import MaterialPropioTypeDropdown from '../shared/MaterialPropioTypeDropdown';
 import { AnyRecord } from '@shared/types/common';
 
 interface PriceSectionProps {
@@ -139,6 +140,7 @@ export function PriceSection({
 
   // En diario no hay "Precio refuerzo", así que todos los headers son visibles
   const visibleHeaders = PRICE_HEADERS_DIARIO;
+  const defaultMaterialType = 'diario';
 
 
   return (
@@ -269,23 +271,52 @@ export function PriceSection({
                     </Td>
                     {visibleHeaders.map(h => {
                       const isJornada = h === 'Precio jornada';
+                      const isMaterialPropio = h === 'Material propio';
+                      const canEdit = isJornada || isMaterialPropio || hasJornadaValue;
                       
                       return (
-                        <Td key={h} align='center'>
-                          <input
-                            type='number'
-                            value={prices[role]?.[h] ?? ''}
-                            onChange={e => !readOnly && handlePriceChange(sectionKey, role, h, (e.target as HTMLInputElement).value)}
-                            placeholder={isJornada ? '€' : ''}
-                            step='0.01'
-                            disabled={readOnly || (!isJornada && !hasJornadaValue)}
-                            readOnly={readOnly}
-                            className={`w-full px-1 py-0.5 sm:px-1.5 sm:py-1 md:px-2 md:py-1 rounded sm:rounded-md md:rounded-lg border border-neutral-border focus:outline-none focus:ring-1 text-center text-[9px] sm:text-[10px] md:text-xs ${
-                              readOnly || (!isJornada && !hasJornadaValue)
-                                ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 cursor-not-allowed opacity-50' 
-                                : 'dark:bg-transparent'
-                            }`}
-                          />
+                        <Td key={h} align='center' className='align-middle'>
+                          {isMaterialPropio ? (
+                            <div className='flex h-full flex-col items-center justify-center gap-0.5 sm:gap-1'>
+                              <input
+                                type='number'
+                                value={prices[role]?.[h] ?? ''}
+                                onChange={e => !readOnly && handlePriceChange(sectionKey, role, h, (e.target as HTMLInputElement).value)}
+                                placeholder='€'
+                                step='0.01'
+                                disabled={readOnly || !canEdit}
+                                readOnly={readOnly}
+                                className={`w-full px-1 py-0.5 sm:px-1.5 sm:py-1 md:px-2 md:py-1 rounded sm:rounded-md md:rounded-lg border border-neutral-border focus:outline-none focus:ring-1 text-center text-[9px] sm:text-[10px] md:text-xs ${
+                                  readOnly || !canEdit
+                                    ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 cursor-not-allowed opacity-50' 
+                                    : 'dark:bg-transparent'
+                                }`}
+                              />
+                              <MaterialPropioTypeDropdown
+                                value={(prices[role]?.['Material propio tipo'] || defaultMaterialType) as 'semanal' | 'diario'}
+                                onChange={val => !readOnly && handlePriceChange(sectionKey, role, 'Material propio tipo', val)}
+                                readOnly={readOnly}
+                                disabled={!canEdit}
+                              />
+                            </div>
+                          ) : (
+                            <div className='flex h-full items-center justify-center'>
+                              <input
+                                type='number'
+                                value={prices[role]?.[h] ?? ''}
+                                onChange={e => !readOnly && handlePriceChange(sectionKey, role, h, (e.target as HTMLInputElement).value)}
+                                placeholder={isJornada ? '€' : ''}
+                                step='0.01'
+                                disabled={readOnly || !canEdit}
+                                readOnly={readOnly}
+                                className={`w-full px-1 py-0.5 sm:px-1.5 sm:py-1 md:px-2 md:py-1 rounded sm:rounded-md md:rounded-lg border border-neutral-border focus:outline-none focus:ring-1 text-center text-[9px] sm:text-[10px] md:text-xs ${
+                                  readOnly || !canEdit
+                                    ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 cursor-not-allowed opacity-50' 
+                                    : 'dark:bg-transparent'
+                                }`}
+                              />
+                            </div>
+                          )}
                         </Td>
                       );
                     })}

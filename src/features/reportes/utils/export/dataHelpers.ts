@@ -46,7 +46,7 @@ export const calculateTotalForExport = (
     }
   }
 
-  if (concepto === 'Transporte' || concepto === 'Nocturnidad' || concepto === 'Penalty lunch') {
+  if (concepto === 'Transporte' || concepto === 'Nocturnidad' || concepto === 'Penalty lunch' || concepto === 'Material propio') {
     // Para conceptos SI/NO, contar cuántos "Sí" hay
     let count = 0;
     semana.forEach(fecha => {

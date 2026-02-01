@@ -7,6 +7,8 @@ export type RolePrices = {
     transporte: number;
     km: number;
     dietas: Record<string, number>;
+    materialPropioValue?: number;
+    materialPropioType?: 'semanal' | 'diario';
     // Campos específicos de diario
     cargaDescarga?: number;
     localizacionTecnica?: number;

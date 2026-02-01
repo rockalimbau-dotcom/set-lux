@@ -5,6 +5,7 @@ export const CONCEPTS: readonly string[] = [
   'Turn Around',
   'Nocturnidad',
   'Penalty lunch',
+  'Material propio',
   'Dietas',
   'Kilometraje',
   'Transporte',

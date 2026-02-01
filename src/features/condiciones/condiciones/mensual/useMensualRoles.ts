@@ -149,6 +149,9 @@ export function useMensualRoles({ model, setModel }: UseMensualRolesProps): UseM
       const next: AnyRecord = { ...m, [priceKey]: { ...(m[priceKey] || {}) } };
       const row: AnyRecord = { ...(next[priceKey][role] || {}) };
       row[header] = val;
+      if (header === 'Material propio' && !row['Material propio tipo']) {
+        row['Material propio tipo'] = 'semanal';
+      }
 
       if (header === 'Precio mensual') {
         const derived = computeFromMonthly(val, m.params);

@@ -49,6 +49,11 @@ export interface AutoCalculationsProps {
     findWeekAndDay: (iso: string) => WeekAndDay | any,
     block?: string
   ) => boolean;
+  getMaterialPropioConfig?: (
+    role: string,
+    name: string,
+    block: 'base' | 'pre' | 'pick' | 'extra'
+  ) => { value: number; type: 'semanal' | 'diario' } | null;
   setData: React.Dispatch<React.SetStateAction<any>>;
   horasExtraTipo?: string;
   currentData?: any;

@@ -28,6 +28,7 @@ type MonthSectionPersonRowProps = {
     transporte: boolean;
     km: boolean;
     dietas: boolean;
+    materialPropio: boolean;
   };
   showRowSelection: boolean;
   readOnly?: boolean;
@@ -98,6 +99,16 @@ export function MonthSectionPersonRow({
   const badgeWidthClass = isLongCode
     ? 'min-w-[32px] sm:min-w-[36px] md:min-w-[40px] px-2 sm:px-2.5 md:px-3'
     : 'w-4 sm:w-5 md:w-6';
+
+  const materialPropioType = (r as any)._materialPropioType === 'diario' ? 'diario' : 'semanal';
+  const materialPropioCount =
+    materialPropioType === 'semanal'
+      ? ((r as any)._materialPropioWeeks || 0)
+      : ((r as any)._materialPropioDays || 0);
+  const materialPropioLabel =
+    materialPropioCount > 0
+      ? `${materialPropioCount} ${materialPropioType === 'semanal' ? 'semanas' : 'días'}`
+      : '—';
 
   return (
     <tr>
@@ -247,6 +258,17 @@ export function MonthSectionPersonRow({
           ) : (
             <span className='text-[9px] sm:text-[10px] md:text-xs'>{displayMoney(r._totalExtras, 2)}</span>
           )}
+        </Td>
+      )}
+
+      {columnVisibility.materialPropio && (
+        <Td align='middle' className='text-center'>
+          <span className='text-[9px] sm:text-[10px] md:text-xs'>{materialPropioLabel}</span>
+        </Td>
+      )}
+      {columnVisibility.materialPropio && (
+        <Td align='middle' className='text-center'>
+          <span className='text-[9px] sm:text-[10px] md:text-xs'>{displayMoney(r._totalMaterialPropio, 2)}</span>
         </Td>
       )}
 

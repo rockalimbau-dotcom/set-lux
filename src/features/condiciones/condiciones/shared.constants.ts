@@ -4,6 +4,7 @@ export const PRICE_HEADERS: string[] = [
   'Precio diario',
   'Precio jornada',
   'Precio refuerzo',
+  'Material propio',
   'Precio Día extra/Festivo',
   'Travel day',
   'Horas extras',

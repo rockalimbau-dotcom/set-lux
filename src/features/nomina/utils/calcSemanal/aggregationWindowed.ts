@@ -30,6 +30,8 @@ function ensureSlotWindowed(
       penaltyLunch: 0,
       transporte: 0,
       km: 0,
+      materialPropioDays: 0,
+      materialPropioWeeks: 0,
       dietasCount: new Map<string, number>(),
       ticketTotal: 0,
       otherTotal: 0,
@@ -47,7 +49,7 @@ function processDayWindowed(
   keysToUse: string[],
   storageKey: string,
   iso: string
-) {
+): { materialPropioUsed: boolean } {
   const he = parseHorasExtra(getCellValueCandidates(data, keysToUse, COL_CANDIDATES.extras, iso));
   const ta = parseNum(getCellValueCandidates(data, keysToUse, COL_CANDIDATES.ta, iso));
   slot.horasExtra += he;
@@ -72,6 +74,9 @@ function processDayWindowed(
   const tYes = valIsYes(tVal);
   if (tYes) slot.transporte += 1;
 
+  const mpVal = getCellValueCandidates(data, keysToUse, COL_CANDIDATES.materialPropio, iso);
+  const mpYes = valIsYes(mpVal);
+  if (mpYes) slot.materialPropioDays += 1;
 
   slot.km += parseNum(getCellValueCandidates(data, keysToUse, COL_CANDIDATES.km, iso));
 
@@ -84,6 +89,7 @@ function processDayWindowed(
     const prev = slot.dietasCount.get(lab) || 0;
     slot.dietasCount.set(lab, prev + 1);
   }
+  return { materialPropioUsed: mpYes };
 }
 
 /**
@@ -129,11 +135,14 @@ export function aggregateWindowedReport(
 
     for (const [storageKey, visibleKey] of uniqStorage) {
       const slot = ensureSlotWindowed(totals, visibleKey);
+      let usedMaterialPropioWeek = false;
       for (const iso of isoDays) {
         // Variantes para todos los NO-REF; REF solo su clave original
         const keysToUse = visibleKey === 'REF' ? [storageKey] : storageKeyVariants(storageKey);
-        processDayWindowed(slot, data, keysToUse, storageKey, iso);
+        const { materialPropioUsed } = processDayWindowed(slot, data, keysToUse, storageKey, iso);
+        if (materialPropioUsed) usedMaterialPropioWeek = true;
       }
+      if (usedMaterialPropioWeek) slot.materialPropioWeeks += 1;
     }
   }
 

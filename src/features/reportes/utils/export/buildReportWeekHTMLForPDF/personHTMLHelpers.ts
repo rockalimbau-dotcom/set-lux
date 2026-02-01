@@ -118,7 +118,7 @@ function formatCellValue(
   let value = cellValue ?? '';
 
   // For SI/NO concepts, show "1" instead of "SI" or "Sí"
-  if ((concept === 'Nocturnidad' || concept === 'Penalty lunch' || concept === 'Transporte') && value) {
+  if ((concept === 'Nocturnidad' || concept === 'Penalty lunch' || concept === 'Transporte' || concept === 'Material propio') && value) {
     const trimmedValue = value.toString().trim().toLowerCase();
     if (trimmedValue === 'sí' || trimmedValue === 'si') {
       value = '1';

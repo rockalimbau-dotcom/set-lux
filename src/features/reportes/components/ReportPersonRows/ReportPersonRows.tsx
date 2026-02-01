@@ -26,6 +26,7 @@ function ReportPersonRows({
   formatDietas,
   horasExtraTipo = 'Hora Extra - Normal',
   readOnly = false,
+  getMaterialPropioConfig,
 }: ReportPersonRowsProps) {
   const { t } = useTranslation();
   if (!Array.isArray(list)) return null;
@@ -47,6 +48,16 @@ function ReportPersonRows({
     <>
       {list.map(p => {
         const pKey = personaKeyFrom((p as AnyRecord)?.role || '', (p as AnyRecord)?.name || '', block);
+        const materialPropioConfig = getMaterialPropioConfig
+          ? getMaterialPropioConfig(
+              (p as AnyRecord)?.role || '',
+              (p as AnyRecord)?.name || '',
+              block as 'base' | 'pre' | 'pick' | 'extra'
+            )
+          : null;
+        const conceptsToRender = materialPropioConfig
+          ? CONCEPTS
+          : CONCEPTS.filter(c => c !== 'Material propio');
 
         return (
           <React.Fragment key={`${pKey}__${block || 'base'}`}>
@@ -62,7 +73,7 @@ function ReportPersonRows({
             />
 
             {!collapsed[pKey] &&
-              CONCEPTS.map(concepto => (
+              conceptsToRender.map(concepto => (
                 <ConceptRow
                   key={`${pKey}_${block || 'base'}_${concepto}`}
                   person={p}

@@ -102,6 +102,20 @@ export function useDiarioHandlers({ model: _model, setModel }: UseDiarioHandlers
   };
 
   const handlePriceChange = (sectionKey: 'base' | 'prelight' | 'pickup', role: string, header: string, value: string) => {
+    if (header === 'Material propio') {
+      setModel((m: AnyRecord) => {
+        const priceKey = sectionKey === 'base' ? 'prices' : sectionKey === 'prelight' ? 'pricesPrelight' : 'pricesPickup';
+        const next: AnyRecord = { ...m, [priceKey]: { ...(m[priceKey] || {}) } };
+        const row: AnyRecord = { ...(next[priceKey][role] || {}) };
+        row['Material propio'] = value;
+        if (!row['Material propio tipo']) {
+          row['Material propio tipo'] = 'diario';
+        }
+        next[priceKey][role] = row;
+        return next;
+      });
+      return;
+    }
     if (header === 'Precio jornada') {
       setModel((m: AnyRecord) => {
         const priceKey = sectionKey === 'base' ? 'prices' : sectionKey === 'prelight' ? 'pricesPrelight' : 'pricesPickup';

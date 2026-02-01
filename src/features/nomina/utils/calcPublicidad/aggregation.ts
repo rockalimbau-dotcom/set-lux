@@ -35,6 +35,8 @@ export function aggregateReports(project: any, weeks: any[], filterISO: ((iso: s
         penaltyLunch: 0,
         transporte: 0,
         km: 0,
+        materialPropioDays: 0,
+        materialPropioWeeks: 0,
         dietasCount: new Map<string, number>(),
         ticketTotal: 0,
         otherTotal: 0,
@@ -81,6 +83,7 @@ export function aggregateReports(project: any, weeks: any[], filterISO: ((iso: s
       const pk = storageKey;
       const roleVis = meta.roleVisible;
       const personName = pk.split('__')[1] || '';
+      let usedMaterialPropioWeek = false;
 
       for (const iso of filteredDays) {
         const keysToUse = storageKeyVariants(pk);
@@ -94,6 +97,8 @@ export function aggregateReports(project: any, weeks: any[], filterISO: ((iso: s
         const penYes = valIsYes(pen);
         const transp = getCellValueCandidates(data, keysToUse, COL_CANDIDATES.transp, iso);
         const transpYes = valIsYes(transp);
+        const mpVal = getCellValueCandidates(data, keysToUse, COL_CANDIDATES.materialPropio, iso);
+        const mpYes = valIsYes(mpVal);
 
         slot.horasExtra += he;
         slot.turnAround += ta;
@@ -101,6 +106,10 @@ export function aggregateReports(project: any, weeks: any[], filterISO: ((iso: s
         slot.penaltyLunch += penYes ? 1 : 0;
         slot.extras += he + ta + (noctYes ? 1 : 0) + (penYes ? 1 : 0); // Keep total for backward compatibility
         slot.transporte += transpYes ? 1 : 0;
+        if (mpYes) {
+          slot.materialPropioDays += 1;
+          usedMaterialPropioWeek = true;
+        }
 
         slot.km += parseNum(getCellValueCandidates(data, keysToUse, COL_CANDIDATES.km, iso));
         
@@ -114,6 +123,10 @@ export function aggregateReports(project: any, weeks: any[], filterISO: ((iso: s
           const prev = slot.dietasCount.get(lab) || 0;
           slot.dietasCount.set(lab, prev + 1);
         }
+      }
+      if (usedMaterialPropioWeek) {
+        const slot = ensure(roleVis, personName, meta.gender);
+        slot.materialPropioWeeks += 1;
       }
     }
   }
@@ -148,6 +161,8 @@ export function aggregateWindowedReport(project: any, weeks: any[], filterISO: (
         penaltyLunch: 0,
         transporte: 0,
         km: 0,
+        materialPropioDays: 0,
+        materialPropioWeeks: 0,
         dietasCount: new Map<string, number>(),
         ticketTotal: 0,
         otherTotal: 0,
@@ -190,6 +205,7 @@ export function aggregateWindowedReport(project: any, weeks: any[], filterISO: (
 
     for (const [storageKey, visibleKey] of uniqStorage) {
       const pk = storageKey;
+      let usedMaterialPropioWeek = false;
       
       // Verificar nuevamente si el rol está en condiciones (por seguridad)
       // Extraer el rol base del visibleKey (puede tener sufijo P/R)
@@ -209,6 +225,8 @@ export function aggregateWindowedReport(project: any, weeks: any[], filterISO: (
         const penYes = valIsYes(pen);
         const transp = getCellValueCandidates(data, keysToUse, COL_CANDIDATES.transp, iso);
         const transpYes = valIsYes(transp);
+        const mpVal = getCellValueCandidates(data, keysToUse, COL_CANDIDATES.materialPropio, iso);
+        const mpYes = valIsYes(mpVal);
 
         slot.horasExtra += he;
         slot.turnAround += ta;
@@ -216,6 +234,10 @@ export function aggregateWindowedReport(project: any, weeks: any[], filterISO: (
         slot.penaltyLunch += penYes ? 1 : 0;
         slot.extras += he + ta + (noctYes ? 1 : 0) + (penYes ? 1 : 0); // Keep total for backward compatibility
         slot.transporte += transpYes ? 1 : 0;
+        if (mpYes) {
+          slot.materialPropioDays += 1;
+          usedMaterialPropioWeek = true;
+        }
 
         slot.km += parseNum(getCellValueCandidates(data, keysToUse, COL_CANDIDATES.km, iso));
         
@@ -229,6 +251,10 @@ export function aggregateWindowedReport(project: any, weeks: any[], filterISO: (
           const prev = slot.dietasCount.get(lab) || 0;
           slot.dietasCount.set(lab, prev + 1);
         }
+      }
+      if (usedMaterialPropioWeek) {
+        const slot = ensure(visibleKey);
+        slot.materialPropioWeeks += 1;
       }
     }
   }

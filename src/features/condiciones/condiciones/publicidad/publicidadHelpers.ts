@@ -7,6 +7,7 @@ export function useDiarioTranslations() {
   const translateHeader = (header: string): string => {
     const headerMap: Record<string, string> = {
       'Precio jornada': t('conditions.priceWorkDay'),
+      'Material propio': t('conditions.priceOwnMaterial'),
       'Precio Día extra/Festivo': t('conditions.priceExtraDayHoliday'),
       'Travel day': t('conditions.travelDay'),
       'Localización técnica': t('conditions.technicalLocation'),

@@ -12,6 +12,7 @@ export const translateConcept = (concepto: string, t: (key: string) => string): 
     'Turn Around': t('reports.concepts.turnAround'),
     'Nocturnidad': t('reports.concepts.nightShift'),
     'Penalty lunch': t('reports.concepts.penaltyLunch'),
+    'Material propio': t('reports.concepts.ownMaterial'),
     'Dietas': t('reports.concepts.diets'),
     'Kilometraje': t('reports.concepts.mileage'),
     'Transporte': t('reports.concepts.transportation'),
@@ -94,7 +95,7 @@ export const calculateTotal = (
     return breakdown.size > 0 ? { breakdown } : '';
   }
 
-  if (concepto === 'Transporte' || concepto === 'Nocturnidad' || concepto === 'Penalty lunch') {
+  if (concepto === 'Transporte' || concepto === 'Nocturnidad' || concepto === 'Penalty lunch' || concepto === 'Material propio') {
     // Para conceptos SI/NO, contar cuántos "Sí" hay
     let count = 0;
     semana.forEach(fecha => {

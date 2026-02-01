@@ -166,7 +166,7 @@ export function buildReportWeekHTML({
             .map(iso => {
               let cellValue = finalData?.[pk]?.[c]?.[iso] ?? '';
               // For SI/NO concepts, show "1" instead of "SI" or "Sí"
-              if ((c === 'Nocturnidad' || c === 'Penalty lunch' || c === 'Transporte') && cellValue) {
+              if ((c === 'Nocturnidad' || c === 'Penalty lunch' || c === 'Transporte' || c === 'Material propio') && cellValue) {
                 const trimmedValue = cellValue.toString().trim().toLowerCase();
                 if (trimmedValue === 'sí' || trimmedValue === 'si') {
                   cellValue = '1';

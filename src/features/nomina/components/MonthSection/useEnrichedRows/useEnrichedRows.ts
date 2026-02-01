@@ -168,6 +168,20 @@ export function useEnrichedRows({
       const otherValue = getValueWithOverride(ov, 'otherTotal', useFilteredData, filteredRow, r.otherTotal);
 
       const totalDietas = calculateTotalDietas(dietasMap, effectivePr, ticketValue, otherValue);
+      const materialPropioDays = getValueWithOverride(
+        ov,
+        'materialPropioDays',
+        useFilteredData,
+        filteredRow,
+        (r as any).materialPropioDays || 0
+      );
+      const materialPropioWeeks = getValueWithOverride(
+        ov,
+        'materialPropioWeeks',
+        useFilteredData,
+        filteredRow,
+        (r as any).materialPropioWeeks || 0
+      );
 
       // Calcular totales según el modo del proyecto
       let totals: {
@@ -179,6 +193,7 @@ export function useEnrichedRows({
         totalKm: number;
         totalLocalizacion?: number;
         totalCargaDescarga?: number;
+        totalMaterialPropio?: number;
         totalBruto: number;
       };
 
@@ -201,7 +216,9 @@ export function useEnrichedRows({
           totalDietas,
           effectivePr,
           prelight,
-          recogida
+          recogida,
+          materialPropioDays,
+          materialPropioWeeks
         );
         totals = publicidadTotals;
       } else {
@@ -219,7 +236,9 @@ export function useEnrichedRows({
           kmValue,
           totalDietas,
           effectivePr,
-          priceDays
+          priceDays,
+          materialPropioDays,
+          materialPropioWeeks
         );
         totals = standardTotals;
       }
@@ -295,11 +314,15 @@ export function useEnrichedRows({
         _totalTrans: totals.totalTrans,
         _totalKm: totals.totalKm,
         _totalBruto: totals.totalBruto,
+        _totalMaterialPropio: totals.totalMaterialPropio || 0,
         _totalLocalizacion: projectMode === 'diario' ? totals.totalLocalizacion || 0 : 0,
         _totalCargaDescarga: projectMode === 'diario' ? totals.totalCargaDescarga || 0 : 0,
         _localizarDays: projectMode === 'diario' ? (localizar || 0) : 0,
         _cargaDays: projectMode === 'diario' ? (carga || 0) : 0,
         _descargaDays: projectMode === 'diario' ? (descarga || 0) : 0,
+        _materialPropioDays: materialPropioDays,
+        _materialPropioWeeks: materialPropioWeeks,
+        _materialPropioType: (effectivePr as any).materialPropioType || 'semanal',
         _dietasLabel: dietasLabel,
         _pr: effectivePr,
         _missingPrices: missingPrices,

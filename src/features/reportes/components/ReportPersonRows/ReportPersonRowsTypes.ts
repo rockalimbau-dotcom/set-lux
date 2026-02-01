@@ -52,5 +52,10 @@ export interface ReportPersonRowsProps {
   formatDietas: (items: Set<string>, ticket: number | null, other: number | null) => string;
   horasExtraTipo?: string;
   readOnly?: boolean;
+  getMaterialPropioConfig?: (
+    role: string,
+    name: string,
+    block: 'base' | 'pre' | 'pick' | 'extra'
+  ) => { value: number; type: 'semanal' | 'diario' } | null;
 }
 

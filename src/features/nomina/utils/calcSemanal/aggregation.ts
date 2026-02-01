@@ -38,6 +38,8 @@ function ensureSlot(
       penaltyLunch: 0,
       transporte: 0,
       km: 0,
+      materialPropioDays: 0,
+      materialPropioWeeks: 0,
       dietasCount: new Map<string, number>(),
       ticketTotal: 0,
       otherTotal: 0,
@@ -55,7 +57,7 @@ function processDay(
   keysToUse: string[],
   originalKey: string,
   iso: string
-) {
+): { materialPropioUsed: boolean } {
   const he = parseHorasExtra(getCellValueCandidates(data, keysToUse, COL_CANDIDATES.extras, iso));
   const ta = parseNum(getCellValueCandidates(data, keysToUse, COL_CANDIDATES.ta, iso));
   slot.horasExtra += he;
@@ -80,6 +82,9 @@ function processDay(
   const tYes = valIsYes(tVal);
   if (tYes) slot.transporte += 1;
 
+  const mpVal = getCellValueCandidates(data, keysToUse, COL_CANDIDATES.materialPropio, iso);
+  const mpYes = valIsYes(mpVal);
+  if (mpYes) slot.materialPropioDays += 1;
 
   slot.km += parseNum(getCellValueCandidates(data, keysToUse, COL_CANDIDATES.km, iso));
 
@@ -92,6 +97,7 @@ function processDay(
     const prev = slot.dietasCount.get(lab) || 0;
     slot.dietasCount.set(lab, prev + 1);
   }
+  return { materialPropioUsed: mpYes };
 }
 
 /**
@@ -122,10 +128,13 @@ export function aggregateReports(
 
     for (const [pk, info] of uniqStorageKeys) {
       const slot = ensureSlot(totals, info.roleVisible, info.name, info.gender);
+      let usedMaterialPropioWeek = false;
       for (const iso of days) {
         const keysToUse = getKeysToUse(pk, info.roleVisible);
-        processDay(slot, data, keysToUse, pk, iso);
+        const { materialPropioUsed } = processDay(slot, data, keysToUse, pk, iso);
+        if (materialPropioUsed) usedMaterialPropioWeek = true;
       }
+      if (usedMaterialPropioWeek) slot.materialPropioWeeks += 1;
     }
   }
 

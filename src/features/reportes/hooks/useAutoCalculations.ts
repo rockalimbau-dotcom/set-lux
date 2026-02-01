@@ -42,6 +42,7 @@ export default function useAutoCalculations({
   setData,
   horasExtraTipo = 'Hora Extra - Normal',
   currentData,
+  getMaterialPropioConfig,
 }: AutoCalculationsProps) {
   // Guardar el estado actual en un ref para preservarlo cuando cambia el tipo
   const dataRef = useRef(currentData);
@@ -260,6 +261,28 @@ export default function useAutoCalculations({
             off,
           });
 
+          // Procesar Material propio (solo si aplica por rol)
+          const materialConfig = getMaterialPropioConfig
+            ? getMaterialPropioConfig(role, name, rowBlock as 'base' | 'pre' | 'pick' | 'extra')
+            : null;
+          if (materialConfig) {
+            next[pk]['Material propio'] = next[pk]['Material propio'] || {};
+            const currMaterial = next[pk]['Material propio'][iso];
+            const manualMaterial = !!next[pk]?.__manual__?.['Material propio']?.[iso];
+            const autoMaterial = materialConfig.type === 'semanal' ? 'Sí' : '';
+            next[pk]['Material propio'][iso] = preserveOrUseAuto({
+              currValue: currMaterial,
+              autoValue: autoMaterial,
+              manual: manualMaterial,
+              off,
+            });
+            if (off && next[pk].__manual__?.['Material propio']?.[iso]) {
+              next[pk].__manual__ = next[pk].__manual__ || {};
+              next[pk].__manual__['Material propio'] = next[pk].__manual__['Material propio'] || {};
+              delete next[pk].__manual__['Material propio'][iso];
+            }
+          }
+
           // Si no trabaja, limpiar valores manuales que no son auto-calculados
           if (off) {
             const clearConcept = (concepto: string) => {
@@ -276,6 +299,7 @@ export default function useAutoCalculations({
             clearConcept('Transporte');
             clearConcept('Penalty lunch');
             clearConcept('Dietas');
+            clearConcept('Material propio');
           }
         }
       }
@@ -301,5 +325,6 @@ export default function useAutoCalculations({
     JSON.stringify(safePersonas),
     horasExtraTipo,
     generatePlanWindowsSignature(safeSemana, findWeekAndDay, getBlockWindow),
+    getMaterialPropioConfig,
   ]);
 }

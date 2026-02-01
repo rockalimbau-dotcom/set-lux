@@ -135,6 +135,21 @@ export function makeRolePrices(project: any) {
     return 0;
   };
 
+  const getStringField = (row: any, candidates: string[]): string => {
+    if (!row || typeof row !== 'object') return '';
+    for (const key of candidates) {
+      const direct = row[key];
+      if (direct != null && String(direct).trim() !== '') return String(direct).trim();
+    }
+    const lowerToValue = new Map<string, unknown>();
+    for (const k of Object.keys(row)) lowerToValue.set(k.toLowerCase(), row[k]);
+    for (const key of candidates) {
+      const v = lowerToValue.get(key.toLowerCase());
+      if (v != null && String(v).trim() !== '') return String(v).trim();
+    }
+    return '';
+  };
+
   const getForRole = (roleCode: string, baseRoleCode: string | null = null) => {
     const normalized = stripRoleSuffix(String(roleCode || ''));
     const baseNorm = stripRoleSuffix(String(baseRoleCode || '')) || normalized;
@@ -172,7 +187,8 @@ export function makeRolePrices(project: any) {
 
     const divTravel = num(p.divTravel) || 2;
 
-    let jornada, travelDay, horaExtra, holidayDay;
+    let jornada, travelDay, horaExtra, holidayDay, materialPropioValue;
+    let materialPropioType = '';
     if (normalized === 'REF' || (normalized.startsWith('REF') && normalized.length > 3)) {
       // Si es REF o REF + rol base (REFG, REFBB, etc.), buscar "Precio refuerzo" en la fila correspondiente
       // Para refuerzos, SIEMPRE buscar directamente en basePriceRows, ignorar prelight/pickup
@@ -211,11 +227,21 @@ export function makeRolePrices(project: any) {
         getNumField(elecRow, ['Precio Día extra/Festivo', 'Precio Día extra/festivo', 'Día extra/Festivo', 'Día festivo', 'Festivo']) ||
         getNumField(targetRow, ['Precio Día extra/Festivo', 'Precio Día extra/festivo', 'Día extra/Festivo', 'Día festivo', 'Festivo']) ||
         0;
+      materialPropioValue =
+        getNumField(targetRow, ['Material propio', 'Material Propio']) ||
+        getNumField(baseRow, ['Material propio', 'Material Propio']) ||
+        0;
+      materialPropioType =
+        getStringField(targetRow, ['Material propio tipo', 'Material Propio tipo']) ||
+        getStringField(baseRow, ['Material propio tipo', 'Material Propio tipo']) ||
+        '';
     } else {
       jornada = getNumField(row, ['Precio jornada', 'Precio Jornada', 'Jornada', 'Precio dia', 'Precio día']) || 0;
       travelDay = getNumField(row, ['Travel day', 'Travel Day', 'Travel', 'Día de viaje', 'Dia de viaje', 'Día travel', 'Dia travel', 'TD']) || (jornada ? jornada / divTravel : 0);
       horaExtra = getNumField(row, ['Horas extras', 'Horas Extras', 'Hora extra', 'Horas extra', 'HE', 'Hora Extra']) || 0;
       holidayDay = getNumField(row, ['Precio Día extra/Festivo', 'Precio Día extra/festivo', 'Día extra/Festivo', 'Día festivo', 'Festivo']) || 0;
+      materialPropioValue = getNumField(row, ['Material propio', 'Material Propio']) || 0;
+      materialPropioType = getStringField(row, ['Material propio tipo', 'Material Propio tipo']) || '';
     }
 
     const result = {
@@ -223,6 +249,8 @@ export function makeRolePrices(project: any) {
       travelDay,
       horaExtra,
       holidayDay,
+      materialPropioValue: materialPropioValue || 0,
+      materialPropioType: materialPropioType === 'diario' ? 'diario' : 'semanal',
       transporte: num(p.transporteDia),
       km: num(p.kilometrajeKm),
       dietas: {

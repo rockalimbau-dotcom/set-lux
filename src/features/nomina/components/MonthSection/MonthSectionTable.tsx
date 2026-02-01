@@ -17,6 +17,7 @@ type MonthSectionTableProps = {
     transporte: boolean;
     km: boolean;
     dietas: boolean;
+    materialPropio: boolean;
   };
   showRowSelection: boolean;
   isRowSelected: (key: string) => boolean;
@@ -55,6 +56,7 @@ export function MonthSectionTable({
     (columnVisibility.holidays ? 2 : 0) + // Días festivos, Total
     (columnVisibility.travel ? 2 : 0) + // Travel Day, Total
     (columnVisibility.extras ? 2 : 0) + // Horas extra, Total
+    (columnVisibility.materialPropio ? 2 : 0) + // Material propio, Total
     (columnVisibility.dietas ? 2 : 0) + // Dietas, Total
     (columnVisibility.transporte ? 2 : 0) + // Transportes, Total
     (columnVisibility.km ? 2 : 0) + // Kilometraje, Total
@@ -190,6 +192,8 @@ export function MonthSectionTable({
             {columnVisibility.travel && <Th align='center'>{t('payroll.totalTravelDays')}</Th>}
             {columnVisibility.extras && <Th align='center'>{t('payroll.extraHours')}</Th>}
             {columnVisibility.extras && <Th align='center'>{t('payroll.totalExtraHours')}</Th>}
+            {columnVisibility.materialPropio && <Th align='center'>{t('payroll.ownMaterial')}</Th>}
+            {columnVisibility.materialPropio && <Th align='center'>{t('payroll.totalOwnMaterial')}</Th>}
             {columnVisibility.dietas && <Th align='center'>{t('payroll.dietas')}</Th>}
             {columnVisibility.dietas && <Th align='center'>{t('payroll.totalDietas')}</Th>}
             {columnVisibility.transporte && <Th align='center'>{t('payroll.transportes')}</Th>}
@@ -249,6 +253,7 @@ export function MonthSectionTable({
                 (columnVisibility.holidays ? 2 : 0) + // Días festivos + Total días festivos
                 (columnVisibility.travel ? 2 : 0) + // Travel Day + Total travel days
                 (columnVisibility.extras ? 2 : 0) + // Horas extra + Total horas extra
+                (columnVisibility.materialPropio ? 2 : 0) + // Material propio + Total
                 (columnVisibility.dietas ? 2 : 0) + // Dietas + Total dietas
                 (columnVisibility.transporte ? 2 : 0) + // Transportes + Total transportes
                 (columnVisibility.km ? 2 : 0) + // Kilometraje + Total kilometraje

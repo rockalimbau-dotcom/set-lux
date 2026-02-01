@@ -63,6 +63,7 @@ export const translateConcept = (concepto: string): string => {
     'Turn Around': getTranslation('reports.concepts.turnAround', 'Turn Around'),
     'Nocturnidad': getTranslation('reports.concepts.nightShift', 'Nocturnidad'),
     'Penalty lunch': getTranslation('reports.concepts.penaltyLunch', 'Penalty lunch'),
+    'Material propio': getTranslation('reports.concepts.ownMaterial', 'Material propio'),
     'Dietas': getTranslation('reports.concepts.diets', 'Dietas'),
     'Kilometraje': getTranslation('reports.concepts.mileage', 'Kilometraje'),
     'Transporte': getTranslation('reports.concepts.transportation', 'Transporte'),

@@ -11,6 +11,7 @@ export function useMensualTranslations() {
       'Precio diario': t('conditions.priceDaily'),
       'Precio jornada': t('conditions.priceWorkDay'),
       'Precio refuerzo': t('conditions.priceReinforcement'),
+      'Material propio': t('conditions.priceOwnMaterial'),
       'Precio Día extra/Festivo': t('conditions.priceExtraDayHoliday'),
       'Travel day': t('conditions.travelDay'),
       'Horas extras': t('conditions.extraHours'),

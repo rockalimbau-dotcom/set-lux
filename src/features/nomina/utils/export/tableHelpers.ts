@@ -37,6 +37,11 @@ export const generateHeaderCells = (columnVisibility: ReturnType<typeof getColum
     headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.totalExtraHours')}</th>`);
   }
 
+  if (columnVisibility.materialPropio) {
+    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.ownMaterial')}</th>`);
+    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.totalOwnMaterial')}</th>`);
+  }
+
   if (columnVisibility.dietas) {
     headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.dietas')}</th>`);
     headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.totalDietas')}</th>`);
@@ -96,6 +101,15 @@ export const generateRowDataCells = (
   if (columnVisibility.extras) {
     dataCells.push(`<td class="extras-cell" style="text-align:center !important;vertical-align:middle !important;">${generateExtrasText(r)}</td>`);
     dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;">${esc(displayMoney(r._totalExtras, 2))}</td>`);
+  }
+
+  if (columnVisibility.materialPropio) {
+    const materialType = r._materialPropioType === 'diario' ? 'diario' : 'semanal';
+    const materialCount =
+      materialType === 'semanal' ? (r._materialPropioWeeks || 0) : (r._materialPropioDays || 0);
+    const materialLabel = materialCount > 0 ? `${materialCount} ${materialType === 'semanal' ? 'semanas' : 'días'}` : '—';
+    dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;">${esc(materialLabel)}</td>`);
+    dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;">${esc(displayMoney(r._totalMaterialPropio, 2))}</td>`);
   }
 
   if (columnVisibility.dietas) {

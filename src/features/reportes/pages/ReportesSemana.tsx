@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import ReportBlockScheduleRow from '../components/ReportBlockScheduleRow';
@@ -26,6 +26,8 @@ import {
 } from '../utils/runtime';
 import { personaKey, personaRole, personaName, stripPR } from '../utils/model';
 import { mondayOf, toYYYYMMDD } from '@shared/utils/date';
+import { loadCondModel } from '@features/nomina/utils/cond';
+import { ROLE_CODE_TO_LABEL, stripRoleSuffix, stripRefuerzoSuffix } from '@shared/constants/roles';
 
 import { ReportesSemanaProps } from './ReportesSemana/ReportesSemanaTypes';
 import { useDietasOpciones } from './ReportesSemana/useDietasOpciones';
@@ -171,6 +173,79 @@ export default function ReportesSemana({
     [project?.id, project?.nombre, mode]
   );
 
+  const materialPropioConfig = useMemo(() => {
+    const model = loadCondModel(project as AnyRecord, mode);
+    const priceTables = {
+      base: model?.prices || {},
+      pre: model?.pricesPrelight || {},
+      pick: model?.pricesPickup || {},
+    };
+
+    const parseNum = (v: unknown): number => {
+      if (v == null || v === '') return 0;
+      const s = String(v)
+        .trim()
+        .replace(/\u00A0/g, '')
+        .replace(/[€%]/g, '')
+        .replace(/\s+/g, '');
+      const t =
+        s.includes(',') && s.includes('.')
+          ? s.replace(/\./g, '').replace(',', '.')
+          : s.replace(',', '.');
+      const n = Number(t);
+      return isFinite(n) ? n : 0;
+    };
+
+    const normalizeLabel = (s: unknown): string =>
+      String(s == null ? '' : s)
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/\p{Diacritic}/gu, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+
+    const findRowForRole = (roleCode: string, block: 'base' | 'pre' | 'pick' | 'extra') => {
+      const priceRows =
+        block === 'pre' ? priceTables.pre : block === 'pick' ? priceTables.pick : priceTables.base;
+      const rawRole = String(roleCode || '');
+      let baseRole = stripRoleSuffix(rawRole);
+      if (baseRole.startsWith('REF')) {
+        const cleaned = stripRefuerzoSuffix(baseRole);
+        baseRole = cleaned.startsWith('REF') ? cleaned.substring(3) : cleaned;
+      }
+      const roleLabel = ROLE_CODE_TO_LABEL[baseRole as keyof typeof ROLE_CODE_TO_LABEL] || baseRole;
+      const candidates = [roleLabel, baseRole, rawRole].filter(Boolean);
+      const candNorms = candidates.map(c => normalizeLabel(c));
+      for (const key of Object.keys(priceRows || {})) {
+        if (candNorms.includes(normalizeLabel(key))) {
+          return priceRows[key];
+        }
+      }
+      return null;
+    };
+
+    const getConfig = (roleCode: string, block: 'base' | 'pre' | 'pick' | 'extra') => {
+      const row = findRowForRole(roleCode, block);
+      if (!row) return null;
+      const value = parseNum(row['Material propio']);
+      if (!value) return null;
+      const rawType = row['Material propio tipo'];
+      const type = rawType === 'diario' || rawType === 'semanal'
+        ? rawType
+        : mode === 'diario'
+        ? 'diario'
+        : 'semanal';
+      return { value, type };
+    };
+
+    return { getConfig };
+  }, [project?.id, project?.nombre, mode]);
+
+  const getMaterialPropioConfig = useCallback(
+    (role: string, _name: string, block: 'base' | 'pre' | 'pick' | 'extra') => materialPropioConfig.getConfig(role, block),
+    [materialPropioConfig]
+  );
+
   const findPrevWorkingContext = findPrevWorkingContextFactory(
     getPlanAllWeeks,
     mondayOf,
@@ -194,6 +269,7 @@ export default function ReportesSemana({
     setData,
     horasExtraTipo,
     currentData: data,
+    getMaterialPropioConfig,
   });
 
   const { open, setOpen } = useReportCollapsible(persistBase);
@@ -264,6 +340,7 @@ export default function ReportesSemana({
       formatDietas={formatDietas}
       horasExtraTipo={horasExtraTipo}
       readOnly={readOnly}
+      getMaterialPropioConfig={getMaterialPropioConfig}
     />
   );
 

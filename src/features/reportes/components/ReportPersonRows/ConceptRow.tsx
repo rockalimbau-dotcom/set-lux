@@ -100,7 +100,8 @@ export function ConceptRow({
         if (
           concepto === 'Transporte' ||
           concepto === 'Nocturnidad' ||
-          concepto === 'Penalty lunch'
+          concepto === 'Penalty lunch' ||
+          concepto === 'Material propio'
         ) {
           return (
             <SiNoCell

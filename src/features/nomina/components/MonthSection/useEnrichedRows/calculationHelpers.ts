@@ -19,7 +19,9 @@ export function calculateDiarioTotals(
   totalDietas: number,
   effectivePr: any,
   prelight?: number | undefined,
-  recogida?: number | undefined
+  recogida?: number | undefined,
+  materialPropioDays: number = 0,
+  materialPropioWeeks: number = 0
 ): {
   totalDias: number;
   totalTravel: number;
@@ -29,6 +31,7 @@ export function calculateDiarioTotals(
   totalKm: number;
   totalLocalizacion: number;
   totalCargaDescarga: number;
+  totalMaterialPropio: number;
   totalBruto: number;
 } {
   // Para los cálculos de precio, prelight y recogida se cuentan como rodaje
@@ -55,6 +58,10 @@ export function calculateDiarioTotals(
 
   const totalTrans = transporteValue * (effectivePr.transporte || 0);
   const totalKm = (kmValue || 0) * (effectivePr.km || 0);
+  const materialPropioValue = effectivePr.materialPropioValue || 0;
+  const materialPropioType = effectivePr.materialPropioType || 'diario';
+  const materialPropioCount = materialPropioType === 'semanal' ? materialPropioWeeks : materialPropioDays;
+  const totalMaterialPropio = materialPropioCount * materialPropioValue;
 
   const totalBruto =
     totalDias +
@@ -65,7 +72,8 @@ export function calculateDiarioTotals(
     totalExtras +
     totalDietas +
     totalTrans +
-    totalKm;
+    totalKm +
+    totalMaterialPropio;
 
   return {
     totalDias,
@@ -76,6 +84,7 @@ export function calculateDiarioTotals(
     totalKm,
     totalLocalizacion,
     totalCargaDescarga,
+    totalMaterialPropio,
     totalBruto,
   };
 }
@@ -97,7 +106,9 @@ export function calculateStandardTotals(
   kmValue: number,
   totalDietas: number,
   effectivePr: any,
-  priceDays: number
+  priceDays: number,
+  materialPropioDays: number = 0,
+  materialPropioWeeks: number = 0
 ): {
   totalDias: number;
   totalTravel: number;
@@ -105,6 +116,7 @@ export function calculateStandardTotals(
   totalExtras: number;
   totalTrans: number;
   totalKm: number;
+  totalMaterialPropio: number;
   totalBruto: number;
 } {
   let totalDias: number;
@@ -126,6 +138,10 @@ export function calculateStandardTotals(
     (effectivePr.horaExtra || 0);
   const totalTrans = transporteValue * (effectivePr.transporte || 0);
   const totalKm = (kmValue || 0) * (effectivePr.km || 0);
+  const materialPropioValue = effectivePr.materialPropioValue || 0;
+  const materialPropioType = effectivePr.materialPropioType || 'semanal';
+  const materialPropioCount = materialPropioType === 'semanal' ? materialPropioWeeks : materialPropioDays;
+  const totalMaterialPropio = materialPropioCount * materialPropioValue;
 
   const totalBruto =
     totalDias +
@@ -134,7 +150,8 @@ export function calculateStandardTotals(
     totalExtras +
     totalDietas +
     totalTrans +
-    totalKm;
+    totalKm +
+    totalMaterialPropio;
 
   return {
     totalDias,
@@ -143,6 +160,7 @@ export function calculateStandardTotals(
     totalExtras,
     totalTrans,
     totalKm,
+    totalMaterialPropio,
     totalBruto,
   };
 }
