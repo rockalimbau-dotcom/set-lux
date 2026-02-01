@@ -24,6 +24,7 @@ const DietasCell: React.FC<DietasCellProps> = ({
   formatDietas,
   dietasOptions,
   setCell,
+  onAttachmentClick,
 }) => {
   const { t } = useTranslation();
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -54,6 +55,8 @@ const DietasCell: React.FC<DietasCellProps> = ({
     dropdownState.isOpen,
     () => setDropdownState(dropdownKey, { isOpen: false })
   );
+
+  const showTicketButton = parsed.items.has('Ticket') || parsed.ticket !== null;
 
   return (
     <Td key={`${pKey}_${concepto}_${fecha}`} className={`text-center ${cellClasses}`} align='center'>
@@ -113,6 +116,20 @@ const DietasCell: React.FC<DietasCellProps> = ({
           onTicketChange={handleTicketChange}
           onOtherChange={handleOtherChange}
         />
+        {showTicketButton && (
+          <button
+            type='button'
+            disabled={readOnly}
+            title={t('reports.uploadTicket')}
+            className={`px-1 py-0.5 rounded border border-neutral-border text-[8px] sm:text-[9px] md:text-[10px] ${
+              readOnly ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-80'
+            }`}
+            style={{ color: 'var(--text)' }}
+            onClick={() => !readOnly && onAttachmentClick?.()}
+          >
+            📎 {t('reports.uploadTicket')}
+          </button>
+        )}
       </div>
       
       {itemToRemove && (

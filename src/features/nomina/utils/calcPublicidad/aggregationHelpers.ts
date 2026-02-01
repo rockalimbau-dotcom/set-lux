@@ -29,6 +29,8 @@ const KNOWN_LABELS = new Set(
     'Rigging Best Boy',
     'Rigging Eléctrico',
     'Técnico de Generador',
+    'Grupista eléctrico',
+    'Chofer eléctrico',
     'Eléctrico de potencia',
     'Técnico de prácticos',
   ].map(normalizeLabel)

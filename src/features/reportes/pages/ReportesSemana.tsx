@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useCallback } from 'react';
+import React, { useEffect, useMemo, useRef, useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import ReportBlockScheduleRow from '../components/ReportBlockScheduleRow';
@@ -28,6 +28,7 @@ import { personaKey, personaRole, personaName, stripPR } from '../utils/model';
 import { mondayOf, toYYYYMMDD } from '@shared/utils/date';
 import { loadCondModel } from '@features/nomina/utils/cond';
 import { ROLE_CODE_TO_LABEL, stripRoleSuffix, stripRefuerzoSuffix } from '@shared/constants/roles';
+import { useTheme } from '../components/ReportPersonRows/useTheme';
 
 import { ReportesSemanaProps } from './ReportesSemana/ReportesSemanaTypes';
 import { useDietasOpciones } from './ReportesSemana/useDietasOpciones';
@@ -54,6 +55,9 @@ export default function ReportesSemana({
   tutorialId,
 }: ReportesSemanaProps) {
   const { t } = useTranslation();
+  const theme = useTheme();
+  const isDark = theme === 'dark';
+  const [attachmentInfoOpen, setAttachmentInfoOpen] = useState(false);
   
   const providedPersonas = Array.isArray(personas) ? personas : [];
   const personasWithGender = useMemo(() => {
@@ -341,6 +345,7 @@ export default function ReportesSemana({
       horasExtraTipo={horasExtraTipo}
       readOnly={readOnly}
       getMaterialPropioConfig={getMaterialPropioConfig}
+      onAttachmentClick={() => setAttachmentInfoOpen(true)}
     />
   );
 
@@ -410,6 +415,38 @@ export default function ReportesSemana({
               {renderPersonRows(peoplePick, 'pick')}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {attachmentInfoOpen && (
+        <div className='fixed inset-0 bg-black/60 grid place-items-center p-6 z-50'>
+          <div
+            className='w-full max-w-[240px] sm:max-w-[280px] md:max-w-xs rounded sm:rounded-md md:rounded-lg border border-neutral-border p-3 sm:p-4'
+            style={{ backgroundColor: isDark ? 'var(--panel)' : '#ffffff' }}
+          >
+            <h3
+              className='text-[10px] sm:text-xs md:text-sm font-semibold mb-2'
+              style={{ color: isDark ? '#F27405' : '#111827' }}
+            >
+              {t('needs.attachmentBetaTitle')}
+            </h3>
+            <p
+              className='text-[9px] sm:text-[10px] md:text-xs mb-3'
+              style={{ color: isDark ? '#ffffff' : '#111827' }}
+            >
+              {t('reports.attachmentBetaMessageTicket')}
+            </p>
+            <div className='flex justify-center'>
+              <button
+                type='button'
+                onClick={() => setAttachmentInfoOpen(false)}
+                className='px-2 py-1 rounded-md border border-neutral-border text-[9px] sm:text-[10px] md:text-xs'
+                style={{ color: isDark ? '#ffffff' : '#111827' }}
+              >
+                {t('needs.close')}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </section>

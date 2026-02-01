@@ -8,6 +8,7 @@ export const CONCEPTS: readonly string[] = [
   'Material propio',
   'Dietas',
   'Kilometraje',
+  'Gasolina',
   'Transporte',
 ] as const;
 

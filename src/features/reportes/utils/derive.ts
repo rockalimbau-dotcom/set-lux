@@ -19,8 +19,9 @@ const rolePriorityForReports = (role: string = ''): number => {
   if (r === 'RBB') return 8;
   if (r === 'RE') return 9;
   if (r === 'TG') return 10;
-  if (r === 'EPO') return 11;
-  if (r === 'TP') return 12;
+  if (r === 'CE') return 11;
+  if (r === 'EPO') return 12;
+  if (r === 'TP') return 13;
   if (r === 'RIG') return 9;
   
   // REFUERZOS
@@ -41,6 +42,7 @@ const rolePriorityForReports = (role: string = ''): number => {
   if (r === 'EPOP') return 26;
   if (r === 'TPP') return 27;
   if (r === 'RIGP') return 28;
+  if (r === 'CEP') return 29;
   
   // EQUIPO RECOGIDA
   if (r === 'GR') return 29;
@@ -57,6 +59,7 @@ const rolePriorityForReports = (role: string = ''): number => {
   if (r === 'EPOR') return 40;
   if (r === 'TPR') return 41;
   if (r === 'RIGR') return 42;
+  if (r === 'CER') return 43;
   
   // Roles desconocidos al final
   return 1000;

@@ -12,6 +12,7 @@ type RoleCode =
   | 'AUX'
   | 'M'
   | 'TG'
+  | 'CE'
   | 'EPO'
   | 'TP'
   | 'RIG'
@@ -39,6 +40,7 @@ export const ROLE_ORDER: RoleCode[] = [
   'RBB',
   'RE',
   'TG',
+  'CE',
   'EPO',
   'TP',
   'RIG',
@@ -56,7 +58,8 @@ export const ROLES: Role[] = [
   { code: 'RG', label: 'Rigging Gaffer' },
   { code: 'RBB', label: 'Rigging Best Boy' },
   { code: 'RE', label: 'Rigging Eléctrico' },
-  { code: 'TG', label: 'Técnico de Generador' },
+  { code: 'TG', label: 'Grupista eléctrico' },
+  { code: 'CE', label: 'Chofer eléctrico' },
   { code: 'EPO', label: 'Eléctrico de potencia' },
   { code: 'TP', label: 'Técnico de prácticos' },
   { code: 'REF', label: 'Refuerzo Eléctrico' },
@@ -74,6 +77,7 @@ export const ROLE_COLORS: Record<RoleCode, RoleColor> = {
   AUX: { bg: 'linear-gradient(135deg,#E9D5FF,#7C3AED)', fg: '#0b0b0b' },
   M: { bg: 'linear-gradient(135deg,#FDE68A,#D97706)', fg: '#0b0b0b' },
   TG: { bg: 'linear-gradient(135deg,#6EE7B7,#10B981)', fg: '#0b0b0b' },
+  CE: { bg: 'linear-gradient(135deg,#FCA5A5,#EF4444)', fg: '#0b0b0b' },
   EPO: { bg: 'linear-gradient(135deg,#FDBA74,#EA580C)', fg: '#0b0b0b' },
   TP: { bg: 'linear-gradient(135deg,#C4B5FD,#7C3AED)', fg: '#0b0b0b' },
   REF: { bg: 'linear-gradient(135deg,#C7D2FE,#4338CA)', fg: '#0b0b0b' },
@@ -97,7 +101,8 @@ export const ROLE_CODE_TO_LABEL: Record<RoleCode, string> = {
   M: 'Meritorio',
   TM: 'Técnico de mesa',
   FB: 'Finger boy',
-  TG: 'Técnico de Generador',
+  TG: 'Grupista eléctrico',
+  CE: 'Chofer eléctrico',
   EPO: 'Eléctrico de potencia',
   TP: 'Técnico de prácticos',
   REF: 'Refuerzo',
@@ -197,6 +202,7 @@ function getBaseRoleBadge(base: string, lang: string): string {
       'RBB': 'RBB',
       'RE': 'RE',
       'TG': 'TG',
+      'CE': 'CE',
       'EPO': 'EP',
       'TP': 'TP',
       'RIG': 'RE',
@@ -218,6 +224,7 @@ function getBaseRoleBadge(base: string, lang: string): string {
     'M': 'M',
     'REF': 'R',
     'TG': 'TG',
+    'CE': 'CE',
     'EPO': 'EP',
     'TP': 'TP',
     'RIG': 'RE',

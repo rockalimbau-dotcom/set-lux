@@ -24,6 +24,7 @@ describe('roles', () => {
         'RBB',
         'RE',
         'TG',
+        'CE',
         'EPO',
         'TP',
         'RIG',
@@ -31,14 +32,14 @@ describe('roles', () => {
       ]);
     });
 
-    it('has 15 role codes', () => {
-      expect(ROLE_ORDER).toHaveLength(15);
+    it('has 16 role codes', () => {
+      expect(ROLE_ORDER).toHaveLength(16);
     });
   });
 
   describe('ROLES', () => {
     it('contains all roles with correct structure', () => {
-      expect(ROLES).toHaveLength(14);
+      expect(ROLES).toHaveLength(15);
 
       ROLES.forEach(role => {
         expect(role).toHaveProperty('code');
@@ -50,7 +51,7 @@ describe('roles', () => {
 
     it('has correct role codes', () => {
       const codes = ROLES.map(role => role.code);
-      expect(codes).toEqual(['G', 'BB', 'E', 'TM', 'FB', 'AUX', 'M', 'RG', 'RBB', 'RE', 'TG', 'EPO', 'TP', 'REF']);
+      expect(codes).toEqual(['G', 'BB', 'E', 'TM', 'FB', 'AUX', 'M', 'RG', 'RBB', 'RE', 'TG', 'CE', 'EPO', 'TP', 'REF']);
     });
 
     it('has correct role labels', () => {
@@ -66,7 +67,8 @@ describe('roles', () => {
         'Rigging Gaffer',
         'Rigging Best Boy',
         'Rigging Eléctrico',
-        'Técnico de Generador',
+        'Grupista eléctrico',
+        'Chofer eléctrico',
         'Eléctrico de potencia',
         'Técnico de prácticos',
         'Refuerzo Eléctrico',
@@ -113,10 +115,11 @@ describe('roles', () => {
       expect(roleRank('RBB')).toBe(8);
       expect(roleRank('RE')).toBe(9);
       expect(roleRank('TG')).toBe(10);
-      expect(roleRank('EPO')).toBe(11);
-      expect(roleRank('TP')).toBe(12);
-      expect(roleRank('RIG')).toBe(13);
-      expect(roleRank('REF')).toBe(14);
+      expect(roleRank('CE')).toBe(11);
+      expect(roleRank('EPO')).toBe(12);
+      expect(roleRank('TP')).toBe(13);
+      expect(roleRank('RIG')).toBe(14);
+      expect(roleRank('REF')).toBe(15);
     });
 
     it('returns 999 for invalid role codes', () => {
@@ -150,7 +153,8 @@ describe('roles', () => {
       expect(ROLE_CODE_TO_LABEL.M).toBe('Meritorio');
       expect(ROLE_CODE_TO_LABEL.TM).toBe('Técnico de mesa');
       expect(ROLE_CODE_TO_LABEL.FB).toBe('Finger boy');
-      expect(ROLE_CODE_TO_LABEL.TG).toBe('Técnico de Generador');
+      expect(ROLE_CODE_TO_LABEL.TG).toBe('Grupista eléctrico');
+      expect(ROLE_CODE_TO_LABEL.CE).toBe('Chofer eléctrico');
       expect(ROLE_CODE_TO_LABEL.EPO).toBe('Eléctrico de potencia');
       expect(ROLE_CODE_TO_LABEL.TP).toBe('Técnico de prácticos');
       expect(ROLE_CODE_TO_LABEL.REF).toBe('Refuerzo');
@@ -170,7 +174,8 @@ describe('roles', () => {
       expect(roleLabelFromCode('M')).toBe('Meritorio');
       expect(roleLabelFromCode('TM')).toBe('Técnico de mesa');
       expect(roleLabelFromCode('FB')).toBe('Finger boy');
-      expect(roleLabelFromCode('TG')).toBe('Técnico de Generador');
+      expect(roleLabelFromCode('TG')).toBe('Grupista eléctrico');
+      expect(roleLabelFromCode('CE')).toBe('Chofer eléctrico');
       expect(roleLabelFromCode('EPO')).toBe('Eléctrico de potencia');
       expect(roleLabelFromCode('TP')).toBe('Técnico de prácticos');
       expect(roleLabelFromCode('REF')).toBe('Refuerzo');

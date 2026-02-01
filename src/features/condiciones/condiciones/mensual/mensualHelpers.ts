@@ -64,6 +64,8 @@ export function useMensualTranslations() {
       'Técnico de mesa': 'TM',
       'Finger boy': 'FB',
       'Técnico de Generador': 'TG',
+      'Grupista eléctrico': 'TG',
+      'Chofer eléctrico': 'CE',
       'Eléctrico de potencia': 'EPO',
       'Técnico de prácticos': 'TP',
       'Refuerzo': 'REF',

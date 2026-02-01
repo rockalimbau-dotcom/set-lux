@@ -63,6 +63,8 @@ export function makeRolePrices(project: any) {
       'Rigging Best Boy',
       'Rigging Eléctrico',
       'Técnico de Generador',
+      'Grupista eléctrico',
+      'Chofer eléctrico',
       'Eléctrico de potencia',
       'Técnico de prácticos',
     ].map(normalizeLabel)

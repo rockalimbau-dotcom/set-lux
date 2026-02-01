@@ -66,6 +66,7 @@ export const translateConcept = (concepto: string): string => {
     'Material propio': getTranslation('reports.concepts.ownMaterial', 'Material propio'),
     'Dietas': getTranslation('reports.concepts.diets', 'Dietas'),
     'Kilometraje': getTranslation('reports.concepts.mileage', 'Kilometraje'),
+    'Gasolina': getTranslation('reports.concepts.gasoline', 'Gasolina'),
     'Transporte': getTranslation('reports.concepts.transportation', 'Transporte'),
   };
   return conceptMap[concepto] || concepto;

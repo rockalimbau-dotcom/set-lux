@@ -16,6 +16,7 @@ export interface DietasCellProps {
   formatDietas: (items: Set<string>, ticket: number | null, other: number | null) => string;
   dietasOptions: string[];
   setCell: (pKey: string, concepto: string, fecha: string, value: any) => void;
+  onAttachmentClick?: () => void;
 }
 
 export interface SiNoCellProps {
@@ -57,5 +58,6 @@ export interface ReportPersonRowsProps {
     name: string,
     block: 'base' | 'pre' | 'pick' | 'extra'
   ) => { value: number; type: 'semanal' | 'diario' } | null;
+  onAttachmentClick?: () => void;
 }
 

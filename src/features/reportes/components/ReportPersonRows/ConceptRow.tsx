@@ -23,6 +23,7 @@ interface ConceptRowProps {
   formatDietas: (items: Set<string>, ticket: number | null) => string;
   setCell: (pKey: string, concepto: string, fecha: string, value: any) => void;
   t: (key: string) => string;
+  onAttachmentClick?: () => void;
 }
 
 export function ConceptRow({
@@ -43,6 +44,7 @@ export function ConceptRow({
   formatDietas,
   setCell,
   t,
+  onAttachmentClick,
 }: ConceptRowProps) {
   const visualRole = person?.role || '';
   const name = person?.name || '';
@@ -93,6 +95,7 @@ export function ConceptRow({
               formatDietas={formatDietas}
               dietasOptions={dietasOptions}
               setCell={setCell}
+              onAttachmentClick={onAttachmentClick}
             />
           );
         }
@@ -115,6 +118,43 @@ export function ConceptRow({
               off={off}
               setCell={setCell}
             />
+          );
+        }
+
+        if (concepto === 'Gasolina') {
+          return (
+            <Td key={`${pKey}_${concepto}_${fecha}`} className={`text-center ${cellClasses}`} align='center'>
+              <div className='flex flex-col items-center justify-center gap-1'>
+                <input
+                  type='text'
+                  inputMode='decimal'
+                  className={`w-full px-1 py-0.5 sm:px-1.5 sm:py-1 md:px-2 md:py-1 rounded sm:rounded-md md:rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-[9px] sm:text-[10px] md:text-xs lg:text-sm text-left ${
+                    readOnly ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
+                  value={val}
+                  onChange={e => {
+                    if (readOnly) return;
+                    const raw = (e.target as HTMLInputElement).value;
+                    const cleaned = raw.replace(/[^\d,.\s]/g, '');
+                    setCell(pKey, concepto, fecha, cleaned);
+                  }}
+                  disabled={off || readOnly}
+                  readOnly={readOnly}
+                />
+                <button
+                  type='button'
+                  disabled={readOnly}
+                  title={t('reports.uploadTicket')}
+                  className={`px-1 py-0.5 rounded border border-neutral-border text-[8px] sm:text-[9px] md:text-[10px] ${
+                    readOnly ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-80'
+                  }`}
+                  style={{ color: 'var(--text)' }}
+                  onClick={() => !readOnly && onAttachmentClick?.()}
+                >
+                  📎 {t('reports.uploadTicket')}
+                </button>
+              </div>
+            </Td>
           );
         }
 

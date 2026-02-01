@@ -27,6 +27,7 @@ function ReportPersonRows({
   horasExtraTipo = 'Hora Extra - Normal',
   readOnly = false,
   getMaterialPropioConfig,
+  onAttachmentClick,
 }: ReportPersonRowsProps) {
   const { t } = useTranslation();
   if (!Array.isArray(list)) return null;
@@ -93,6 +94,7 @@ function ReportPersonRows({
                   formatDietas={formatDietas}
                   setCell={setCell}
                   t={t}
+                  onAttachmentClick={onAttachmentClick}
                 />
               ))}
           </React.Fragment>

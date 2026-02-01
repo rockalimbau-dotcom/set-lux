@@ -11,6 +11,19 @@ export const calculateTotalForExport = (
   semana: string[],
   forPDF: boolean = false
 ): number | string | { breakdown: Map<string, number> } => {
+  const parseNumericInput = (raw: string): number => {
+    const cleaned = String(raw)
+      .trim()
+      .replace(/\s+/g, '')
+      .replace(/[€]/g, '');
+    if (!cleaned) return NaN;
+    const normalized =
+      cleaned.includes(',') && cleaned.includes('.')
+        ? cleaned.replace(/\./g, '').replace(',', '.')
+        : cleaned.replace(',', '.');
+    return Number(normalized);
+  };
+
   if (concepto === 'Dietas') {
     if (forPDF) {
       // Para PDF, contar cada tipo de dieta por separado
@@ -63,7 +76,7 @@ export const calculateTotalForExport = (
   semana.forEach(fecha => {
     const val = data?.[pKey]?.[concepto]?.[fecha] ?? '';
     if (val && val.toString().trim() !== '') {
-      const num = Number(val);
+      const num = concepto === 'Gasolina' ? parseNumericInput(val) : Number(val);
       if (!isNaN(num)) {
         total += num;
       }

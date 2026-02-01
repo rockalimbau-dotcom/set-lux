@@ -15,6 +15,7 @@ export const translateConcept = (concepto: string, t: (key: string) => string): 
     'Material propio': t('reports.concepts.ownMaterial'),
     'Dietas': t('reports.concepts.diets'),
     'Kilometraje': t('reports.concepts.mileage'),
+    'Gasolina': t('reports.concepts.gasoline'),
     'Transporte': t('reports.concepts.transportation'),
   };
   return conceptMap[concepto] || concepto;
@@ -69,6 +70,19 @@ export const calculateTotal = (
   parseDietas: (raw: string) => { items: Set<string>; ticket: number | null; other: number | null },
   horasExtraTipo?: string
 ): number | string | { breakdown: Map<string, number> } => {
+  const parseNumericInput = (raw: string): number => {
+    const cleaned = String(raw)
+      .trim()
+      .replace(/\s+/g, '')
+      .replace(/[€]/g, '');
+    if (!cleaned) return NaN;
+    const normalized =
+      cleaned.includes(',') && cleaned.includes('.')
+        ? cleaned.replace(/\./g, '').replace(',', '.')
+        : cleaned.replace(',', '.');
+    return Number(normalized);
+  };
+
   if (concepto === 'Dietas') {
     // Para dietas, contar cada tipo de dieta por separado
     const breakdown = new Map<string, number>();
@@ -121,6 +135,8 @@ export const calculateTotal = (
       if (isHorasExtraFormatted) {
         // Para formato decimal, extraer el valor numérico del formato "0.58 (35 ')"
         num = extractNumericValue(val);
+      } else if (concepto === 'Gasolina') {
+        num = parseNumericInput(val);
       } else {
         // Para otros valores, usar Number directamente
         num = Number(val);
