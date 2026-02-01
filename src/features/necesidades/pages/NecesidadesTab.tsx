@@ -3,6 +3,8 @@ import { useMemo, useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AnyRecord } from '@shared/types/common';
 import { exportToPDF, exportAllToPDF } from '../utils/export';
+import { parsePlanPdf, applyImportToNeeds } from '../importPlan';
+import type { ImportConflict, ImportResult, WeekDecision } from '../importPlan';
 import { NecesidadesTabProps, DayInfo, NeedsState, NeedsWeek } from './NecesidadesTab/NecesidadesTabTypes';
 import { useNeedsData } from './NecesidadesTab/useNeedsData';
 import { useNeedsActions } from './NecesidadesTab/useNeedsActions';
@@ -28,6 +30,13 @@ export default function NecesidadesTab({ project, readOnly = false }: Necesidade
   // Error boundary state
   const [hasError, setHasError] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string>('');
+  const [importFileName, setImportFileName] = useState('');
+  const [importError, setImportError] = useState('');
+  const [importLoading, setImportLoading] = useState(false);
+  const [importPreviewOpen, setImportPreviewOpen] = useState(false);
+  const [importResult, setImportResult] = useState<ImportResult | null>(null);
+  const [importConflicts, setImportConflicts] = useState<ImportConflict[]>([]);
+  const [importDecisions, setImportDecisions] = useState<Record<string, WeekDecision>>({});
 
   const storageKey = useMemo(() => {
     try {
@@ -312,6 +321,70 @@ export default function NecesidadesTab({ project, readOnly = false }: Necesidade
     }
   };
 
+  const handleImportFile = async (file: File) => {
+    if (readOnly) return;
+    setImportFileName(file.name);
+    setImportError('');
+    setImportLoading(true);
+    try {
+      const result = await parsePlanPdf(file);
+      if (!result.weeks.length) {
+        setImportError(t('planning.importPlanNoData'));
+        setImportResult(null);
+        setImportPreviewOpen(false);
+        return;
+      }
+
+      const existingByStart = new Map<string, { scope: 'pre' | 'pro'; id: string }>();
+      preEntries.forEach(w => w.startDate && existingByStart.set(`pre_${w.startDate}`, { scope: 'pre', id: w.id }));
+      proEntries.forEach(w => w.startDate && existingByStart.set(`pro_${w.startDate}`, { scope: 'pro', id: w.id }));
+
+      const conflicts: ImportConflict[] = [];
+      const decisions: Record<string, WeekDecision> = {};
+      result.weeks.forEach(week => {
+        const key = `${week.scope}_${week.startDate}`;
+        const existing = existingByStart.get(key);
+        if (existing) {
+          conflicts.push({
+            key,
+            scope: week.scope,
+            startDate: week.startDate,
+            label: week.label,
+            existingWeekId: existing.id,
+          });
+          decisions[key] = 'omit';
+        } else {
+          decisions[key] = 'import';
+        }
+      });
+
+      setImportResult(result);
+      setImportConflicts(conflicts);
+      setImportDecisions(decisions);
+      setImportPreviewOpen(true);
+    } catch (error) {
+      console.error('Error importing PDF:', error);
+      setImportError(t('planning.importPlanUnreadable'));
+    } finally {
+      setImportLoading(false);
+    }
+  };
+
+  const handleConfirmImport = () => {
+    if (!importResult) return;
+    setNeeds(prev => applyImportToNeeds(prev, importResult, importDecisions, baseRoster));
+    setImportPreviewOpen(false);
+  };
+
+  const handleCloseImportPreview = () => {
+    setImportPreviewOpen(false);
+    setImportResult(null);
+    setImportConflicts([]);
+    setImportDecisions({});
+    setImportFileName('');
+    setImportError('');
+  };
+
   const exportAllNeedsPDF = async () => {
     try {
       const allEntries = [...preEntries, ...proEntries];
@@ -392,6 +465,17 @@ export default function NecesidadesTab({ project, readOnly = false }: Necesidade
         addCustomRow={addCustomRow}
         updateCustomRowLabel={updateCustomRowLabel}
         removeCustomRow={removeCustomRow}
+        onImportPlanFile={handleImportFile}
+        importFileName={importFileName}
+        importError={importError}
+        importLoading={importLoading}
+        importPreviewOpen={importPreviewOpen}
+        importResult={importResult}
+        importConflicts={importConflicts}
+        importDecisions={importDecisions}
+        setImportDecisions={setImportDecisions}
+        onCloseImportPreview={handleCloseImportPreview}
+        onConfirmImport={handleConfirmImport}
       />
     </div>
   );

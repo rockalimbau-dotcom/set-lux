@@ -490,6 +490,19 @@
     "exportAllPDF": "Export entire planning (PDF)",
     "exportSectionPDF": "Export section (PDF)",
     "pdfFull": "Full PDF",
+    "uploadShotPlan": "Shot plan",
+    "importPlanFileLabel": "Loaded file:",
+    "importPlanLoading": "Reading PDF...",
+    "importPlanPreviewMessage": "Preview: nothing will be saved until you confirm.",
+    "importPlanDetectedWeeks": "Detected weeks",
+    "importPlanOverwrite": "Overwrite",
+    "importPlanOmit": "Skip",
+    "importPlanImport": "Import",
+    "importPlanConfirm": "Confirm",
+    "importPlanCancel": "Cancel",
+    "importPlanOverwriteWarning": "⚠️ Overwrite will replace the current data for this week.",
+    "importPlanUnreadable": "We couldn't read this PDF.",
+    "importPlanNoData": "No weeks were detected in the PDF.",
     "pdfPre": "PDF Pre",
     "pdfPro": "PDF Pro",
     "pdf": "PDF",
@@ -762,9 +775,13 @@
         "title": "Calendar",
         "body": "Organize the calendar by weeks and generate its PDF.\nEach week is used later in reports and payroll."
       },
+      "planningUpload": {
+        "title": "Upload shooting plan",
+        "body": "Import the shooting plan and generate the project calendar automatically.\n\nSave time by creating the calendar base in a single step.\n\nBeta feature."
+      },
       "planningAdd": {
-        "title": "Add week",
-        "body": "Tap \"Week\" to create a new one"
+        "title": "Add weeks to the calendar",
+        "body": "You can create weeks manually or complement an imported shooting plan.\n\nPress \"+ Week\" to add a new week to the calendar."
       },
       "planningWeek": {
         "title": "Week created",

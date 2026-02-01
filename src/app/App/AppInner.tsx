@@ -207,6 +207,12 @@ function AppInner() {
       selector: '[data-tutorial="phase-necesidades"]',
     },
     {
+      id: 'planning-upload-plan',
+      title: t('tutorial.steps.planningUpload.title'),
+      description: t('tutorial.steps.planningUpload.body'),
+      selector: '[data-tutorial="planning-upload-plan"]',
+    },
+    {
       id: 'planning-add-week',
       title: t('tutorial.steps.planningAdd.title'),
       description: t('tutorial.steps.planningAdd.body'),
@@ -667,7 +673,19 @@ function AppInner() {
           if (currentId === 'conditions-card' && nextId === 'conditions-params') {
             if (activeProject?.id) navigate(`/project/${activeProject.id}/condiciones`);
           }
+          if (currentId === 'planning-card' && nextId === 'planning-upload-plan') {
+            if (activeProject?.id) navigate(`/project/${activeProject.id}/calendario`);
+          }
+          if (currentId === 'planning-upload-plan' && nextId === 'planning-card') {
+            if (activeProject?.id) navigate(`/project/${activeProject.id}`);
+          }
+          if (currentId === 'planning-upload-plan' && nextId === 'planning-add-week') {
+            if (activeProject?.id) navigate(`/project/${activeProject.id}/calendario`);
+          }
           if (currentId === 'planning-card' && nextId === 'planning-add-week') {
+            if (activeProject?.id) navigate(`/project/${activeProject.id}/calendario`);
+          }
+          if (currentId === 'planning-add-week' && nextId === 'planning-upload-plan') {
             if (activeProject?.id) navigate(`/project/${activeProject.id}/calendario`);
           }
           if (currentId === 'planning-add-week' && nextId === 'planning-card') {

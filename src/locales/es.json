@@ -491,6 +491,19 @@
     "exportAllPDF": "Exportar toda la planificación (PDF)",
     "exportSectionPDF": "Exportar sección (PDF)",
     "pdfFull": "PDF Entero",
+    "uploadShotPlan": "Plan rodaje",
+    "importPlanFileLabel": "Archivo cargado:",
+    "importPlanLoading": "Leyendo PDF...",
+    "importPlanPreviewMessage": "Vista previa: nada se guardará hasta que confirmes.",
+    "importPlanDetectedWeeks": "Semanas detectadas",
+    "importPlanOverwrite": "Sobrescribir",
+    "importPlanOmit": "Omitir",
+    "importPlanImport": "Importar",
+    "importPlanConfirm": "Confirmar",
+    "importPlanCancel": "Cancelar",
+    "importPlanOverwriteWarning": "⚠️ Sobrescribir reemplazará los datos actuales de esta semana.",
+    "importPlanUnreadable": "No hemos podido leer este PDF.",
+    "importPlanNoData": "No se han detectado semanas en el PDF.",
     "pdfPre": "PDF Pre",
     "pdfPro": "PDF Pro",
     "pdf": "PDF",
@@ -762,9 +775,13 @@
         "title": "Calendario",
         "body": "Organiza el calendario por semanas y genera su PDF.\nCada semana se utiliza después en reportes y nómina."
       },
+      "planningUpload": {
+        "title": "Subir plan de rodaje",
+        "body": "Importa el plan de rodaje y genera el calendario del proyecto automáticamente.\n\nAhorra tiempo creando la base del calendario en un solo paso.\n\nFunción en beta."
+      },
       "planningAdd": {
-        "title": "Añadir semana",
-        "body": "Pulsa \"Semana\" para crear una nueva"
+        "title": "Añadir semanas al calendario",
+        "body": "Puedes crear semanas manualmente o complementar un plan de rodaje importado.\n\nPulsa \"+ Semana\" para añadir una nueva semana al calendario."
       },
       "planningWeek": {
         "title": "Semana creada",

@@ -5,6 +5,8 @@ import { WeekSection } from './WeekSection';
 import { useColumnSwap } from '../../hooks/useColumnSwap';
 import Accordion from '@shared/components/Accordion';
 import EmptyHint from '@shared/components/EmptyHint';
+import { ImportPlanButton, PlanImportModal } from '../../importPlan';
+import type { ImportConflict, ImportResult, WeekDecision } from '../../importPlan';
 
 interface NecesidadesTabContentProps {
   preEntries: NeedsWeek[];
@@ -39,6 +41,17 @@ interface NecesidadesTabContentProps {
   exportAllNeedsPDF: () => void;
   exportScopePDF: (scope: 'pre' | 'pro') => void;
   swapDays: (weekId1: string, dayIdx1: number, weekId2: string, dayIdx2: number) => void;
+  onImportPlanFile: (file: File) => void;
+  importFileName?: string;
+  importError?: string;
+  importLoading?: boolean;
+  importPreviewOpen?: boolean;
+  importResult: ImportResult | null;
+  importConflicts: ImportConflict[];
+  importDecisions: Record<string, WeekDecision>;
+  setImportDecisions: (next: Record<string, WeekDecision>) => void;
+  onCloseImportPreview: () => void;
+  onConfirmImport: () => void;
 }
 
 export function NecesidadesTabContent({
@@ -69,6 +82,17 @@ export function NecesidadesTabContent({
   addCustomRow,
   updateCustomRowLabel,
   removeCustomRow,
+  onImportPlanFile,
+  importFileName,
+  importError,
+  importLoading = false,
+  importPreviewOpen = false,
+  importResult,
+  importConflicts,
+  importDecisions,
+  setImportDecisions,
+  onCloseImportPreview,
+  onConfirmImport,
 }: NecesidadesTabContentProps) {
   const { t } = useTranslation();
   
@@ -162,18 +186,41 @@ export function NecesidadesTabContent({
         <span className='text-[9px] sm:text-[10px] md:text-xs text-zinc-400 dark:text-white'>
           <strong>Tip:</strong> {t('planning.scrollTip')}
         </span>
-        <button
-          className='px-1.5 py-1 sm:px-2 sm:py-1.5 md:px-2.5 md:py-2 rounded text-[10px] sm:text-xs md:text-sm font-semibold'
-          style={btnExportStyle}
-          onClick={exportAllNeedsPDF}
-          title={t('needs.exportAllWeeksPDF')}
-        >
-          {t('planning.pdfFull')}
-        </button>
+        <div className='flex items-start gap-2'>
+          <ImportPlanButton
+            readOnly={readOnly}
+            fileName={importFileName}
+            error={importError}
+            isLoading={importLoading}
+            onSelectFile={onImportPlanFile}
+          />
+          <button
+            className='px-1.5 py-1 sm:px-2 sm:py-1.5 md:px-2.5 md:py-2 rounded text-[10px] sm:text-xs md:text-sm font-semibold'
+            style={btnExportStyle}
+            onClick={exportAllNeedsPDF}
+            title={t('needs.exportAllWeeksPDF')}
+          >
+            {t('planning.pdfFull')}
+          </button>
+        </div>
       </div>
 
       {renderScope(t('planning.preproduction'), 'pre', preEntries, openPre, () => setOpenPre(v => !v))}
       {renderScope(t('planning.production'), 'pro', proEntries, openPro, () => setOpenPro(v => !v))}
+
+      <PlanImportModal
+        open={importPreviewOpen}
+        days={DAYS}
+        importResult={importResult}
+        conflicts={importConflicts}
+        decisions={importDecisions}
+        baseRoster={baseRoster}
+        onDecisionChange={(key, decision) =>
+          setImportDecisions({ ...importDecisions, [key]: decision })
+        }
+        onCancel={onCloseImportPreview}
+        onConfirm={onConfirmImport}
+      />
     </>
   );
 }

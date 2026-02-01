@@ -492,6 +492,19 @@
     "exportAllPDF": "Exportar tota la planificació (PDF)",
     "exportSectionPDF": "Exportar secció (PDF)",
     "pdfFull": "PDF Sencer",
+    "uploadShotPlan": "Pla de rodatge",
+    "importPlanFileLabel": "Arxiu carregat:",
+    "importPlanLoading": "Llegint PDF...",
+    "importPlanPreviewMessage": "Previsualització: no es guardarà res fins que confirmis.",
+    "importPlanDetectedWeeks": "Setmanes detectades",
+    "importPlanOverwrite": "Sobreescriure",
+    "importPlanOmit": "Ometre",
+    "importPlanImport": "Importar",
+    "importPlanConfirm": "Confirmar",
+    "importPlanCancel": "Cancel·lar",
+    "importPlanOverwriteWarning": "⚠️ Sobreescriure reemplaçarà les dades actuals d'aquesta setmana.",
+    "importPlanUnreadable": "No hem pogut llegir aquest PDF.",
+    "importPlanNoData": "No s'han detectat setmanes al PDF.",
     "pdfPre": "PDF Pre",
     "pdfPro": "PDF Pro",
     "pdf": "PDF",
@@ -772,9 +785,13 @@
         "title": "Calendari",
         "body": "Organitza el calendari per setmanes i genera el seu PDF.\nCada setmana s'utilitza després en informes i nòmina."
       },
+      "planningUpload": {
+        "title": "Pujar pla de rodatge",
+        "body": "Importa el pla de rodatge i genera el calendari del projecte automàticament.\n\nEstalvia temps creant la base del calendari en un sol pas.\n\nFunció en beta."
+      },
       "planningAdd": {
-        "title": "Afegir setmana",
-        "body": "Prem \"Setmana\" per crear-ne una de nova"
+        "title": "Afegir setmanes al calendari",
+        "body": "Pots crear setmanes manualment o complementar un pla de rodatge importat.\n\nPrem \"+ Setmana\" per afegir una nova setmana al calendari."
       },
       "planningWeek": {
         "title": "Setmana creada",
