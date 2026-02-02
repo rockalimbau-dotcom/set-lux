@@ -494,6 +494,7 @@
     "importPlanFileLabel": "Loaded file:",
     "importPlanLoading": "Reading PDF...",
     "importPlanPreviewMessage": "Preview: nothing will be saved until you confirm.",
+    "importPlanDiagnosticsTitle": "Import diagnostics",
     "importPlanDetectedWeeks": "Detected weeks",
     "importPlanOverwrite": "Overwrite",
     "importPlanOmit": "Skip",

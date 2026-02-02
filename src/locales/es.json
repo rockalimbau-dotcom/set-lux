@@ -495,6 +495,7 @@
     "importPlanFileLabel": "Archivo cargado:",
     "importPlanLoading": "Leyendo PDF...",
     "importPlanPreviewMessage": "Vista previa: nada se guardará hasta que confirmes.",
+    "importPlanDiagnosticsTitle": "Diagnóstico de importación",
     "importPlanDetectedWeeks": "Semanas detectadas",
     "importPlanOverwrite": "Sobrescribir",
     "importPlanOmit": "Omitir",

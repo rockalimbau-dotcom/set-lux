@@ -71,6 +71,18 @@ export function PlanImportModal({
               );
             })()}
           </div>
+          {importResult?.warnings && importResult.warnings.length > 0 && (
+            <div className='rounded-lg border border-neutral-border px-3 py-2 text-[10px] sm:text-xs bg-white/80 dark:bg-neutral-panel/60'>
+              <div className='font-semibold mb-1 text-zinc-900 dark:text-white'>
+                {t('planning.importPlanDiagnosticsTitle')}
+              </div>
+              <div className='flex flex-col gap-1 text-zinc-700 dark:text-zinc-200'>
+                {importResult.warnings.map((warning, idx) => (
+                  <div key={`warn_${idx}`}>{warning}</div>
+                ))}
+              </div>
+            </div>
+          )}
           {conflicts.length > 0 && (
             <div
               className='rounded-lg border border-neutral-border dark:bg-neutral-panel/60 px-3 py-2 text-[10px] sm:text-xs'

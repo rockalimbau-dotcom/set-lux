@@ -496,6 +496,7 @@
     "importPlanFileLabel": "Arxiu carregat:",
     "importPlanLoading": "Llegint PDF...",
     "importPlanPreviewMessage": "Previsualització: no es guardarà res fins que confirmis.",
+    "importPlanDiagnosticsTitle": "Diagnòstic d'importació",
     "importPlanDetectedWeeks": "Setmanes detectades",
     "importPlanOverwrite": "Sobreescriure",
     "importPlanOmit": "Ometre",
