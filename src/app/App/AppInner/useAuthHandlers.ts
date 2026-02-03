@@ -52,6 +52,10 @@ if(
   && !(login.user === 'JordiPlanas-24-01' && login.pass === '1234')
   && !(login.user === 'AlbertCantallops' && login.pass === '1234')
   && !(login.user === 'LluisMaymo' && login.pass === '1234')
+  && !(login.user === 'RicardDurany' && login.pass === '1234')
+  && !(login.user === 'JuanmaPerez' && login.pass === '1234')
+  && !(login.user === 'NicolasGarrido' && login.pass === '1234')
+  && !(login.user === 'RafaSuarez' && login.pass === '1234')
   
 
 ){
@@ -122,4 +126,3 @@ if(
 
   return { handleLoginSubmit, handleRegisterSubmit };
 }
-
