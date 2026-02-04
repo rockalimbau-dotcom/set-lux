@@ -12,7 +12,15 @@ interface PhaseGridProps {
 export function PhaseGrid({ condModeLabel, condTipo, onTabChange }: PhaseGridProps) {
   const { t } = useTranslation();
 
-  const cards = [
+  const cards: Array<{
+    key: ProjectTab;
+    title: string;
+    icon: JSX.Element;
+    desc: string;
+    onClick: () => void;
+    tutorialId?: string;
+    iconFrame?: boolean;
+  }> = [
     {
       key: 'condiciones',
       title: condModeLabel === 'semanales' ? t('conditions.weekly') : condModeLabel === 'mensuales' ? t('conditions.monthly') : t('conditions.advertising'),
@@ -20,6 +28,7 @@ export function PhaseGrid({ condModeLabel, condTipo, onTabChange }: PhaseGridPro
       desc: t('conditions.description'),
       onClick: () => onTabChange('condiciones'),
       tutorialId: 'phase-condiciones',
+      iconFrame: false,
     },
     {
       key: 'equipo',
@@ -28,6 +37,7 @@ export function PhaseGrid({ condModeLabel, condTipo, onTabChange }: PhaseGridPro
       desc: condTipo === 'diario' ? t('team.descriptionAdvertising') : t('team.description'),
       onClick: () => onTabChange('equipo'),
       tutorialId: 'phase-equipo',
+      iconFrame: false,
     },
     {
       key: 'necesidades',
@@ -36,6 +46,7 @@ export function PhaseGrid({ condModeLabel, condTipo, onTabChange }: PhaseGridPro
       desc: t('needs.description'),
       onClick: () => onTabChange('necesidades'),
       tutorialId: 'phase-necesidades',
+      iconFrame: false,
     },
     {
       key: 'reportes',
@@ -44,6 +55,7 @@ export function PhaseGrid({ condModeLabel, condTipo, onTabChange }: PhaseGridPro
       desc: t('reports.description'),
       onClick: () => onTabChange('reportes'),
       tutorialId: 'phase-reportes',
+      iconFrame: false,
     },
     {
       key: 'nomina',
@@ -52,6 +64,7 @@ export function PhaseGrid({ condModeLabel, condTipo, onTabChange }: PhaseGridPro
       desc: t('payroll.description'),
       onClick: () => onTabChange('nomina'),
       tutorialId: 'phase-nomina',
+      iconFrame: false,
     },
   ];
   const lastIndex = cards.length - 1;
@@ -68,6 +81,7 @@ export function PhaseGrid({ condModeLabel, condTipo, onTabChange }: PhaseGridPro
             desc={card.desc}
             onClick={card.onClick}
             tutorialId={card.tutorialId}
+            iconFrame={card.iconFrame ?? true}
             className={isLastOdd ? 'sm:col-span-2 sm:justify-self-center sm:w-[calc(50%-0.5rem)]' : undefined}
           />
         );
@@ -75,4 +89,3 @@ export function PhaseGrid({ condModeLabel, condTipo, onTabChange }: PhaseGridPro
     </div>
   );
 }
-

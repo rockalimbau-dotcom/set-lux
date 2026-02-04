@@ -6,30 +6,120 @@ export function PhaseIcon({ name, color = '#60a5fa', stroke = '#ffffff' }: { nam
   const strokeColor = themeNow === 'light' ? '#111827' : stroke;
   switch (name) {
     case 'condiciones':
+      if (themeNow === 'light') {
+        return (
+          <img
+            src='/logoCondicionesClaro_v2.png'
+            alt='Condiciones'
+            className='w-full h-full object-contain'
+          />
+        );
+      }
+      if (themeNow === 'dark') {
+        return (
+          <img
+            src='/logoCondicionesOscuro_v2.png'
+            alt='Condiciones'
+            className='w-full h-full object-contain'
+          />
+        );
+      }
       return (
         <svg {...common} fill={fill} xmlns='http://www.w3.org/2000/svg'>
           <path d='M6 2h9a2 2 0 0 1 1.414.586l3 3A2 2 0 0 1 20 7v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm0 2v16h12V7.828L14.172 4H6zm3 6h6v2H9v-2zm0 4h6v2H9v-2z' stroke={strokeColor} strokeWidth='1'/>
         </svg>
       );
     case 'equipo':
+      if (themeNow === 'light') {
+        return (
+          <img
+            src='/logoEquipoClaro_v2.png'
+            alt='Equipo'
+            className='w-full h-full object-contain'
+          />
+        );
+      }
+      if (themeNow === 'dark') {
+        return (
+          <img
+            src='/logoEquipoOscuro_v2.png'
+            alt='Equipo'
+            className='w-full h-full object-contain'
+          />
+        );
+      }
       return (
         <svg {...common} fill={fill} xmlns='http://www.w3.org/2000/svg'>
           <path d='M8 10a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm8 0a3 3 0 1 1 0-6 3 3 0 0 1 0 6zM2 20a6 6 0 0 1 12 0v2H2v-2zm12 2v-2a6 6 0 0 1 10 0v2H14z' stroke={strokeColor} strokeWidth='1'/>
         </svg>
       );
     case 'reportes':
+      if (themeNow === 'light') {
+        return (
+          <img
+            src='/logoReportesClaro_v2.png'
+            alt='Reportes'
+            className='w-full h-full object-contain'
+          />
+        );
+      }
+      if (themeNow === 'dark') {
+        return (
+          <img
+            src='/logoReportesOscuro_v2.png'
+            alt='Reportes'
+            className='w-full h-full object-contain'
+          />
+        );
+      }
       return (
         <svg {...common} fill={fill} xmlns='http://www.w3.org/2000/svg'>
           <path d='M4 3h16v2H4V3zm2 6h3v12H6V9zm5 4h3v8h-3v-8zm5-6h3v14h-3V7z' stroke={strokeColor} strokeWidth='1'/>
         </svg>
       );
     case 'nomina':
+      if (themeNow === 'light') {
+        return (
+          <img
+            src='/logoNominaClaro_v2.png'
+            alt='Nómina'
+            className='w-full h-full object-contain'
+          />
+        );
+      }
+      if (themeNow === 'dark') {
+        return (
+          <img
+            src='/logoNominaOscuro_v2.png'
+            alt='Nómina'
+            className='w-full h-full object-contain'
+          />
+        );
+      }
       return (
         <svg {...common} fill={fill} xmlns='http://www.w3.org/2000/svg'>
           <path d='M3 6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6zm2 2v6h14V8H5zm7 1a3 3 0 1 1 0 6 3 3 0 0 1 0-6z' stroke={strokeColor} strokeWidth='1'/>
         </svg>
       );
     case 'necesidades':
+      if (themeNow === 'light') {
+        return (
+          <img
+            src='/logoCalendarioClaro_v2.png'
+            alt='Calendario'
+            className='w-full h-full object-contain'
+          />
+        );
+      }
+      if (themeNow === 'dark') {
+        return (
+          <img
+            src='/logoCalendarioOscuro_v2.png'
+            alt='Calendario'
+            className='w-full h-full object-contain'
+          />
+        );
+      }
       return (
         <svg {...common} fill={fill} xmlns='http://www.w3.org/2000/svg'>
           <path d='M21 7l-4-4-3 3 4 4 3-3zM2 20l7-2-5-5-2 7zm11.586-9.414l-7.172 7.172 2.828 2.828 7.172-7.172-2.828-2.828z' stroke={strokeColor} strokeWidth='1'/>
@@ -37,4 +127,3 @@ export function PhaseIcon({ name, color = '#60a5fa', stroke = '#ffffff' }: { nam
       );
   }
 }
-

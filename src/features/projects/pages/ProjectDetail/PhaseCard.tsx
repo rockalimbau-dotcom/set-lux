@@ -7,9 +7,10 @@ interface PhaseCardProps {
   onClick: () => void;
   tutorialId?: string;
   className?: string;
+  iconFrame?: boolean;
 }
 
-export function PhaseCard({ title, icon, desc, onClick, tutorialId, className }: PhaseCardProps) {
+export function PhaseCard({ title, icon, desc, onClick, tutorialId, className, iconFrame = true }: PhaseCardProps) {
   return (
     <button
       onClick={onClick}
@@ -22,9 +23,11 @@ export function PhaseCard({ title, icon, desc, onClick, tutorialId, className }:
     >
       <div className='flex items-center gap-1.5 sm:gap-2 md:gap-3 lg:gap-4 mb-0.5 sm:mb-1 md:mb-1.5 lg:mb-2'>
         <div
-          className='w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 lg:w-12 lg:h-12 rounded sm:rounded-md md:rounded-lg lg:rounded-xl border border-neutral-border flex items-center justify-center text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl'
+          className={`w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 lg:w-12 lg:h-12 flex items-center justify-center text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl ${iconFrame ? 'rounded sm:rounded-md md:rounded-lg lg:rounded-xl border border-neutral-border' : ''}`}
           style={{
-            backgroundColor: (typeof document!=='undefined' && document.documentElement.getAttribute('data-theme')==='light') ? '#ffffff' : 'rgba(0,0,0,0.2)'
+            backgroundColor: iconFrame
+              ? (typeof document!=='undefined' && document.documentElement.getAttribute('data-theme')==='light') ? '#ffffff' : 'rgba(0,0,0,0.2)'
+              : 'transparent'
           }}
         >
           {icon}
@@ -35,4 +38,3 @@ export function PhaseCard({ title, icon, desc, onClick, tutorialId, className }:
     </button>
   );
 }
-
