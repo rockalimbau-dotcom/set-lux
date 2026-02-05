@@ -16,7 +16,7 @@ export function buildCondicionesPageHTMLForPDF(
   pageBlocks: [string, string][],
   includeHeader: boolean = true
 ): string {
-  const headerTitle = i18n.t('conditions.departmentTitle');
+  const headerTitle = 'CONDICIONES ELÉCTRICOS';
   
   // Tabla base
   const rolesConPreciosBase = filterRolesWithPrices(PRICE_ROLES, PRICE_HEADERS, model, 'base');
@@ -47,7 +47,7 @@ export function buildCondicionesPageHTMLForPDF(
   const tablesHTML = allTables ? `<div class="table-container">${allTables}</div>` : '';
   
   const blocks = generateBlocksHTML(pageBlocks);
-  const infoPanel = includeHeader ? generateInfoPanel(project) : '';
+  const infoPanel = includeHeader ? generateInfoPanel(project, true) : '';
   const footer = generateFooter();
 
   return `<!DOCTYPE html>
@@ -62,7 +62,9 @@ export function buildCondicionesPageHTMLForPDF(
 <body>
   <div class="container">
     <div class="header">
-      <h1>${esc(headerTitle)}</h1>
+      <div class="title-bar">
+        <div class="title-text">${esc(headerTitle)}</div>
+      </div>
     </div>
     <div class="content">
       ${includeHeader ? `${infoPanel}
@@ -74,4 +76,3 @@ export function buildCondicionesPageHTMLForPDF(
 </body>
 </html>`;
 }
-

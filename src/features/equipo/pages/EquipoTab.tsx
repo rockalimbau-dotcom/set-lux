@@ -65,15 +65,6 @@ function EquipoTab({
       <div className='flex items-center justify-between'>
         <div />
         <div className='flex items-center gap-1 sm:gap-1.5 md:gap-2'>
-          <button
-            onClick={() => exportEquipoToPDF(project, team)}
-            disabled={!team}
-            className={`px-1.5 py-1 sm:px-2 sm:py-1.5 md:px-3 md:py-2 rounded sm:rounded-md md:rounded-lg border text-[9px] sm:text-[10px] md:text-xs border-neutral-border hover:border-accent whitespace-nowrap ${!team ? 'opacity-50 cursor-not-allowed' : ''} ${btnExport}`}
-            title="PDF"
-            type='button'
-          >
-            PDF
-          </button>
           {!groupsEnabled.prelight && (
             <button
               onClick={() => canEdit && enableGroup('prelight')}
@@ -98,6 +89,15 @@ function EquipoTab({
               {t('team.addPickupButton')}
             </button>
           )}
+          <button
+            onClick={() => exportEquipoToPDF(project, team)}
+            disabled={!team}
+            className={`px-1.5 py-1 sm:px-2 sm:py-1.5 md:px-3 md:py-2 rounded sm:rounded-md md:rounded-lg border text-[9px] sm:text-[10px] md:text-xs border-neutral-border hover:border-accent whitespace-nowrap ${!team ? 'opacity-50 cursor-not-allowed' : ''} ${btnExport}`}
+            title="PDF"
+            type='button'
+          >
+            PDF
+          </button>
         </div>
       </div>
 

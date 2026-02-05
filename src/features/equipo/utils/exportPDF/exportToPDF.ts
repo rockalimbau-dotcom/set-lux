@@ -2,7 +2,7 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import i18n from '../../../../i18n/config';
 import { baseStyles } from '@features/condiciones/utils/exportPDF/htmlBuilders/styles';
-import { generateFooter } from '@features/condiciones/utils/exportPDF/htmlBuilders/contentHelpers';
+import { generateFooter, generateInfoPanel } from '@features/condiciones/utils/exportPDF/htmlBuilders/contentHelpers';
 import { translateRoleLabel } from '@features/equipo/pages/EquipoTab/EquipoTabUtils';
 import { shareOrSavePDF } from '@shared/utils/pdfShare';
 
@@ -86,8 +86,7 @@ const buildTeamSection = (
 };
 
 const buildEquipoHTMLForPDF = (project: any, team: any) => {
-  const title = i18n.t('team.title');
-  const production = project?.productora || project?.produccion || '—';
+  const title = 'EQUIPO ELÉCTRICOS';
   const projectName = project?.nombre || i18n.t('common.project');
   const sections = [
     buildTeamSection(i18n.t('team.baseTeam'), team?.base || [], 'base'),
@@ -106,19 +105,12 @@ const buildEquipoHTMLForPDF = (project: any, team: any) => {
 <body>
   <div class="container">
     <div class="header">
-      <h1>${title}</h1>
+      <div class="title-bar">
+        <div class="title-text">${title}</div>
+      </div>
     </div>
     <div class="content">
-      <div class="info-panel">
-        <div class="info-item">
-          <div class="info-label">${i18n.t('common.productionLabel')}</div>
-          <div class="info-value">${production}</div>
-        </div>
-        <div class="info-item">
-          <div class="info-label">${i18n.t('common.project')}</div>
-          <div class="info-value">${projectName}</div>
-        </div>
-      </div>
+      ${generateInfoPanel(project, true)}
       ${sections.join('')}
     </div>
     ${generateFooter()}
