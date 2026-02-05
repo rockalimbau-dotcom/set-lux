@@ -18,7 +18,8 @@ export async function exportToPDF(
   selectedDayIdxs?: number[], // Columnas seleccionadas (días)
   includeEmptyRows?: boolean, // Incluir filas vacías
   customRows?: CustomRow[],
-  shootingDayOffset: number = 0
+  shootingDayOffset: number = 0,
+  planFileName?: string
 ): Promise<void> {
   try {
     const html = buildNecesidadesHTMLForPDF(
@@ -30,7 +31,8 @@ export async function exportToPDF(
       selectedDayIdxs,
       includeEmptyRows,
       customRows,
-      shootingDayOffset
+      shootingDayOffset,
+      planFileName
     );
     
     const tempContainer = document.createElement('div');
@@ -105,4 +107,3 @@ export async function exportToPDF(
     throw error;
   }
 }
-

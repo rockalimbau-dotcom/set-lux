@@ -13,55 +13,100 @@ export const baseStyles = `
   }
   
   .header {
-    background: linear-gradient(135deg, #f97316 0%, #3b82f6 100%);
-    color: white;
-    padding: 12px 20px;
-    text-align: center;
+    background: #ffffff;
+    color: #0f172a;
     flex-shrink: 0;
   }
-  
-  .header h1 {
-    margin: 0;
+
+  .title-bar {
+    background: linear-gradient(135deg, #f97316 0%, #3b82f6 100%);
+    color: #ffffff;
+    padding: 10px 20px;
+    text-align: center;
+  }
+
+  .title-text {
     font-size: 16px;
     font-weight: 700;
-    letter-spacing: -0.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.2px;
+  }
+
+  .title-subtext {
+    margin-top: 2px;
+    font-size: 10px;
+    font-weight: 500;
+    opacity: 0.9;
+  }
+
+  .info-panel {
+    background: #f1f5f9;
+    margin: 10px 20px 6px 20px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+  }
+
+  .info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px 18px;
+  }
+
+  .info-grid-top {
+    grid-template-columns: 1fr 1fr;
+    grid-auto-rows: minmax(0, auto);
+  }
+
+  .info-grid-secondary {
+    margin-top: 18px;
+  }
+
+  .info-column {
+    display: grid;
+    gap: 4px;
+  }
+
+  .info-column-right {
+    text-align: right;
+    align-items: flex-end;
+    justify-self: end;
+  }
+
+  .info-row-right {
+    justify-content: flex-end;
+    text-align: right;
+  }
+
+  .info-row {
+    display: flex;
+    gap: 6px;
+    align-items: baseline;
+    flex-wrap: wrap;
+    font-size: 10px;
+    color: #334155;
+  }
+
+  .info-label {
+    font-weight: 700;
+    color: #1f2937;
+  }
+
+  .info-value {
+    font-weight: 500;
+    color: #0f172a;
+  }
+
+  .info-divider {
+    height: 1px;
+    background: #e2e8f0;
+    margin: 6px 0;
   }
   
   .content {
     padding: 12px 20px;
     flex: 1;
     margin-bottom: 0;
-  }
-  
-  .info-panel {
-    background: #f1f5f9;
-    padding: 8px 12px;
-    border-radius: 6px;
-    margin-bottom: 12px;
-    display: flex;
-    gap: 24px;
-    align-items: center;
-    justify-content: flex-start;
-  }
-  
-  .info-item {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  
-  .info-label {
-    font-size: 9px;
-    font-weight: 600;
-    color: #64748b;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-  
-  .info-value {
-    font-size: 11px;
-    color: #1e293b;
-    font-weight: 500;
   }
   
   .week-title {
@@ -125,6 +170,15 @@ export const baseStyles = `
     flex-shrink: 0;
     width: 100%;
     margin-bottom: 8px;
+  }
+
+  .footer-dot {
+    font-weight: 700;
+  }
+
+  .footer-domain {
+    color: #1e293b;
+    font-weight: 600;
   }
   
   .setlux-logo { 
@@ -192,4 +246,3 @@ export const containerPDFStyles = `
     }
   }
 `;
-

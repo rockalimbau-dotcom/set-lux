@@ -13,7 +13,8 @@ import { shareOrSavePDF } from '@shared/utils/pdfShare';
  */
 export async function exportAllToPDF(
   project: any,
-  weekEntries: WeekEntry[]
+  weekEntries: WeekEntry[],
+  planFileName?: string
 ): Promise<void> {
   try {
     const pdf = new jsPDF({
@@ -122,7 +123,8 @@ export async function exportAllToPDF(
         undefined,
         false,
         customRows,
-        shootingDayOffset
+        shootingDayOffset,
+        planFileName
       );
       
       const tempContainer = document.createElement('div');
@@ -204,4 +206,3 @@ export async function exportAllToPDF(
     throw error;
   }
 }
-

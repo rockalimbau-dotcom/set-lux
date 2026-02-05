@@ -30,7 +30,16 @@ export default function NecesidadesTab({ project, readOnly = false }: Necesidade
   // Error boundary state
   const [hasError, setHasError] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string>('');
-  const [importFileName, setImportFileName] = useState('');
+  const planFileKey = useMemo(() => {
+    try {
+      const base = (project as AnyRecord)?.id || (project as AnyRecord)?.nombre || 'demo';
+      return `needs_plan_file_${base}`;
+    } catch {
+      return 'needs_plan_file_demo';
+    }
+  }, [(project as AnyRecord)?.id, (project as AnyRecord)?.nombre]);
+
+  const [planFileName, setPlanFileName] = useLocalStorage<string>(planFileKey, '');
   const [importError, setImportError] = useState('');
   const [importLoading, setImportLoading] = useState(false);
   const [importPreviewOpen, setImportPreviewOpen] = useState(false);
@@ -313,7 +322,8 @@ export default function NecesidadesTab({ project, readOnly = false }: Necesidade
         selectedDayIdxs, // Pasar columnas seleccionadas (días)
         includeEmptyRows, // Incluir filas vacías cuando todo está activo
         customRows,
-        shootingDayOffset
+        shootingDayOffset,
+        planFileName
       );
     } catch (error) {
       console.error('Error exporting PDF:', error);
@@ -323,9 +333,9 @@ export default function NecesidadesTab({ project, readOnly = false }: Necesidade
 
   const handleImportFile = async (file: File) => {
     if (readOnly) return;
-    setImportFileName(file.name);
-    setImportError('');
-    setImportLoading(true);
+      setPlanFileName(file.name);
+      setImportError('');
+      setImportLoading(true);
     try {
       const result = await parsePlanPdf(file);
       if (!result.weeks.length) {
@@ -388,10 +398,7 @@ export default function NecesidadesTab({ project, readOnly = false }: Necesidade
   const exportAllNeedsPDF = async () => {
     try {
       const allEntries = [...preEntries, ...proEntries];
-      await exportAllToPDF(
-        project,
-        allEntries
-      );
+      await exportAllToPDF(project, allEntries, planFileName);
     } catch (error) {
       console.error('Error exporting all needs PDF:', error);
       alert(t('needs.errorGeneratingPDF'));
@@ -406,7 +413,7 @@ export default function NecesidadesTab({ project, readOnly = false }: Necesidade
         const dateB = new Date((b as AnyRecord).startDate || 0).getTime();
         return dateA - dateB;
       });
-      await exportAllToPDF(project, sortedEntries);
+      await exportAllToPDF(project, sortedEntries, planFileName);
     } catch (error) {
       console.error('Error exporting scope PDF:', error);
       alert(t('needs.errorGeneratingPDF'));
@@ -466,7 +473,7 @@ export default function NecesidadesTab({ project, readOnly = false }: Necesidade
         updateCustomRowLabel={updateCustomRowLabel}
         removeCustomRow={removeCustomRow}
         onImportPlanFile={handleImportFile}
-        importFileName={importFileName}
+        importFileName={planFileName}
         importError={importError}
         importLoading={importLoading}
         importPreviewOpen={importPreviewOpen}

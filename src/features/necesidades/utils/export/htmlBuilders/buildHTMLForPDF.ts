@@ -16,7 +16,8 @@ export function buildNecesidadesHTMLForPDF(
   selectedDayIdxs?: number[], // Columnas seleccionadas (días)
   includeEmptyRows?: boolean, // Incluir filas vacías
   customRows?: CustomRow[],
-  shootingDayOffset: number = 0
+  shootingDayOffset: number = 0,
+  planFileName?: string
 ): string {
   const monday = parseYYYYMMDD(weekStart);
   const DAYS = getDays();
@@ -80,13 +81,19 @@ export function buildNecesidadesHTMLForPDF(
     : weekLabel.match(/\d+/)
     ? i18n.t('needs.production')
     : i18n.t('needs.week');
+  const pdfTitle = 'Calendario Eléctricos';
+  const safeValue = (value: unknown): string => {
+    const v = String(value ?? '').trim();
+    return v ? esc(v) : '—';
+  };
+  const planName = String(planFileName ?? '').trim();
 
   return `
     <!DOCTYPE html>
     <html>
     <head>
       <meta charset="utf-8">
-      <title>${esc(project?.nombre || i18n.t('needs.project'))} – ${i18n.t('needs.shootingNeeds')} (${esc(translatedWeekLabel)})</title>
+      <title>${esc(project?.nombre || i18n.t('needs.project'))} – ${esc(pdfTitle)} (${esc(translatedWeekLabel)})</title>
       <style>
         ${baseStyles}
         ${containerPDFStyles}
@@ -95,21 +102,69 @@ export function buildNecesidadesHTMLForPDF(
     <body>
       <div class="container-pdf">
         <div class="header">
-          <h1>${i18n.t('needs.title')} - ${titleSuffix}</h1>
+          <div class="title-bar">
+            <div class="title-text">${esc(pdfTitle)}</div>
+            ${
+              planName
+                ? `<div class="title-subtext">Plan de rodaje: ${esc(planName)}</div>`
+                : ''
+            }
+          </div>
+
+          <div class="info-panel">
+            <div class="info-grid info-grid-top">
+              <div class="info-row info-row-left">
+                <span class="info-label">Producción:</span>
+                <span class="info-value">${safeValue(project?.productora || project?.produccion)}</span>
+              </div>
+              <div class="info-row info-row-right">
+                <span class="info-label">DoP:</span>
+                <span class="info-value">${safeValue(project?.dop)}</span>
+              </div>
+              <div class="info-row info-row-left">
+                <span class="info-label">Proyecto:</span>
+                <span class="info-value">${safeValue(project?.nombre)}</span>
+              </div>
+              <div class="info-row info-row-right">
+                <span class="info-label">Gaffer:</span>
+                <span class="info-value">${safeValue((project as any)?.gaffer)}</span>
+              </div>
+              <div class="info-row info-row-left">
+                <span class="info-label">Almacén:</span>
+                <span class="info-value">${safeValue(project?.almacen)}</span>
+              </div>
+              <div class="info-row info-row-right">
+                <span class="info-label"></span>
+                <span class="info-value"></span>
+              </div>
+            </div>
+
+            <div class="info-grid info-grid-secondary">
+              <div class="info-column">
+                <div class="info-row">
+                  <span class="info-label">Jefe de producción:</span>
+                  <span class="info-value">${safeValue((project as any)?.jefeProduccion)}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Transportes:</span>
+                  <span class="info-value">${safeValue((project as any)?.transportes)}</span>
+                </div>
+              </div>
+              <div class="info-column info-column-right">
+                <div class="info-row">
+                  <span class="info-label">Localizaciones:</span>
+                  <span class="info-value">${safeValue((project as any)?.localizaciones)}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Coordinadora de producción:</span>
+                  <span class="info-value">${safeValue((project as any)?.coordinadoraProduccion)}</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
         
         <div class="content">
-          <div class="info-panel">
-            <div class="info-item">
-              <div class="info-label">${i18n.t('needs.productionCompany')}</div>
-              <div class="info-value">${esc(project?.productora || project?.produccion || '—')}</div>
-            </div>
-            <div class="info-item">
-              <div class="info-label">${i18n.t('needs.project')}</div>
-              <div class="info-value">${esc(project?.nombre || i18n.t('needs.project'))}</div>
-            </div>
-          </div>
-          
           <div class="week-title">${esc(translatedWeekLabel)}</div>
           
           <div class="table-container">
@@ -128,10 +183,12 @@ export function buildNecesidadesHTMLForPDF(
         </div>
         
         <div class="footer">
-          <span>${i18n.t('footer.generatedBy')}</span>
+          <span>Generado con</span>
           <span class="setlux-logo">
             <span class="set">Set</span><span class="lux">Lux</span>
           </span>
+          <span class="footer-dot">·</span>
+          <span class="footer-domain">setlux.app</span>
         </div>
       </div>
     </body>
