@@ -86,8 +86,8 @@ const buildTeamSection = (
 };
 
 const buildEquipoHTMLForPDF = (project: any, team: any) => {
-  const title = 'EQUIPO ELÉCTRICOS';
-  const projectName = project?.nombre || i18n.t('common.project');
+  const title = i18n.t('pdf.teamTitle');
+  const projectName = project?.nombre || i18n.t('pdf.project');
   const sections = [
     buildTeamSection(i18n.t('team.baseTeam'), team?.base || [], 'base'),
     buildTeamSection(i18n.t('team.reinforcements'), team?.reinforcements || [], 'reinforcements'),

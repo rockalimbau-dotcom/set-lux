@@ -626,6 +626,24 @@
     "sendError": "No s'ha pogut enviar. Torna-ho a provar.",
     "thanks": "Gràcies!"
   },
+  "pdf": {
+    "calendarTitle": "Calendari Elèctrics",
+    "reportsTitle": "Reports Elèctrics",
+    "payrollTitle": "Nòmina Elèctrics",
+    "teamTitle": "Equip Elèctrics",
+    "conditionsTitle": "Condicions Elèctrics",
+    "shootingPlanLabel": "Pla de rodatge",
+    "generatedWith": "Generat amb",
+    "production": "Producció",
+    "project": "Projecte",
+    "warehouse": "Magatzem",
+    "dop": "DoP",
+    "gaffer": "Gaffer",
+    "productionManager": "Cap de producció",
+    "transport": "Transport",
+    "locations": "Localitzacions",
+    "productionCoordinator": "Coordinadora de producció"
+  },
   "projectDetail": {
     "confirmStatusChangeTitle": "Confirmar canvi d'estat",
     "confirmStatusChangeMessage": "Estàs segur que vols canviar l'estat de {{projectName}} a {{status}}?",

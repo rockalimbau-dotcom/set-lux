@@ -622,6 +622,24 @@
     "sendError": "Couldn't send. Please try again.",
     "thanks": "Thanks!"
   },
+  "pdf": {
+    "calendarTitle": "Electricians Schedule",
+    "reportsTitle": "Electricians Reports",
+    "payrollTitle": "Electricians Payroll",
+    "teamTitle": "Electricians Team",
+    "conditionsTitle": "Electricians Conditions",
+    "shootingPlanLabel": "Shooting plan",
+    "generatedWith": "Generated with",
+    "production": "Production",
+    "project": "Project",
+    "warehouse": "Warehouse",
+    "dop": "DoP",
+    "gaffer": "Gaffer",
+    "productionManager": "Production manager",
+    "transport": "Transport",
+    "locations": "Locations",
+    "productionCoordinator": "Production coordinator"
+  },
   "projectDetail": {
     "confirmStatusChangeTitle": "Confirm status change",
     "confirmStatusChangeMessage": "Are you sure you want to change the status of {{projectName}} to {{status}}?",

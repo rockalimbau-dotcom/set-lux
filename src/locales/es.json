@@ -623,6 +623,24 @@
     "sendError": "No se pudo enviar. Inténtalo de nuevo.",
     "thanks": "¡Gracias!"
   },
+  "pdf": {
+    "calendarTitle": "Calendario Eléctricos",
+    "reportsTitle": "Reportes Eléctricos",
+    "payrollTitle": "Nómina Eléctricos",
+    "teamTitle": "Equipo Eléctricos",
+    "conditionsTitle": "Condiciones Eléctricos",
+    "shootingPlanLabel": "Plan de rodaje",
+    "generatedWith": "Generado con",
+    "production": "Producción",
+    "project": "Proyecto",
+    "warehouse": "Almacén",
+    "dop": "DoP",
+    "gaffer": "Gaffer",
+    "productionManager": "Jefe de producción",
+    "transport": "Transportes",
+    "locations": "Localizaciones",
+    "productionCoordinator": "Coordinadora de producción"
+  },
   "projectDetail": {
     "confirmStatusChangeTitle": "Confirmar cambio de estado",
     "confirmStatusChangeMessage": "¿Estás seguro de que quieres cambiar el estado de {{projectName}} a {{status}}?",

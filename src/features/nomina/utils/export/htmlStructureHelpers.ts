@@ -33,7 +33,7 @@ export function generateHTMLStructure({
 }: GenerateHTMLStructureParams): string {
   const styles = isPDF ? PDF_STYLES : SCREEN_STYLES;
   const containerClass = isPDF ? 'container-pdf' : 'container';
-  const footerText = isPDF ? i18n.t('footer.generatedBy') : i18n.t('footer.generatedAutomaticallyBy');
+  const footerText = isPDF ? i18n.t('pdf.generatedWith') : i18n.t('footer.generatedAutomaticallyBy');
   const hasValue = (value: unknown): boolean => String(value ?? '').trim() !== '';
   const safeValue = (value: unknown): string => esc(String(value ?? '').trim());
   const renderInfoRow = (label: string, value: unknown, sideClass: string): string =>
@@ -49,22 +49,22 @@ export function generateHTMLStructure({
        <span class="info-value"></span>
      </div>`;
   const topRows = [
-    renderInfoRow('Producción:', project?.productora || project?.produccion, 'info-row-left'),
-    renderInfoRow('DoP:', project?.dop, 'info-row-right'),
-    renderInfoRow('Proyecto:', project?.nombre || (isPDF ? i18n.t('common.project') : ''), 'info-row-left'),
-    renderInfoRow('Gaffer:', (project as any)?.gaffer, 'info-row-right'),
-    renderInfoRow('Almacén:', project?.almacen, 'info-row-left'),
+    renderInfoRow(`${i18n.t('pdf.production')}:`, project?.productora || project?.produccion, 'info-row-left'),
+    renderInfoRow(`${i18n.t('pdf.dop')}:`, project?.dop, 'info-row-right'),
+    renderInfoRow(`${i18n.t('pdf.project')}:`, project?.nombre || (isPDF ? i18n.t('common.project') : ''), 'info-row-left'),
+    renderInfoRow(`${i18n.t('pdf.gaffer')}:`, (project as any)?.gaffer, 'info-row-right'),
+    renderInfoRow(`${i18n.t('pdf.warehouse')}:`, project?.almacen, 'info-row-left'),
   ].filter(Boolean);
   if (topRows.length % 2 === 1) {
     topRows.push(renderEmptyInfoRow('info-row-right'));
   }
   const secondaryLeftRows = [
-    renderInfoRow('Jefe de producción:', (project as any)?.jefeProduccion, 'info-row'),
-    renderInfoRow('Transportes:', (project as any)?.transportes, 'info-row'),
+    renderInfoRow(`${i18n.t('pdf.productionManager')}:`, (project as any)?.jefeProduccion, 'info-row'),
+    renderInfoRow(`${i18n.t('pdf.transport')}:`, (project as any)?.transportes, 'info-row'),
   ].filter(Boolean);
   const secondaryRightRows = [
-    renderInfoRow('Localizaciones:', (project as any)?.localizaciones, 'info-row-right'),
-    renderInfoRow('Coordinadora de producción:', (project as any)?.coordinadoraProduccion, 'info-row-right'),
+    renderInfoRow(`${i18n.t('pdf.locations')}:`, (project as any)?.localizaciones, 'info-row-right'),
+    renderInfoRow(`${i18n.t('pdf.productionCoordinator')}:`, (project as any)?.coordinadoraProduccion, 'info-row-right'),
   ].filter(Boolean);
   const hasSecondaryRows = secondaryLeftRows.length > 0 || secondaryRightRows.length > 0;
 
@@ -72,7 +72,7 @@ export function generateHTMLStructure({
 <html>
 <head>
   <meta charset="utf-8">
-  <title>${esc(project?.nombre || i18n.t('common.project'))} – ${i18n.t('payroll.payrollTitle')} ${esc(monthLabelEs(monthKey, true))}</title>
+  <title>${esc(project?.nombre || i18n.t('pdf.project'))} – ${i18n.t('pdf.payrollTitle')} ${esc(monthLabelEs(monthKey, true))}</title>
   <style>${styles}</style>
 </head>
 <body>
@@ -116,7 +116,7 @@ export function generateHTMLStructure({
     </div>
     
     <div class="footer">
-      <span>Generado con</span>
+      <span>${esc(footerText)}</span>
       <span class="setlux-logo">
         <span class="set">Set</span><span class="lux">Lux</span>
       </span>

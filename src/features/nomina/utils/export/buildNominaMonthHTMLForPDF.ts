@@ -24,7 +24,7 @@ export function buildNominaMonthHTMLForPDF({
     numColumns,
   });
 
-  const title = 'NÓMINA ELÉCTRICOS';
+  const title = i18n.t('pdf.payrollTitle');
   const monthTitle = monthLabelEs(monthKey, true);
   const helpHtml = showHelp
     ? `

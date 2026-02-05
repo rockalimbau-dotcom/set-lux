@@ -16,7 +16,7 @@ export function buildCondicionesPageHTMLForPDF(
   pageBlocks: [string, string][],
   includeHeader: boolean = true
 ): string {
-  const headerTitle = 'CONDICIONES ELÉCTRICOS';
+  const headerTitle = i18n.t('pdf.conditionsTitle');
   
   // Tabla base
   const rolesConPreciosBase = filterRolesWithPrices(PRICE_ROLES, PRICE_HEADERS, model, 'base');
@@ -54,7 +54,7 @@ export function buildCondicionesPageHTMLForPDF(
 <html>
 <head>
   <meta charset="utf-8">
-  <title>${esc(project?.nombre || 'Proyecto')} – ${esc(headerTitle)}</title>
+  <title>${esc(project?.nombre || i18n.t('pdf.project'))} – ${esc(headerTitle)}</title>
   <style>
     ${baseStyles}
   </style>

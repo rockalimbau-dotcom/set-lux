@@ -81,7 +81,7 @@ export function buildNecesidadesHTMLForPDF(
     : weekLabel.match(/\d+/)
     ? i18n.t('needs.production')
     : i18n.t('needs.week');
-  const pdfTitle = 'Calendario Eléctricos';
+  const pdfTitle = i18n.t('pdf.calendarTitle');
   const hasValue = (value: unknown): boolean => String(value ?? '').trim() !== '';
   const safeValue = (value: unknown): string => esc(String(value ?? '').trim());
   const renderInfoRow = (label: string, value: unknown, sideClass: string): string =>
@@ -97,22 +97,22 @@ export function buildNecesidadesHTMLForPDF(
        <span class="info-value"></span>
      </div>`;
   const topRows = [
-    renderInfoRow('Producción:', project?.productora || project?.produccion, 'info-row-left'),
-    renderInfoRow('DoP:', project?.dop, 'info-row-right'),
-    renderInfoRow('Proyecto:', project?.nombre, 'info-row-left'),
-    renderInfoRow('Gaffer:', (project as any)?.gaffer, 'info-row-right'),
-    renderInfoRow('Almacén:', project?.almacen, 'info-row-left'),
+    renderInfoRow(`${i18n.t('pdf.production')}:`, project?.productora || project?.produccion, 'info-row-left'),
+    renderInfoRow(`${i18n.t('pdf.dop')}:`, project?.dop, 'info-row-right'),
+    renderInfoRow(`${i18n.t('pdf.project')}:`, project?.nombre, 'info-row-left'),
+    renderInfoRow(`${i18n.t('pdf.gaffer')}:`, (project as any)?.gaffer, 'info-row-right'),
+    renderInfoRow(`${i18n.t('pdf.warehouse')}:`, project?.almacen, 'info-row-left'),
   ].filter(Boolean);
   if (topRows.length % 2 === 1) {
     topRows.push(renderEmptyInfoRow('info-row-right'));
   }
   const secondaryLeftRows = [
-    renderInfoRow('Jefe de producción:', (project as any)?.jefeProduccion, 'info-row'),
-    renderInfoRow('Transportes:', (project as any)?.transportes, 'info-row'),
+    renderInfoRow(`${i18n.t('pdf.productionManager')}:`, (project as any)?.jefeProduccion, 'info-row'),
+    renderInfoRow(`${i18n.t('pdf.transport')}:`, (project as any)?.transportes, 'info-row'),
   ].filter(Boolean);
   const secondaryRightRows = [
-    renderInfoRow('Localizaciones:', (project as any)?.localizaciones, 'info-row-right'),
-    renderInfoRow('Coordinadora de producción:', (project as any)?.coordinadoraProduccion, 'info-row-right'),
+    renderInfoRow(`${i18n.t('pdf.locations')}:`, (project as any)?.localizaciones, 'info-row-right'),
+    renderInfoRow(`${i18n.t('pdf.productionCoordinator')}:`, (project as any)?.coordinadoraProduccion, 'info-row-right'),
   ].filter(Boolean);
   const hasSecondaryRows = secondaryLeftRows.length > 0 || secondaryRightRows.length > 0;
   const planName = String(planFileName ?? '').trim();
@@ -135,7 +135,7 @@ export function buildNecesidadesHTMLForPDF(
             <div class="title-text">${esc(pdfTitle)}</div>
             ${
               planName
-                ? `<div class="title-subtext">Plan de rodaje: ${esc(planName)}</div>`
+                ? `<div class="title-subtext">${esc(i18n.t('pdf.shootingPlanLabel'))}: ${esc(planName)}</div>`
                 : ''
             }
           </div>
@@ -179,7 +179,7 @@ export function buildNecesidadesHTMLForPDF(
         </div>
         
         <div class="footer">
-          <span>Generado con</span>
+          <span>${esc(i18n.t('pdf.generatedWith'))}</span>
           <span class="setlux-logo">
             <span class="set">Set</span><span class="lux">Lux</span>
           </span>
