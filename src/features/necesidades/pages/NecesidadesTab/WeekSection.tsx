@@ -1021,14 +1021,14 @@ export function WeekSection({
                       </Td>
                     )}
                     <Td className='border border-neutral-border px-1 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-1 font-semibold bg-white/5 whitespace-normal break-words text-[9px] sm:text-[10px] md:text-xs lg:text-sm align-middle'>
-                      <div className='flex items-center gap-1'>
+                      <div className='flex items-center gap-1 w-full min-w-0'>
                         <input
                           type='text'
                           value={row.label || ''}
                           onChange={e => !readOnly && updateCustomRowLabel(wid, row.id, e.target.value)}
                           placeholder={t('needs.customRowPlaceholder')}
                           disabled={readOnly}
-                          className={`flex-1 bg-transparent focus:outline-none ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+                          className={`flex-1 min-w-0 w-full bg-transparent focus:outline-none ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
                         />
                         <button
                           type='button'
@@ -1052,7 +1052,7 @@ export function WeekSection({
                       const value = (wk?.days?.[i]?.[row.fieldKey] as string) || '';
                       return (
                         <Td key={`${rowKey}_${d.key}`} align='middle' className='text-center'>
-                          <div className='flex flex-col items-center justify-center gap-2'>
+                          <div className='flex flex-col items-center justify-center gap-2 w-full'>
                             <TextAreaAuto
                               value={value}
                               onChange={(val: string) => !readOnly && setCell(wid, i, row.fieldKey, val)}
@@ -1186,4 +1186,3 @@ export function WeekSection({
     </section>
   );
 }
-

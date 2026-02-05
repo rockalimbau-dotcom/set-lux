@@ -183,6 +183,7 @@ export default function ListRow({ label, listKey, notesKey, weekId, weekObj, con
                     role={(m as AnyRecord)?.role}
                     name={(m as AnyRecord)?.name}
                     gender={(m as AnyRecord)?.gender}
+                    source={(m as AnyRecord)?.source}
                     context={context}
                     onRemove={() => {
                       if (readOnly) return;
@@ -228,5 +229,4 @@ export default function ListRow({ label, listKey, notesKey, weekId, weekObj, con
     </>
   );
 }
-
 

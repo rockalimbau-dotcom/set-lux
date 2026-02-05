@@ -6,12 +6,13 @@ type ChipProps = {
   role?: string;
   name?: string;
   gender?: 'male' | 'female' | 'neutral';
+  source?: 'base' | 'pre' | 'pick' | 'ref' | string;
   onRemove?: () => void;
   context?: 'prelight' | 'pickup' | string;
   readOnly?: boolean;
 };
 
-export default function Chip({ role, name, gender, onRemove, context, readOnly = false }: ChipProps) {
+export default function Chip({ role, name, gender, source, onRemove, context, readOnly = false }: ChipProps) {
   const { t } = useTranslation();
   
   // Detectar el tema actual
@@ -55,9 +56,12 @@ export default function Chip({ role, name, gender, onRemove, context, readOnly =
   
   // Si el rol es REF o empieza con REF (REFG, REFBB, etc.), no añadir sufijo P/R
   const isRefRole = base === 'REF' || (base && base.startsWith('REF') && base.length > 3);
+  const sourceKey = String(source || '').toLowerCase();
   if (!isRefRole) {
-    if (context === 'prelight') label = `${label}P`;
-    if (context === 'pickup') label = `${label}R`;
+    const shouldPreSuffix = context === 'prelight' && sourceKey === 'pre';
+    const shouldPickSuffix = context === 'pickup' && sourceKey === 'pick';
+    if (shouldPreSuffix) label = `${label}P`;
+    if (shouldPickSuffix) label = `${label}R`;
   }
   label = applyGenderToBadge(label, gender);
   
@@ -95,5 +99,4 @@ export default function Chip({ role, name, gender, onRemove, context, readOnly =
     </span>
   );
 }
-
 

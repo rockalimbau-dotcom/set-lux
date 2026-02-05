@@ -6,6 +6,7 @@ import i18n from '../../../../i18n/config';
 import { parseYYYYMMDD, addDays, pad2 } from '@shared/utils/date';
 import { mdKey } from '@shared/utils/dateKey';
 import { relabelNeedsWeekByCalendar } from '../../utils/calendar';
+import { sortTeam } from '@features/equipo/pages/EquipoTab/EquipoTabUtils';
 
 interface UseNeedsActionsProps {
   storageKey: string;
@@ -347,7 +348,12 @@ export function useNeedsActions({
         const day: AnyRecord = { ...(w.days?.[dayIdx] || {}) };
         const list = Array.isArray(day[listKey]) ? [...(day[listKey] as AnyRecord[])] : [];
         list.splice(idx, 1);
-        day[listKey] = list;
+        day[listKey] = sortTeam(
+          list.map((m: AnyRecord, i: number) => ({
+            ...m,
+            seq: m?.seq ?? i,
+          }))
+        );
         return {
           ...w,
           days: { ...w.days, [dayIdx]: day },
@@ -489,4 +495,3 @@ export function useNeedsActions({
     deleteWeek,
   };
 }
-

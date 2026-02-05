@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { translateJornadaType as translateJornadaTypeUtil } from '@shared/utils/jornadaTranslations';
 import { applyGenderToBadge, getRoleBadgeCode } from '@shared/constants/roles';
 import { useLocalStorage } from '@shared/hooks/useLocalStorage';
+import { sortTeam } from '@features/equipo/pages/EquipoTab/EquipoTabUtils';
 import Chip from './Chip';
 import { ConfirmModal } from './ConfirmModal';
 import TextAreaAuto from './TextAreaAuto';
@@ -428,6 +429,14 @@ export function MembersRow({
     return translateJornadaTypeUtil(tipo, translateFn);
   };
 
+  const sortMemberList = (list: AnyRecord[]) =>
+    sortTeam(
+      (list || []).map((m: AnyRecord, idx: number) => ({
+        ...m,
+        seq: m?.seq ?? idx,
+      }))
+    );
+
   return (
     <>
       <tr>
@@ -470,10 +479,20 @@ export function MembersRow({
           const jornadaNormalized = String(jornadaValue).trim().toLowerCase();
           const isCrewRestOrEnd =
             listKey === 'crewList' && (jornadaNormalized === 'descanso' || jornadaNormalized === 'fin');
+          const isOfficeOrLocation =
+            jornadaValue === 'Oficina' || jornadaValue === 'Localizar';
+          const isBaseOnlyJornada =
+            jornadaValue === 'Carga' ||
+            jornadaValue === 'Descarga' ||
+            jornadaValue === 'Pruebas de cámara' ||
+            jornadaValue === 'Prelight' ||
+            jornadaValue === 'Recogida';
           const roleFilteredOptions =
-            listKey === 'crewList' && (jornadaValue === 'Oficina' || jornadaValue === 'Localizar')
+            listKey === 'crewList' && isOfficeOrLocation
               ? options.filter(opt => opt?.role === 'G' || opt?.role === 'BB')
-              : options;
+              : listKey === 'crewList' && isBaseOnlyJornada
+                ? options
+                : options;
           const startValue = startKey ? (day as AnyRecord)[startKey] || '' : '';
           const endValue = endKey ? (day as AnyRecord)[endKey] || '' : '';
           const dropdownKey = jornadaKey ? `${weekId}_${listKey}_${jornadaKey}_${i}` : '';
@@ -502,7 +521,72 @@ export function MembersRow({
                   {dropdownState && (
                     <JornadaDropdownCell
                       value={jornadaValue}
-                      onChange={(nextValue) => !readOnly && setCell(weekId, i, jornadaKey, nextValue)}
+                      onChange={(nextValue) => {
+                        if (readOnly) return;
+                        setCell(weekId, i, jornadaKey, nextValue);
+                        if (listKey !== 'crewList') return;
+                        if (nextValue === 'Fin') {
+                          const clearKeys = [
+                            'crewList',
+                            'refList',
+                            'preList',
+                            'pickList',
+                            'crewTxt',
+                            'refTxt',
+                            'preNote',
+                            'pickNote',
+                            'crewStart',
+                            'crewEnd',
+                            'preStart',
+                            'preEnd',
+                            'pickStart',
+                            'pickEnd',
+                            'prelightTipo',
+                            'pickupTipo',
+                            'loc',
+                            'seq',
+                          ];
+                          for (let dayIdx = i; dayIdx < 7; dayIdx += 1) {
+                            clearKeys.forEach(key => {
+                              const emptyValue = key.endsWith('List') ? [] : '';
+                              setCell(weekId, dayIdx, key, emptyValue);
+                            });
+                            setCell(weekId, dayIdx, 'crewTipo', 'Fin');
+                          }
+                          return;
+                        }
+                        const currentList = Array.isArray(list) ? list : [];
+                        const currentJornada = String(jornadaValue || '').trim().toLowerCase();
+                        const nextJornada = String(nextValue || '').trim().toLowerCase();
+                        const wasRest = currentJornada === 'descanso' || currentJornada === 'fin';
+                        const isEmpty = currentList.length === 0;
+                        if (!wasRest && !isEmpty) return;
+                        const baseTeam = (options || [])
+                          .map(m => ({
+                            role: (m?.role || '').toUpperCase(),
+                            name: (m?.name || '').trim(),
+                            gender: m?.gender,
+                            source: m?.source || 'base',
+                          }))
+                          .filter(m => m.role || m.name);
+                        const isOfficeOrLocationNext =
+                          nextValue === 'Oficina' || nextValue === 'Localizar';
+                        const isBaseOnlyNext =
+                          nextValue === 'Carga' ||
+                          nextValue === 'Descarga' ||
+                          nextValue === 'Pruebas de cámara' ||
+                          nextValue === 'Prelight' ||
+                          nextValue === 'Recogida' ||
+                          nextValue === 'Rodaje' ||
+                          nextValue === 'Rodaje Festivo' ||
+                          nextValue === 'Travel Day';
+                        if (isOfficeOrLocationNext) {
+                          const minimal = baseTeam.filter(m => m.role === 'G' || m.role === 'BB');
+                          setCell(weekId, i, listKey, minimal);
+                        } else if (isBaseOnlyNext) {
+                          setCell(weekId, i, listKey, baseTeam);
+                        }
+                      }}
                       readOnly={readOnly}
                       dropdownKey={dropdownKey}
                       dropdownState={dropdownState}
@@ -544,7 +628,7 @@ export function MembersRow({
                     {list.length === 0 && (
                       <span className='text-[9px] sm:text-[10px] md:text-xs text-zinc-400'>—</span>
                     )}
-                {list.map((m, idx) => {
+                  {list.map((m, idx) => {
                   const roleKey = (m?.role || '').toString().trim().toUpperCase();
                   const nameKey = (m?.name || '').toString().trim();
                   const mapKey = `${roleKey}::${nameKey}`;
@@ -555,6 +639,7 @@ export function MembersRow({
                         role={(m as AnyRecord)?.role}
                         name={(m as AnyRecord)?.name}
                     gender={gender}
+                        source={(m as AnyRecord)?.source}
                         context={chipContext}
                         onRemove={() => {
                           if (readOnly) return;
@@ -584,14 +669,15 @@ export function MembersRow({
                       const key = `${(member?.role || '').toUpperCase()}::${(member?.name || '').trim()}`;
                       const exists = current.some(m => `${(m?.role || '').toUpperCase()}::${(m?.name || '').trim()}` === key);
                       if (exists) return;
-                      const next = [
+                      const next = sortMemberList([
                         ...current,
                         {
                           role: (member?.role || '').toUpperCase(),
                           name: (member?.name || '').trim(),
                           gender: member?.gender,
+                          source: member?.source || 'base',
                         }
-                      ];
+                      ]);
                       setCell(weekId, i, listKey, next);
                     }}
                   />
