@@ -133,7 +133,8 @@ function AppInner() {
     };
   }, [location.pathname, activeProject]);
 
-  const tutorialSteps = useMemo<TutorialStep[]>(() => ([
+  const tutorialSteps = useMemo<TutorialStep[]>(() => {
+    const steps: TutorialStep[] = [
     {
       id: 'theme',
       title: t('tutorial.steps.theme.title'),
@@ -304,7 +305,14 @@ function AppInner() {
       tooltipPlacement: 'top',
       tooltipMaxWidth: 280,
     },
-  ]), [t]);
+    ];
+
+    const isDiario = activeProject?.conditions?.tipo === 'diario';
+    if (!isDiario) return steps;
+
+    const removeIds = new Set(['reports-extra', 'reports-range', 'payroll-range']);
+    return steps.filter(step => !removeIds.has(step.id));
+  }, [t, activeProject?.conditions?.tipo]);
 
   const findStepIndex = (id: string) => tutorialSteps.findIndex(step => step.id === id);
 
@@ -401,6 +409,25 @@ function AppInner() {
       window.removeEventListener('tutorial-planning-week-added', handler as EventListener);
     };
   }, [tutorialOpen, tutorialSteps]);
+
+  useEffect(() => {
+    if (!tutorialOpen) return;
+    const isDiario = activeProject?.conditions?.tipo === 'diario';
+    if (!isDiario) return;
+    const currentId = tutorialSteps[tutorialStep]?.id;
+    if (!activeProject?.id || !currentId) return;
+
+    if (currentId === 'payroll-card') {
+      const targetPath = `/project/${activeProject.id}`;
+      if (location.pathname !== targetPath) navigate(targetPath);
+      return;
+    }
+
+    if (currentId === 'reports-week') {
+      const targetPath = `/project/${activeProject.id}/reportes`;
+      if (location.pathname !== targetPath) navigate(targetPath);
+    }
+  }, [tutorialOpen, tutorialStep, tutorialSteps, activeProject?.conditions?.tipo, activeProject?.id, location.pathname, navigate]);
 
   useEffect(() => {
     if (!tutorialOpen) return;

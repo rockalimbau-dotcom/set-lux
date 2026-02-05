@@ -23,6 +23,12 @@ export function parsePlanText(text: string): ImportResult {
   const profile = detectProfile(rawLines);
   const year = extractYear(rawLines);
   const warnings: string[] = [];
+  const debugSnippets = rawLines.slice(0, 80);
+  const debugScheduleLines = rawLines
+    .map((line, index) => ({ line, index }))
+    .filter(item => extractHorarioRanges(item.line).length > 0)
+    .slice(0, 40)
+    .map(item => `${item.index}: ${item.line}`);
   let dayStartCount = 0;
   let scheduleLineCount = 0;
   let scheduleWithoutDayCount = 0;
@@ -485,7 +491,22 @@ export function parsePlanText(text: string): ImportResult {
   if (scheduleWithoutDayCount > 0) {
     warnings.push(`Horarios sin día activo: ${scheduleWithoutDayCount}.`);
   }
-  // Keep warnings focused on user-relevant issues (no debug/diagnostic lines).
+  warnings.push(
+    `Diagnóstico: perfil=${profile}; días=${dayStartCount}; fechas calendario=${calendarDatesCount}; horarios=${scheduleLineCount}.`
+  );
+  if (scheduleSamples.length > 0) {
+    warnings.push(`Ejemplos horario: ${scheduleSamples.join(' | ')}`);
+  }
+  warnings.push(`Debug primeras líneas: ${debugSnippets.join(' | ')}`);
+  if (debugScheduleLines.length > 0) {
+    warnings.push(`Debug líneas con horario: ${debugScheduleLines.join(' | ')}`);
+  }
+  if (parsedDays.length > 0) {
+    const daySamples = parsedDays
+      .slice(0, 10)
+      .map(day => `${day.dateISO}=${day.crewStart || ''}-${day.crewEnd || ''}`);
+    warnings.push(`Debug días con horario: ${daySamples.join(' | ')}`);
+  }
 
   const weekMap = new Map<string, ImportWeek>();
   const hasDaySchedule = (day: ImportDay) => Boolean(day.crewStart) || Boolean(day.crewEnd);
