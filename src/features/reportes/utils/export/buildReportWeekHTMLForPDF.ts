@@ -80,7 +80,9 @@ export function buildReportWeekHTMLForPDF({
 <body>
   <div class="container-pdf">
     <div class="header">
-      <h1>${generateHeaderTitle(title)}</h1>
+      <div class="title-bar">
+        <div class="title-text">${generateHeaderTitle(title)}</div>
+      </div>
     </div>
     <div class="content">
       ${generateInfoPanel(project)}
