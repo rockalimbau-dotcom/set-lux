@@ -13,8 +13,13 @@ export function EditProjectModal({ project, onClose, onSave }: EditProjectModalP
   const [form, setForm] = useState<ProjectForm>(() => ({
     nombre: project?.nombre || '',
     dop: project?.dop || '',
+    gaffer: project?.gaffer || '',
     almacen: project?.almacen || '',
     productora: project?.productora || '',
+    jefeProduccion: project?.jefeProduccion || '',
+    transportes: project?.transportes || '',
+    localizaciones: project?.localizaciones || '',
+    coordinadoraProduccion: project?.coordinadoraProduccion || '',
     estado: project?.estado || 'Activo',
     condicionesTipo: project?.conditions?.tipo || 'semanal',
     country: project?.country || 'ES',
@@ -47,8 +52,13 @@ export function EditProjectModal({ project, onClose, onSave }: EditProjectModalP
   const [inputHovered, setInputHovered] = useState<InputHoverState>({
     proyecto: false,
     dop: false,
+    gaffer: false,
     almacen: false,
     productora: false,
+    jefeProduccion: false,
+    transportes: false,
+    localizaciones: false,
+    coordinadoraProduccion: false,
   });
 
   // Estado para el hover del botón Cancelar
@@ -85,8 +95,13 @@ export function EditProjectModal({ project, onClose, onSave }: EditProjectModalP
       ...project,
       nombre: form.nombre.trim(),
       dop: form.dop,
+      gaffer: form.gaffer,
       almacen: form.almacen,
       productora: form.productora,
+      jefeProduccion: form.jefeProduccion,
+      transportes: form.transportes,
+      localizaciones: form.localizaciones,
+      coordinadoraProduccion: form.coordinadoraProduccion,
       estado: form.estado,
       conditions: {
         ...(project?.conditions || {}),
@@ -102,7 +117,7 @@ export function EditProjectModal({ project, onClose, onSave }: EditProjectModalP
 
   return (
     <div className='fixed inset-0 bg-black/60 grid place-items-center p-6 sm:p-6 md:p-6 z-50 overflow-y-auto'>
-      <div className='w-full max-w-[200px] sm:max-w-[240px] md:max-w-[280px] lg:max-w-xs xl:max-w-sm 2xl:max-w-md rounded sm:rounded-md md:rounded-lg lg:rounded-xl xl:rounded-2xl border border-neutral-border bg-neutral-panel p-2 sm:p-2.5 md:p-3 lg:p-4 xl:p-5 2xl:p-6 my-auto max-h-[75vh] sm:max-h-[80vh] overflow-y-auto'>
+      <div className='w-full max-w-[260px] sm:max-w-[320px] md:max-w-md lg:max-w-lg xl:max-w-xl 2xl:max-w-2xl rounded sm:rounded-md md:rounded-lg lg:rounded-xl xl:rounded-2xl border border-neutral-border bg-neutral-panel p-2 sm:p-2.5 md:p-3 lg:p-4 xl:p-5 2xl:p-6 my-auto max-h-[75vh] sm:max-h-[80vh] overflow-y-auto'>
         <h3
           className='text-[10px] sm:text-xs md:text-sm lg:text-base xl:text-lg font-semibold mb-1 sm:mb-1.5 md:mb-2 lg:mb-3 xl:mb-4'
           style={{ color: theme === 'light' ? '#0468BF' : '#F27405' }}

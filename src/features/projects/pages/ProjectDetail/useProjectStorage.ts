@@ -70,17 +70,41 @@ export function useProjectStorage({ project }: UseProjectStorageProps): UseProje
     const dopChanged = project?.dop !== proj?.dop;
     const almacenChanged = project?.almacen !== proj?.almacen;
     const productoraChanged = project?.productora !== proj?.productora;
+    const gafferChanged = project?.gaffer !== proj?.gaffer;
+    const jefeProduccionChanged = project?.jefeProduccion !== proj?.jefeProduccion;
+    const transportesChanged = project?.transportes !== proj?.transportes;
+    const localizacionesChanged = project?.localizaciones !== proj?.localizaciones;
+    const coordinadoraProduccionChanged = project?.coordinadoraProduccion !== proj?.coordinadoraProduccion;
     const countryChanged = project?.country !== proj?.country;
     const regionChanged = project?.region !== proj?.region;
     
     // Si hay cambios importantes, actualizar el proyecto en localStorage
-    if (tipoChanged || estadoChanged || nombreChanged || dopChanged || almacenChanged || productoraChanged || countryChanged || regionChanged) {
+    if (
+      tipoChanged ||
+      estadoChanged ||
+      nombreChanged ||
+      dopChanged ||
+      almacenChanged ||
+      productoraChanged ||
+      gafferChanged ||
+      jefeProduccionChanged ||
+      transportesChanged ||
+      localizacionesChanged ||
+      coordinadoraProduccionChanged ||
+      countryChanged ||
+      regionChanged
+    ) {
       setProj(prev => ({
         ...prev,
         nombre: project.nombre,
         dop: project.dop,
         almacen: project.almacen,
         productora: project.productora,
+        gaffer: project.gaffer,
+        jefeProduccion: project.jefeProduccion,
+        transportes: project.transportes,
+        localizaciones: project.localizaciones,
+        coordinadoraProduccion: project.coordinadoraProduccion,
         estado: project.estado,
         country: project.country,
         region: project.region,
@@ -91,7 +115,24 @@ export function useProjectStorage({ project }: UseProjectStorageProps): UseProje
         },
       }));
     }
-  }, [project, loaded, proj?.conditions?.tipo, proj?.estado, proj?.nombre, proj?.dop, proj?.almacen, proj?.productora, proj?.country, proj?.region, setProj]);
+  }, [
+    project,
+    loaded,
+    proj?.conditions?.tipo,
+    proj?.estado,
+    proj?.nombre,
+    proj?.dop,
+    proj?.almacen,
+    proj?.productora,
+    proj?.gaffer,
+    proj?.jefeProduccion,
+    proj?.transportes,
+    proj?.localizaciones,
+    proj?.coordinadoraProduccion,
+    proj?.country,
+    proj?.region,
+    setProj
+  ]);
 
   // Sincronizar cambios de equipo hacia el localStorage separado
   useEffect(() => {
@@ -115,4 +156,3 @@ export function useProjectStorage({ project }: UseProjectStorageProps): UseProje
 
   return { proj, setProj, condTipo, isActive };
 }
-

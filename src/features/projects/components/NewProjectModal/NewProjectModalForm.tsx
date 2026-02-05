@@ -73,15 +73,15 @@ export function NewProjectModalForm({
       />
 
       <FormInput
-        label={t('common.dop')}
-        value={form.dop}
-        onChange={value => setForm({ ...form, dop: value })}
+        label={t('common.production')}
+        value={form.productora}
+        onChange={value => setForm({ ...form, productora: value })}
         theme={theme}
-        isHovered={inputHovered.dop}
-        onMouseEnter={() => setInputHovered(prev => ({ ...prev, dop: true }))}
-        onMouseLeave={() => setInputHovered(prev => ({ ...prev, dop: false }))}
-        onBlur={() => setInputHovered(prev => ({ ...prev, dop: false }))}
-        fieldKey='dop'
+        isHovered={inputHovered.productora}
+        onMouseEnter={() => setInputHovered(prev => ({ ...prev, productora: true }))}
+        onMouseLeave={() => setInputHovered(prev => ({ ...prev, productora: false }))}
+        onBlur={() => setInputHovered(prev => ({ ...prev, productora: false }))}
+        fieldKey='productora'
       />
 
       <FormInput
@@ -97,15 +97,75 @@ export function NewProjectModalForm({
       />
 
       <FormInput
-        label={t('common.production')}
-        value={form.productora}
-        onChange={value => setForm({ ...form, productora: value })}
+        label={t('common.gaffer')}
+        value={form.gaffer}
+        onChange={value => setForm({ ...form, gaffer: value })}
         theme={theme}
-        isHovered={inputHovered.productora}
-        onMouseEnter={() => setInputHovered(prev => ({ ...prev, productora: true }))}
-        onMouseLeave={() => setInputHovered(prev => ({ ...prev, productora: false }))}
-        onBlur={() => setInputHovered(prev => ({ ...prev, productora: false }))}
-        fieldKey='productora'
+        isHovered={inputHovered.gaffer}
+        onMouseEnter={() => setInputHovered(prev => ({ ...prev, gaffer: true }))}
+        onMouseLeave={() => setInputHovered(prev => ({ ...prev, gaffer: false }))}
+        onBlur={() => setInputHovered(prev => ({ ...prev, gaffer: false }))}
+        fieldKey='gaffer'
+      />
+
+      <FormInput
+        label={t('common.productionManager')}
+        value={form.jefeProduccion}
+        onChange={value => setForm({ ...form, jefeProduccion: value })}
+        theme={theme}
+        isHovered={inputHovered.jefeProduccion}
+        onMouseEnter={() => setInputHovered(prev => ({ ...prev, jefeProduccion: true }))}
+        onMouseLeave={() => setInputHovered(prev => ({ ...prev, jefeProduccion: false }))}
+        onBlur={() => setInputHovered(prev => ({ ...prev, jefeProduccion: false }))}
+        fieldKey='jefeProduccion'
+      />
+
+      <FormInput
+        label={t('common.dop')}
+        value={form.dop}
+        onChange={value => setForm({ ...form, dop: value })}
+        theme={theme}
+        isHovered={inputHovered.dop}
+        onMouseEnter={() => setInputHovered(prev => ({ ...prev, dop: true }))}
+        onMouseLeave={() => setInputHovered(prev => ({ ...prev, dop: false }))}
+        onBlur={() => setInputHovered(prev => ({ ...prev, dop: false }))}
+        fieldKey='dop'
+      />
+
+      <FormInput
+        label={t('common.transportes')}
+        value={form.transportes}
+        onChange={value => setForm({ ...form, transportes: value })}
+        theme={theme}
+        isHovered={inputHovered.transportes}
+        onMouseEnter={() => setInputHovered(prev => ({ ...prev, transportes: true }))}
+        onMouseLeave={() => setInputHovered(prev => ({ ...prev, transportes: false }))}
+        onBlur={() => setInputHovered(prev => ({ ...prev, transportes: false }))}
+        fieldKey='transportes'
+      />
+
+      <FormInput
+        label={t('common.locations')}
+        value={form.localizaciones}
+        onChange={value => setForm({ ...form, localizaciones: value })}
+        theme={theme}
+        isHovered={inputHovered.localizaciones}
+        onMouseEnter={() => setInputHovered(prev => ({ ...prev, localizaciones: true }))}
+        onMouseLeave={() => setInputHovered(prev => ({ ...prev, localizaciones: false }))}
+        onBlur={() => setInputHovered(prev => ({ ...prev, localizaciones: false }))}
+        fieldKey='localizaciones'
+      />
+
+      <FormInput
+        label={t('common.productionCoordinator')}
+        value={form.coordinadoraProduccion}
+        onChange={value => setForm({ ...form, coordinadoraProduccion: value })}
+        theme={theme}
+        isHovered={inputHovered.coordinadoraProduccion}
+        onMouseEnter={() => setInputHovered(prev => ({ ...prev, coordinadoraProduccion: true }))}
+        onMouseLeave={() => setInputHovered(prev => ({ ...prev, coordinadoraProduccion: false }))}
+        onBlur={() => setInputHovered(prev => ({ ...prev, coordinadoraProduccion: false }))}
+        fieldKey='coordinadoraProduccion'
       />
 
       <FormDropdown
@@ -175,4 +235,3 @@ export function NewProjectModalForm({
     </div>
   );
 }
-

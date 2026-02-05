@@ -11,6 +11,11 @@ export interface Project {
   dop?: string;
   almacen?: string;
   productora?: string;
+  gaffer?: string;
+  jefeProduccion?: string;
+  transportes?: string;
+  localizaciones?: string;
+  coordinadoraProduccion?: string;
   estado: ProjectStatus;
   conditions?: ProjectConditions;
   country?: string;
@@ -22,6 +27,11 @@ export interface ProjectForm {
   dop: string;
   almacen: string;
   productora: string;
+  gaffer: string;
+  jefeProduccion: string;
+  transportes: string;
+  localizaciones: string;
+  coordinadoraProduccion: string;
   estado: ProjectStatus;
   condicionesTipo: ProjectMode;
   country: string;
@@ -39,4 +49,3 @@ export interface ProjectsScreenProps {
   onConfig?: () => void;
   onSalir?: () => void;
 }
-

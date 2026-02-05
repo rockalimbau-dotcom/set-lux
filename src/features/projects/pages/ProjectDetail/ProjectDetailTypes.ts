@@ -25,6 +25,14 @@ export interface ProjectTeam {
 export interface Project {
   id: string;
   nombre: string;
+  dop?: string;
+  almacen?: string;
+  productora?: string;
+  gaffer?: string;
+  jefeProduccion?: string;
+  transportes?: string;
+  localizaciones?: string;
+  coordinadoraProduccion?: string;
   estado: ProjectStatus;
   team?: ProjectTeam;
   conditions?: ProjectConditions;
@@ -45,4 +53,3 @@ export interface ProjectDetailProps {
 }
 
 export type ProjectTab = 'equipo' | 'reportes' | 'nomina' | 'necesidades' | 'condiciones';
-

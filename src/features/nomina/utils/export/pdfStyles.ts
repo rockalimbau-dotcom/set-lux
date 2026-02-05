@@ -70,6 +70,17 @@ export const PDF_STYLES = `
       margin-top: 18px;
     }
 
+    .info-column {
+      display: grid;
+      gap: 4px;
+    }
+
+    .info-column-right {
+      text-align: right;
+      align-items: flex-end;
+      justify-self: end;
+    }
+
     .month-title {
       margin: 18px 0 10px 0;
       font-size: 13px;

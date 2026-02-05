@@ -15,8 +15,13 @@ export interface DropdownState {
 export interface InputHoverState {
   proyecto: boolean;
   dop: boolean;
+  gaffer: boolean;
   almacen: boolean;
   productora: boolean;
+  jefeProduccion: boolean;
+  transportes: boolean;
+  localizaciones: boolean;
+  coordinadoraProduccion: boolean;
 }
 
 export interface EditProjectModalFormProps {
@@ -38,4 +43,3 @@ export interface EditProjectModalFormProps {
   paisRef: React.RefObject<HTMLDivElement>;
   regionRef: React.RefObject<HTMLDivElement>;
 }
-

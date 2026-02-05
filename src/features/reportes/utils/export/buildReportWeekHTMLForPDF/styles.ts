@@ -48,6 +48,15 @@ export const baseStyles = `
   .info-grid-secondary {
     margin-top: 18px;
   }
+  .info-column {
+    display: grid;
+    gap: 4px;
+  }
+  .info-column-right {
+    text-align: right;
+    align-items: flex-end;
+    justify-self: end;
+  }
   .info-row {
     display: flex;
     gap: 6px;

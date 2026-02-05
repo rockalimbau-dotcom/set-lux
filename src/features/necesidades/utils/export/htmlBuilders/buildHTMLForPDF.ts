@@ -82,10 +82,39 @@ export function buildNecesidadesHTMLForPDF(
     ? i18n.t('needs.production')
     : i18n.t('needs.week');
   const pdfTitle = 'Calendario Eléctricos';
-  const safeValue = (value: unknown): string => {
-    const v = String(value ?? '').trim();
-    return v ? esc(v) : '—';
-  };
+  const hasValue = (value: unknown): boolean => String(value ?? '').trim() !== '';
+  const safeValue = (value: unknown): string => esc(String(value ?? '').trim());
+  const renderInfoRow = (label: string, value: unknown, sideClass: string): string =>
+    hasValue(value)
+      ? `<div class="info-row ${sideClass}">
+           <span class="info-label">${label}</span>
+           <span class="info-value">${safeValue(value)}</span>
+         </div>`
+      : '';
+  const renderEmptyInfoRow = (sideClass: string): string =>
+    `<div class="info-row ${sideClass}">
+       <span class="info-label"></span>
+       <span class="info-value"></span>
+     </div>`;
+  const topRows = [
+    renderInfoRow('Producción:', project?.productora || project?.produccion, 'info-row-left'),
+    renderInfoRow('DoP:', project?.dop, 'info-row-right'),
+    renderInfoRow('Proyecto:', project?.nombre, 'info-row-left'),
+    renderInfoRow('Gaffer:', (project as any)?.gaffer, 'info-row-right'),
+    renderInfoRow('Almacén:', project?.almacen, 'info-row-left'),
+  ].filter(Boolean);
+  if (topRows.length % 2 === 1) {
+    topRows.push(renderEmptyInfoRow('info-row-right'));
+  }
+  const secondaryLeftRows = [
+    renderInfoRow('Jefe de producción:', (project as any)?.jefeProduccion, 'info-row'),
+    renderInfoRow('Transportes:', (project as any)?.transportes, 'info-row'),
+  ].filter(Boolean);
+  const secondaryRightRows = [
+    renderInfoRow('Localizaciones:', (project as any)?.localizaciones, 'info-row-right'),
+    renderInfoRow('Coordinadora de producción:', (project as any)?.coordinadoraProduccion, 'info-row-right'),
+  ].filter(Boolean);
+  const hasSecondaryRows = secondaryLeftRows.length > 0 || secondaryRightRows.length > 0;
   const planName = String(planFileName ?? '').trim();
 
   return `
@@ -113,54 +142,21 @@ export function buildNecesidadesHTMLForPDF(
 
           <div class="info-panel">
             <div class="info-grid info-grid-top">
-              <div class="info-row info-row-left">
-                <span class="info-label">Producción:</span>
-                <span class="info-value">${safeValue(project?.productora || project?.produccion)}</span>
-              </div>
-              <div class="info-row info-row-right">
-                <span class="info-label">DoP:</span>
-                <span class="info-value">${safeValue(project?.dop)}</span>
-              </div>
-              <div class="info-row info-row-left">
-                <span class="info-label">Proyecto:</span>
-                <span class="info-value">${safeValue(project?.nombre)}</span>
-              </div>
-              <div class="info-row info-row-right">
-                <span class="info-label">Gaffer:</span>
-                <span class="info-value">${safeValue((project as any)?.gaffer)}</span>
-              </div>
-              <div class="info-row info-row-left">
-                <span class="info-label">Almacén:</span>
-                <span class="info-value">${safeValue(project?.almacen)}</span>
-              </div>
-              <div class="info-row info-row-right">
-                <span class="info-label"></span>
-                <span class="info-value"></span>
-              </div>
+              ${topRows.join('')}
             </div>
 
-            <div class="info-grid info-grid-secondary">
-              <div class="info-column">
-                <div class="info-row">
-                  <span class="info-label">Jefe de producción:</span>
-                  <span class="info-value">${safeValue((project as any)?.jefeProduccion)}</span>
-                </div>
-                <div class="info-row">
-                  <span class="info-label">Transportes:</span>
-                  <span class="info-value">${safeValue((project as any)?.transportes)}</span>
-                </div>
-              </div>
-              <div class="info-column info-column-right">
-                <div class="info-row">
-                  <span class="info-label">Localizaciones:</span>
-                  <span class="info-value">${safeValue((project as any)?.localizaciones)}</span>
-                </div>
-                <div class="info-row">
-                  <span class="info-label">Coordinadora de producción:</span>
-                  <span class="info-value">${safeValue((project as any)?.coordinadoraProduccion)}</span>
-                </div>
-              </div>
-            </div>
+            ${
+              hasSecondaryRows
+                ? `<div class="info-grid info-grid-secondary">
+                    <div class="info-column">
+                      ${secondaryLeftRows.join('')}
+                    </div>
+                    <div class="info-column info-column-right">
+                      ${secondaryRightRows.join('')}
+                    </div>
+                  </div>`
+                : ''
+            }
           </div>
         </div>
         
