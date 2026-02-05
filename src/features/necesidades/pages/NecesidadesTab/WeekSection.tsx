@@ -161,9 +161,15 @@ export function WeekSection({
   } | null>(null);
   const [attachmentInfoOpen, setAttachmentInfoOpen] = useState(false);
   const [weekDeleteOpen, setWeekDeleteOpen] = useState(false);
-  const [showExportControls, setShowExportControls] = useState(false);
+  const [showExportControls, setShowExportControls] = useLocalStorage<boolean>(
+    `needs_${wid}_showSelection`,
+    false
+  );
   const totalColumns = DAYS.length + (showExportControls ? 2 : 1);
-  const [swapMode, setSwapMode] = useState(false);
+  const [swapMode, setSwapMode] = useLocalStorage<boolean>(
+    `needs_${wid}_swapMode`,
+    false
+  );
   const [actionsOpen, setActionsOpen] = useState(false);
   const actionsRef = useRef<HTMLDivElement | null>(null);
   const [actionsButtonHovered, setActionsButtonHovered] = useState(false);
