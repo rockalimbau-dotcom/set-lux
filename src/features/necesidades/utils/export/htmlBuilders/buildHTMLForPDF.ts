@@ -20,15 +20,50 @@ export function buildNecesidadesHTMLForPDF(
 ): string {
   const monday = parseYYYYMMDD(weekStart);
   const DAYS = getDays();
-  const filteredDayIdxs = selectedDayIdxs && selectedDayIdxs.length > 0
-    ? selectedDayIdxs
-    : null;
-  const filteredDays = filteredDayIdxs
-    ? DAYS.filter((_, idx) => filteredDayIdxs.includes(idx))
-    : DAYS;
-  const filteredValuesByDay = filteredDayIdxs
-    ? filteredDayIdxs.map(idx => valuesByDay[idx] || {})
-    : valuesByDay;
+  const isRestDay = (day: DayValues | undefined): boolean => {
+    const raw = day?.crewTipo ?? day?.tipo ?? '';
+    const normalized = String(raw).trim().toLowerCase();
+    return normalized === 'descanso';
+  };
+
+  const hasDayContent = (day: DayValues | undefined): boolean => {
+    if (!day) return false;
+    const keys = Object.keys(day);
+    for (const key of keys) {
+      if (key === 'crewTipo' || key === 'tipo') continue;
+      const value = (day as any)[key];
+      if (Array.isArray(value)) {
+        if (value.length > 0) return true;
+        continue;
+      }
+      if (typeof value === 'string') {
+        const normalized = value.trim().toLowerCase();
+        if (normalized !== '' && normalized !== 'descanso' && normalized !== 'fin') return true;
+        continue;
+      }
+      if (typeof value === 'number') {
+        if (!Number.isNaN(value) && value !== 0) return true;
+        continue;
+      }
+      if (typeof value === 'boolean') {
+        if (value) return true;
+        continue;
+      }
+    }
+    return false;
+  };
+
+  const restDayIdxs = valuesByDay
+    .map((day, idx) => (isRestDay(day) && !hasDayContent(day) ? idx : -1))
+    .filter(idx => idx >= 0);
+
+  const selectedIdxs = selectedDayIdxs && selectedDayIdxs.length > 0 ? selectedDayIdxs : null;
+  const allowedIdxs = DAYS.map((_, idx) => idx).filter(idx => !restDayIdxs.includes(idx));
+  const effectiveDayIdxs = selectedIdxs
+    ? selectedIdxs.filter(idx => allowedIdxs.includes(idx))
+    : allowedIdxs;
+  const filteredDays = DAYS.filter((_, idx) => effectiveDayIdxs.includes(idx));
+  const filteredValuesByDay = effectiveDayIdxs.map(idx => valuesByDay[idx] || {});
   const translatedWeekLabel = translateWeekLabel(weekLabel);
   const headerRow = generateHeaderRow(filteredDays, monday);
   const body = generateTableBody(
@@ -103,4 +138,3 @@ export function buildNecesidadesHTMLForPDF(
     </html>
   `;
 }
-
