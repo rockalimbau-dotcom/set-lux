@@ -27,18 +27,23 @@ export const PDF_STYLES = `
     }
     
     .header {
-      background: linear-gradient(135deg, #f97316 0%, #3b82f6 100%);
-      color: white;
-      padding: 12px 20px;
-      text-align: center;
+      background: white;
+      color: #0f172a;
       flex-shrink: 0;
     }
-    
-    .header h1 {
-      margin: 0;
+
+    .title-bar {
+      background: linear-gradient(135deg, #f97316 0%, #3b82f6 100%);
+      color: #ffffff;
+      padding: 10px 20px;
+      text-align: center;
+    }
+
+    .title-text {
       font-size: 16px;
       font-weight: 700;
-      letter-spacing: -0.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.2px;
     }
     
     .content {
@@ -49,34 +54,52 @@ export const PDF_STYLES = `
     
     .info-panel {
       background: #f1f5f9;
-      padding: 8px 12px;
-      border-radius: 6px;
-      margin-bottom: 12px;
-      display: flex;
-      gap: 24px;
-      align-items: center;
-      justify-content: flex-start;
+      margin: 10px 0 24px 0;
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
     }
-    
-    .info-item {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px 18px;
     }
-    
-    .info-label {
-      font-size: 9px;
-      font-weight: 600;
-      color: #64748b;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 1px;
+
+    .info-grid-secondary {
+      margin-top: 18px;
     }
-    
-    .info-value {
-      font-size: 11px;
+
+    .month-title {
+      margin: 18px 0 10px 0;
+      font-size: 13px;
+      font-weight: 700;
       color: #1e293b;
+      text-align: left;
+    }
+
+    .info-row {
+      display: flex;
+      gap: 6px;
+      align-items: baseline;
+      flex-wrap: wrap;
+      font-size: 10px;
+      color: #334155;
+    }
+
+    .info-row-right {
+      justify-content: flex-end;
+      text-align: right;
+    }
+
+    .info-label {
+      font-weight: 700;
+      color: #1f2937;
+    }
+
+    .info-value {
       font-weight: 500;
+      color: #0f172a;
     }
     
     .table-container {
@@ -249,10 +272,6 @@ export const PDF_STYLES = `
       background: white;
     }
 
-    .footer {
-      display: none;
-    }
-    
     .setlux-logo {
       font-weight: 700;
       font-size: 7px;
@@ -264,6 +283,15 @@ export const PDF_STYLES = `
     
     .setlux-logo .lux {
       color: #3b82f6;
+    }
+
+    .footer-dot {
+      font-weight: 700;
+    }
+
+    .footer-domain {
+      color: #1e293b;
+      font-weight: 600;
     }
     
     @media print {
@@ -285,4 +313,3 @@ export const PDF_STYLES = `
       }
     }
 `;
-

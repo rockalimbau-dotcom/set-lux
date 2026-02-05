@@ -4,9 +4,10 @@ export interface BuildNominaMonthHTMLParams {
   enrichedRows: any[];
   monthLabelEs: (key: string, withYear?: boolean) => string;
   showHelp?: boolean;
+  monthTitle?: string;
+  hideSecondaryInfo?: boolean;
 }
 
 export interface ExportToPDFParams extends BuildNominaMonthHTMLParams {
   // No additional params needed for now
 }
-

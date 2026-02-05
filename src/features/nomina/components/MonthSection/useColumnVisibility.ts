@@ -45,7 +45,12 @@ export function useColumnVisibility({ enriched }: UseColumnVisibilityProps) {
   const hasWorkedDaysData = useMemo(() => {
     return enriched.some(r =>
       (r._worked || 0) > 0 ||
-      (r._totalDias || 0) > 0 ||
+      (r._totalDias || 0) > 0
+    );
+  }, [enriched]);
+
+  const hasHalfDaysData = useMemo(() => {
+    return enriched.some(r =>
       (r._halfDays || 0) > 0 ||
       (r._totalHalfDays || 0) > 0
     );
@@ -56,5 +61,6 @@ export function useColumnVisibility({ enriched }: UseColumnVisibilityProps) {
     hasLocalizacionData,
     hasCargaDescargaData,
     hasWorkedDaysData,
+    hasHalfDaysData,
   };
 }

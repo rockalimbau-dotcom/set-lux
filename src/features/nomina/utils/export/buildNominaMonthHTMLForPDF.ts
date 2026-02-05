@@ -11,6 +11,7 @@ export function buildNominaMonthHTMLForPDF({
   enrichedRows,
   monthLabelEs,
   showHelp = false,
+  hideSecondaryInfo,
 }: BuildNominaMonthHTMLParams & { _currentPage?: number; _totalPages?: number }): string {
   const columnVisibility = getColumnVisibility(enrichedRows);
   const headerCells = generateHeaderCells(columnVisibility);
@@ -23,7 +24,8 @@ export function buildNominaMonthHTMLForPDF({
     numColumns,
   });
 
-  const title = `${i18n.t('payroll.title')} - ${monthLabelEs(monthKey, true)}`;
+  const title = 'NÓMINA ELÉCTRICOS';
+  const monthTitle = monthLabelEs(monthKey, true);
   const helpHtml = showHelp
     ? `
       <div class="payroll-help">
@@ -59,14 +61,18 @@ export function buildNominaMonthHTMLForPDF({
     `
     : '';
 
+  const shouldHideSecondaryInfo =
+    typeof hideSecondaryInfo === 'boolean' ? hideSecondaryInfo : enrichedRows.length === 1;
+
   return generateHTMLStructure({
     title,
+    monthTitle,
     project,
     monthLabelEs,
     monthKey,
     head,
     body,
     helpHtml,
+    hideSecondaryInfo: shouldHideSecondaryInfo,
   });
 }
-

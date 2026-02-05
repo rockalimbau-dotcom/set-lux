@@ -12,6 +12,8 @@ interface GenerateHTMLStructureParams {
   body: string;
   isPDF?: boolean;
   helpHtml?: string;
+  monthTitle?: string;
+  hideSecondaryInfo?: boolean;
 }
 
 /**
@@ -26,6 +28,8 @@ export function generateHTMLStructure({
   body,
   isPDF = true,
   helpHtml = '',
+  monthTitle,
+  hideSecondaryInfo = false,
 }: GenerateHTMLStructureParams): string {
   const styles = isPDF ? PDF_STYLES : SCREEN_STYLES;
   const containerClass = isPDF ? 'container-pdf' : 'container';
@@ -41,20 +45,66 @@ export function generateHTMLStructure({
 <body>
   <div class="${containerClass}">
     <div class="header">
-      <h1>${title}</h1>
+      <div class="title-bar">
+        <div class="title-text">${esc(title)}</div>
+      </div>
     </div>
     
     <div class="content">
       <div class="info-panel">
-        <div class="info-item">
-          <div class="info-label">${i18n.t('common.productionLabel')}</div>
-          <div class="info-value">${esc(project?.productora || project?.produccion || '—')}</div>
+        <div class="info-grid info-grid-top">
+          <div class="info-row info-row-left">
+            <span class="info-label">Producción:</span>
+            <span class="info-value">${esc(project?.productora || project?.produccion || '—')}</span>
+          </div>
+          <div class="info-row info-row-right">
+            <span class="info-label">DoP:</span>
+            <span class="info-value">${esc(project?.dop || '—')}</span>
+          </div>
+          <div class="info-row info-row-left">
+            <span class="info-label">Proyecto:</span>
+            <span class="info-value">${esc(project?.nombre || (isPDF ? i18n.t('common.project') : '—'))}</span>
+          </div>
+          <div class="info-row info-row-right">
+            <span class="info-label">Gaffer:</span>
+            <span class="info-value">${esc((project as any)?.gaffer || '—')}</span>
+          </div>
+          <div class="info-row info-row-left">
+            <span class="info-label">Almacén:</span>
+            <span class="info-value">${esc(project?.almacen || '—')}</span>
+          </div>
+          <div class="info-row info-row-right">
+            <span class="info-label"></span>
+            <span class="info-value"></span>
+          </div>
         </div>
-        <div class="info-item">
-          <div class="info-label">${i18n.t('common.project')}</div>
-          <div class="info-value">${esc(project?.nombre || (isPDF ? i18n.t('common.project') : '—'))}</div>
-        </div>
+
+        ${
+          hideSecondaryInfo
+            ? ''
+            : `
+        <div class="info-grid info-grid-secondary">
+          <div class="info-row info-row-left">
+            <span class="info-label">Jefe de producción:</span>
+            <span class="info-value">${esc((project as any)?.jefeProduccion || '—')}</span>
+          </div>
+          <div class="info-row info-row-right">
+            <span class="info-label">Localizaciones:</span>
+            <span class="info-value">${esc((project as any)?.localizaciones || '—')}</span>
+          </div>
+          <div class="info-row info-row-left">
+            <span class="info-label">Transportes:</span>
+            <span class="info-value">${esc((project as any)?.transportes || '—')}</span>
+          </div>
+          <div class="info-row info-row-right">
+            <span class="info-label">Coordinadora de producción:</span>
+            <span class="info-value">${esc((project as any)?.coordinadoraProduccion || '—')}</span>
+          </div>
+        </div>`
+        }
       </div>
+
+      ${monthTitle ? `<div class="month-title">${esc(monthTitle)}</div>` : ''}
       
       <div class="table-container">
         <table>
@@ -66,10 +116,12 @@ export function generateHTMLStructure({
     </div>
     
     <div class="footer">
-      <span>${footerText}</span>
+      <span>Generado con</span>
       <span class="setlux-logo">
         <span class="set">Set</span><span class="lux">Lux</span>
       </span>
+      <span class="footer-dot">·</span>
+      <span class="footer-domain">setlux.app</span>
     </div>
   </div>
 </body>

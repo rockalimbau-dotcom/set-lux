@@ -8,6 +8,7 @@ type MonthSectionTableProps = {
   enriched: any[];
   projectMode?: 'semanal' | 'mensual' | 'diario';
   hasWorkedDaysData: boolean;
+  hasHalfDaysData: boolean;
   hasLocalizacionData: boolean;
   hasCargaDescargaData: boolean;
   columnVisibility: {
@@ -33,6 +34,7 @@ export function MonthSectionTable({
   enriched,
   projectMode,
   hasWorkedDaysData,
+  hasHalfDaysData,
   hasLocalizacionData,
   hasCargaDescargaData,
   columnVisibility,
@@ -51,6 +53,7 @@ export function MonthSectionTable({
   const colSpanCount =
     (showRowSelection ? 2 : 1) + // Checkbox (optional), Persona
     (hasWorkedDaysData ? 2 : 0) + // Días trabajados, Total días
+    (hasHalfDaysData ? 2 : 0) + // 1/2 jornada, Total 1/2 jornada
     (hasLocalizacionData ? 2 : 0) + // Localización técnica, Total
     (hasCargaDescargaData ? 2 : 0) + // Carga/Descarga, Total
     (columnVisibility.holidays ? 2 : 0) + // Días festivos, Total
@@ -182,8 +185,8 @@ export function MonthSectionTable({
             <Th align='center'>{t('payroll.person')}</Th>
             {hasWorkedDaysData && <Th align='center'>{t('payroll.workedDays')}</Th>}
             {hasWorkedDaysData && <Th align='center'>{t('payroll.totalDays')}</Th>}
-            {hasWorkedDaysData && <Th align='center'>{t('payroll.halfDays')}</Th>}
-            {hasWorkedDaysData && <Th align='center'>{t('payroll.totalHalfDays')}</Th>}
+            {hasHalfDaysData && <Th align='center'>{t('payroll.halfDays')}</Th>}
+            {hasHalfDaysData && <Th align='center'>{t('payroll.totalHalfDays')}</Th>}
             {hasLocalizacionData && <Th align='center'>{t('payroll.localizacionTecnica')}</Th>}
             {hasLocalizacionData && <Th align='center'>{t('payroll.totalLocalizacionTecnica')}</Th>}
             {hasCargaDescargaData && <Th align='center'>{t('payroll.cargaDescarga')}</Th>}
@@ -237,6 +240,7 @@ export function MonthSectionTable({
                     setRcv={setRcv}
                     projectMode={projectMode}
                     hasWorkedDaysData={hasWorkedDaysData}
+                    hasHalfDaysData={hasHalfDaysData}
                     hasLocalizacionData={hasLocalizacionData}
                     hasCargaDescargaData={hasCargaDescargaData}
                     columnVisibility={columnVisibility}

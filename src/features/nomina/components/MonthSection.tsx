@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import { useLocalStorage } from '@shared/hooks/useLocalStorage';
 import { getDaysInMonth, calculateWorkingDaysInMonth } from '../utils/monthCalculations';
 import { MonthSectionHeader } from './MonthSection/MonthSectionHeader';
@@ -113,7 +113,8 @@ function MonthSection({
     });
   };
 
-  const [showRowSelection, setShowRowSelection] = useState(false);
+  const rowSelectionKey = `${persistKeyBase}_${monthKey}_showSelection`;
+  const [showRowSelection, setShowRowSelection] = useLocalStorage<boolean>(rowSelectionKey, false);
 
   const refuerzoSet = useMemo(
     () => buildRefuerzoIndex(weeksForMonth),
@@ -162,6 +163,7 @@ function MonthSection({
     hasLocalizacionData,
     hasCargaDescargaData,
     hasWorkedDaysData,
+    hasHalfDaysData,
   } = useColumnVisibility({
     enriched,
   });
@@ -229,6 +231,7 @@ function MonthSection({
           enriched={enriched}
           projectMode={projectMode}
           hasWorkedDaysData={hasWorkedDaysData}
+          hasHalfDaysData={hasHalfDaysData}
           hasLocalizacionData={hasLocalizacionData}
           hasCargaDescargaData={hasCargaDescargaData}
           columnVisibility={columnVisibility}

@@ -187,6 +187,7 @@ export const generateExtrasText = (r: any): string => {
  */
 export const getColumnVisibility = (enrichedRows: any[]) => {
   return {
+    halfDays: enrichedRows.some(r => (r._halfDays || 0) > 0 || (r._totalHalfDays || 0) > 0),
     localizacion: enrichedRows.some(r => (r._localizarDays || 0) > 0 || (r._totalLocalizacion || 0) > 0),
     cargaDescarga: enrichedRows.some(r => (r._cargaDays || 0) > 0 || (r._descargaDays || 0) > 0 || (r._totalCargaDescarga || 0) > 0),
     holidays: enrichedRows.some(r => (r._holidays || 0) > 0),

@@ -24,6 +24,8 @@ export function buildNominaMonthHTML({
 
   const title = `${i18n.t('payroll.title')} - ${monthLabelEs(monthKey, true)}`;
 
+  const shouldHideSecondaryInfo = enrichedRows.length === 1;
+
   return generateHTMLStructure({
     title,
     project,
@@ -32,6 +34,6 @@ export function buildNominaMonthHTML({
     head,
     body,
     isPDF: false,
+    hideSecondaryInfo: shouldHideSecondaryInfo,
   });
 }
-

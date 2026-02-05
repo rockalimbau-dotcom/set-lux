@@ -19,6 +19,7 @@ type MonthSectionPersonRowProps = {
   setRcv: (key: string, patch: { ok?: boolean; note?: string }) => void;
   projectMode?: 'semanal' | 'mensual' | 'diario';
   hasWorkedDaysData: boolean;
+  hasHalfDaysData: boolean;
   hasLocalizacionData: boolean;
   hasCargaDescargaData: boolean;
   columnVisibility: {
@@ -45,6 +46,7 @@ export function MonthSectionPersonRow({
   setRcv,
   projectMode,
   hasWorkedDaysData,
+  hasHalfDaysData,
   hasLocalizacionData,
   hasCargaDescargaData,
   columnVisibility,
@@ -176,12 +178,12 @@ export function MonthSectionPersonRow({
           )}
         </Td>
       )}
-      {hasWorkedDaysData && (
+      {hasHalfDaysData && (
         <Td align='middle' className='text-center'>
           <span className='text-[9px] sm:text-[10px] md:text-xs'>{displayValue(r._halfDays)}</span>
         </Td>
       )}
-      {hasWorkedDaysData && (
+      {hasHalfDaysData && (
         <Td align='middle' className='text-center'>
           {r._missingPrices?.halfJornada ? (
             <span className='text-[9px] sm:text-[10px] md:text-xs text-zinc-400 italic'>{t('payroll.addPriceInConditions')}</span>
