@@ -33,6 +33,7 @@ export const computeFromWeekly = (weeklyStr: string, params: any) => {
       'Precio mensual': '',
       'Precio diario': '',
       'Precio jornada': '',
+      'Precio 1/2 jornada': '',
       'Precio Día extra/Festivo': '',
       'Travel day': '',
       'Horas extras': '',
@@ -49,6 +50,7 @@ export const computeFromWeekly = (weeklyStr: string, params: any) => {
   const mensual = semanasMes > 0 ? w * semanasMes : NaN;
   const diario = diasDiario > 0 ? w / diasDiario : NaN;
   const jornada = diasJornada > 0 ? w / diasJornada : NaN;
+  const mediaJornada = Number.isFinite(jornada) ? jornada / 2 : NaN;
   const festivo = Number.isFinite(jornada) && factorFestivo > 0 ? jornada * factorFestivo : NaN;
   const travel = Number.isFinite(jornada) && divTravel > 0 ? jornada / divTravel : NaN;
   const extra = horasSemana > 0 && factorHora > 0 ? (w / horasSemana) * factorHora : NaN;
@@ -57,9 +59,9 @@ export const computeFromWeekly = (weeklyStr: string, params: any) => {
     'Precio mensual': fmt(mensual),
     'Precio diario': fmt(diario),
     'Precio jornada': fmt(jornada),
+    'Precio 1/2 jornada': fmt(mediaJornada),
     'Precio Día extra/Festivo': fmt(festivo),
     'Travel day': fmt(travel),
     'Horas extras': fmt(extra),
   };
 };
-

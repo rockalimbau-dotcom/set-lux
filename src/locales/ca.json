@@ -201,6 +201,7 @@
     "priceWeekly": "Preu setmanal",
     "priceDaily": "Preu diari",
     "priceWorkDay": "Preu jornada",
+    "priceHalfDay": "Preu 1/2 jornada",
     "priceReinforcement": "Preu reforç",
     "priceOwnMaterial": "Material propi",
     "priceExtraDayHoliday": "Preu Dia extra/Festiu",
@@ -235,6 +236,8 @@
     "person": "Persona",
     "workedDays": "Dies treballats",
     "totalDays": "Total dies",
+    "halfDays": "1/2 jornada",
+    "totalHalfDays": "Total 1/2 jornada",
     "holidayDays": "Dies festius",
     "totalHolidayDays": "Total dies festius",
     "travelDays": "Dies travel day",
@@ -311,7 +314,8 @@
       "shooting": "Rodatge",
       "cameraTests": "Proves de càmera",
       "office": "Oficina",
-      "unloading": "Descàrrega"
+      "unloading": "Descàrrega",
+      "halfDay": "1/2 jornada"
     },
     "assignPeopleToWeeks": "Assigna persones a les setmanes",
     "weeksWithoutTeam": "Tens {{count}} setmana{{plural}} a",
@@ -530,6 +534,7 @@
     "unloading": "Descàrrega",
     
     "travelDay": "Travel Day",
+    "halfDay": "1/2 jornada",
     "holidayShooting": "Rodatge Festiu",
     "end": "Fi",
     "rest": "Descans",
@@ -837,4 +842,3 @@
     }
   }
 }
-

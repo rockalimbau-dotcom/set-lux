@@ -10,6 +10,7 @@ export function useMensualTranslations() {
       'Precio semanal': t('conditions.priceWeekly'),
       'Precio diario': t('conditions.priceDaily'),
       'Precio jornada': t('conditions.priceWorkDay'),
+      'Precio 1/2 jornada': t('conditions.priceHalfDay'),
       'Precio refuerzo': t('conditions.priceReinforcement'),
       'Material propio': t('conditions.priceOwnMaterial'),
       'Precio Día extra/Festivo': t('conditions.priceExtraDayHoliday'),
@@ -92,4 +93,3 @@ export function useMensualTranslations() {
 
   return { translateHeader, translateRoleName };
 }
-

@@ -1,5 +1,6 @@
 export const PRICE_HEADERS_DIARIO = [
   'Precio jornada',
+  'Precio 1/2 jornada',
   'Material propio',
   'Precio Día extra/Festivo',
   'Localización técnica',
@@ -24,4 +25,3 @@ export const PRICE_ROLES_DIARIO = [
   'Eléctrico de potencia',
   'Técnico de prácticos',
 ];
-

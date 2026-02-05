@@ -201,6 +201,7 @@
     "priceWeekly": "Precio semanal",
     "priceDaily": "Precio diario",
     "priceWorkDay": "Precio jornada",
+    "priceHalfDay": "Precio 1/2 jornada",
     "priceReinforcement": "Precio refuerzo",
     "priceOwnMaterial": "Material propio",
     "priceExtraDayHoliday": "Precio Día extra/Festivo",
@@ -235,6 +236,8 @@
     "person": "Persona",
     "workedDays": "Días trabajados",
     "totalDays": "Total días",
+    "halfDays": "1/2 jornada",
+    "totalHalfDays": "Total 1/2 jornada",
     "holidayDays": "Días festivos",
     "totalHolidayDays": "Total días festivos",
     "travelDays": "Días travel day",
@@ -310,7 +313,8 @@
       "shooting": "Rodaje",
       "cameraTests": "Pruebas de cámara",
       "office": "Oficina",
-      "unloading": "Descarga"
+      "unloading": "Descarga",
+      "halfDay": "1/2 jornada"
     },
     "assignPeopleToWeeks": "Asigna personas a las semanas",
     "weeksWithoutTeam": "Tienes {{count}} semana{{plural}} en",
@@ -529,6 +533,7 @@
     "unloading": "Descarga",
     "location": "Localizar",
     "travelDay": "Travel Day",
+    "halfDay": "1/2 jornada",
     "holidayShooting": "Rodaje Festivo",
     "end": "Fin",
     "rest": "Descanso",
@@ -827,4 +832,3 @@
     }
   }
 }
-

@@ -3,6 +3,7 @@ export const PRICE_HEADERS: string[] = [
   'Precio semanal',
   'Precio diario',
   'Precio jornada',
+  'Precio 1/2 jornada',
   'Precio refuerzo',
   'Material propio',
   'Precio Día extra/Festivo',
@@ -26,5 +27,4 @@ export const PRICE_ROLES: string[] = [
   'Eléctrico de potencia',
   'Técnico de prácticos',
 ];
-
 

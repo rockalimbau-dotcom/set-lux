@@ -149,7 +149,7 @@ export function makeRolePrices(project: any) {
       }
     }
     
-    const { jornada, travelDay, horaExtra, holidayDay, row } = priceResult;
+    const { jornada, halfJornada, travelDay, horaExtra, holidayDay, row } = priceResult;
     const materialPropioValue = getNumField(row, ['Material propio', 'Material Propio']) || 0;
     const rawMaterialType =
       (row?.['Material propio tipo'] ?? row?.['Material Propio tipo'] ?? '').toString().trim();
@@ -158,6 +158,7 @@ export function makeRolePrices(project: any) {
 
     const result = {
       jornada,
+      halfJornada,
       travelDay,
       horaExtra,
       holidayDay,
@@ -184,4 +185,3 @@ export function makeRolePrices(project: any) {
 
   return { getForRole };
 }
-

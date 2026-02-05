@@ -73,6 +73,7 @@ export const generateWorkedDaysText = (r: any): string => {
   if ((r._pruebasCamara || 0) > 0) {
     parts.push(`${i18n.t('payroll.dayTypes.cameraTests')} x${r._pruebasCamara}`);
   }
+
   
   if ((r._prelight || 0) > 0) {
     parts.push(`${i18n.t('payroll.dayTypes.prelight', 'Prelight')} x${r._prelight}`);
@@ -277,4 +278,3 @@ export const sortRowsByRole = (rows: any[], block: 'base' | 'pre' | 'pick') => {
     return String(a.name || '').localeCompare(String(b.name || ''));
   });
 };
-

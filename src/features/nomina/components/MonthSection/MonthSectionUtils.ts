@@ -93,6 +93,7 @@ export function detectMissingPrices(
   projectMode: 'semanal' | 'mensual' | 'diario',
   data: {
     workedDays?: number;
+    halfDays?: number;
     travelDays?: number;
     holidayDays?: number;
     horasExtra?: number;
@@ -115,6 +116,7 @@ export function detectMissingPrices(
   },
   effectivePr: {
     jornada?: number;
+    halfJornada?: number;
     travelDay?: number;
     holidayDay?: number;
     horaExtra?: number;
@@ -127,6 +129,7 @@ export function detectMissingPrices(
   }
 ): {
   jornada?: boolean;
+  halfJornada?: boolean;
   localizacionTecnica?: boolean;
   cargaDescarga?: boolean;
   travelDay?: boolean;
@@ -138,6 +141,7 @@ export function detectMissingPrices(
 } {
   const missingPrices: {
     jornada?: boolean;
+    halfJornada?: boolean;
     localizacionTecnica?: boolean;
     cargaDescarga?: boolean;
     travelDay?: boolean;
@@ -152,6 +156,9 @@ export function detectMissingPrices(
     const rodajeDays = (data.rodaje || 0) + (data.pruebasCamara || 0) + (data.oficina || 0);
     if (rodajeDays > 0 && (effectivePr.jornada || 0) === 0) {
       missingPrices.jornada = true;
+    }
+    if ((data.halfDays || 0) > 0 && (effectivePr.halfJornada || 0) === 0) {
+      missingPrices.halfJornada = true;
     }
     
     const localizacionDays = data.localizar || 0;
@@ -215,6 +222,9 @@ export function detectMissingPrices(
         missingPrices.jornada = true;
       }
     }
+    if ((data.halfDays || 0) > 0 && (effectivePr.halfJornada || 0) === 0) {
+      missingPrices.halfJornada = true;
+    }
     
     if (data.travelDays && data.travelDays > 0 && (effectivePr.travelDay || 0) === 0) {
       missingPrices.travelDay = true;
@@ -256,4 +266,3 @@ export function detectMissingPrices(
 
   return missingPrices;
 }
-

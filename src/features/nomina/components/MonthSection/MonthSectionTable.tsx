@@ -182,6 +182,8 @@ export function MonthSectionTable({
             <Th align='center'>{t('payroll.person')}</Th>
             {hasWorkedDaysData && <Th align='center'>{t('payroll.workedDays')}</Th>}
             {hasWorkedDaysData && <Th align='center'>{t('payroll.totalDays')}</Th>}
+            {hasWorkedDaysData && <Th align='center'>{t('payroll.halfDays')}</Th>}
+            {hasWorkedDaysData && <Th align='center'>{t('payroll.totalHalfDays')}</Th>}
             {hasLocalizacionData && <Th align='center'>{t('payroll.localizacionTecnica')}</Th>}
             {hasLocalizacionData && <Th align='center'>{t('payroll.totalLocalizacionTecnica')}</Th>}
             {hasCargaDescargaData && <Th align='center'>{t('payroll.cargaDescarga')}</Th>}
@@ -249,7 +251,7 @@ export function MonthSectionTable({
           {enriched.length === 0 && (
             <tr>
               <Td colSpan={
-                (showRowSelection ? 6 : 5) + // Base columns (checkbox optional)
+                ((showRowSelection ? 1 : 0) + 3 + (hasWorkedDaysData ? 4 : 0)) + // selection + person/total/received + worked/half cols
                 (columnVisibility.holidays ? 2 : 0) + // Días festivos + Total días festivos
                 (columnVisibility.travel ? 2 : 0) + // Travel Day + Total travel days
                 (columnVisibility.extras ? 2 : 0) + // Horas extra + Total horas extra
@@ -271,4 +273,3 @@ export function MonthSectionTable({
     </div>
   );
 }
-

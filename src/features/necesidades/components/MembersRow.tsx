@@ -317,6 +317,7 @@ const JORNADA_OPTIONS = [
   'Oficina',
   'Carga',
   'Pruebas de cámara',
+  '1/2 jornada',
   'Rodaje',
   'Rodaje Festivo',
   'Travel Day',

@@ -17,48 +17,8 @@ interface CondParams {
   nocturnoFin: string;
 }
 
-export function readCondParams(project: Project, mode?: 'semanal' | 'mensual' | 'diario'): CondParams {
-  const base = project?.id || project?.nombre || 'tmp';
-  
-  // Si se especifica un modo, buscar solo ese modo primero
-  if (mode) {
-    const key = `cond_${base}_${mode}`;
-    try {
-      const obj = storage.getJSON<any>(key);
-      if (obj) {
-        const p = obj.params || {};
-        return {
-          jornadaTrabajo: parseNum(p.jornadaTrabajo ?? '9'),
-          jornadaComida: parseNum(p.jornadaComida ?? '1'),
-          cortesiaMin: parseNum(p.cortesiaMin ?? '15'),
-          taDiario: parseNum(p.taDiario ?? '12'),
-          taFinde: parseNum(p.taFinde ?? '48'),
-          nocturnoIni: p.nocturnoIni ?? '22:00',
-          nocturnoFin: p.nocturnoFin ?? '06:00',
-        };
-      }
-    } catch {}
-  }
-  
-  // Fallback: buscar en todos los modos
-  const keys = [`cond_${base}_semanal`, `cond_${base}_mensual`, `cond_${base}_diario`];
-  for (const k of keys) {
-    try {
-      const obj = storage.getJSON<any>(k);
-      if (!obj) continue;
-      const p = obj.params || {};
-      return {
-        jornadaTrabajo: parseNum(p.jornadaTrabajo ?? '9'),
-        jornadaComida: parseNum(p.jornadaComida ?? '1'),
-        cortesiaMin: parseNum(p.cortesiaMin ?? '15'),
-        taDiario: parseNum(p.taDiario ?? '12'),
-        taFinde: parseNum(p.taFinde ?? '48'),
-        nocturnoIni: p.nocturnoIni ?? '22:00',
-        nocturnoFin: p.nocturnoFin ?? '06:00',
-      };
-    } catch {}
-  }
-  return {
+const DEFAULTS_BY_MODE: Record<'semanal' | 'mensual' | 'diario', CondParams> = {
+  semanal: {
     jornadaTrabajo: 9,
     jornadaComida: 1,
     cortesiaMin: 15,
@@ -66,7 +26,83 @@ export function readCondParams(project: Project, mode?: 'semanal' | 'mensual' | 
     taFinde: 48,
     nocturnoIni: '22:00',
     nocturnoFin: '06:00',
+  },
+  mensual: {
+    jornadaTrabajo: 9,
+    jornadaComida: 1,
+    cortesiaMin: 15,
+    taDiario: 12,
+    taFinde: 48,
+    nocturnoIni: '22:00',
+    nocturnoFin: '06:00',
+  },
+  diario: {
+    jornadaTrabajo: 10,
+    jornadaComida: 1,
+    cortesiaMin: 15,
+    taDiario: 10,
+    taFinde: 48,
+    nocturnoIni: '02:00',
+    nocturnoFin: '06:00',
+  },
+};
+
+const buildParams = (p: any, defaults: CondParams): CondParams => ({
+  jornadaTrabajo: parseNum(p.jornadaTrabajo ?? String(defaults.jornadaTrabajo)),
+  jornadaComida: parseNum(p.jornadaComida ?? String(defaults.jornadaComida)),
+  cortesiaMin: parseNum(p.cortesiaMin ?? String(defaults.cortesiaMin)),
+  taDiario: parseNum(p.taDiario ?? String(defaults.taDiario)),
+  taFinde: parseNum(p.taFinde ?? String(defaults.taFinde)),
+  nocturnoIni: p.nocturnoIni ?? defaults.nocturnoIni,
+  nocturnoFin: p.nocturnoFin ?? defaults.nocturnoFin,
+});
+
+export function readCondParams(project: Project, mode?: 'semanal' | 'mensual' | 'diario'): CondParams {
+  const base = project?.id || project?.nombre || 'tmp';
+
+  const readFromKey = (key: string, defaults: CondParams): CondParams | null => {
+    try {
+      const obj = storage.getJSON<any>(key);
+      if (!obj) return null;
+      const p = obj.params || {};
+      return buildParams(p, defaults);
+    } catch {
+      return null;
+    }
   };
+
+  const modeKeys: Array<{ key: string; defaults: CondParams }> = mode
+    ? [
+        {
+          key: `cond_${base}_${mode}`,
+          defaults: DEFAULTS_BY_MODE[mode],
+        },
+        ...(mode === 'diario'
+          ? [{ key: `cond_${base}_publicidad`, defaults: DEFAULTS_BY_MODE.diario }]
+          : []),
+      ]
+    : [];
+
+  for (const { key, defaults } of modeKeys) {
+    const params = readFromKey(key, defaults);
+    if (params) return params;
+  }
+
+  // Fallback: buscar en todos los modos (incluyendo compatibilidad diario/publicidad)
+  const fallbackKeys: Array<{ key: string; defaults: CondParams }> = [
+    { key: `cond_${base}_semanal`, defaults: DEFAULTS_BY_MODE.semanal },
+    { key: `cond_${base}_mensual`, defaults: DEFAULTS_BY_MODE.mensual },
+    { key: `cond_${base}_diario`, defaults: DEFAULTS_BY_MODE.diario },
+    { key: `cond_${base}_publicidad`, defaults: DEFAULTS_BY_MODE.diario },
+  ];
+
+  for (const { key, defaults } of fallbackKeys) {
+    const params = readFromKey(key, defaults);
+    if (params) return params;
+  }
+
+  const fallbackMode = mode ?? 'semanal';
+  return DEFAULTS_BY_MODE[fallbackMode];
 }
 
 export function getBlockWindow(day: any, block: 'base' | 'pre' | 'pick' | 'extra'): { start: string | null; end: string | null } {
@@ -216,9 +252,26 @@ export function hasNocturnidad(
   const thIni = parseHHMM(noctIni) ?? 22 * 60;
   const thFin = parseHHMM(noctFin) ?? 6 * 60;
   if (iniMin == null || finMin == null) return false;
-  if (iniMin >= thIni || finMin >= thIni) return true;
-  if (iniMin < thFin || finMin < thFin) return true;
-  return false;
+
+  const dayMin = 24 * 60;
+  let start = iniMin;
+  let end = finMin;
+  if (end <= start) end += dayMin;
+
+  const overlaps = (a: number, b: number) => Math.max(start, a) < Math.min(end, b);
+
+  const intervals: Array<[number, number]> = [];
+  if (thIni <= thFin) {
+    intervals.push([thIni, thFin]);
+    intervals.push([thIni + dayMin, thFin + dayMin]);
+  } else {
+    intervals.push([thIni, dayMin]);
+    intervals.push([0, thFin]);
+    intervals.push([thIni + dayMin, dayMin * 2]);
+    intervals.push([dayMin, dayMin + thFin]);
+  }
+
+  return intervals.some(([a, b]) => overlaps(a, b));
 }
 
 export function findPrevWorkingContextFactory(

@@ -119,4 +119,3 @@ export const calculatePagination = (
   
   return { pages, totalPages };
 };
-

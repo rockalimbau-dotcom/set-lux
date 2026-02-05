@@ -32,6 +32,7 @@ export const computeFromDaily = (dailyStr: string, params: AnyRecord) => {
   const d = parseNum(dailyStr);
   if (!Number.isFinite(d) || d === 0) {
     return {
+      'Precio 1/2 jornada': '',
       'Precio Día extra/Festivo': '',
       'Travel day': '',
       'Horas extras': '',
@@ -44,16 +45,17 @@ export const computeFromDaily = (dailyStr: string, params: AnyRecord) => {
 
   const festivo = factorFestivo > 0 ? d * factorFestivo : NaN;
   const travel = d; // Travel day es igual al precio jornada
+  const mediaJornada = Number.isFinite(d) ? d / 2 : NaN;
   const horasTotales = jTrab + jCom;
   const extra =
     horasTotales > 0 && facHora > 0 ? (d / horasTotales) * facHora : NaN;
   const cargaDescarga = extra * 3; // Equivalente a 3 horas extras
 
   return {
+    'Precio 1/2 jornada': fmt(mediaJornada),
     'Precio Día extra/Festivo': fmt(festivo),
     'Travel day': fmt(travel),
     'Horas extras': fmt(extra),
     'Carga/descarga': fmt(cargaDescarga),
   } as AnyRecord;
 };
-

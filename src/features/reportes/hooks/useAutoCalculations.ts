@@ -260,6 +260,14 @@ export default function useAutoCalculations({
             manual: manualNoct,
             off,
           });
+          if (!off && autoNoct === '') {
+            next[pk]['Nocturnidad'][iso] = '';
+            if (next[pk].__manual__?.['Nocturnidad']?.[iso]) {
+              next[pk].__manual__ = next[pk].__manual__ || {};
+              next[pk].__manual__['Nocturnidad'] = next[pk].__manual__['Nocturnidad'] || {};
+              delete next[pk].__manual__['Nocturnidad'][iso];
+            }
+          }
 
           // Procesar Material propio (solo si aplica por rol)
           const materialConfig = getMaterialPropioConfig

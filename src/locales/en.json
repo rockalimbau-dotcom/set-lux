@@ -202,6 +202,7 @@
     "priceWeekly": "Weekly price",
     "priceDaily": "Daily price",
     "priceWorkDay": "Work day price",
+    "priceHalfDay": "Half-day price",
     "priceReinforcement": "Reinforcement price",
     "priceOwnMaterial": "Own material",
     "priceExtraDayHoliday": "Extra day/Holiday price",
@@ -236,6 +237,8 @@
     "person": "Person",
     "workedDays": "Worked days",
     "totalDays": "Total days",
+    "halfDays": "Half day",
+    "totalHalfDays": "Total half day",
     "holidayDays": "Holiday days",
     "totalHolidayDays": "Total holiday days",
     "travelDays": "Travel days",
@@ -312,7 +315,8 @@
       "shooting": "Filming",
       "cameraTests": "Camera tests",
       "office": "Office",
-      "unloading": "Unloading"
+      "unloading": "Unloading",
+      "halfDay": "Half day"
     },
     "assignPeopleToWeeks": "Assign people to weeks",
     "weeksWithoutTeam": "You have {{count}} week{{plural}} in",
@@ -528,6 +532,7 @@
     "unloading": "Unloading",
     "location": "Location",
     "travelDay": "Travel Day",
+    "halfDay": "Half day",
     "holidayShooting": "Holiday Filming",
     "end": "End",
     "rest": "Rest",
@@ -827,4 +832,3 @@
     }
   }
 }
-

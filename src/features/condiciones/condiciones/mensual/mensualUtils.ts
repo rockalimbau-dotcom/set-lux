@@ -34,6 +34,7 @@ export function computeFromMonthly(monthlyStr: string, params: any) {
       'Precio semanal': '',
       'Precio diario': '',
       'Precio jornada': '',
+      'Precio 1/2 jornada': '',
       'Precio Día extra/Festivo': '',
       'Travel day': '',
       'Horas extras': '',
@@ -61,6 +62,7 @@ export function computeFromMonthly(monthlyStr: string, params: any) {
   const diario = isFinite(semanal / ddOk) ? semanal / ddOk : NaN;
   const jornada = isFinite(semanal / djOk) ? semanal / djOk
     : NaN;
+  const mediaJornada = isFinite(jornada) ? jornada / 2 : NaN;
   const festivo = isFinite(jornada * ffOk) ? jornada * ffOk : NaN;
   const travel = isFinite(jornada / divTravelOk)
     ? jornada / divTravelOk
@@ -72,9 +74,9 @@ export function computeFromMonthly(monthlyStr: string, params: any) {
     'Precio semanal': isFinite(semanal) ? fmtMoney(semanal) : '',
     'Precio diario': isFinite(diario) ? fmtMoney(diario) : '',
     'Precio jornada': isFinite(jornada) ? fmtMoney(jornada) : '',
+    'Precio 1/2 jornada': isFinite(mediaJornada) ? fmtMoney(mediaJornada) : '',
     'Precio Día extra/Festivo': isFinite(festivo) ? fmtMoney(festivo) : '',
     'Travel day': isFinite(travel) ? fmtMoney(travel) : '',
     'Horas extras': isFinite(horaExtra) ? fmtMoney(horaExtra) : '',
   };
 }
-

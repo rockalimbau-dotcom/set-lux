@@ -20,6 +20,7 @@ export function getEffectiveRolePrices(
     return {
       ...pr,
       jornada: 0,
+      halfJornada: 0,
       travelDay: 0,
       horaExtra: 0,
       holidayDay: 0,
@@ -41,4 +42,3 @@ export function getEffectiveRolePrices(
   
   return pr;
 }
-

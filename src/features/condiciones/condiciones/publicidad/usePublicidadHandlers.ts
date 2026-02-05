@@ -124,10 +124,12 @@ export function useDiarioHandlers({ model: _model, setModel }: UseDiarioHandlers
         row['Precio jornada'] = value;
 
         if (value == null || String(value).trim() === '') {
+          row['Precio 1/2 jornada'] = '';
           row['Precio Día extra/Festivo'] = '';
           row['Travel day'] = '';
         } else {
           const derived = computeFromDaily(value, m.params);
+          row['Precio 1/2 jornada'] = derived['Precio 1/2 jornada'];
           row['Precio Día extra/Festivo'] = derived['Precio Día extra/Festivo'];
           row['Travel day'] = derived['Travel day'];
         }
@@ -150,4 +152,3 @@ export function useDiarioHandlers({ model: _model, setModel }: UseDiarioHandlers
     setRoleToDelete,
   };
 }
-

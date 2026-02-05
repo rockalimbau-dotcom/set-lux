@@ -189,7 +189,7 @@ export function makeRolePrices(project: any) {
 
     const divTravel = num(p.divTravel) || 2;
 
-    let jornada, travelDay, horaExtra, holidayDay, materialPropioValue;
+    let jornada, halfJornada, travelDay, horaExtra, holidayDay, materialPropioValue;
     let materialPropioType = '';
     if (normalized === 'REF' || (normalized.startsWith('REF') && normalized.length > 3)) {
       // Si es REF o REF + rol base (REFG, REFBB, etc.), buscar "Precio refuerzo" en la fila correspondiente
@@ -219,6 +219,10 @@ export function makeRolePrices(project: any) {
       const elecRef = getNumField(elecRow, ['Precio refuerzo', 'Precio Refuerzo', 'Refuerzo']);
       const elecJor = getNumField(elecRow, ['Precio jornada', 'Precio Jornada', 'Jornada', 'Precio dia', 'Precio día']);
       jornada = refFromTarget || targetJornada || elecRef || elecJor || 0;
+      halfJornada =
+        getNumField(targetRow, ['Precio 1/2 jornada', 'Precio medio día', 'Precio media jornada']) ||
+        getNumField(elecRow, ['Precio 1/2 jornada', 'Precio medio día', 'Precio media jornada']) ||
+        0;
       const travelBase = getNumField(targetRow, ['Travel day', 'Travel Day', 'Travel', 'Día de viaje', 'Dia de viaje', 'Día travel', 'Dia travel', 'TD']);
       travelDay = travelBase || (jornada ? jornada / divTravel : 0);
       horaExtra =
@@ -239,6 +243,9 @@ export function makeRolePrices(project: any) {
         '';
     } else {
       jornada = getNumField(row, ['Precio jornada', 'Precio Jornada', 'Jornada', 'Precio dia', 'Precio día']) || 0;
+      halfJornada =
+        getNumField(row, ['Precio 1/2 jornada', 'Precio medio día', 'Precio media jornada']) ||
+        0;
       travelDay = getNumField(row, ['Travel day', 'Travel Day', 'Travel', 'Día de viaje', 'Dia de viaje', 'Día travel', 'Dia travel', 'TD']) || (jornada ? jornada / divTravel : 0);
       horaExtra = getNumField(row, ['Horas extras', 'Horas Extras', 'Hora extra', 'Horas extra', 'HE', 'Hora Extra']) || 0;
       holidayDay = getNumField(row, ['Precio Día extra/Festivo', 'Precio Día extra/festivo', 'Día extra/Festivo', 'Día festivo', 'Festivo']) || 0;
@@ -248,6 +255,7 @@ export function makeRolePrices(project: any) {
 
     const result = {
       jornada,
+      halfJornada,
       travelDay,
       horaExtra,
       holidayDay,
@@ -269,4 +277,3 @@ export function makeRolePrices(project: any) {
 
   return { getForRole };
 }
-

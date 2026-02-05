@@ -43,7 +43,12 @@ export function useColumnVisibility({ enriched }: UseColumnVisibilityProps) {
 
   // Verificar si hay datos de días trabajados o total días para mostrar columnas solo cuando haya datos
   const hasWorkedDaysData = useMemo(() => {
-    return enriched.some(r => (r._worked || 0) > 0 || (r._totalDias || 0) > 0);
+    return enriched.some(r =>
+      (r._worked || 0) > 0 ||
+      (r._totalDias || 0) > 0 ||
+      (r._halfDays || 0) > 0 ||
+      (r._totalHalfDays || 0) > 0
+    );
   }, [enriched]);
 
   return {
@@ -53,4 +58,3 @@ export function useColumnVisibility({ enriched }: UseColumnVisibilityProps) {
     hasWorkedDaysData,
   };
 }
-

@@ -176,6 +176,20 @@ export function MonthSectionPersonRow({
           )}
         </Td>
       )}
+      {hasWorkedDaysData && (
+        <Td align='middle' className='text-center'>
+          <span className='text-[9px] sm:text-[10px] md:text-xs'>{displayValue(r._halfDays)}</span>
+        </Td>
+      )}
+      {hasWorkedDaysData && (
+        <Td align='middle' className='text-center'>
+          {r._missingPrices?.halfJornada ? (
+            <span className='text-[9px] sm:text-[10px] md:text-xs text-zinc-400 italic'>{t('payroll.addPriceInConditions')}</span>
+          ) : (
+            <span className='text-[9px] sm:text-[10px] md:text-xs'>{displayMoney(r._totalHalfDays, 2)}</span>
+          )}
+        </Td>
+      )}
 
       {hasLocalizacionData && (
         <Td align='middle' className='text-center'>
@@ -345,4 +359,3 @@ export function MonthSectionPersonRow({
     </tr>
   );
 }
-

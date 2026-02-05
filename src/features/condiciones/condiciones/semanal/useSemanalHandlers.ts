@@ -111,6 +111,7 @@ export function useSemanalHandlers({ model: _model, setModel }: UseSemanalHandle
           row['Precio mensual'] = '';
           row['Precio diario'] = '';
           row['Precio jornada'] = '';
+          row['Precio 1/2 jornada'] = '';
           row['Precio Día extra/Festivo'] = '';
           row['Travel day'] = '';
           row['Horas extras'] = '';
@@ -119,6 +120,7 @@ export function useSemanalHandlers({ model: _model, setModel }: UseSemanalHandle
           row['Precio mensual'] = derived['Precio mensual'];
           row['Precio diario'] = derived['Precio diario'];
           row['Precio jornada'] = derived['Precio jornada'];
+          row['Precio 1/2 jornada'] = derived['Precio 1/2 jornada'];
           row['Precio Día extra/Festivo'] = derived['Precio Día extra/Festivo'];
           row['Travel day'] = derived['Travel day'];
           row['Horas extras'] = derived['Horas extras'];
@@ -142,4 +144,3 @@ export function useSemanalHandlers({ model: _model, setModel }: UseSemanalHandle
     setRoleToDelete,
   };
 }
-

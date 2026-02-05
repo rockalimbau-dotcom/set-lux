@@ -1,6 +1,7 @@
 export type RolePrices = {
   getForRole: (roleCode: string, baseRoleCode?: string | null) => {
     jornada: number;
+    halfJornada?: number;
     travelDay: number;
     horaExtra: number;
     holidayDay: number;
@@ -73,6 +74,7 @@ export interface MonthSectionProps {
     workedPre: number; 
     workedPick: number; 
     holidayDays: number;
+    halfDays?: number;
     rodaje?: number;
     pruebasCamara?: number;
     oficina?: number;
@@ -87,4 +89,3 @@ export interface MonthSectionProps {
   roleLabelFromCode: (code: string) => string;
   readOnly?: boolean;
 }
-

@@ -10,6 +10,8 @@ export const generateHeaderCells = (columnVisibility: ReturnType<typeof getColum
     `<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.person')}</th>`,
     `<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.workedDays')}</th>`,
     `<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.totalDays')}</th>`,
+    `<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.halfDays')}</th>`,
+    `<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.totalHalfDays')}</th>`,
   ];
 
   if (columnVisibility.localizacion) {
@@ -76,6 +78,8 @@ export const generateRowDataCells = (
     `<td class="text-left" style="font-weight:600;vertical-align:middle !important;">${esc(roleDisplay)} — ${esc(r.name)}</td>`,
     `<td style="text-align:center !important;vertical-align:middle !important;">${generateWorkedDaysText(r) || esc(displayValue(r._worked))}</td>`,
     `<td style="text-align:center !important;vertical-align:middle !important;">${esc(displayMoney(r._totalDias, 2))}</td>`,
+    `<td style="text-align:center !important;vertical-align:middle !important;">${esc(displayValue(r._halfDays))}</td>`,
+    `<td style="text-align:center !important;vertical-align:middle !important;">${esc(displayMoney(r._totalHalfDays, 2))}</td>`,
   ];
 
   if (columnVisibility.localizacion) {
@@ -131,4 +135,3 @@ export const generateRowDataCells = (
 
   return dataCells;
 };
-

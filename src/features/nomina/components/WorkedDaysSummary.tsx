@@ -62,4 +62,3 @@ export default function WorkedDaysSummary({ carga, descarga, localizar, rodaje, 
     </div>
   );
 }
-

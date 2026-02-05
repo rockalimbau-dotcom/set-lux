@@ -158,6 +158,7 @@ export function useMensualRoles({ model, setModel }: UseMensualRolesProps): UseM
         row['Precio semanal'] = derived['Precio semanal'];
         row['Precio diario'] = derived['Precio diario'];
         row['Precio jornada'] = derived['Precio jornada'];
+        row['Precio 1/2 jornada'] = derived['Precio 1/2 jornada'];
         row['Precio Día extra/Festivo'] = derived['Precio Día extra/Festivo'];
         row['Travel day'] = derived['Travel day'];
         row['Horas extras'] = derived['Horas extras'];
@@ -170,4 +171,3 @@ export function useMensualRoles({ model, setModel }: UseMensualRolesProps): UseM
 
   return { roles, addRole, removeRole, handleRoleChange };
 }
-

@@ -25,6 +25,7 @@ interface UseEnrichedRowsProps {
     workedPre: number;
     workedPick: number;
     holidayDays: number;
+    halfDays?: number;
     rodaje?: number;
     pruebasCamara?: number;
     oficina?: number;
@@ -71,6 +72,7 @@ export function useEnrichedRows({
         workedPre,
         workedPick,
         holidayDays,
+        halfDays,
         rodaje,
         pruebasCamara,
         oficina,
@@ -149,7 +151,7 @@ export function useEnrichedRows({
           : null;
 
       // Obtener datos filtrados
-      const filteredRow = getFilteredRowData(r, filteredData, dateFrom, dateTo, refuerzoSet, stripPR);
+  const filteredRow = getFilteredRowData(r, filteredData, dateFrom, dateTo, refuerzoSet, stripPR);
       const useFilteredData = filteredRow !== null;
 
       // Obtener valores con override/filtrado
@@ -186,6 +188,7 @@ export function useEnrichedRows({
       // Calcular totales según el modo del proyecto
       let totals: {
         totalDias: number;
+        totalHalfDays?: number;
         totalTravel: number;
         totalHolidays: number;
         totalExtras: number;
@@ -205,6 +208,7 @@ export function useEnrichedRows({
           localizar,
           carga,
           descarga,
+          halfDays || 0,
           travelDays,
           holidayDays,
           horasExtraValue,
@@ -226,6 +230,7 @@ export function useEnrichedRows({
           projectMode,
           totalDiasTrabajados,
           workedDays,
+          halfDays || 0,
           travelDays,
           holidayDays,
           horasExtraValue,
@@ -248,6 +253,7 @@ export function useEnrichedRows({
         projectMode,
         {
           workedDays,
+          halfDays,
           travelDays,
           holidayDays,
           horasExtra: horasExtraValue,
@@ -291,6 +297,7 @@ export function useEnrichedRows({
         ticketTotal: ticketValue,
         otherTotal: otherValue,
         _worked: displayWorkedDays,
+        _halfDays: halfDays || 0,
         _travel: travelDays,
         _holidays: holidayDays,
         _workedBase: workedBase,
@@ -307,6 +314,7 @@ export function useEnrichedRows({
         _prelight: prelight,
         _recogida: recogida,
         _totalDias: totals.totalDias,
+        _totalHalfDays: totals.totalHalfDays || 0,
         _totalTravel: totals.totalTravel,
         _totalHolidays: totals.totalHolidays,
         _totalExtras: totals.totalExtras,
@@ -348,4 +356,3 @@ export function useEnrichedRows({
 
   return enriched;
 }
-

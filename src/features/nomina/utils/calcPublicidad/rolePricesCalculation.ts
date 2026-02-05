@@ -121,7 +121,7 @@ export function calculateRolePrices({
     return candidates;
   };
 
-  let jornada, travelDay, horaExtra, holidayDay;
+  let jornada, halfJornada, travelDay, horaExtra, holidayDay;
   if (normalized === 'REF' || (normalized.startsWith('REF') && normalized.length > 3)) {
     // Si es REF o REF + rol base (REFG, REFBB, etc.), buscar "Precio refuerzo" en la fila correspondiente
     // Para refuerzos, SIEMPRE buscar directamente en rowsForRefuerzo (basePriceRows), ignorar prelight/pickup
@@ -150,6 +150,10 @@ export function calculateRolePrices({
     const refFromTarget = getNumField(targetRow, ['Precio refuerzo', 'Precio Refuerzo', 'Refuerzo']);
     const refFromElec = getNumField(elecRow, ['Precio refuerzo', 'Precio Refuerzo', 'Refuerzo']);
     jornada = refFromTarget || refFromElec || 0;
+    halfJornada =
+      getNumField(targetRow, ['Precio 1/2 jornada', 'Precio medio día', 'Precio media jornada']) ||
+      getNumField(elecRow, ['Precio 1/2 jornada', 'Precio medio día', 'Precio media jornada']) ||
+      0;
     travelDay = jornada / divTravel;
     horaExtra = getNumField(targetRow, ['Horas extras', 'Horas Extras', 'Hora extra', 'Horas extra', 'HE', 'Hora Extra']) ||
                 getNumField(elecRow, ['Horas extras', 'Horas Extras', 'Hora extra', 'Horas extra', 'HE', 'Hora Extra']) || 0;
@@ -161,6 +165,9 @@ export function calculateRolePrices({
       row = (Object.keys(baseRow || {}).length > 0 ? baseRow : elecRow) as any;
     }
     jornada = getNumField(row, ['Precio jornada', 'Precio Jornada', 'Jornada', 'Precio dia', 'Precio día']);
+    halfJornada =
+      getNumField(row, ['Precio 1/2 jornada', 'Precio medio día', 'Precio media jornada']) ||
+      0;
     travelDay = getNumField(row, ['Travel day', 'Travel Day', 'Travel', 'Día de viaje', 'Dia de viaje', 'Día travel', 'Dia travel', 'TD']) ||
                 (jornada > 0 ? jornada / divTravel : 0);
     horaExtra = getNumField(row, ['Horas extras', 'Horas Extras', 'Hora extra', 'Horas extra', 'HE', 'Hora Extra']);
@@ -170,10 +177,10 @@ export function calculateRolePrices({
 
   return {
     jornada,
+    halfJornada,
     travelDay,
     horaExtra,
     holidayDay,
     row,
   };
 }
-

@@ -11,6 +11,7 @@ type JornadaType =
   | 'Descarga' 
   | 'Localizar' 
   | 'Travel Day' 
+  | '1/2 jornada'
   | 'Prelight' 
   | 'Recogida' 
   | 'Rodaje Festivo' 
@@ -41,6 +42,7 @@ export function translateJornadaType(
     'Descarga': translateFn('planning.unloading', 'Descarga'),
     'Localizar': translateFn('planning.location', 'Localizar'),
     'Travel Day': translateFn('planning.travelDay', 'Travel Day'),
+    '1/2 jornada': translateFn('planning.halfDay', '1/2 jornada'),
     'Prelight': translateFn('planning.prelight', 'Prelight'),
     'Recogida': translateFn('planning.pickup', 'Recogida'),
     'Rodaje Festivo': translateFn('planning.holidayShooting', 'Rodaje Festivo'),
@@ -50,4 +52,3 @@ export function translateJornadaType(
   
   return typeMap[tipo] || tipo;
 }
-

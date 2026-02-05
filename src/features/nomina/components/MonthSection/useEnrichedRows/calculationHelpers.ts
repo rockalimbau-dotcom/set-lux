@@ -8,6 +8,7 @@ export function calculateDiarioTotals(
   localizar: number | undefined,
   carga: number | undefined,
   descarga: number | undefined,
+  halfDays: number,
   travelDays: number,
   holidayDays: number,
   horasExtraValue: number,
@@ -24,6 +25,7 @@ export function calculateDiarioTotals(
   materialPropioWeeks: number = 0
 ): {
   totalDias: number;
+  totalHalfDays: number;
   totalTravel: number;
   totalHolidays: number;
   totalExtras: number;
@@ -37,6 +39,7 @@ export function calculateDiarioTotals(
   // Para los cálculos de precio, prelight y recogida se cuentan como rodaje
   const rodajeDays = (rodaje || 0) + (pruebasCamara || 0) + (oficina || 0) + (prelight || 0) + (recogida || 0);
   const totalDias = rodajeDays * (effectivePr.jornada || 0);
+  const totalHalfDays = (halfDays || 0) * (effectivePr.halfJornada || 0);
 
   const localizacionDays = localizar || 0;
   const cargaDays = carga || 0;
@@ -65,6 +68,7 @@ export function calculateDiarioTotals(
 
   const totalBruto =
     totalDias +
+    totalHalfDays +
     totalLocalizacion +
     totalCargaDescarga +
     totalTravel +
@@ -77,6 +81,7 @@ export function calculateDiarioTotals(
 
   return {
     totalDias,
+    totalHalfDays,
     totalTravel,
     totalHolidays,
     totalExtras,
@@ -96,6 +101,7 @@ export function calculateStandardTotals(
   projectMode: 'semanal' | 'mensual',
   totalDiasTrabajados: number,
   workedDays: number,
+  halfDays: number,
   travelDays: number,
   holidayDays: number,
   horasExtraValue: number,
@@ -111,6 +117,7 @@ export function calculateStandardTotals(
   materialPropioWeeks: number = 0
 ): {
   totalDias: number;
+  totalHalfDays: number;
   totalTravel: number;
   totalHolidays: number;
   totalExtras: number;
@@ -130,6 +137,7 @@ export function calculateStandardTotals(
     // Para semanal: usar precio jornada como antes
     totalDias = workedDays * (effectivePr.jornada || 0);
   }
+  const totalHalfDays = (halfDays || 0) * (effectivePr.halfJornada || 0);
 
   const totalTravel = travelDays * (effectivePr.travelDay || 0);
   const totalHolidays = holidayDays * (effectivePr.holidayDay || 0);
@@ -145,6 +153,7 @@ export function calculateStandardTotals(
 
   const totalBruto =
     totalDias +
+    totalHalfDays +
     totalTravel +
     totalHolidays +
     totalExtras +
@@ -155,6 +164,7 @@ export function calculateStandardTotals(
 
   return {
     totalDias,
+    totalHalfDays,
     totalTravel,
     totalHolidays,
     totalExtras,
@@ -164,4 +174,3 @@ export function calculateStandardTotals(
     totalBruto,
   };
 }
-

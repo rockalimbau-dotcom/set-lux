@@ -36,6 +36,8 @@ vi.mock('./numbers', () => ({
     return parseFloat(val) || 0;
   }),
   parseHHMM: vi.fn(val => {
+    if (val === '02:00') return 2 * 60;
+    if (val === '03:00') return 3 * 60;
     if (val === '22:00') return 22 * 60;
     if (val === '06:00') return 6 * 60;
     if (val === '09:00') return 9 * 60;
@@ -76,6 +78,21 @@ describe('runtime utils', () => {
       });
     });
 
+    it('should return diario defaults when mode is diario and no data', () => {
+      const project = { id: 'test-project' };
+      const result = readCondParams(project, 'diario');
+
+      expect(result).toEqual({
+        jornadaTrabajo: 10,
+        jornadaComida: 1,
+        cortesiaMin: 15,
+        taDiario: 10,
+        taFinde: 48,
+        nocturnoIni: '02:00',
+        nocturnoFin: '06:00',
+      });
+    });
+
     it('should read parameters from localStorage', () => {
       const project = { id: 'test-project' };
       const mockData = {
@@ -104,6 +121,43 @@ describe('runtime utils', () => {
         taDiario: 10,
         taFinde: 36,
         nocturnoIni: '21:00',
+        nocturnoFin: '07:00',
+      });
+    });
+
+    it('should read diario parameters from publicidad key when diario key is missing', () => {
+      const project = { id: 'test-project' };
+      const mockData = {
+        params: {
+          jornadaTrabajo: '11',
+          jornadaComida: '0.5',
+          cortesiaMin: '20',
+          taDiario: '9',
+          taFinde: '40',
+          nocturnoIni: '03:00',
+          nocturnoFin: '07:00',
+        },
+      };
+
+      mockLocalStorage.getItem
+        .mockReturnValueOnce(null) // diario fails
+        .mockReturnValueOnce(JSON.stringify(mockData)); // publicidad succeeds
+
+      const result = readCondParams(project, 'diario');
+
+      expect(mockLocalStorage.getItem).toHaveBeenCalledWith(
+        'cond_test-project_diario'
+      );
+      expect(mockLocalStorage.getItem).toHaveBeenCalledWith(
+        'cond_test-project_publicidad'
+      );
+      expect(result).toEqual({
+        jornadaTrabajo: 11,
+        jornadaComida: 0.5,
+        cortesiaMin: 20,
+        taDiario: 9,
+        taFinde: 40,
+        nocturnoIni: '03:00',
         nocturnoFin: '07:00',
       });
     });
@@ -284,6 +338,24 @@ describe('runtime utils', () => {
 
       // Simplified test - just check that function works
       expect(typeof result).toBe('boolean');
+    });
+
+    it('should not detect nocturnidad for diario window when shift does not overlap', () => {
+      const result = hasNocturnidad('09:00', '23:00', '02:00', '06:00');
+
+      expect(result).toBe(false);
+    });
+
+    it('should detect nocturnidad for diario window when shift overlaps', () => {
+      const result = hasNocturnidad('03:00', '05:00', '02:00', '06:00');
+
+      expect(result).toBe(true);
+    });
+
+    it('should detect nocturnidad for overnight shift with diario window', () => {
+      const result = hasNocturnidad('23:00', '07:00', '02:00', '06:00');
+
+      expect(result).toBe(true);
     });
 
     it('should detect nocturnidad when end is before morning threshold', () => {

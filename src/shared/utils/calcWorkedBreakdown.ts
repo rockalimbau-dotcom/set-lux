@@ -9,6 +9,7 @@ export interface WorkedBreakdownResult {
   workedPre: number;
   workedPick: number;
   holidayDays: number;
+  halfDays?: number;
   rodaje?: number;
   pruebasCamara?: number;
   oficina?: number;
@@ -52,6 +53,7 @@ export function calcWorkedBreakdown(
   let workedDays = 0;
   let travelDays = 0;
   let holidayDays = 0;
+  let halfDays = 0;
   // Contadores por tipo de día
   let rodaje = 0;
   let pruebasCamara = 0;
@@ -158,7 +160,9 @@ export function calcWorkedBreakdown(
       // Lógica diferente según el modo del proyecto
       if (projectMode === 'publicidad' || projectMode === 'diario') {
         // En publicidad: solo Rodaje y Oficina cuentan en workedDays
-        if (dayType === 'Rodaje') {
+        if (dayType === '1/2 jornada') {
+          halfDays += 1;
+        } else if (dayType === 'Rodaje') {
           rodaje += 1;
           workedDays += 1;
         } else if (dayType === 'Pruebas de cámara') {
@@ -195,7 +199,9 @@ export function calcWorkedBreakdown(
         }
       } else {
         // En semanal y mensual: todos los tipos cuentan en workedDays excepto Travel Day
-        if (dayType === 'Rodaje') {
+        if (dayType === '1/2 jornada') {
+          halfDays += 1;
+        } else if (dayType === 'Rodaje') {
           rodaje += 1;
           workedDays += 1;
         } else if (dayType === 'Pruebas de cámara') {
@@ -249,6 +255,7 @@ export function calcWorkedBreakdown(
       workedPre, 
       workedPick, 
       holidayDays,
+      halfDays,
       rodaje,
       pruebasCamara,
       oficina,
@@ -266,6 +273,7 @@ export function calcWorkedBreakdown(
       workedPre, 
       workedPick, 
       holidayDays,
+      halfDays,
       rodaje,
       pruebasCamara,
       oficina,
@@ -279,4 +287,3 @@ export function calcWorkedBreakdown(
     };
   }
 }
-
