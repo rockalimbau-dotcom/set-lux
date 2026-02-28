@@ -680,6 +680,13 @@ export function MembersRow({
                         }
                       ]);
                       setCell(weekId, i, listKey, next);
+                      if (listKey === 'refList' && current.length === 0) {
+                        const crewStartValue = String((day as AnyRecord).crewStart || '');
+                        const crewEndValue = String((day as AnyRecord).crewEnd || '');
+                        setCell(weekId, i, 'refStart', crewStartValue);
+                        setCell(weekId, i, 'refEnd', crewEndValue);
+                        setCell(weekId, i, 'refTipo', 'Rodaje');
+                      }
                     }}
                   />
                   {listKey === 'crewList' && (
