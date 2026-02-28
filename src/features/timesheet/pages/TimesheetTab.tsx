@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useLocalStorage } from '@shared/hooks/useLocalStorage';
 import { AnyRecord } from '@shared/types/common';
 import { parseYYYYMMDD, addDays, toYYYYMMDD, formatDDMMYYYY } from '@shared/utils/date';
-import { roleLabelFromCode, stripRefuerzoSuffix, stripRoleSuffix } from '@shared/constants/roles';
+import { hasRoleGroupSuffix, roleLabelFromCode, roleRank, stripRefuerzoSuffix, stripRoleSuffix } from '@shared/constants/roles';
 import { usePlanWeeks } from '@features/reportes/pages/ReportesTab/usePlanWeeks';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
@@ -19,6 +19,7 @@ type Worker = {
   stableKey: string;
   name: string;
   role: string;
+  gender?: 'male' | 'female' | 'neutral';
 };
 
 type WorkerProfile = {
@@ -49,6 +50,11 @@ const normalizeRole = (role: string): string => {
 };
 
 const stableWorkerKey = (role: string, name: string): string => `${normalizeRole(role)}__${String(name || '').trim()}`;
+const stableWorkerIdentity = (member: AnyRecord): string => {
+  const id = String(member?.id || '').trim();
+  if (id) return `id::${id}`;
+  return stableWorkerKey(String(member?.role || ''), String(member?.name || ''));
+};
 
 const personMatches = (member: AnyRecord, worker: Worker): boolean => {
   const memberName = String(member?.name || '').trim().toLowerCase();
@@ -92,6 +98,42 @@ const escapeHtml = (value: unknown): string =>
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
+
+const getTimesheetRoleLabel = (
+  role: string,
+  t: (key: string, options?: AnyRecord) => string,
+  gender: 'male' | 'female' | 'neutral' = 'neutral'
+): string => {
+  const raw = String(role || '').toUpperCase().trim();
+  if (!raw) return '';
+
+  const hasGroup = hasRoleGroupSuffix(raw);
+  const groupSuffix = hasGroup ? raw.slice(-1) : '';
+  const roleWithoutGroup = hasGroup ? raw.slice(0, -1) : raw;
+  const normalized = normalizeRole(roleWithoutGroup);
+  if (!normalized) return '';
+
+  const upper = normalized.toUpperCase();
+  let label = '';
+  if (upper.startsWith('REF') && upper.length > 3) {
+    const baseCode = upper.substring(3);
+    const baseTranslationKey = `team.roles.${baseCode}`;
+    const baseTranslated = t(baseTranslationKey, { context: gender });
+    const baseLabel =
+      baseTranslated !== baseTranslationKey
+        ? baseTranslated
+        : roleLabelFromCode(baseCode) || baseCode;
+    label = `${t('team.reinforcementPrefix')} ${baseLabel}`.trim();
+  } else {
+    const translationKey = `team.roles.${upper}`;
+    const translated = t(translationKey, { context: gender });
+    label = translated !== translationKey ? translated : roleLabelFromCode(upper) || upper;
+  }
+
+  if (groupSuffix === 'P') return `${label} ${t('needs.prelight')}`.trim();
+  if (groupSuffix === 'R') return `${label} ${t('needs.pickup')}`.trim();
+  return label;
+};
 
 function buildWeekIsoDays(week: AnyRecord): string[] {
   const monday = parseYYYYMMDD(String(week?.startDate || ''));
@@ -236,13 +278,30 @@ function extractWorkersFromWeek(week: AnyRecord): Worker[] {
         const name = String(m?.name || '').trim();
         if (!role || !name) continue;
         const key = `${role}__${name}`;
+        const stableKey = stableWorkerIdentity(m);
         if (!out.has(key)) {
-          out.set(key, { key, stableKey: stableWorkerKey(role, name), role, name });
+          out.set(key, {
+            key,
+            stableKey,
+            role,
+            name,
+            gender: (m?.gender as 'male' | 'female' | 'neutral' | undefined) || 'neutral',
+          });
         }
       }
     }
   }
-  return Array.from(out.values()).sort((a, b) => a.name.localeCompare(b.name, 'es'));
+  const roleForRank = (role: string): string => {
+    const normalized = normalizeRole(role).toUpperCase();
+    if (normalized.startsWith('REF') && normalized.length > 3) return normalized.substring(3);
+    return normalized;
+  };
+  return Array.from(out.values()).sort((a, b) => {
+    const rankA = roleRank(roleForRank(a.role));
+    const rankB = roleRank(roleForRank(b.role));
+    if (rankA !== rankB) return rankA - rankB;
+    return a.name.localeCompare(b.name, 'es');
+  });
 }
 
 function getWorkBlockForDay(day: AnyRecord, worker: Worker): 'base' | 'pre' | 'pick' | 'ref' | null {
@@ -580,10 +639,13 @@ export default function TimesheetTab({ project, readOnly = false }: TimesheetTab
   const workers = useMemo(() => (selectedWeek ? extractWorkersFromWeek(selectedWeek) : []), [selectedWeek]);
 
   const [selectedWorkerKey, setSelectedWorkerKey] = useLocalStorage<string>(`timesheet_${baseId}_selectedWorker`, '');
-  const selectedWorker = useMemo(
-    () => workers.find(w => w.key === selectedWorkerKey) || workers[0] || null,
-    [workers, selectedWorkerKey]
-  );
+  const selectedWorker = useMemo(() => {
+    const exact = workers.find(w => w.key === selectedWorkerKey);
+    if (exact) return exact;
+    const byStable = workers.find(w => w.stableKey === selectedWorkerKey);
+    if (byStable) return byStable;
+    return workers[0] || null;
+  }, [workers, selectedWorkerKey]);
 
   useEffect(() => {
     if (selectedWorker && selectedWorkerKey !== selectedWorker.key) {
@@ -646,7 +708,7 @@ export default function TimesheetTab({ project, readOnly = false }: TimesheetTab
 
   const selectedProfile = selectedWorker ? (profiles[selectedWorker.stableKey] || {}) : {};
   const departmentValue = t('timesheet.lightingDepartmentShort').trim();
-  const roleLabel = selectedWorker ? roleLabelFromCode(normalizeRole(selectedWorker.role).replace(/^REF/, '') || selectedWorker.role) : '';
+  const roleLabel = selectedWorker ? getTimesheetRoleLabel(selectedWorker.role, t, selectedWorker.gender || 'neutral') : '';
   const weekLabel = weekIsoDays.length > 0 ? formatDDMMYYYY(parseYYYYMMDD(weekIsoDays[weekIsoDays.length - 1])) : '';
   const weekOptions = useMemo(
     () =>
@@ -660,9 +722,9 @@ export default function TimesheetTab({ project, readOnly = false }: TimesheetTab
     () =>
       workers.map(w => ({
         value: w.key,
-        label: `${w.name} - ${roleLabelFromCode(normalizeRole(w.role).replace(/^REF/, '') || w.role)}`,
+        label: `${w.name} - ${getTimesheetRoleLabel(w.role, t, w.gender || 'neutral')}`,
       })),
-    [workers]
+    [workers, t]
   );
   const updateProfile = (field: keyof WorkerProfile, value: string) => {
     if (!selectedWorker || readOnly) return;
@@ -896,8 +958,8 @@ export default function TimesheetTab({ project, readOnly = false }: TimesheetTab
               <th className='border border-neutral-border bg-blue-100/60 px-2 py-2 text-left'>{t('timesheet.from')}</th>
               <th className='border border-neutral-border bg-blue-100/60 px-2 py-2 text-left'>{t('timesheet.to')}</th>
               <th className='border border-neutral-border bg-blue-100/60 px-2 py-2 text-left'>{t('timesheet.totalHours')}</th>
-              <th className='border border-neutral-border bg-blue-100/60 px-2 py-2 text-left'>{t('timesheet.catering')}</th>
-              <th className='border border-neutral-border bg-blue-100/60 px-2 py-2 text-left'>{t('timesheet.city')}</th>
+              <th className='w-[140px] border border-neutral-border bg-blue-100/60 px-2 py-2 text-left'>{t('timesheet.catering')}</th>
+              <th className='w-[180px] border border-neutral-border bg-blue-100/60 px-2 py-2 text-left'>{t('timesheet.city')}</th>
               <th className='border border-neutral-border bg-blue-100/60 px-2 py-2 text-left'>{t('timesheet.notes')}</th>
             </tr>
           </thead>
@@ -909,7 +971,7 @@ export default function TimesheetTab({ project, readOnly = false }: TimesheetTab
                 <td className='border border-neutral-border px-2 py-1.5'>{row.from}</td>
                 <td className='border border-neutral-border px-2 py-1.5'>{row.to}</td>
                 <td className='border border-neutral-border px-2 py-1.5'>{row.total}</td>
-                <td className='border border-neutral-border px-2 py-1.5'>
+                <td className='w-[140px] border border-neutral-border px-2 py-1.5'>
                   <StyledDropdown
                     value={row.catering}
                     onChange={value => updateCatering(row.iso, value)}
@@ -924,7 +986,7 @@ export default function TimesheetTab({ project, readOnly = false }: TimesheetTab
                     optionClassName='text-[10px] sm:text-xs'
                   />
                 </td>
-                <td className='border border-neutral-border px-2 py-1.5'>{row.city}</td>
+                <td className='w-[180px] border border-neutral-border px-2 py-1.5'>{row.city}</td>
                 <td className='border border-neutral-border px-2 py-1.5'>
                   <input
                     type='text'
