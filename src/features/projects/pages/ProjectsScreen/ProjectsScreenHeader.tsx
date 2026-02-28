@@ -91,7 +91,7 @@ export function ProjectsScreenHeader({
                 data-tutorial='projects-user-menu-trigger'
                 aria-haspopup='menu'
                 aria-expanded={menuOpen}
-                className='inline-flex items-center gap-1.5 sm:gap-2 px-2 py-1 sm:px-2.5 sm:py-1.5 md:px-3 md:py-2 rounded-md sm:rounded-lg md:rounded-xl font-semibold transition-all cursor-pointer border text-[10px] sm:text-xs'
+                className='inline-flex items-center justify-between gap-1.5 sm:gap-2 px-2.5 py-1.5 sm:px-2.5 sm:py-1.5 md:px-3 md:py-2 rounded-md sm:rounded-lg md:rounded-xl min-h-[34px] sm:min-h-[36px] min-w-[118px] sm:min-w-[126px] font-semibold transition-all cursor-pointer border text-[11px] sm:text-xs whitespace-nowrap'
                 style={{
                   borderColor: menuOpen ? focusColor : (isLight ? 'rgba(229,231,235,0.9)' : 'var(--border)'),
                   backgroundColor: menuOpen ? (isLight ? '#E8F4FD' : 'rgba(242,116,5,0.12)') : 'var(--panel)',
@@ -99,7 +99,7 @@ export function ProjectsScreenHeader({
                 }}
               >
                 <span
-                  className='inline-flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-semibold'
+                  className='inline-flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-semibold flex-shrink-0'
                   style={{
                     backgroundColor: isLight ? '#0468BF' : '#F27405',
                     color: '#ffffff',
@@ -107,10 +107,10 @@ export function ProjectsScreenHeader({
                 >
                   {String(userName || 'U').trim().charAt(0).toUpperCase()}
                 </span>
-                <span className='font-semibold text-[10px] sm:text-xs'>
+                <span className='font-semibold text-[11px] sm:text-xs'>
                   {t('common.myAccount')}
                 </span>
-                <span style={{ fontSize: '10px' }}>
+                <span className='flex-shrink-0' style={{ fontSize: '10px' }}>
                   {menuOpen ? '▲' : '▼'}
                 </span>
               </button>
@@ -119,7 +119,7 @@ export function ProjectsScreenHeader({
               {menuOpen && (
                 <div 
                   data-tutorial='projects-user-menu-panel'
-                  className='absolute right-0 top-full mt-1.5 sm:mt-2 w-44 sm:w-48 md:w-56 rounded-md md:rounded-lg shadow-lg border py-1 md:py-1.5 animate-in fade-in slide-in-from-top-1 duration-150'
+                  className='absolute right-0 top-full mt-1.5 sm:mt-2 w-[min(88vw,16rem)] sm:w-48 md:w-56 max-w-[calc(100vw-1rem)] rounded-md md:rounded-lg shadow-lg border py-1 md:py-1.5 animate-in fade-in slide-in-from-top-1 duration-150'
                   style={{
                     backgroundColor: 'var(--panel)',
                     borderColor: isLight ? 'rgba(229,231,235,0.6)' : 'var(--border)',
