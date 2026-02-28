@@ -35,7 +35,9 @@ export function useMensualLanguageSync({
 
   useEffect(() => {
     const handleLanguageChange = async () => {
+      const previousFestivosDefault = globalDynamicFestivosText;
       await updateDynamicFestivos();
+      const nextFestivosDefault = globalDynamicFestivosText;
       
       setModel((m: AnyRecord) => {
         if (!m) return m;
@@ -94,8 +96,29 @@ export function useMensualLanguageSync({
         if (isRenderedDefault(currentLegendRendered, m.legendTemplate || '', 'conditions.defaultLegendMonthly')) {
           updated.legendTemplate = newDefaultLegend;
         }
-        if (!m.festivosTemplate || m.festivosTemplate.trim() === '' || m.festivosTemplate.includes('{{')) {
-          updated.festivosTemplate = globalDynamicFestivosText;
+        const currentFestivos = String(m.festivosTemplate || '');
+        const festivosLooksDefaultByPrefix = ['es', 'en', 'ca'].some(lang => {
+          try {
+            const defaultRendered = String(
+              i18n.t('conditions.defaultHolidays', {
+                lng: lang,
+                year: '2026',
+                festivos: '01/01',
+              })
+            );
+            const prefix = normalizeText(defaultRendered.split('(')[0] || '');
+            return prefix.length > 0 && normalizeText(currentFestivos).startsWith(prefix);
+          } catch {
+            return false;
+          }
+        });
+        const festivosIsDefault =
+          currentFestivos.trim() === '' ||
+          currentFestivos.includes('{{') ||
+          normalizeText(currentFestivos) === normalizeText(previousFestivosDefault) ||
+          festivosLooksDefaultByPrefix;
+        if (festivosIsDefault) {
+          updated.festivosTemplate = nextFestivosDefault;
         }
         if (isRenderedDefault(currentHorariosRendered, m.horariosTemplate || '', 'conditions.defaultSchedules')) {
           updated.horariosTemplate = newDefaultHorarios;
@@ -121,9 +144,10 @@ export function useMensualLanguageSync({
     };
 
     i18n.on('languageChanged', handleLanguageChange);
+    // Also sync on mount in case language changed before opening this screen
+    handleLanguageChange();
     return () => {
       i18n.off('languageChanged', handleLanguageChange);
     };
   }, [i18n, setModel, getDefaultLegend, getDefaultHorarios, getDefaultDietas, getDefaultTransportes, getDefaultAlojamiento, getDefaultPrepro, getDefaultConvenio]);
 }
-

@@ -24,8 +24,10 @@ export function useLanguageSync({ model: _model, setModel }: UseLanguageSyncProp
   // Update templates when language changes
   useEffect(() => {
     const handleLanguageChange = async () => {
+      const previousFestivosDefault = globalDynamicFestivosText;
       // Update dynamic holidays with new language
       await updateDynamicFestivos();
+      const nextFestivosDefault = globalDynamicFestivosText;
       
       setModel((m: AnyRecord) => {
         if (!m) return m;
@@ -102,8 +104,29 @@ export function useLanguageSync({ model: _model, setModel }: UseLanguageSyncProp
           updated.legendTemplate = newDefaultLegend;
         }
         // Update holidays with new translated text
-        if (!m.festivosTemplate || m.festivosTemplate.trim() === '' || m.festivosTemplate.includes('{{')) {
-          updated.festivosTemplate = globalDynamicFestivosText;
+        const currentFestivos = String(m.festivosTemplate || '');
+        const festivosLooksDefaultByPrefix = ['es', 'en', 'ca'].some(lang => {
+          try {
+            const defaultRendered = String(
+              i18n.t('conditions.defaultHolidays', {
+                lng: lang,
+                year: '2026',
+                festivos: '01/01',
+              })
+            );
+            const prefix = normalizeText(defaultRendered.split('(')[0] || '');
+            return prefix.length > 0 && normalizeText(currentFestivos).startsWith(prefix);
+          } catch {
+            return false;
+          }
+        });
+        const festivosIsDefault =
+          currentFestivos.trim() === '' ||
+          currentFestivos.includes('{{') ||
+          normalizeText(currentFestivos) === normalizeText(previousFestivosDefault) ||
+          festivosLooksDefaultByPrefix;
+        if (festivosIsDefault) {
+          updated.festivosTemplate = nextFestivosDefault;
         }
         if (isRenderedDefault(currentHorariosRendered, m.horariosTemplate || '', 'conditions.defaultSchedulesAdvertising')) {
           updated.horariosTemplate = newDefaultHorarios;
@@ -126,9 +149,10 @@ export function useLanguageSync({ model: _model, setModel }: UseLanguageSyncProp
     };
 
     i18n.on('languageChanged', handleLanguageChange);
+    // Also sync on mount in case language changed before opening this screen
+    handleLanguageChange();
     return () => {
       i18n.off('languageChanged', handleLanguageChange);
     };
   }, [i18n, setModel]);
 }
-
