@@ -48,6 +48,17 @@ export function PhaseGrid({ condModeLabel, condTipo, onTabChange }: PhaseGridPro
       tutorialId: 'phase-necesidades',
       iconFrame: false,
     },
+    ...(condTipo !== 'diario'
+      ? [{
+          key: 'timesheet' as ProjectTab,
+          title: t('timesheet.title'),
+          icon: <PhaseIcon name='necesidades' color='#60a5fa' />,
+          desc: t('timesheet.description'),
+          onClick: () => onTabChange('timesheet'),
+          tutorialId: 'phase-timesheet',
+          iconFrame: false,
+        }]
+      : []),
     {
       key: 'reportes',
       title: t('navigation.reports'),

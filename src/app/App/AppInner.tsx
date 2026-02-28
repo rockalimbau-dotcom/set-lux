@@ -142,6 +142,20 @@ function AppInner() {
       selector: '[data-tutorial="theme-toggle"]',
     },
     {
+      id: 'profile-menu',
+      title: t('tutorial.steps.profileMenu.title'),
+      description: t('tutorial.steps.profileMenu.body'),
+      selector: '[data-tutorial="projects-user-menu-trigger"]',
+    },
+    {
+      id: 'profile-menu-open',
+      title: t('tutorial.steps.profileMenuOpen.title'),
+      description: t('tutorial.steps.profileMenuOpen.body'),
+      selector: '[data-tutorial="projects-user-menu-panel"]',
+      tooltipPlacement: 'bottom',
+      noScroll: true,
+    },
+    {
       id: 'new-project',
       title: t('tutorial.steps.newProject.title'),
       description: t('tutorial.steps.newProject.body'),
@@ -231,6 +245,29 @@ function AppInner() {
       tooltipShiftY: 20,
     },
     {
+      id: 'timesheet-card',
+      title: t('tutorial.steps.timesheet.title'),
+      description: t('tutorial.steps.timesheet.body'),
+      selector: '[data-tutorial="phase-timesheet"]',
+      tooltipPlacement: 'bottom',
+      tooltipShiftY: 28,
+      tooltipOffset: -15,
+    },
+    {
+      id: 'timesheet-top',
+      title: t('tutorial.steps.timesheetTop.title'),
+      description: t('tutorial.steps.timesheetTop.body'),
+      selector: '[data-tutorial="timesheet-top"]',
+      noScroll: true,
+    },
+    {
+      id: 'timesheet-table',
+      title: t('tutorial.steps.timesheetTable.title'),
+      description: t('tutorial.steps.timesheetTable.body'),
+      selector: '[data-tutorial="timesheet-table"]',
+      noScroll: true,
+    },
+    {
       id: 'reports-card',
       title: t('tutorial.steps.reports.title'),
       description: t('tutorial.steps.reports.body'),
@@ -310,7 +347,7 @@ function AppInner() {
     const isDiario = activeProject?.conditions?.tipo === 'diario';
     if (!isDiario) return steps;
 
-    const removeIds = new Set(['reports-extra', 'reports-range', 'payroll-range']);
+    const removeIds = new Set(['timesheet-card', 'timesheet-top', 'timesheet-table', 'reports-extra', 'reports-range', 'payroll-range']);
     return steps.filter(step => !removeIds.has(step.id));
   }, [t, activeProject?.conditions?.tipo]);
 
@@ -433,6 +470,23 @@ function AppInner() {
     if (!tutorialOpen) return;
     storage.setJSON('tutorial_step_v1', tutorialStep);
   }, [tutorialOpen, tutorialStep]);
+
+  // Keep user menu state in sync with tutorial steps to avoid double-click transitions.
+  useEffect(() => {
+    if (typeof window === 'undefined' || !tutorialOpen) return;
+    const currentId = tutorialSteps[tutorialStep]?.id;
+    if (currentId === 'profile-menu-open') {
+      try {
+        window.dispatchEvent(new CustomEvent('tutorial-profile-menu-open'));
+      } catch {}
+      return;
+    }
+    if (currentId === 'profile-menu' || currentId === 'new-project' || currentId === 'new-project-form') {
+      try {
+        window.dispatchEvent(new CustomEvent('tutorial-profile-menu-close'));
+      } catch {}
+    }
+  }, [tutorialOpen, tutorialStep, tutorialSteps]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -664,6 +718,36 @@ function AppInner() {
         onStepChange={(nextIndex) => {
           const currentId = tutorialSteps[tutorialStep]?.id;
           const nextId = tutorialSteps[nextIndex]?.id;
+          if (currentId === 'profile-menu' && nextId === 'profile-menu-open') {
+            setTutorialStep(nextIndex);
+            setTimeout(() => {
+              try {
+                window.dispatchEvent(new CustomEvent('tutorial-profile-menu-open'));
+              } catch {}
+            }, 0);
+            return;
+          }
+          if (
+            currentId === 'profile-menu-open' &&
+            (nextId === 'profile-menu' || nextId === 'new-project')
+          ) {
+            setTutorialStep(nextIndex);
+            setTimeout(() => {
+              try {
+                window.dispatchEvent(new CustomEvent('tutorial-profile-menu-close'));
+              } catch {}
+            }, 0);
+            return;
+          }
+          if (currentId === 'new-project' && nextId === 'profile-menu-open') {
+            setTutorialStep(nextIndex);
+            setTimeout(() => {
+              try {
+                window.dispatchEvent(new CustomEvent('tutorial-profile-menu-open'));
+              } catch {}
+            }, 0);
+            return;
+          }
           if (currentId === 'new-project' && nextId === 'new-project-form') {
             try {
               window.dispatchEvent(new CustomEvent('tutorial-open-new-project'));
@@ -724,11 +808,29 @@ function AppInner() {
             } catch {}
             return;
           }
-          if (currentId === 'planning-week' && nextId === 'reports-card') {
+          if (currentId === 'planning-week' && nextId === 'timesheet-card') {
             if (activeProject?.id) navigate(`/project/${activeProject.id}`);
           }
-          if (currentId === 'reports-card' && nextId === 'planning-week') {
+          if (currentId === 'timesheet-card' && nextId === 'planning-week') {
             if (activeProject?.id) navigate(`/project/${activeProject.id}/calendario`);
+          }
+          if (currentId === 'timesheet-card' && nextId === 'timesheet-top') {
+            if (activeProject?.id) navigate(`/project/${activeProject.id}/timesheet`);
+          }
+          if (currentId === 'timesheet-top' && nextId === 'timesheet-card') {
+            if (activeProject?.id) navigate(`/project/${activeProject.id}`);
+          }
+          if (currentId === 'timesheet-top' && nextId === 'timesheet-table') {
+            if (activeProject?.id) navigate(`/project/${activeProject.id}/timesheet`);
+          }
+          if (currentId === 'timesheet-table' && nextId === 'timesheet-top') {
+            if (activeProject?.id) navigate(`/project/${activeProject.id}/timesheet`);
+          }
+          if (currentId === 'timesheet-table' && nextId === 'reports-card') {
+            if (activeProject?.id) navigate(`/project/${activeProject.id}`);
+          }
+          if (currentId === 'reports-card' && nextId === 'timesheet-table') {
+            if (activeProject?.id) navigate(`/project/${activeProject.id}/timesheet`);
           }
           if (currentId === 'conditions-prices' && nextId === 'planning-card') {
             const priceInput = document.querySelector('[data-tutorial="conditions-price-input"] input') as HTMLInputElement | null;

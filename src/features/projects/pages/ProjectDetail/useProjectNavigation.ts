@@ -26,6 +26,10 @@ export function useProjectNavigation({
   const params = useParams();
   const pid = params.id || project?.id || project?.nombre || 'tmp';
   const isNavigatingRef = useRef(false);
+  const isDailyMode =
+    (project as any)?.conditions?.tipo === 'diario' ||
+    (project as any)?.conditionsMode === 'diario' ||
+    (project as any)?.conditions?.mode === 'diario';
 
   const [activeTab, setActiveTabState] = useState<ProjectTab | null>(initialTab as ProjectTab ?? null);
 
@@ -69,14 +73,17 @@ export function useProjectNavigation({
         'necesidades',
         'condiciones',
       ]);
+      if (!isDailyMode) valid.add('timesheet');
       if (segNormalized && valid.has(segNormalized as ProjectTab)) {
         if (activeTab !== segNormalized) setActiveTabState(segNormalized as ProjectTab);
+      } else if (segNormalized && !valid.has(segNormalized as ProjectTab)) {
+        if (activeTab !== 'necesidades') setActiveTabState('necesidades');
       } else if (!seg && activeTab !== null) {
         setActiveTabState(null);
       }
     } catch {}
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [location.pathname]);
+  }, [location.pathname, isDailyMode]);
 
   // Pestaña -> ruta (sin cambiar UI)
   useEffect(() => {
@@ -98,4 +105,3 @@ export function useProjectNavigation({
 
   return { activeTab, setActiveTab, pid, isNavigatingRef };
 }
-

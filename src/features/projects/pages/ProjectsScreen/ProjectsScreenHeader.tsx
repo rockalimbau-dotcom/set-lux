@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import LogoIcon from '@shared/components/LogoIcon';
 import { ThemeToggleButton } from '@app/App/ThemeToggleButton';
@@ -30,6 +30,35 @@ export function ProjectsScreenHeader({
   const gender = profile.gender || 'neutral';
   const genderContext = gender === 'male' || gender === 'female' || gender === 'neutral' ? gender : 'neutral';
 
+  useEffect(() => {
+    const handleOpen = () => setMenuOpen(true);
+    const handleClose = () => setMenuOpen(false);
+    window.addEventListener('tutorial-profile-menu-open', handleOpen as EventListener);
+    window.addEventListener('tutorial-profile-menu-close', handleClose as EventListener);
+    return () => {
+      window.removeEventListener('tutorial-profile-menu-open', handleOpen as EventListener);
+      window.removeEventListener('tutorial-profile-menu-close', handleClose as EventListener);
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleDocClick = (event: MouseEvent) => {
+      if (!menuRef.current) return;
+      if (!menuRef.current.contains(event.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+    const handleEsc = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setMenuOpen(false);
+    };
+    document.addEventListener('mousedown', handleDocClick);
+    document.addEventListener('keydown', handleEsc);
+    return () => {
+      document.removeEventListener('mousedown', handleDocClick);
+      document.removeEventListener('keydown', handleEsc);
+    };
+  }, []);
+
   return (
     <div className='px-5 sm:px-6 md:px-7 lg:px-8 xl:px-6' style={{backgroundColor: 'var(--bg)', minHeight: 'auto', position: 'relative', contain: 'layout style', marginTop: 0, paddingTop: '1.5rem', paddingBottom: '0.5rem', zIndex: 10}}>
       <div className='max-w-6xl mx-auto' style={{position: 'relative', contain: 'layout', zIndex: 10}}>
@@ -55,26 +84,56 @@ export function ProjectsScreenHeader({
             >
               {t('common.newProject')}
             </button>
-            {/* Saludo de bienvenida */}
+            {/* Menú de usuario */}
             <div className='absolute right-0 top-full mt-1 sm:mt-2' ref={menuRef}>
               <button
                 onClick={() => setMenuOpen(!menuOpen)}
-                className='text-[9px] sm:text-[10px] md:text-xs text-zinc-300 hover:text-white transition-colors cursor-pointer'
+                data-tutorial='projects-user-menu-trigger'
+                aria-haspopup='menu'
+                aria-expanded={menuOpen}
+                className='inline-flex items-center gap-1.5 sm:gap-2 px-2 py-1 sm:px-2.5 sm:py-1.5 md:px-3 md:py-2 rounded-md sm:rounded-lg md:rounded-xl font-semibold transition-all cursor-pointer border text-[10px] sm:text-xs'
+                style={{
+                  borderColor: menuOpen ? focusColor : (isLight ? 'rgba(229,231,235,0.9)' : 'var(--border)'),
+                  backgroundColor: menuOpen ? (isLight ? '#E8F4FD' : 'rgba(242,116,5,0.12)') : 'var(--panel)',
+                  color: isLight ? '#111827' : 'var(--text)',
+                }}
               >
-                <span style={{color: (document.documentElement.getAttribute('data-theme')||'dark')==='light' ? '#111827' : undefined}}>{t('common.welcome', { context: genderContext })} </span>
-                <span className='font-semibold' style={{color: (document.documentElement.getAttribute('data-theme')||'dark')==='light' ? '#0468BF' : '#F27405'}}>{userName}</span> ✨
+                <span
+                  className='inline-flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-semibold'
+                  style={{
+                    backgroundColor: isLight ? '#0468BF' : '#F27405',
+                    color: '#ffffff',
+                  }}
+                >
+                  {String(userName || 'U').trim().charAt(0).toUpperCase()}
+                </span>
+                <span className='font-semibold text-[10px] sm:text-xs'>
+                  {t('common.myAccount')}
+                </span>
+                <span style={{ fontSize: '10px' }}>
+                  {menuOpen ? '▲' : '▼'}
+                </span>
               </button>
               
               {/* Menú desplegable */}
               {menuOpen && (
                 <div 
-                  className='absolute right-0 top-full mt-1 sm:mt-2 w-36 sm:w-40 md:w-48 rounded sm:rounded-md md:rounded-lg shadow-lg border py-0.5 sm:py-1 md:py-2'
+                  data-tutorial='projects-user-menu-panel'
+                  className='absolute right-0 top-full mt-1.5 sm:mt-2 w-44 sm:w-48 md:w-56 rounded-md md:rounded-lg shadow-lg border py-1 md:py-1.5 animate-in fade-in slide-in-from-top-1 duration-150'
                   style={{
                     backgroundColor: 'var(--panel)',
                     borderColor: isLight ? 'rgba(229,231,235,0.6)' : 'var(--border)',
                     zIndex: 100
                   }}
                 >
+                  <div className='px-3 md:px-4 pb-1.5 md:pb-2 border-b' style={{ borderColor: isLight ? '#e5e7eb' : 'var(--border)' }}>
+                    <div className='text-[10px] sm:text-xs font-semibold' style={{ color: isLight ? '#374151' : '#cbd5e1' }}>
+                      {t('common.welcome', { context: genderContext })}
+                    </div>
+                    <div className='text-[11px] sm:text-xs md:text-sm font-semibold' style={{ color: isLight ? '#111827' : '#ffffff' }}>
+                      {userName}
+                    </div>
+                  </div>
                   <button
                     onClick={() => {
                       onPerfil?.();
@@ -82,7 +141,7 @@ export function ProjectsScreenHeader({
                     }}
                     onMouseEnter={() => setHoveredUserMenuOption('perfil')}
                     onMouseLeave={() => setHoveredUserMenuOption(null)}
-                    className='w-full text-left px-2 sm:px-3 md:px-4 py-1 sm:py-1.5 md:py-2 text-[10px] sm:text-xs md:text-sm transition-colors'
+                    className='w-full text-left px-3 sm:px-3.5 md:px-4 py-1.5 sm:py-1.5 md:py-2 text-[10px] sm:text-xs md:text-sm transition-colors'
                     style={{
                       color: hoveredUserMenuOption === 'perfil' 
                         ? (isLight ? '#111827' : 'white')
@@ -101,7 +160,7 @@ export function ProjectsScreenHeader({
                     }}
                     onMouseEnter={() => setHoveredUserMenuOption('config')}
                     onMouseLeave={() => setHoveredUserMenuOption(null)}
-                    className='w-full text-left px-2 sm:px-3 md:px-4 py-1 sm:py-1.5 md:py-2 text-[10px] sm:text-xs md:text-sm transition-colors'
+                    className='w-full text-left px-3 sm:px-3.5 md:px-4 py-1.5 sm:py-1.5 md:py-2 text-[10px] sm:text-xs md:text-sm transition-colors'
                     style={{
                       color: hoveredUserMenuOption === 'config' 
                         ? (isLight ? '#111827' : 'white')
@@ -120,7 +179,7 @@ export function ProjectsScreenHeader({
                     }}
                     onMouseEnter={() => setHoveredUserMenuOption('salir')}
                     onMouseLeave={() => setHoveredUserMenuOption(null)}
-                    className='w-full text-left px-2 sm:px-3 md:px-4 py-1 sm:py-1.5 md:py-2 text-[10px] sm:text-xs md:text-sm transition-colors'
+                    className='w-full text-left px-3 sm:px-3.5 md:px-4 py-1.5 sm:py-1.5 md:py-2 text-[10px] sm:text-xs md:text-sm transition-colors'
                     style={{
                       color: hoveredUserMenuOption === 'salir' 
                         ? (isLight ? '#111827' : 'white')
@@ -141,4 +200,3 @@ export function ProjectsScreenHeader({
     </div>
   );
 }
-

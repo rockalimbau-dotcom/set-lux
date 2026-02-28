@@ -27,6 +27,7 @@
     "reloadPage": "Recargar página",
     "errorDetails": "Detalles del error",
     "welcome": "Te damos la bienvenida,",
+    "myAccount": "Mi cuenta",
     "welcome_male": "Bienvenido,",
     "welcome_female": "Bienvenida,",
     "hello": "¡Hola, {{name}}! 👋",
@@ -127,7 +128,8 @@
     "payroll": "Nómina",
     "conditions": "Condiciones",
     "settings": "Configuración",
-    "profile": "Perfil"
+    "profile": "Perfil",
+    "timesheet": "Timesheet"
   },
   "conditions": {
     "weekly": "Condiciones semanales",
@@ -774,6 +776,14 @@
         "title": "Tema",
         "body": "Cambia el tema de la app según tu preferencia"
       },
+      "profileMenu": {
+        "title": "Menú de usuario",
+        "body": "Accede al menú de usuario para gestionar tu cuenta y preferencias."
+      },
+      "profileMenuOpen": {
+        "title": "Opciones de usuario",
+        "body": "Desde este menú puedes consultar tu perfil, modificar la configuración o cerrar sesión."
+      },
       "newProject": {
         "title": "Nuevo proyecto",
         "body": "Crea un nuevo proyecto desde aquí"
@@ -822,6 +832,18 @@
         "title": "Semana creada",
         "body": "Aquí puedes revisar y editar la semana creada"
       },
+      "timesheet": {
+        "title": "Timesheet",
+        "body": "Accede a Timesheet para registrar la jornada semanal individual de cada trabajador."
+      },
+      "timesheetTop": {
+        "title": "Datos de timesheet",
+        "body": "Selecciona la semana y el trabajador, y completa los datos identificativos: DNI, Seguridad Social y datos de productora."
+      },
+      "timesheetTable": {
+        "title": "Tabla de jornada",
+        "body": "Revisa y edita el detalle diario de la jornada: horario, total de horas, cátering, ciudad y observaciones."
+      },
       "reports": {
         "title": "Reportes",
         "body": "Consulta la información del proyecto y genera reportes en PDF.\nLos reportes alimentan el cálculo de nómina."
@@ -859,5 +881,39 @@
         "body": "¿Tienes dudas o sugerencias? Escríbenos desde aquí"
       }
     }
+  },
+  "timesheet": {
+    "title": "Timesheet",
+    "pdfTitle": "TIMESHEET ELÉCTRICOS",
+    "description": "Registro semanal individual de jornada laboral por trabajador.",
+    "emptyState": "No hay semanas con trabajadores para generar el timesheet.",
+    "week": "Semana",
+    "worker": "Trabajador",
+    "weekEnding": "Fecha (final semana)",
+    "department": "Departamento",
+    "lightingDepartment": "Departamento de Iluminación",
+    "lightingDepartmentShort": "Iluminación",
+    "role": "Cargo",
+    "dni": "DNI",
+    "ss": "Nº SS trabajador",
+    "day": "Día",
+    "date": "Fecha",
+    "from": "Desde",
+    "to": "Hasta",
+    "totalHours": "Total horas",
+    "catering": "Comida cátering (SI / NO)",
+    "city": "Ciudad",
+    "notes": "Notas",
+    "total": "Total",
+    "export": "Exportar",
+    "employeeSignature": "Firma del empleado",
+    "signatureProductionManager": "Firma Jefe de Producción",
+    "signatureProductionCoordinator": "Firma Coordinadora de Producción",
+    "sheetSubtitle": "Registro horario jornada",
+    "companyName": "Productora",
+    "companyAddress": "Dirección productora",
+    "companyCif": "CIF productora",
+    "companySsLabel": "CC Seguridad Social",
+    "legalNotice": "Registro realizado en cumplimiento de la letra h) del artículo 1 del R.D.-Ley 16/2013, de 20 de diciembre por el que se modifica el artículo 12.5 del E.T.\n\nEl empresario deberá conservar los resúmenes mensuales de los registros de jornada durante un período mínimo de cuatro años. El incumplimiento empresarial de estas obligaciones de registro tendrá por consecuencia jurídica la de que el contrato se presuma celebrado a jornada completa, salvo prueba en contrario que acredite el carácter parcial de los servicios.\n\nEn el horario indicado se incluye una hora de pausa para la comida."
   }
 }

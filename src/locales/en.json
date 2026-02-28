@@ -27,6 +27,7 @@
     "reloadPage": "Reload page",
     "errorDetails": "Error details",
     "welcome": "Welcome,",
+    "myAccount": "My account",
     "welcome_male": "Welcome,",
     "welcome_female": "Welcome,",
     "hello": "Hello, {{name}}! 👋",
@@ -67,14 +68,13 @@
     "transportes": "Transport",
     "locations": "Locations",
     "productionCoordinator": "Production coordinator",
-    "productionLabel": "Production",
+    "productionLabel": "Production company:",
     "conditionsType": "Conditions type",
     "country": "Country",
     "region": "Region",
     "noSpecificRegion": "No specific region",
     "dopLabel": "DoP:",
     "warehouseLabel": "Warehouse:",
-    "productionLabel": "Production company:",
     "months": {
       "january": "January",
       "february": "February",
@@ -128,7 +128,8 @@
     "payroll": "Payroll",
     "conditions": "Conditions",
     "settings": "Settings",
-    "profile": "Profile"
+    "profile": "Profile",
+    "timesheet": "Timesheet"
   },
   "conditions": {
     "weekly": "Weekly conditions",
@@ -774,6 +775,14 @@
         "title": "Theme",
         "body": "Change the app theme to your preference"
       },
+      "profileMenu": {
+        "title": "User menu",
+        "body": "Open the user menu to manage your account and preferences."
+      },
+      "profileMenuOpen": {
+        "title": "User options",
+        "body": "From this menu you can review your profile, change settings, or sign out."
+      },
       "newProject": {
         "title": "New project",
         "body": "Create a new project from here"
@@ -822,6 +831,18 @@
         "title": "Week created",
         "body": "Here you can review and edit the created week"
       },
+      "timesheet": {
+        "title": "Timesheet",
+        "body": "Open the Timesheet card for weekly individual working-time records per worker."
+      },
+      "timesheetTop": {
+        "title": "Timesheet data",
+        "body": "Here you select week and worker, and manage the main data: ID, Social Security, and production company details."
+      },
+      "timesheetTable": {
+        "title": "Working-time table",
+        "body": "Here you review and edit daily details: schedule, total hours, catering, city, and notes."
+      },
       "reports": {
         "title": "Reports",
         "body": "Review project information and generate reports in PDF.\nReports feed the payroll calculation."
@@ -859,5 +880,39 @@
         "body": "Have questions or suggestions? Write to us from here"
       }
     }
+  },
+  "timesheet": {
+    "title": "Timesheet",
+    "pdfTitle": "ELECTRICAL TIMESHEET",
+    "description": "Weekly individual working-time sheet per worker.",
+    "emptyState": "No weeks with workers available to generate timesheets.",
+    "week": "Week",
+    "worker": "Worker",
+    "weekEnding": "Week end date",
+    "department": "Department",
+    "lightingDepartment": "Lighting Department",
+    "lightingDepartmentShort": "Lighting",
+    "role": "Role",
+    "dni": "ID",
+    "ss": "Social Security No.",
+    "day": "Day",
+    "date": "Date",
+    "from": "From",
+    "to": "To",
+    "totalHours": "Total hours",
+    "catering": "Catering meal (YES / NO)",
+    "city": "City",
+    "notes": "Notes",
+    "total": "Total",
+    "export": "Export",
+    "employeeSignature": "Employee signature",
+    "signatureProductionManager": "Production Manager Signature",
+    "signatureProductionCoordinator": "Production Coordinator Signature",
+    "sheetSubtitle": "Working day timesheet",
+    "companyName": "Production company",
+    "companyAddress": "Production address",
+    "companyCif": "Company VAT/ID",
+    "companySsLabel": "Social Security account",
+    "legalNotice": "Record made in compliance with letter h) of article 1 of Royal Decree-Law 16/2013, of December 20, which modifies article 12.5 of the Workers' Statute.\n\nThe employer must keep monthly summaries of working-time records for a minimum period of four years. Failure to comply with these record-keeping obligations has the legal consequence that the contract is presumed to be full-time, unless there is evidence to the contrary proving the part-time nature of the services.\n\nThe schedule indicated includes a one-hour break for meals."
   }
 }

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { createPortal } from 'react-dom';
@@ -99,8 +99,15 @@ export default function ProjectDetail({
     if (activeTab === 'necesidades') return t('needs.title');
     if (activeTab === 'equipo') return t('navigation.team');
     if (activeTab === 'reportes') return t('navigation.reports');
+    if (activeTab === 'timesheet') return t('timesheet.title');
     return activeTab;
   }, [activeTab, condModeLabel, t]);
+
+  useEffect(() => {
+    if (condTipo === 'diario' && activeTab === 'timesheet') {
+      setActiveTab('necesidades');
+    }
+  }, [condTipo, activeTab, setActiveTab]);
 
   return (
     <div className='min-h-screen bg-neutral-bg text-neutral-text pb-12' style={{paddingTop: 0}}>

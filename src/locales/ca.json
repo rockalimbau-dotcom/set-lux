@@ -27,6 +27,7 @@
     "reloadPage": "Recarregar pàgina",
     "errorDetails": "Detalls de l'error",
     "welcome": "Et donem la benvinguda,",
+    "myAccount": "El meu compte",
     "welcome_male": "Benvingut,",
     "welcome_female": "Benvinguda,",
     "hello": "Hola, {{name}}! 👋",
@@ -127,7 +128,8 @@
     "payroll": "Nòmina",
     "conditions": "Condicions",
     "settings": "Configuració",
-    "profile": "Perfil"
+    "profile": "Perfil",
+    "timesheet": "Timesheet"
   },
   "conditions": {
     "weekly": "Condicions setmanals",
@@ -497,7 +499,6 @@
     "errorMigratingData": "Error en migrar dades existents",
     "errorLoadingPlanning": "Error en carregar dades de planificació"
   },
-  
   "planning": {
     "description": "Setmanes, horaris i equip per dia",
     "preproduction": "Preproducció",
@@ -543,7 +544,6 @@
     "cameraTests": "Proves de càmera",
     "loading": "Càrrega",
     "unloading": "Descàrrega",
-    
     "travelDay": "Travel Day",
     "halfDay": "1/2 jornada",
     "holidayShooting": "Rodatge Festiu",
@@ -554,7 +554,6 @@
     "endPickup": "Fi recollida",
     "locationPlaceholder": "Rodatge / Direcció / Carrer...",
     "confirmDelete": "Confirmar eliminació",
-    
     "restLocation": "DESCANS",
     "endLocation": "FI DEL RODATGE",
     "duplicateWeek": "Duplicar setmana",
@@ -784,6 +783,14 @@
         "title": "Tema",
         "body": "Canvia el tema de l'app segons la teva preferència"
       },
+      "profileMenu": {
+        "title": "Menú d'usuari",
+        "body": "Accedeix al menú d'usuari per gestionar el teu compte i preferències."
+      },
+      "profileMenuOpen": {
+        "title": "Opcions d'usuari",
+        "body": "Des d'aquest menú pots consultar el teu perfil, modificar la configuració o tancar sessió."
+      },
       "newProject": {
         "title": "Nou projecte",
         "body": "Crea un nou projecte des d'aquí"
@@ -832,6 +839,18 @@
         "title": "Setmana creada",
         "body": "Aquí pots revisar i editar la setmana creada"
       },
+      "timesheet": {
+        "title": "Timesheet",
+        "body": "Accedeix a la targeta de Timesheet per al registre setmanal individual per treballador."
+      },
+      "timesheetTop": {
+        "title": "Dades de timesheet",
+        "body": "Aquí selecciones setmana i treballador, i gestiones les dades principals: DNI, SS i dades de productora."
+      },
+      "timesheetTable": {
+        "title": "Taula de jornada",
+        "body": "Aquí revises i edites el detall diari: horari, total d'hores, càtering, ciutat i notes."
+      },
       "reports": {
         "title": "Informes",
         "body": "Consulta la informació del projecte i genera informes en PDF.\nEls informes alimenten el càlcul de nòmina."
@@ -869,5 +888,39 @@
         "body": "Tens dubtes o suggeriments? Escriu-nos des d'aquí"
       }
     }
+  },
+  "timesheet": {
+    "title": "Timesheet",
+    "pdfTitle": "TIMESHEET ELÈCTRICS",
+    "description": "Registre setmanal individual d'horaris per treballador.",
+    "emptyState": "No hi ha setmanes amb treballadors per generar el timesheet.",
+    "week": "Setmana",
+    "worker": "Treballador",
+    "weekEnding": "Data (final setmana)",
+    "department": "Departament",
+    "lightingDepartment": "Departament d'Il·luminació",
+    "lightingDepartmentShort": "Il·luminació",
+    "role": "Càrrec",
+    "dni": "DNI",
+    "ss": "Núm. SS treballador",
+    "day": "Dia",
+    "date": "Data",
+    "from": "Des de",
+    "to": "Fins",
+    "totalHours": "Total hores",
+    "catering": "Àpat càtering (SI / NO)",
+    "city": "Ciutat",
+    "notes": "Notes",
+    "total": "Total",
+    "export": "Exportar",
+    "employeeSignature": "Signatura de l'empleat",
+    "signatureProductionManager": "Signatura Cap de Producció",
+    "signatureProductionCoordinator": "Signatura Coordinadora de Producció",
+    "sheetSubtitle": "Registre horari jornada",
+    "companyName": "Productora",
+    "companyAddress": "Adreça productora",
+    "companyCif": "CIF productora",
+    "companySsLabel": "CC Seguretat Social",
+    "legalNotice": "Registre realitzat en compliment de la lletra h) de l'article 1 del R.D.-Llei 16/2013, de 20 de desembre, pel qual es modifica l'article 12.5 de l'E.T.\n\nL'empresari haurà de conservar els resums mensuals dels registres de jornada durant un període mínim de quatre anys. L'incompliment empresarial d'aquestes obligacions de registre tindrà com a conseqüència jurídica que el contracte es presumeixi celebrat a jornada completa, llevat de prova en contrari que acrediti el caràcter parcial dels serveis.\n\nEn l'horari indicat s'hi inclou una hora de pausa per al menjar."
   }
 }

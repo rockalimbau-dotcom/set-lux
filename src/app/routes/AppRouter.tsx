@@ -124,6 +124,15 @@ export default function AppRouter({
               handlers,
             })}
           />
+          <Route
+            path='timesheet'
+            element={createProjectDetailElement({
+              activeProject: activeProject as any,
+              userName,
+              initialTab: 'timesheet',
+              handlers,
+            })}
+          />
           <Route path='*' element={<Navigate to='.' replace />} />
         </Routes>
       </React.Suspense>

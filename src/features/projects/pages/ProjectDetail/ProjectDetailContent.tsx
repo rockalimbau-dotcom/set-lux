@@ -3,6 +3,7 @@ import EquipoTab from '@features/equipo/pages/EquipoTab.jsx';
 import NecesidadesTab from '@features/necesidades/pages/NecesidadesTab.jsx';
 import NominaTab from '@features/nomina/pages/NominaTab.jsx';
 import ReportesTab from '@features/reportes/pages/ReportesTab.jsx';
+import TimesheetTab from '@features/timesheet/pages/TimesheetTab';
 import { Project, ProjectTab, ProjectTeam, ProjectMode } from './ProjectDetailTypes';
 
 interface ProjectDetailContentProps {
@@ -54,6 +55,10 @@ export function ProjectDetailContent({
         <NominaTab project={project} mode={condTipo} readOnly={!isActive} />
       )}
 
+      {activeTab === 'timesheet' && (
+        <TimesheetTab project={project} readOnly={!isActive} />
+      )}
+
       {activeTab === 'necesidades' && <NecesidadesTab project={project} readOnly={!isActive} />}
 
       {activeTab === 'condiciones' && (
@@ -67,4 +72,3 @@ export function ProjectDetailContent({
     </div>
   );
 }
-
