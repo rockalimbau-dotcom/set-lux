@@ -233,7 +233,13 @@
     "restoreDefault": "Restore default text",
     "translateText": "Translate text to current language",
     "translationError": "Error translating text. Check your DeepL API key in the console.",
-    "translationApiKeyMissing": "To enable translation, create a .env file in the project root with: VITE_DEEPL_API_KEY=your_api_key\n\nGet your free API key at: https://www.deepl.com/pro-api"
+    "translationApiKeyMissing": "To enable translation, create a .env file in the project root with: VITE_DEEPL_API_KEY=your_api_key\n\nGet your free API key at: https://www.deepl.com/pro-api",
+    "exportSelectorTitle": "Select what to export",
+    "exportSelectorAll": "All",
+    "exportSelectorNone": "None",
+    "exportSelectorAction": "Export",
+    "exportSelectorHint": "Only selected sections will be exported.",
+    "exportSelectorMinOneAlert": "Select at least one section to export."
   },
   "payroll": {
     "title": "Payroll",

@@ -232,7 +232,13 @@
     "restoreDefault": "Restaurar text per defecte",
     "translateText": "Traduir text a l'idioma actual",
     "translationError": "Error en traduir el text. Verifica la teva API key de DeepL a la consola.",
-    "translationApiKeyMissing": "Per habilitar la traducció, crea un fitxer .env a l'arrel del projecte amb: VITE_DEEPL_API_KEY=la_teva_api_key\n\nObtén la teva API key gratuïta a: https://www.deepl.com/pro-api"
+    "translationApiKeyMissing": "Per habilitar la traducció, crea un fitxer .env a l'arrel del projecte amb: VITE_DEEPL_API_KEY=la_teva_api_key\n\nObtén la teva API key gratuïta a: https://www.deepl.com/pro-api",
+    "exportSelectorTitle": "Selecciona què exportar",
+    "exportSelectorAll": "Tot",
+    "exportSelectorNone": "Res",
+    "exportSelectorAction": "Exportar",
+    "exportSelectorHint": "Només s'exportaran els apartats marcats.",
+    "exportSelectorMinOneAlert": "Selecciona almenys un apartat per exportar."
   },
   "payroll": {
     "title": "Nòmina",

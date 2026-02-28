@@ -232,7 +232,13 @@
     "restoreDefault": "Restaurar texto por defecto",
     "translateText": "Traducir texto al idioma actual",
     "translationError": "Error al traducir el texto. Verifica tu API key de DeepL en la consola.",
-    "translationApiKeyMissing": "Para habilitar la traducción, crea un archivo .env en la raíz del proyecto con: VITE_DEEPL_API_KEY=tu_api_key\n\nObtén tu API key gratuita en: https://www.deepl.com/pro-api"
+    "translationApiKeyMissing": "Para habilitar la traducción, crea un archivo .env en la raíz del proyecto con: VITE_DEEPL_API_KEY=tu_api_key\n\nObtén tu API key gratuita en: https://www.deepl.com/pro-api",
+    "exportSelectorTitle": "Selecciona qué exportar",
+    "exportSelectorAll": "Todo",
+    "exportSelectorNone": "Nada",
+    "exportSelectorAction": "Exportar",
+    "exportSelectorHint": "Solo se exportarán los apartados marcados.",
+    "exportSelectorMinOneAlert": "Selecciona al menos un apartado para exportar."
   },
   "payroll": {
     "title": "Nómina",

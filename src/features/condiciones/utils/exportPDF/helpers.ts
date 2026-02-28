@@ -118,8 +118,13 @@ export function filterRolesWithPrices(
     ? model.pricesPrelight || {}
     : model.pricesPickup || {};
     
+  const relevantHeaders =
+    sectionKey === 'base'
+      ? PRICE_HEADERS
+      : PRICE_HEADERS.filter(header => header !== 'Precio refuerzo');
+
   return PRICE_ROLES.filter(role => {
-    return PRICE_HEADERS.some(header => {
+    return relevantHeaders.some(header => {
       const precio = prices[role]?.[header];
       return precio && precio.toString().trim() !== '';
     });
@@ -143,9 +148,21 @@ export function generatePriceTableHTML(
     : model.pricesPickup || {};
   
   // Filtrar headers: quitar "Precio refuerzo" de prelight y pickup
-  const visibleHeaders = sectionKey === 'base' 
+  const visibleHeaders = sectionKey === 'base'
     ? PRICE_HEADERS 
     : PRICE_HEADERS.filter(h => h !== 'Precio refuerzo');
+
+  // Exportar solo columnas que tengan al menos un valor en los roles incluidos
+  const headersWithValues = visibleHeaders.filter(header =>
+    rolesConPrecios.some(role => {
+      const value = prices[role]?.[header];
+      return value !== null && value !== undefined && String(value).trim() !== '';
+    })
+  );
+
+  if (rolesConPrecios.length === 0 || headersWithValues.length === 0) {
+    return '';
+  }
   
   const titleHTML = title ? `<h3 style="margin-bottom: 8px; font-size: 11px; font-weight: 700; color: #1e3a8a;">${esc(title)}</h3>` : '';
   
@@ -154,7 +171,7 @@ export function generatePriceTableHTML(
       <thead>
         <tr>
           <th>${i18n.t('conditions.rolePrice')}</th>
-          ${visibleHeaders.map(h => `<th>${esc(translateHeader(h))}</th>`).join('')}
+          ${headersWithValues.map(h => `<th>${esc(translateHeader(h))}</th>`).join('')}
         </tr>
       </thead>
       <tbody>
@@ -162,7 +179,7 @@ export function generatePriceTableHTML(
           role => `
           <tr>
             <td style="font-weight:600;">${esc(translateRoleName(role, sectionKey))}</td>
-            ${visibleHeaders.map(h => {
+            ${headersWithValues.map(h => {
               if (h === 'Material propio') {
                 const rawVal = prices[role]?.[h] ?? '';
                 const tipo = prices[role]?.['Material propio tipo'];
@@ -225,4 +242,3 @@ export function getConditionsLabel(): string {
   }
   return conditionsLabel;
 }
-

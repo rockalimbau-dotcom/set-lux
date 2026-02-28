@@ -15,11 +15,12 @@ import { useMensualLanguageSync } from './mensual/useMensualLanguageSync';
 import { useMensualModel } from './mensual/useMensualModel';
 import { useMensualRoles } from './mensual/useMensualRoles';
 import { useMensualExport } from './mensual/useMensualExport';
+import type { CondicionesExportSections } from '../utils/exportPDF';
 
 interface CondicionesMensualProps {
   project: AnyRecord | null | undefined;
   onChange?: (payload: AnyRecord) => void;
-  onRegisterExport?: (fn: () => void) => void;
+  onRegisterExport?: (fn: (sections?: Partial<CondicionesExportSections>) => void) => void;
   readOnly?: boolean;
 }
 

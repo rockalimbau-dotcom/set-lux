@@ -14,13 +14,14 @@ export function buildCondicionesPageHTMLForPDF(
   PRICE_HEADERS: string[],
   PRICE_ROLES: string[],
   pageBlocks: [string, string][],
-  includeHeader: boolean = true
+  includeHeader: boolean = true,
+  includeTables: boolean = true
 ): string {
   const headerTitle = i18n.t('pdf.conditionsTitle');
   
   // Tabla base
   const rolesConPreciosBase = filterRolesWithPrices(PRICE_ROLES, PRICE_HEADERS, model, 'base');
-  const tableBase = includeHeader && rolesConPreciosBase.length > 0 
+  const tableBase = includeHeader && includeTables && rolesConPreciosBase.length > 0 
     ? generatePriceTableHTML(rolesConPreciosBase, PRICE_HEADERS, model, 'base', i18n.t('conditions.baseTeam'))
     : '';
   
@@ -29,7 +30,7 @@ export function buildCondicionesPageHTMLForPDF(
   const rolesConPreciosPrelight = hasPrelight 
     ? filterRolesWithPrices(PRICE_ROLES, PRICE_HEADERS, model, 'prelight')
     : [];
-  const tablePrelight = includeHeader && rolesConPreciosPrelight.length > 0
+  const tablePrelight = includeHeader && includeTables && rolesConPreciosPrelight.length > 0
     ? generatePriceTableHTML(rolesConPreciosPrelight, PRICE_HEADERS, model, 'prelight', i18n.t('conditions.prelightTeam'))
     : '';
   
@@ -38,7 +39,7 @@ export function buildCondicionesPageHTMLForPDF(
   const rolesConPreciosPickup = hasPickup
     ? filterRolesWithPrices(PRICE_ROLES, PRICE_HEADERS, model, 'pickup')
     : [];
-  const tablePickup = includeHeader && rolesConPreciosPickup.length > 0
+  const tablePickup = includeHeader && includeTables && rolesConPreciosPickup.length > 0
     ? generatePriceTableHTML(rolesConPreciosPickup, PRICE_HEADERS, model, 'pickup', i18n.t('conditions.pickupTeam'))
     : '';
   

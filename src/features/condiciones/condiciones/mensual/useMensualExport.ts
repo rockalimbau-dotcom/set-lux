@@ -2,12 +2,13 @@ import { useCallback, useEffect } from 'react';
 import { AnyRecord } from '@shared/types/common';
 import { exportCondicionesToPDF } from '../../utils/exportPDF';
 import { PRICE_HEADERS } from '../shared.constants';
+import type { CondicionesExportSections } from '../../utils/exportPDF';
 
 interface UseMensualExportProps {
   project: AnyRecord | null | undefined;
   model: AnyRecord;
   roles: string[];
-  onRegisterExport?: (fn: () => void) => void;
+  onRegisterExport?: (fn: (sections?: Partial<CondicionesExportSections>) => void) => void;
 }
 
 /**
@@ -19,14 +20,15 @@ export function useMensualExport({
   roles,
   onRegisterExport,
 }: UseMensualExportProps) {
-  const exportFunction = useCallback(async () => {
+  const exportFunction = useCallback(async (sections?: Partial<CondicionesExportSections>) => {
     try {
       await exportCondicionesToPDF(
         project,
         'mensual',
         model,
         PRICE_HEADERS,
-        roles
+        roles,
+        sections
       );
     } catch (error) {
       console.error('Error exporting condiciones mensual PDF:', error);
@@ -40,4 +42,3 @@ export function useMensualExport({
     }
   }, [onRegisterExport, exportFunction]);
 }
-

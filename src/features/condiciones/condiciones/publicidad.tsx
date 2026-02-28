@@ -15,6 +15,7 @@ import { useModelSync } from './publicidad/useModelSync';
 import { useDiarioHandlers } from './publicidad/usePublicidadHandlers';
 import { useExportRegistration } from './publicidad/useExportRegistration';
 import { AnyRecord } from '@shared/types/common';
+import type { CondicionesExportSections } from '../utils/exportPDF';
 
 function CondicionesPublicidad({
   project,
@@ -24,7 +25,7 @@ function CondicionesPublicidad({
 }: { 
   project: AnyRecord | null | undefined; 
   onChange?: (p: AnyRecord) => void;
-  onRegisterExport?: (fn: () => void) => void;
+  onRegisterExport?: (fn: (sections?: Partial<CondicionesExportSections>) => void) => void;
   readOnly?: boolean;
 }) {
   const { translateHeader, translateRoleName } = useDiarioTranslations();

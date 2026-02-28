@@ -468,6 +468,18 @@ html input[style*="borderWidth"] {
   border-color: #0468BF !important;
 }
 
+/* Botón Exportar en selector PDF de Condiciones */
+[data-theme='light'] .phase-content button.btn-export-conditions {
+  color: #111827 !important;
+  background-color: #A0D3F2 !important;
+  border-color: #A0D3F2 !important;
+}
+[data-theme='dark'] .phase-content button.btn-export-conditions {
+  color: #ffffff !important;
+  background-color: #f59e0b !important;
+  border-color: #f59e0b !important;
+}
+
 /* Badges de roles: texto blanco en modo claro */
 [data-theme='light'] .phase-content span[style*="linear-gradient(135deg,#60A5FA,#0369A1)"] {
   color: #ffffff !important;

@@ -13,11 +13,12 @@ import { useModelSync } from './semanal/useModelSync';
 import { useSemanalHandlers } from './semanal/useSemanalHandlers';
 import { useExportRegistration } from './semanal/useExportRegistration';
 import { AnyRecord } from '@shared/types/common';
+import type { CondicionesExportSections } from '../utils/exportPDF';
 
 interface CondicionesSemanalProps {
   project: { id?: string; nombre?: string };
   onChange?: (patch: any) => void;
-  onRegisterExport?: (fn: () => void) => void;
+  onRegisterExport?: (fn: (sections?: Partial<CondicionesExportSections>) => void) => void;
   readOnly?: boolean;
 }
 

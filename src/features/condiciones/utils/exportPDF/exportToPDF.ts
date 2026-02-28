@@ -12,6 +12,30 @@ import { buildCondicionesPageHTMLForPDF } from './htmlBuilders';
 import { getConditionsLabel, filterRolesWithPrices } from './helpers';
 import { shareOrSavePDF } from '@shared/utils/pdfShare';
 
+export interface CondicionesExportSections {
+  includePricesTable: boolean;
+  includeLegend: boolean;
+  includeHolidays: boolean;
+  includeSchedules: boolean;
+  includePerDiems: boolean;
+  includeTransportation: boolean;
+  includeAccommodation: boolean;
+  includePreProduction: boolean;
+  includeAgreement: boolean;
+}
+
+export const DEFAULT_CONDICIONES_EXPORT_SECTIONS: CondicionesExportSections = {
+  includePricesTable: true,
+  includeLegend: true,
+  includeHolidays: true,
+  includeSchedules: true,
+  includePerDiems: true,
+  includeTransportation: true,
+  includeAccommodation: true,
+  includePreProduction: true,
+  includeAgreement: true,
+};
+
 /**
  * Get translation helper
  */
@@ -60,9 +84,15 @@ export async function exportCondicionesToPDF(
   which: string,
   model: any,
   PRICE_HEADERS: string[],
-  PRICE_ROLES: string[]
+  PRICE_ROLES: string[],
+  sections: Partial<CondicionesExportSections> = DEFAULT_CONDICIONES_EXPORT_SECTIONS
 ): Promise<void> {
   try {
+    const exportSections: CondicionesExportSections = {
+      ...DEFAULT_CONDICIONES_EXPORT_SECTIONS,
+      ...(sections || {}),
+    };
+
     const pdf = new jsPDF({
       orientation: 'portrait', // Vertical como solicitaste
       unit: 'mm',
@@ -80,16 +110,62 @@ export async function exportCondicionesToPDF(
 
     // Calcular paginación con ajuste dinámico
     // Convertir Markdown a HTML para el PDF
-    const blocks = [
-      [i18n.t('conditions.legend'), markdownToHtml(restoreStrongTags(renderWithParams(model.legendTemplate, model.params)))],
-      [i18n.t('conditions.holidays'), renderWithParams(festivosText, model.params)],
-      [i18n.t('conditions.schedules'), markdownToHtml(restoreStrongTags(renderWithParams(model.horariosTemplate, model.params)))],
-      [i18n.t('conditions.perDiems'), markdownToHtml(restoreStrongTags(renderWithParams(model.dietasTemplate, model.params)))],
-      [i18n.t('conditions.transportation'), renderWithParams(model.transportesTemplate, model.params)],
-      [i18n.t('conditions.accommodation'), renderWithParams(alojamientoText, model.params)],
-      [i18n.t('conditions.preProduction'), renderWithParams(preproText, model.params)],
-      [i18n.t('conditions.agreement'), renderWithParams(convenioText, model.params)],
-    ].filter(([_, content]) => content.trim()); // Solo bloques con contenido
+    const blockDefinitions: Array<{
+      sectionKey: keyof CondicionesExportSections;
+      title: string;
+      content: string;
+    }> = [
+      {
+        sectionKey: 'includeLegend',
+        title: i18n.t('conditions.legend'),
+        content: markdownToHtml(restoreStrongTags(renderWithParams(model.legendTemplate, model.params))),
+      },
+      {
+        sectionKey: 'includeHolidays',
+        title: i18n.t('conditions.holidays'),
+        content: renderWithParams(festivosText, model.params),
+      },
+      {
+        sectionKey: 'includeSchedules',
+        title: i18n.t('conditions.schedules'),
+        content: markdownToHtml(restoreStrongTags(renderWithParams(model.horariosTemplate, model.params))),
+      },
+      {
+        sectionKey: 'includePerDiems',
+        title: i18n.t('conditions.perDiems'),
+        content: markdownToHtml(restoreStrongTags(renderWithParams(model.dietasTemplate, model.params))),
+      },
+      {
+        sectionKey: 'includeTransportation',
+        title: i18n.t('conditions.transportation'),
+        content: renderWithParams(model.transportesTemplate, model.params),
+      },
+      {
+        sectionKey: 'includeAccommodation',
+        title: i18n.t('conditions.accommodation'),
+        content: renderWithParams(alojamientoText, model.params),
+      },
+      {
+        sectionKey: 'includePreProduction',
+        title: i18n.t('conditions.preProduction'),
+        content: renderWithParams(preproText, model.params),
+      },
+      {
+        sectionKey: 'includeAgreement',
+        title: i18n.t('conditions.agreement'),
+        content: renderWithParams(convenioText, model.params),
+      },
+    ];
+
+    const blocks = blockDefinitions
+      .filter(({ sectionKey, content }) => exportSections[sectionKey] && content.trim())
+      .map(({ title, content }) => [title, content] as [string, string]);
+
+    const includePricesTable = exportSections.includePricesTable;
+    if (!includePricesTable && blocks.length === 0) {
+      alert(i18n.t('conditions.exportSelectorMinOneAlert'));
+      return;
+    }
 
     const totalBlocks = blocks.length;
     const maxPageHeight = 1123; // Altura total de la página en píxeles (297mm)
@@ -99,7 +175,7 @@ export async function exportCondicionesToPDF(
     // Procesar en páginas con detección dinámica de altura
     let currentBlockIndex = 0;
     let pageNumber = 0;
-    let tablesIncluded = false; // Track si las tablas ya se incluyeron
+    let tablesIncluded = !includePricesTable; // Si no se exportan tablas, darlas por incluidas
     
     while (currentBlockIndex < totalBlocks || !tablesIncluded) {
       pageNumber++;
@@ -118,6 +194,7 @@ export async function exportCondicionesToPDF(
           PRICE_HEADERS,
           PRICE_ROLES,
           testBlocks as [string, string][],
+          true,
           includeTables
         );
         
@@ -188,6 +265,7 @@ export async function exportCondicionesToPDF(
         PRICE_HEADERS, 
         PRICE_ROLES, 
         pageBlocks,
+        true,
         includeTables
       );
       
@@ -325,4 +403,3 @@ export async function exportCondicionesToPDF(
     throw error;
   }
 }
-
