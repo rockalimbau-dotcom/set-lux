@@ -148,8 +148,7 @@ export function calculateRolePrices({
     }
     
     const refFromTarget = getNumField(targetRow, ['Precio refuerzo', 'Precio Refuerzo', 'Refuerzo']);
-    const refFromElec = getNumField(elecRow, ['Precio refuerzo', 'Precio Refuerzo', 'Refuerzo']);
-    jornada = refFromTarget || refFromElec || 0;
+    jornada = refFromTarget || 0;
     halfJornada =
       getNumField(targetRow, ['Precio 1/2 jornada', 'Precio medio día', 'Precio media jornada']) ||
       getNumField(elecRow, ['Precio 1/2 jornada', 'Precio medio día', 'Precio media jornada']) ||

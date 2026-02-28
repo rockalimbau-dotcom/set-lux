@@ -151,10 +151,34 @@ function MonthSection({
     roleLabelFromCode,
   });
 
+  const visibleEnriched = useMemo(() => {
+    return enriched.filter((r: any) => {
+      const hasActivity =
+        (r._worked || 0) > 0 ||
+        (r._halfDays || 0) > 0 ||
+        (r._travel || 0) > 0 ||
+        (r._holidays || 0) > 0 ||
+        (r.horasExtra || 0) > 0 ||
+        (r.turnAround || 0) > 0 ||
+        (r.nocturnidad || 0) > 0 ||
+        (r.penaltyLunch || 0) > 0 ||
+        (r.transporte || 0) > 0 ||
+        (r.km || 0) > 0 ||
+        (r._totalDietas || 0) > 0 ||
+        (r._materialPropioDays || 0) > 0 ||
+        (r._materialPropioWeeks || 0) > 0 ||
+        (r._localizarDays || 0) > 0 ||
+        (r._cargaDays || 0) > 0 ||
+        (r._descargaDays || 0) > 0;
+
+      return hasActivity;
+    });
+  }, [enriched]);
+
   // Manejar selección de filas
   const { toggleRowSelection, isRowSelected } = useRowSelection({
     persistKey,
-    enriched,
+    enriched: visibleEnriched,
   });
 
   // Calcular visibilidad de columnas
@@ -165,16 +189,16 @@ function MonthSection({
     hasWorkedDaysData,
     hasHalfDaysData,
   } = useColumnVisibility({
-    enriched,
+    enriched: visibleEnriched,
   });
 
   const doExport = () => {
     const rowsToExport = showRowSelection
-      ? enriched.filter(r => {
+      ? visibleEnriched.filter(r => {
           const pKey = `${r.role}__${r.name}`;
           return isRowSelected(pKey);
         })
-      : enriched;
+      : visibleEnriched;
     onExport?.(monthKey, rowsToExport);
   };
   
@@ -185,17 +209,17 @@ function MonthSection({
     }
     
     const selectedEnriched = showRowSelection
-      ? enriched.filter(r => {
+      ? visibleEnriched.filter(r => {
           const pKey = `${r.role}__${r.name}`;
           return isRowSelected(pKey);
         })
-      : enriched;
+      : visibleEnriched;
     
     // Si no hay filas seleccionadas, exportar todas
-    const rowsToExport = showRowSelection && selectedEnriched.length > 0 ? selectedEnriched : enriched;
+    const rowsToExport = showRowSelection && selectedEnriched.length > 0 ? selectedEnriched : visibleEnriched;
     
     if (!rowsToExport || rowsToExport.length === 0) {
-      console.warn('No hay filas para exportar', { enriched, selectedEnriched, rowsToExport });
+      console.warn('No hay filas para exportar', { enriched: visibleEnriched, selectedEnriched, rowsToExport });
       return;
     }
     
@@ -228,7 +252,7 @@ function MonthSection({
 
       {open && (
         <MonthSectionTable
-          enriched={enriched}
+          enriched={visibleEnriched}
           projectMode={projectMode}
           hasWorkedDaysData={hasWorkedDaysData}
           hasHalfDaysData={hasHalfDaysData}
