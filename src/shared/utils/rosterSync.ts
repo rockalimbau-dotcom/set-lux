@@ -40,14 +40,33 @@ export const syncDayListWithRosterBlankOnly = (
       const targetName = names[i]?.name || '';
       const targetGender = names[i]?.gender;
       const curName = (out[at]?.name || '').trim();
+      const curSource = (out[at]?.source || fallbackSource) as string;
+
+      // 1) Rellenar huecos en blanco a partir del equipo
       if (curName === '' && targetName !== '') {
         out[at] = {
           ...out[at],
           name: targetName,
           gender: targetGender,
-          source: out[at].source || fallbackSource,
+          source: curSource || fallbackSource,
         };
-      } else if (curName === targetName && out[at]?.gender !== targetGender) {
+        continue;
+      }
+
+      // 2) Mantener sincronizados los nombres auto‑gestionados por el roster
+      //    (mismas posiciones de rol cuya source coincide con fallbackSource)
+      if (curSource === fallbackSource && targetName !== '' && curName !== targetName) {
+        out[at] = {
+          ...out[at],
+          name: targetName,
+          gender: targetGender,
+          source: curSource,
+        };
+        continue;
+      }
+
+      // 3) Actualizar solo el género cuando el nombre coincide
+      if (curName === targetName && out[at]?.gender !== targetGender) {
         out[at] = {
           ...out[at],
           gender: targetGender,

@@ -175,13 +175,22 @@ export function WeekSection({
   const [actionsButtonHovered, setActionsButtonHovered] = useState(false);
   const [actionsHoveredOption, setActionsHoveredOption] = useState<string | null>(null);
   const [hideEmptyRows, setHideEmptyRows] = useState(false);
+
+  // Determinar si esta es la primera semana del calendario completo (pre + pro)
+  const isFirstWeek = useMemo(() => {
+    if (!Array.isArray(weekEntries) || weekEntries.length === 0) return false;
+    const first = weekEntries[0] as AnyRecord;
+    return first?.id === wid;
+  }, [weekEntries, wid]);
+
   const [collapsedBlocks, setCollapsedBlocks] = useLocalStorage<Record<string, boolean>>(
     `needs_collapsed_${wid}`,
     {
-      team: false,
-      logistics: false,
-      extraCrew: false,
-      notes: false,
+      // Primera semana: todo desplegado; resto: todo plegado
+      team: !isFirstWeek,
+      logistics: !isFirstWeek,
+      extraCrew: !isFirstWeek,
+      notes: !isFirstWeek,
     }
   );
 

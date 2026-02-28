@@ -15,8 +15,8 @@ export default defineConfig({
     hmr: {
       overlay: true, // Mostrar errores en overlay
       protocol: 'ws', // Protocolo WebSocket para HMR
-      host: 'localhost',
-      port: 5173,
+      host: '127.0.0.1',
+      port: 1573,
     },
     // Configurar el file watcher para detectar cambios
     // En macOS, a veces es necesario usar polling para detectar cambios correctamente
@@ -27,8 +27,9 @@ export default defineConfig({
       ignored: ['**/node_modules/**', '**/.git/**', '**/dist/**', '**/.vite/**'], // Ignorar estos directorios
       followSymlinks: false, // No seguir enlaces simbólicos
     },
+    host: '127.0.0.1',
     // Puerto del servidor
-    port: 5173,
+    port: 1573,
     // Habilitar recarga automática
     strictPort: false,
     // Habilitar recarga automática cuando cambien archivos
