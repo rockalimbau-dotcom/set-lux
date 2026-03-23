@@ -57,6 +57,9 @@ if(
   && !(login.user === 'NicolasGarrido' && login.pass === '1234')
   && !(login.user === 'RafaSuarez' && login.pass === '1234')
   && !(login.user === 'DejuHoms' && login.pass === '1234')
+  && !(login.user === 'PepZueras' && login.pass === '1234')
+  && !(login.user === 'JorgeAznar' && login.pass === '1234')
+  && !(login.user === 'MartiPluma' && login.pass === '1234')
   
 
 ){
