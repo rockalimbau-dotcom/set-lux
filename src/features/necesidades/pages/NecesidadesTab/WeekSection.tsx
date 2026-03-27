@@ -175,6 +175,16 @@ export function WeekSection({
   const [actionsButtonHovered, setActionsButtonHovered] = useState(false);
   const [actionsHoveredOption, setActionsHoveredOption] = useState<string | null>(null);
   const [hideEmptyRows, setHideEmptyRows] = useState(false);
+  const headerRowRef = useRef<HTMLTableRowElement | null>(null);
+  const dateRowRef = useRef<HTMLTableRowElement | null>(null);
+  const locationRowRef = useRef<HTMLTableRowElement | null>(null);
+  const shootingDayRowRef = useRef<HTMLTableRowElement | null>(null);
+  const [stickyOffsets, setStickyOffsets] = useState({
+    header: 0,
+    date: 0,
+    location: 0,
+    shootingDay: 0,
+  });
 
   // Determinar si esta es la primera semana del calendario completo (pre + pro)
   const isFirstWeek = useMemo(() => {
@@ -238,6 +248,39 @@ export function WeekSection({
     columnCount: DAYS.length,
   });
   const allColumnsSelected = columnKeys.length > 0 && columnKeys.every(idx => isColumnSelected(idx));
+
+  useEffect(() => {
+    const updateStickyOffsets = () => {
+      const headerHeight = headerRowRef.current?.getBoundingClientRect().height ?? 0;
+      const dateHeight = dateRowRef.current?.getBoundingClientRect().height ?? 0;
+      const locationHeight = locationRowRef.current?.getBoundingClientRect().height ?? 0;
+
+      setStickyOffsets({
+        header: 0,
+        date: headerHeight,
+        location: headerHeight + dateHeight,
+        shootingDay: headerHeight + dateHeight + locationHeight,
+      });
+    };
+
+    updateStickyOffsets();
+
+    if (typeof ResizeObserver === 'undefined') {
+      window.addEventListener('resize', updateStickyOffsets);
+      return () => window.removeEventListener('resize', updateStickyOffsets);
+    }
+
+    const observer = new ResizeObserver(() => updateStickyOffsets());
+    [headerRowRef.current, dateRowRef.current, locationRowRef.current, shootingDayRowRef.current].forEach(node => {
+      if (node) observer.observe(node);
+    });
+    window.addEventListener('resize', updateStickyOffsets);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', updateStickyOffsets);
+    };
+  }, [DAYS.length, wk?.startDate, wk?.days, hideEmptyRows, showExportControls]);
   const allRowsSelected = rowKeys.length > 0 && rowKeys.every(key => isRowSelected(key));
 
   const btnExportCls = btnExport;
@@ -468,17 +511,22 @@ export function WeekSection({
       </div>
 
       {wk.open && (
-        <div className='overflow-x-auto px-3 pb-3 sm:px-4 sm:pb-4 md:px-5 md:pb-5'>
-          <table className='min-w-[600px] sm:min-w-[680px] md:min-w-[760px] w-full table-fixed border-collapse text-[9px] sm:text-[10px] md:text-xs lg:text-sm'>
+        <div className='px-3 pb-3 sm:px-4 sm:pb-4 md:px-5 md:pb-5'>
+          <div className='overflow-x-auto overflow-y-auto overscroll-contain max-h-[70vh]'>
+          <table className={`needs-week-table min-w-[600px] sm:min-w-[680px] md:min-w-[760px] w-full table-fixed border-separate border-spacing-0 text-[9px] sm:text-[10px] md:text-xs lg:text-sm ${showExportControls ? 'needs-week-table--selectable' : ''}`}>
             <colgroup>
               {showExportControls && <col className='w-6 sm:w-7 md:w-8' />}
               <col className='w-[95px] sm:w-[110px] md:w-[125px] lg:w-[140px]' />
               <col span={DAYS.length} className='w-[110px] sm:w-[130px] md:w-[150px] lg:w-[170px]' />
             </colgroup>
             <thead>
-              <tr>
+              <tr
+                ref={headerRowRef}
+                className='needs-sticky-row needs-sticky-row--header'
+                style={{ ['--needs-sticky-row-top' as string]: `${stickyOffsets.header}px` }}
+              >
                 {showExportControls && (
-                  <Th align='center' className='w-6 sm:w-7 md:w-8 px-0.5'>
+                  <Th align='center' className='needs-sticky-corner-checkbox needs-sticky-checkbox-cell w-6 sm:w-7 md:w-8 px-0.5'>
                     <div className='flex justify-center'>
                       <input
                         type='checkbox'
@@ -511,7 +559,7 @@ export function WeekSection({
                     </div>
                   </Th>
                 )}
-                <Th className='px-1'>
+                <Th className='needs-sticky-corner-label needs-sticky-label-cell px-1'>
                   <div className='flex items-center justify-between gap-1'>
                     <span>{t('needs.fieldDay')}</span>
                     <input
@@ -622,15 +670,19 @@ export function WeekSection({
               </tr>
             </thead>
             <tbody>
-              <tr>
+              <tr
+                ref={dateRowRef}
+                className='needs-sticky-row needs-sticky-row--date'
+                style={{ ['--needs-sticky-row-top' as string]: `${stickyOffsets.date}px` }}
+              >
                 {showExportControls && (
-                  <Td align='middle' className='text-center w-6 sm:w-7 md:w-8 px-0.5'>
+                  <Td align='middle' className='needs-sticky-corner-checkbox needs-sticky-checkbox-cell text-center w-6 sm:w-7 md:w-8 px-0.5'>
                     <div className='flex justify-center'>
                       <span className='text-[9px] sm:text-[10px] md:text-xs text-zinc-400'>—</span>
                     </div>
                   </Td>
                 )}
-                <Td className='border border-neutral-border px-1 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-1 font-semibold bg-white/5 whitespace-normal break-words text-[9px] sm:text-[10px] md:text-xs lg:text-sm align-middle'>
+                <Td className='needs-sticky-corner-label needs-sticky-label-cell border border-neutral-border px-1 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-1 font-semibold bg-white/5 whitespace-normal break-words text-[9px] sm:text-[10px] md:text-xs lg:text-sm align-middle'>
                   {t('needs.date')}
                 </Td>
                 {DAYS.map((d, i) => (
@@ -655,9 +707,13 @@ export function WeekSection({
                 ))}
               </tr>
               {(!hideEmptyRows || hasAnyValue(['loc', 'seq'])) && (
-                <tr>
+                <tr
+                  ref={locationRowRef}
+                  className='needs-sticky-row needs-sticky-row--location'
+                  style={{ ['--needs-sticky-row-top' as string]: `${stickyOffsets.location}px` }}
+                >
                   {showExportControls && (
-                    <Td align='middle' className='text-center w-6 sm:w-7 md:w-8 px-0.5'>
+                    <Td align='middle' className='needs-sticky-corner-checkbox needs-sticky-checkbox-cell text-center w-6 sm:w-7 md:w-8 px-0.5'>
                       <div className='flex justify-center'>
                         <input
                           type='checkbox'
@@ -672,7 +728,7 @@ export function WeekSection({
                       </div>
                     </Td>
                   )}
-                  <Td className='border border-neutral-border px-1 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-1 font-semibold bg-white/5 whitespace-normal break-words text-[9px] sm:text-[10px] md:text-xs lg:text-sm align-middle'>
+                  <Td className='needs-sticky-corner-label needs-sticky-label-cell border border-neutral-border px-1 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-1 font-semibold bg-white/5 whitespace-normal break-words text-[9px] sm:text-[10px] md:text-xs lg:text-sm align-middle'>
                     {t('needs.locationSequences')}
                   </Td>
                   {DAYS.map((d, i) => {
@@ -706,9 +762,13 @@ export function WeekSection({
                 </tr>
               )}
               {(!hideEmptyRows || hasAnyValue(['crewTipo'])) && (
-                <tr>
+                <tr
+                  ref={shootingDayRowRef}
+                  className='needs-sticky-row needs-sticky-row--shooting-day'
+                  style={{ ['--needs-sticky-row-top' as string]: `${stickyOffsets.shootingDay}px` }}
+                >
                   {showExportControls && (
-                    <Td align='middle' className='text-center w-6 sm:w-7 md:w-8 px-0.5'>
+                    <Td align='middle' className='needs-sticky-corner-checkbox needs-sticky-checkbox-cell text-center w-6 sm:w-7 md:w-8 px-0.5'>
                       <div className='flex justify-center'>
                         <input
                           type='checkbox'
@@ -723,7 +783,7 @@ export function WeekSection({
                       </div>
                     </Td>
                   )}
-                  <Td className='border border-neutral-border px-1 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-1 font-semibold bg-white/5 whitespace-normal break-words text-[9px] sm:text-[10px] md:text-xs lg:text-sm align-middle'>
+                  <Td className='needs-sticky-corner-label needs-sticky-label-cell border border-neutral-border px-1 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-1 font-semibold bg-white/5 whitespace-normal break-words text-[9px] sm:text-[10px] md:text-xs lg:text-sm align-middle'>
                     {t('needs.shootingDay')}
                   </Td>
                   {DAYS.map((d, i) => (
@@ -739,17 +799,19 @@ export function WeekSection({
                 <Td
                   colSpan={totalColumns}
                   align='middle'
-                  className='phase-block border border-neutral-border/70 px-1 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-1 bg-white/5 text-[9px] sm:text-[10px] md:text-xs lg:text-sm'
+                  className='phase-block border border-neutral-border/70 py-0.5 sm:py-1 md:py-1 bg-white/5 text-[9px] sm:text-[10px] md:text-xs lg:text-sm'
                 >
-                  <button
-                    type='button'
-                    onClick={() => toggleBlock('team')}
-                    className='w-full flex items-center gap-2 font-medium'
-                    style={{ color: 'var(--text)' }}
-                  >
-                    <span className={`transition-transform opacity-80 text-[8px] sm:text-[9px] md:text-[10px] ${isBlockCollapsed('team') ? '-rotate-90' : ''}`}>⌄</span>
-                    <span>Equipo</span>
-                  </button>
+                  <div className='phase-block-sticky'>
+                    <button
+                      type='button'
+                      onClick={() => toggleBlock('team')}
+                      className='phase-block-button w-full flex items-center gap-2 font-medium'
+                      style={{ color: 'var(--text)' }}
+                    >
+                      <span className={`transition-transform opacity-80 text-[8px] sm:text-[9px] md:text-[10px] ${isBlockCollapsed('team') ? '-rotate-90' : ''}`}>⌄</span>
+                      <span>Equipo</span>
+                    </button>
+                  </div>
                 </Td>
               </tr>
               {!isBlockCollapsed('team') && (!hideEmptyRows || hasAnyList('crewList')) && (
@@ -798,17 +860,19 @@ export function WeekSection({
                 <Td
                   colSpan={totalColumns}
                   align='middle'
-                  className='phase-block border border-neutral-border/70 px-1 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-1 bg-white/5 text-[9px] sm:text-[10px] md:text-xs lg:text-sm'
+                  className='phase-block border border-neutral-border/70 py-0.5 sm:py-1 md:py-1 bg-white/5 text-[9px] sm:text-[10px] md:text-xs lg:text-sm'
                 >
-                  <button
-                    type='button'
-                    onClick={() => toggleBlock('logistics')}
-                    className='w-full flex items-center gap-2 font-medium'
-                    style={{ color: 'var(--text)' }}
-                  >
-                    <span className={`transition-transform opacity-80 text-[8px] sm:text-[9px] md:text-[10px] ${isBlockCollapsed('logistics') ? '-rotate-90' : ''}`}>⌄</span>
-                    <span>Logística</span>
-                  </button>
+                  <div className='phase-block-sticky'>
+                    <button
+                      type='button'
+                      onClick={() => toggleBlock('logistics')}
+                      className='phase-block-button w-full flex items-center gap-2 font-medium'
+                      style={{ color: 'var(--text)' }}
+                    >
+                      <span className={`transition-transform opacity-80 text-[8px] sm:text-[9px] md:text-[10px] ${isBlockCollapsed('logistics') ? '-rotate-90' : ''}`}>⌄</span>
+                      <span>Logística</span>
+                    </button>
+                  </div>
                 </Td>
               </tr>
               {!isBlockCollapsed('logistics') && (!hideEmptyRows || hasAnyValue(['needTransport'])) && (
@@ -895,17 +959,19 @@ export function WeekSection({
                 <Td
                   colSpan={totalColumns}
                   align='middle'
-                  className='phase-block border border-neutral-border/70 px-1 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-1 bg-white/5 text-[9px] sm:text-[10px] md:text-xs lg:text-sm'
+                  className='phase-block border border-neutral-border/70 py-0.5 sm:py-1 md:py-1 bg-white/5 text-[9px] sm:text-[10px] md:text-xs lg:text-sm'
                 >
-                  <button
-                    type='button'
-                    onClick={() => toggleBlock('extraCrew')}
-                    className='w-full flex items-center gap-2 font-medium'
-                    style={{ color: 'var(--text)' }}
-                  >
-                    <span className={`transition-transform opacity-80 text-[8px] sm:text-[9px] md:text-[10px] ${isBlockCollapsed('extraCrew') ? '-rotate-90' : ''}`}>⌄</span>
-                    <span>{t('needs.advance')}</span>
-                  </button>
+                  <div className='phase-block-sticky'>
+                    <button
+                      type='button'
+                      onClick={() => toggleBlock('extraCrew')}
+                      className='phase-block-button w-full flex items-center gap-2 font-medium'
+                      style={{ color: 'var(--text)' }}
+                    >
+                      <span className={`transition-transform opacity-80 text-[8px] sm:text-[9px] md:text-[10px] ${isBlockCollapsed('extraCrew') ? '-rotate-90' : ''}`}>⌄</span>
+                      <span>{t('needs.advance')}</span>
+                    </button>
+                  </div>
                 </Td>
               </tr>
               {!isBlockCollapsed('extraCrew') && (!hideEmptyRows || hasAnyValue(['precall'])) && (
@@ -970,17 +1036,19 @@ export function WeekSection({
                 <Td
                   colSpan={totalColumns}
                   align='middle'
-                  className='phase-block border border-neutral-border/70 px-1 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-1 bg-white/5 text-[9px] sm:text-[10px] md:text-xs lg:text-sm'
+                  className='phase-block border border-neutral-border/70 py-0.5 sm:py-1 md:py-1 bg-white/5 text-[9px] sm:text-[10px] md:text-xs lg:text-sm'
                 >
-                  <button
-                    type='button'
-                    onClick={() => toggleBlock('notes')}
-                    className='w-full flex items-center gap-2 font-medium'
-                    style={{ color: 'var(--text)' }}
-                  >
-                    <span className={`transition-transform opacity-80 text-[8px] sm:text-[9px] md:text-[10px] ${isBlockCollapsed('notes') ? '-rotate-90' : ''}`}>⌄</span>
-                    <span>{t('needs.observations')}</span>
-                  </button>
+                  <div className='phase-block-sticky'>
+                    <button
+                      type='button'
+                      onClick={() => toggleBlock('notes')}
+                      className='phase-block-button w-full flex items-center gap-2 font-medium'
+                      style={{ color: 'var(--text)' }}
+                    >
+                      <span className={`transition-transform opacity-80 text-[8px] sm:text-[9px] md:text-[10px] ${isBlockCollapsed('notes') ? '-rotate-90' : ''}`}>⌄</span>
+                      <span>{t('needs.observations')}</span>
+                    </button>
+                  </div>
                 </Td>
               </tr>
               {!isBlockCollapsed('notes') && (!hideEmptyRows || hasAnyValue(['needLight'])) && (
@@ -1114,6 +1182,7 @@ export function WeekSection({
               </tr>
             </tbody>
           </table>
+          </div>
         </div>
       )}
       
