@@ -331,10 +331,9 @@ export function generateHeaderRow(
   monday: Date
 ): string {
   return DAYS.map(
-    (_, i) =>
+    day =>
       `<th style="border:1px solid #999;padding:6px;text-align:left;background:#1e40af;color:#fff;">
-        ${esc(DAYS[i].name)}<br/>${esc(formatDDMM(addDays(monday, i)))}
+        ${esc(day.name)}<br/>${esc(formatDDMM(addDays(monday, day.idx)))}
       </th>`
   ).join('');
 }
-
