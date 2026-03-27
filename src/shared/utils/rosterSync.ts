@@ -39,9 +39,6 @@ export const syncDayListWithRosterBlankOnly = (
   const rosterIdx = indexRoster(rosterList);
   for (const [role, names] of rosterIdx.entries()) {
     const pos = positionsOfRole(out, role);
-    const validNamesForRole = new Set(
-      names.map(item => String(item?.name || '').trim()).filter(Boolean)
-    );
     for (let i = 0; i < names.length && i < pos.length; i++) {
       const at = pos[i];
       const targetName = names[i]?.name || '';
@@ -62,23 +59,7 @@ export const syncDayListWithRosterBlankOnly = (
         continue;
       }
 
-      // 2) Mantener sincronizados los nombres heredados del roster
-      if (
-        targetName !== '' &&
-        curName !== targetName &&
-        (isRosterManaged || !validNamesForRole.has(curName))
-      ) {
-        out[at] = {
-          ...out[at],
-          name: targetName,
-          gender: targetGender,
-          source: curSource || fallbackSource,
-          rosterManaged: true,
-        };
-        continue;
-      }
-
-      // 3) Actualizar solo el género cuando el nombre coincide
+      // 2) Actualizar solo el género cuando el nombre coincide
       if (curName === targetName && out[at]?.gender !== targetGender) {
         out[at] = {
           ...out[at],
