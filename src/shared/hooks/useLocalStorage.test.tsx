@@ -2,6 +2,7 @@ import { renderHook, act } from '@testing-library/react';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
 import { useLocalStorage } from './useLocalStorage.ts';
+import { STORAGE_CHANGE_EVENT } from '../services/localStorage.service';
 
 // Mock localStorage
 const localStorageMock = {
@@ -26,11 +27,14 @@ const createStorageEvent = (key, newValue, oldValue) => ({
 
 describe('useLocalStorage', () => {
   beforeEach(() => {
+    vi.useFakeTimers();
     vi.clearAllMocks();
     localStorageMock.getItem.mockReturnValue(null);
   });
 
   afterEach(() => {
+    vi.runOnlyPendingTimers();
+    vi.useRealTimers();
     vi.clearAllMocks();
   });
 
@@ -101,6 +105,9 @@ describe('useLocalStorage', () => {
       });
 
       expect(result.current[0]).toBe('new-value');
+      act(() => {
+        vi.advanceTimersByTime(150);
+      });
       expect(localStorageMock.setItem).toHaveBeenCalledWith(
         'test-key',
         '"new-value"'
@@ -115,6 +122,9 @@ describe('useLocalStorage', () => {
       });
 
       expect(result.current[0]).toBe(1);
+      act(() => {
+        vi.advanceTimersByTime(150);
+      });
       expect(localStorageMock.setItem).toHaveBeenCalledWith('test-key', '1');
     });
 
@@ -128,6 +138,9 @@ describe('useLocalStorage', () => {
       });
 
       expect(result.current[0]).toEqual({ count: 5, name: 'test' });
+      act(() => {
+        vi.advanceTimersByTime(150);
+      });
       expect(localStorageMock.setItem).toHaveBeenCalledWith(
         'test-key',
         '{"count":5,"name":"test"}'
@@ -206,6 +219,26 @@ describe('useLocalStorage', () => {
 
       addEventListenerSpy.mockRestore();
       removeEventListenerSpy.mockRestore();
+    });
+
+    it('syncs updates dispatched from the same tab', () => {
+      const { result } = renderHook(() =>
+        useLocalStorage('test-key', 'initial')
+      );
+
+      act(() => {
+        window.dispatchEvent(
+          new CustomEvent(STORAGE_CHANGE_EVENT, {
+            detail: {
+              key: 'test-key',
+              newValue: '"updated"',
+              oldValue: '"initial"',
+            },
+          })
+        );
+      });
+
+      expect(result.current[0]).toBe('updated');
     });
   });
 

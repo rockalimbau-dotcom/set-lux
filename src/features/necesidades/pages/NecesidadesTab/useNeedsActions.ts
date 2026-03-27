@@ -305,6 +305,8 @@ export function useNeedsActions({
                 role: m?.role,
                 name: m?.name,
                 gender: m?.gender,
+                source: 'base',
+                rosterManaged: true,
               }));
             nextDay.crewList = [...currentTeam, ...missingMembers];
           }
@@ -390,6 +392,8 @@ export function useNeedsActions({
         role: (m?.role || '').toUpperCase(),
         name: (m?.name || '').trim(),
         gender: m?.gender,
+        source: 'base',
+        rosterManaged: true,
       })).filter(m => m.role || m.name);
       const startDateObj = parseYYYYMMDD(startDate);
       const days = Array.from({ length: 7 }).map((_, idx) => {

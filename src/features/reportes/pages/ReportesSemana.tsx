@@ -61,26 +61,43 @@ export default function ReportesSemana({
   
   const providedPersonas = Array.isArray(personas) ? personas : [];
   const personasWithGender = useMemo(() => {
+    const projectTeam = (project as AnyRecord | undefined)?.team;
+    const teamFromProject = {
+      base: Array.isArray(projectTeam?.base) ? projectTeam.base : [],
+      prelight: Array.isArray(projectTeam?.prelight) ? projectTeam.prelight : [],
+      pickup: Array.isArray(projectTeam?.pickup) ? projectTeam.pickup : [],
+      reinforcements: Array.isArray(projectTeam?.reinforcements) ? projectTeam.reinforcements : [],
+    };
+    const hasProjectTeam =
+      teamFromProject.base.length ||
+      teamFromProject.prelight.length ||
+      teamFromProject.pickup.length ||
+      teamFromProject.reinforcements.length;
+
     const keys: string[] = [];
-    if (project?.id || project?.nombre) {
+    if (!hasProjectTeam && (project?.id || project?.nombre)) {
       const pid = project?.id || project?.nombre;
       keys.push(`team_${pid}`);
       keys.push(`setlux_equipo_${pid}`);
     }
-    keys.push('setlux_equipo_global_v2');
-
-    let saved: AnyRecord | null = null;
-    for (const k of keys) {
-      try {
-        const obj = storage.getJSON<AnyRecord>(k);
-        if (obj) {
-          saved = obj;
-          break;
-        }
-      } catch {}
+    if (!hasProjectTeam) {
+      keys.push('setlux_equipo_global_v2');
     }
 
-    const roster = saved || {};
+    let roster: AnyRecord = teamFromProject;
+    if (!hasProjectTeam) {
+      let saved: AnyRecord | null = null;
+      for (const k of keys) {
+        try {
+          const obj = storage.getJSON<AnyRecord>(k);
+          if (obj) {
+            saved = obj;
+            break;
+          }
+        } catch {}
+      }
+      roster = saved || {};
+    }
     const map = new Map<string, string>();
     const push = (m?: AnyRecord) => {
       if (!m) return;
@@ -103,7 +120,7 @@ export default function ReportesSemana({
       const gender = (p as AnyRecord)?.gender || map.get(key);
       return gender ? { ...p, gender } : p;
     });
-  }, [project?.id, project?.nombre, providedPersonas]);
+  }, [project?.id, project?.nombre, (project as AnyRecord | undefined)?.team, providedPersonas]);
   
   const {
     safeSemana,

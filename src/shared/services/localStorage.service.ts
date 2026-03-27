@@ -1,5 +1,22 @@
 type JsonValue = unknown;
 
+export const STORAGE_CHANGE_EVENT = 'setlux:storage-change';
+
+type StorageChangeDetail = {
+  key: string;
+  newValue: string | null;
+  oldValue: string | null;
+};
+
+const dispatchStorageChange = (detail: StorageChangeDetail): void => {
+  try {
+    if (typeof window === 'undefined' || typeof window.dispatchEvent !== 'function') return;
+    window.dispatchEvent(new CustomEvent<StorageChangeDetail>(STORAGE_CHANGE_EVENT, { detail }));
+  } catch {
+    // ignore
+  }
+};
+
 export const storage = {
   has: (key: string): boolean => {
     try {
@@ -21,6 +38,7 @@ export const storage = {
 
   setString: (key: string, value: string): void => {
     try {
+      const oldValue = window.localStorage.getItem(key);
       // Solo loggear en desarrollo y con datos pequeños para evitar spam
       if (import.meta.env.DEV && value.length < 200) {
         console.log('[STORAGE.DEBUG] setString called:', key, value);
@@ -28,6 +46,7 @@ export const storage = {
         console.log('[STORAGE.DEBUG] setString called:', key, 'size:', value.length, 'chars');
       }
       window.localStorage.setItem(key, value);
+      dispatchStorageChange({ key, newValue: value, oldValue });
       if (import.meta.env.DEV && value.length < 200) {
         console.log('[STORAGE.DEBUG] setString success');
       }
@@ -38,7 +57,9 @@ export const storage = {
 
   remove: (key: string): void => {
     try {
+      const oldValue = window.localStorage.getItem(key);
       window.localStorage.removeItem(key);
+      dispatchStorageChange({ key, newValue: null, oldValue });
     } catch {
       // ignore
     }
@@ -63,6 +84,5 @@ export const storage = {
     }
   },
 };
-
 
 

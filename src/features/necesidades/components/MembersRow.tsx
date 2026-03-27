@@ -10,6 +10,38 @@ import Chip from './Chip';
 import { ConfirmModal } from './ConfirmModal';
 import TextAreaAuto from './TextAreaAuto';
 
+const normalizeMemberName = (value: unknown): string =>
+  String(value || '').trim().toLowerCase();
+
+export const mergeMemberIntoList = (
+  list: AnyRecord[],
+  member: AnyRecord,
+  sortMemberList: (items: AnyRecord[]) => AnyRecord[]
+): AnyRecord[] => {
+  const current = Array.isArray(list) ? list : [];
+  const nextMember = {
+    role: (member?.role || '').toUpperCase(),
+    name: (member?.name || '').trim(),
+    gender: member?.gender,
+    source: member?.source || 'base',
+    rosterManaged: false,
+  };
+
+  const nextKey = `${nextMember.role}::${nextMember.name}`;
+  const nextName = normalizeMemberName(nextMember.name);
+  const existsExact = current.some(
+    m => `${(m?.role || '').toUpperCase()}::${(m?.name || '').trim()}` === nextKey
+  );
+  if (existsExact) return current;
+
+  const withoutSameName =
+    nextName === ''
+      ? current
+      : current.filter(m => normalizeMemberName(m?.name) !== nextName);
+
+  return sortMemberList([...withoutSameName, nextMember]);
+};
+
 type MemberDropdownProps = {
   options: AnyRecord[];
   onSelect: (member: AnyRecord) => void;
@@ -568,6 +600,7 @@ export function MembersRow({
                             name: (m?.name || '').trim(),
                             gender: m?.gender,
                             source: m?.source || 'base',
+                            rosterManaged: true,
                           }))
                           .filter(m => m.role || m.name);
                         const isOfficeOrLocationNext =
@@ -667,18 +700,8 @@ export function MembersRow({
                     onSelect={(member: AnyRecord) => {
                       if (readOnly) return;
                       const current = Array.isArray(list) ? list : [];
-                      const key = `${(member?.role || '').toUpperCase()}::${(member?.name || '').trim()}`;
-                      const exists = current.some(m => `${(m?.role || '').toUpperCase()}::${(m?.name || '').trim()}` === key);
-                      if (exists) return;
-                      const next = sortMemberList([
-                        ...current,
-                        {
-                          role: (member?.role || '').toUpperCase(),
-                          name: (member?.name || '').trim(),
-                          gender: member?.gender,
-                          source: member?.source || 'base',
-                        }
-                      ]);
+                      const next = mergeMemberIntoList(current, member, sortMemberList);
+                      if (next === current) return;
                       setCell(weekId, i, listKey, next);
                       if (listKey === 'refList' && current.length === 0) {
                         const crewStartValue = String((day as AnyRecord).crewStart || '');

@@ -1,11 +1,15 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { storage } from '@shared/services/localStorage.service';
+import { useLocalStorage } from '@shared/hooks/useLocalStorage';
 import { syncDayListWithRosterBlankOnly } from '@shared/utils/rosterSync';
 import { Project } from './ProjectDetailTypes';
 import { isEmptyTeam } from './ProjectDetailUtils';
 
 export function useProjectSync(proj: Project | null) {
   const [loaded, setLoaded] = useState(false);
+  const teamKey = `team_${proj?.id || proj?.nombre || 'tmp'}`;
+  const [storedTeam] = useLocalStorage<any>(teamKey, null);
+  const previousTeamRef = useRef<any>(null);
 
   // Marcar como cargado
   useEffect(() => {
@@ -16,7 +20,14 @@ export function useProjectSync(proj: Project | null) {
   // Esto permite que las semanas se autocompleten sin necesidad de entrar en Necesidades
   useEffect(() => {
     if (!loaded) return;
-    if (!proj?.team || isEmptyTeam(proj.team)) return;
+    const effectiveTeam =
+      storedTeam && !isEmptyTeam(storedTeam)
+        ? storedTeam
+        : proj?.team;
+    if (!effectiveTeam || isEmptyTeam(effectiveTeam)) {
+      previousTeamRef.current = effectiveTeam;
+      return;
+    }
 
     const needsKey = `needs_${proj?.id || proj?.nombre || 'tmp'}`;
     try {
@@ -26,10 +37,57 @@ export function useProjectSync(proj: Project | null) {
         return;
       }
 
-      const baseTeam = proj.team.base || [];
-      const prelightTeam = proj.team.prelight || [];
-      const pickupTeam = proj.team.pickup || [];
-      const reinforcements = proj.team.reinforcements || [];
+      const baseTeam = effectiveTeam.base || [];
+      const prelightTeam = effectiveTeam.prelight || [];
+      const pickupTeam = effectiveTeam.pickup || [];
+      const reinforcements = effectiveTeam.reinforcements || [];
+
+      const buildRenameMap = (prevList: any[] = [], nextList: any[] = []) => {
+        const map = new Map<string, { name: string; gender?: string }>();
+        const nextById = new Map(
+          (nextList || [])
+            .filter(item => item?.id)
+            .map(item => [item.id, item])
+        );
+        for (const prevItem of prevList || []) {
+          if (!prevItem?.id) continue;
+          const nextItem = nextById.get(prevItem.id);
+          if (!nextItem) continue;
+          const prevRole = String(prevItem.role || '').trim().toUpperCase();
+          const nextRole = String(nextItem.role || '').trim().toUpperCase();
+          const prevName = String(prevItem.name || '').trim();
+          const nextName = String(nextItem.name || '').trim();
+          if (!prevRole || !prevName || !nextRole || !nextName) continue;
+          if (prevRole !== nextRole) continue;
+          if (prevName === nextName) continue;
+          map.set(`${prevRole}::${prevName}`, {
+            name: nextName,
+            gender: nextItem.gender,
+          });
+        }
+        return map;
+      };
+
+      const previousTeam = previousTeamRef.current || {};
+      const renameMaps = {
+        base: buildRenameMap(previousTeam.base, baseTeam),
+        pre: buildRenameMap(previousTeam.prelight, prelightTeam),
+        pick: buildRenameMap(previousTeam.pickup, pickupTeam),
+        ref: buildRenameMap(previousTeam.reinforcements, reinforcements),
+      };
+
+      const applyRenameMap = (list: any[] = [], renameMap: Map<string, { name: string; gender?: string }>) =>
+        (list || []).map(item => {
+          const key = `${String(item?.role || '').trim().toUpperCase()}::${String(item?.name || '').trim()}`;
+          const renamed = renameMap.get(key);
+          if (!renamed) return item;
+          return {
+            ...item,
+            name: renamed.name,
+            gender: renamed.gender ?? item?.gender,
+            rosterManaged: true,
+          };
+        });
 
       const normalizeDays = (days: any): any[] => {
         if (Array.isArray(days)) return days;
@@ -49,6 +107,8 @@ export function useProjectSync(proj: Project | null) {
         role: (m?.role || '').toUpperCase(),
         name: (m?.name || '').trim(),
         gender: (m as any)?.gender,
+        source: 'base',
+        rosterManaged: true,
       }));
 
       const syncWeek = (w: any) => {
@@ -65,32 +125,36 @@ export function useProjectSync(proj: Project | null) {
           }
 
           const crewList = Array.isArray(day.crewList) ? day.crewList : [];
+          day.crewList = applyRenameMap(crewList, renameMaps.base);
           const nextCrew =
-            crewList.length === 0
+            day.crewList.length === 0
               ? baseRoster
-              : syncDayListWithRosterBlankOnly(crewList, baseTeam as any, 'base');
-          if (crewList !== nextCrew) changed = true;
+              : syncDayListWithRosterBlankOnly(day.crewList, baseTeam as any, 'base');
+          if (JSON.stringify(crewList) !== JSON.stringify(nextCrew)) changed = true;
 
           const preList = Array.isArray(day.preList) ? day.preList : [];
+          day.preList = applyRenameMap(preList, renameMaps.pre);
           const nextPre =
-            preList.length === 0
-              ? preList
-              : syncDayListWithRosterBlankOnly(preList, prelightTeam as any, 'pre');
-          if (preList !== nextPre) changed = true;
+            day.preList.length === 0
+              ? day.preList
+              : syncDayListWithRosterBlankOnly(day.preList, prelightTeam as any, 'pre');
+          if (JSON.stringify(preList) !== JSON.stringify(nextPre)) changed = true;
 
           const pickList = Array.isArray(day.pickList) ? day.pickList : [];
+          day.pickList = applyRenameMap(pickList, renameMaps.pick);
           const nextPick =
-            pickList.length === 0
-              ? pickList
-              : syncDayListWithRosterBlankOnly(pickList, pickupTeam as any, 'pick');
-          if (pickList !== nextPick) changed = true;
+            day.pickList.length === 0
+              ? day.pickList
+              : syncDayListWithRosterBlankOnly(day.pickList, pickupTeam as any, 'pick');
+          if (JSON.stringify(pickList) !== JSON.stringify(nextPick)) changed = true;
 
           const refList = Array.isArray(day.refList) ? day.refList : [];
+          day.refList = applyRenameMap(refList, renameMaps.ref);
           const nextRef =
-            refList.length === 0
-              ? refList
-              : syncDayListWithRosterBlankOnly(refList, reinforcements as any, 'ref');
-          if (refList !== nextRef) changed = true;
+            day.refList.length === 0
+              ? day.refList
+              : syncDayListWithRosterBlankOnly(day.refList, reinforcements as any, 'ref');
+          if (JSON.stringify(refList) !== JSON.stringify(nextRef)) changed = true;
 
           return {
             ...day,
@@ -114,8 +178,8 @@ export function useProjectSync(proj: Project | null) {
     } catch (error) {
       // Silenciar errores de sincronización
     }
-  }, [proj?.team, proj?.id, proj?.nombre, loaded]);
+    previousTeamRef.current = effectiveTeam;
+  }, [proj?.team, proj?.id, proj?.nombre, storedTeam, loaded]);
 
   return { loaded };
 }
-

@@ -37,6 +37,28 @@ export function useRoster(
       };
     }
 
+    const projectTeam = project?.team;
+    const fromProject = {
+      base: Array.isArray(projectTeam?.base) ? projectTeam.base : [],
+      prelight: Array.isArray(projectTeam?.prelight) ? projectTeam.prelight : [],
+      pickup: Array.isArray(projectTeam?.pickup) ? projectTeam.pickup : [],
+      reinforcements: Array.isArray(projectTeam?.reinforcements) ? projectTeam.reinforcements : [],
+    };
+    const hasProjectTeam =
+      fromProject.base.length ||
+      fromProject.prelight.length ||
+      fromProject.pickup.length ||
+      fromProject.reinforcements.length;
+
+    if (hasProjectTeam) {
+      return {
+        baseRoster: fromProject.base,
+        preRoster: fromProject.prelight,
+        pickRoster: fromProject.pickup,
+        refsRoster: fromProject.reinforcements,
+      };
+    }
+
     const keys: string[] = [];
     if (project?.id || project?.nombre) {
       const pid = project?.id || project?.nombre;
@@ -66,6 +88,7 @@ export function useRoster(
   }, [
     project?.id,
     project?.nombre,
+    project?.team,
     baseTeam,
     prelightTeam,
     pickupTeam,

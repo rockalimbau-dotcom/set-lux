@@ -123,9 +123,20 @@ export default function NecesidadesTab({ project, readOnly = false }: Necesidade
 
     setNeeds(prev => {
       let changed = false;
+      const normalizeDays = (days: unknown): AnyRecord[] => {
+        if (Array.isArray(days)) return days as AnyRecord[];
+        if (days && typeof days === 'object') {
+          return Array.from({ length: 7 }, (_, idx) => {
+            const byNumber = (days as Record<number, AnyRecord>)[idx];
+            const byString = (days as Record<string, AnyRecord>)[String(idx)];
+            return (byNumber || byString || {}) as AnyRecord;
+          });
+        }
+        return [];
+      };
       const syncWeeks = (weeks: AnyRecord[] = []) =>
         weeks.map(w => {
-          const days = Array.isArray(w.days) ? w.days : [];
+          const days = normalizeDays(w.days);
           const nextDays = days.map((d: AnyRecord) => {
             const tipo = String(d?.crewTipo || '').trim();
             if (tipo === 'Descanso' || tipo === 'Fin') {
@@ -142,6 +153,7 @@ export default function NecesidadesTab({ project, readOnly = false }: Necesidade
                   name: m?.name || '',
                   gender: m?.gender,
                   source: 'base',
+                  rosterManaged: true,
                 }))
               : syncDayListWithRosterBlankOnly(current, baseRoster, 'base');
             const sameLength = current.length === synced.length;

@@ -1,6 +1,6 @@
 // src/shared/hooks/useLocalStorage.ts
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { storage } from '../services/localStorage.service';
+import { storage, STORAGE_CHANGE_EVENT } from '../services/localStorage.service';
 
 function safeParse<T>(jsonString: string | null, fallback: T): T {
   try {
@@ -43,8 +43,17 @@ export function useLocalStorage<T>(
       if (e.key !== keyRef.current) return;
       setValue(prev => safeParse(e.newValue, prev));
     };
+    const onLocalStorageChange = (e: Event) => {
+      const detail = (e as CustomEvent<{ key?: string; newValue?: string | null }>).detail;
+      if (!detail || detail.key !== keyRef.current) return;
+      setValue(prev => safeParse(detail.newValue ?? null, prev));
+    };
     window.addEventListener('storage', onStorage);
-    return () => window.removeEventListener('storage', onStorage);
+    window.addEventListener(STORAGE_CHANGE_EVENT, onLocalStorageChange as EventListener);
+    return () => {
+      window.removeEventListener('storage', onStorage);
+      window.removeEventListener(STORAGE_CHANGE_EVENT, onLocalStorageChange as EventListener);
+    };
   }, []);
 
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
