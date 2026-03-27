@@ -20,6 +20,7 @@ type Worker = {
   name: string;
   role: string;
   gender?: 'male' | 'female' | 'neutral';
+  order: number;
 };
 
 type WorkerProfile = {
@@ -264,6 +265,7 @@ function StyledDropdown({
 
 function extractWorkersFromWeek(week: AnyRecord): Worker[] {
   const out = new Map<string, Worker>();
+  let order = 0;
   const days = Array.isArray(week?.days) ? week.days : [];
   for (const day of days) {
     const sources: Array<AnyRecord[]> = [
@@ -286,6 +288,7 @@ function extractWorkersFromWeek(week: AnyRecord): Worker[] {
             role,
             name,
             gender: (m?.gender as 'male' | 'female' | 'neutral' | undefined) || 'neutral',
+            order: order++,
           });
         }
       }
@@ -300,7 +303,7 @@ function extractWorkersFromWeek(week: AnyRecord): Worker[] {
     const rankA = roleRank(roleForRank(a.role));
     const rankB = roleRank(roleForRank(b.role));
     if (rankA !== rankB) return rankA - rankB;
-    return a.name.localeCompare(b.name, 'es');
+    return a.order - b.order;
   });
 }
 
