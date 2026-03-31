@@ -154,15 +154,6 @@ export async function exportCondicionesToPDF(
         content: renderWithParams(preproText, model.params),
       },
     ];
-    blockDefinitions.push(
-      ...customSections
-        .filter(section => selectedCustomSectionIds.has(section.id))
-        .map(section => ({
-          sectionKey: 'includeAgreement' as keyof CondicionesExportSections,
-          title: renderWithParams(section.title, model.params).trim() || i18n.t('conditions.customSectionDefaultTitle'),
-          content: markdownToHtml(restoreStrongTags(renderWithParams(section.content, model.params))),
-        }))
-    );
     blockDefinitions.push({
       sectionKey: 'includeAgreement',
       title: i18n.t('conditions.agreement'),
@@ -172,6 +163,23 @@ export async function exportCondicionesToPDF(
     const blocks = blockDefinitions
       .filter(({ sectionKey, content }) => exportSections[sectionKey] && content.trim())
       .map(({ title, content }) => [title, content] as [string, string]);
+
+    const agreementIndex = blocks.findIndex(([title]) => title === i18n.t('conditions.agreement'));
+    const customBlocks = customSections
+      .filter(section => selectedCustomSectionIds.has(section.id))
+      .map(section => [
+        renderWithParams(section.title, model.params).trim() || i18n.t('conditions.customSectionDefaultTitle'),
+        markdownToHtml(restoreStrongTags(renderWithParams(section.content, model.params))),
+      ] as [string, string])
+      .filter(([, content]) => content.trim());
+
+    if (customBlocks.length > 0) {
+      if (agreementIndex >= 0) {
+        blocks.splice(agreementIndex, 0, ...customBlocks);
+      } else {
+        blocks.push(...customBlocks);
+      }
+    }
 
     const includePricesTable = exportSections.includePricesTable;
     if (!includePricesTable && blocks.length === 0) {
