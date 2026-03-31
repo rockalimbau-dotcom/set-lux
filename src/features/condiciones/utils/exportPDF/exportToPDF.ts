@@ -7,7 +7,7 @@ import {
   getDefaultPrepro,
   getDefaultConvenio,
 } from '../translationHelpers';
-import { renderWithParams, restoreStrongTags, markdownToHtml } from '../../condiciones/shared';
+import { renderWithParams, restoreStrongTags, markdownToHtml, normalizeCustomSections } from '../../condiciones/shared';
 import { buildCondicionesPageHTMLForPDF } from './htmlBuilders';
 import { getConditionsLabel, filterRolesWithPrices } from './helpers';
 import { shareOrSavePDF } from '@shared/utils/pdfShare';
@@ -22,6 +22,7 @@ export interface CondicionesExportSections {
   includeAccommodation: boolean;
   includePreProduction: boolean;
   includeAgreement: boolean;
+  customSectionIds?: string[];
 }
 
 export const DEFAULT_CONDICIONES_EXPORT_SECTIONS: CondicionesExportSections = {
@@ -103,6 +104,12 @@ export async function exportCondicionesToPDF(
     const alojamientoText = model.alojamientoTemplate ?? getDefaultAlojamiento();
     const preproText = model.preproTemplate ?? getDefaultPrepro();
     const convenioText = model.convenioTemplate ?? getDefaultConvenio();
+    const customSections = normalizeCustomSections(model.customSections);
+    const selectedCustomSectionIds = new Set(
+      Array.isArray(sections?.customSectionIds)
+        ? sections.customSectionIds
+        : customSections.map(section => section.id)
+    );
 
     // Calcular paginación con ajuste dinámico
     // Convertir Markdown a HTML para el PDF
@@ -146,12 +153,21 @@ export async function exportCondicionesToPDF(
         title: i18n.t('conditions.preProduction'),
         content: renderWithParams(preproText, model.params),
       },
-      {
-        sectionKey: 'includeAgreement',
-        title: i18n.t('conditions.agreement'),
-        content: renderWithParams(convenioText, model.params),
-      },
     ];
+    blockDefinitions.push(
+      ...customSections
+        .filter(section => selectedCustomSectionIds.has(section.id))
+        .map(section => ({
+          sectionKey: 'includeAgreement' as keyof CondicionesExportSections,
+          title: renderWithParams(section.title, model.params).trim() || i18n.t('conditions.customSectionDefaultTitle'),
+          content: markdownToHtml(restoreStrongTags(renderWithParams(section.content, model.params))),
+        }))
+    );
+    blockDefinitions.push({
+      sectionKey: 'includeAgreement',
+      title: i18n.t('conditions.agreement'),
+      content: renderWithParams(convenioText, model.params),
+    });
 
     const blocks = blockDefinitions
       .filter(({ sectionKey, content }) => exportSections[sectionKey] && content.trim())

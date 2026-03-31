@@ -9,6 +9,9 @@ export function InfoCard({
   title,
   value,
   onChange,
+  titleValue,
+  onTitleChange,
+  titlePlaceholder,
   rightAddon = null,
   readOnly = false,
   template,
@@ -16,6 +19,8 @@ export function InfoCard({
   params = {},
   translationKey,
   onRestore,
+  onRemove,
+  removeLabel,
 }: InfoCardProps) {
   const { t, i18n } = useTranslation();
 
@@ -81,8 +86,36 @@ export function InfoCard({
       }`}
     >
       <div className='flex items-center justify-between mb-1 sm:mb-1.5 md:mb-2'>
-        <h4 className='text-brand font-semibold text-xs sm:text-sm md:text-base'>{title}</h4>
+        {onTitleChange ? (
+          <input
+            type='text'
+            value={titleValue ?? title}
+            onChange={event => onTitleChange(event.target.value)}
+            placeholder={titlePlaceholder}
+            readOnly={readOnly}
+            disabled={readOnly}
+            className={`w-full rounded-lg border border-neutral-border bg-neutral-surface px-2 py-1 text-xs font-semibold text-brand focus:outline-none focus:ring-1 focus:ring-brand sm:text-sm md:text-base ${
+              readOnly ? 'cursor-not-allowed opacity-50' : 'hover:border-brand/50'
+            }`}
+          />
+        ) : (
+          <h4 className='text-brand font-semibold text-xs sm:text-sm md:text-base'>{title}</h4>
+        )}
         <div className='flex items-center gap-1 sm:gap-2'>
+          {onRemove && (
+            <button
+              type='button'
+              onClick={onRemove}
+              disabled={readOnly}
+              className={`rounded border border-neutral-border px-2 py-1 text-[10px] font-semibold text-gray-700 dark:text-zinc-200 ${
+                readOnly ? 'cursor-not-allowed opacity-50' : 'hover:border-brand/50'
+              }`}
+              title={removeLabel || t('conditions.removeSection')}
+              aria-label={removeLabel || t('conditions.removeSection')}
+            >
+              x
+            </button>
+          )}
           {rightAddon}
         </div>
       </div>
@@ -90,4 +123,3 @@ export function InfoCard({
     </section>
   );
 }
-

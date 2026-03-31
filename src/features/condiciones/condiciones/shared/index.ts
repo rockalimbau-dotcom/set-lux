@@ -14,6 +14,7 @@ export { loadJSON,  } from './storageUtils';
 export { TextAreaAuto } from './components/TextAreaAuto';
 export { InfoCard } from './components/InfoCard';
 export { ParamInput } from './components/ParamInput';
+export { normalizeCustomSections } from './customSections';
+export type { CustomConditionSection } from './customSections';
 
 ;
-

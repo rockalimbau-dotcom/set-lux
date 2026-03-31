@@ -1,5 +1,5 @@
 import { AnyRecord } from '@shared/types/common';
-import { loadJSON } from '../shared';
+import { loadJSON, normalizeCustomSections } from '../shared';
 import { storage } from '@shared/services/localStorage.service';
 import { DEFAULT_FESTIVOS_TEXT } from '@shared/constants/festivos';
 import { getDefaultsDiario } from '../../utils/translationHelpers';
@@ -83,6 +83,7 @@ export function loadOrSeedDiario(storageKey: string): AnyRecord {
     alojamientoTemplate: getDefaultAlojamiento(),
     preproTemplate: getDefaultPrepro(),
     convenioTemplate: getDefaultConvenio(),
+    customSections: [],
     params: {
       jornadaTrabajo: '10',
       jornadaComida: '1',
@@ -191,6 +192,7 @@ export function loadOrSeedDiario(storageKey: string): AnyRecord {
       parsed.alojamientoTemplate = parsed.alojamientoTemplate ?? getDefaultAlojamiento();
       parsed.preproTemplate = parsed.preproTemplate ?? getDefaultPrepro();
       parsed.convenioTemplate = parsed.convenioTemplate ?? getDefaultConvenio();
+      parsed.customSections = normalizeCustomSections(parsed.customSections);
 
       // Asegurar que roles existe y tiene valores por defecto si está vacío
       // IMPORTANTE: Solo Gaffer y Eléctrico deben estar en roles inicialmente

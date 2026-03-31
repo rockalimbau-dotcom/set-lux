@@ -7,6 +7,7 @@ export {
   markdownToHtml,
   
   loadJSON,
+  normalizeCustomSections,
   
   TextAreaAuto,
   InfoCard,

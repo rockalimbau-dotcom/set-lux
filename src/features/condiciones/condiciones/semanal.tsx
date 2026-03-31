@@ -1,5 +1,6 @@
 import { useMemo, useState, useEffect, useRef, memo } from 'react';
 import { createPortal } from 'react-dom';
+import { useTranslation } from 'react-i18next';
 import { useLocalStorage } from '@shared/hooks/useLocalStorage';
 import { useSemanalTranslations } from './semanal/semanalHelpers';
 import { loadOrSeed } from './semanal/semanalData';
@@ -12,6 +13,7 @@ import { useLanguageSync } from './semanal/useLanguageSync';
 import { useModelSync } from './semanal/useModelSync';
 import { useSemanalHandlers } from './semanal/useSemanalHandlers';
 import { useExportRegistration } from './semanal/useExportRegistration';
+import type { CustomConditionSection } from './shared';
 import { AnyRecord } from '@shared/types/common';
 import type { CondicionesExportSections } from '../utils/exportPDF';
 
@@ -23,6 +25,7 @@ interface CondicionesSemanalProps {
 }
 
 function CondicionesSemanal({ project, onChange = () => {}, onRegisterExport, readOnly = false }: CondicionesSemanalProps) {
+  const { t } = useTranslation();
   const { translateHeader, translateRoleName } = useSemanalTranslations();
   
   const storageKey = useMemo(() => {
@@ -31,6 +34,7 @@ function CondicionesSemanal({ project, onChange = () => {}, onRegisterExport, re
   }, [project?.id, project?.nombre]);
 
   const [showParams, setShowParams] = useState(false);
+  const [pendingScrollSectionId, setPendingScrollSectionId] = useState<string | null>(null);
   const [model, setModel] = useLocalStorage<AnyRecord>(storageKey, () =>
     loadOrSeed(storageKey)
   );
@@ -104,6 +108,35 @@ function CondicionesSemanal({ project, onChange = () => {}, onRegisterExport, re
     setRoleToDelete: setRoleToDeleteInternal,
   } = useSemanalHandlers({ model, setModel });
 
+  const customSections = (Array.isArray(model.customSections) ? model.customSections : []) as CustomConditionSection[];
+  const createCustomSection = (): CustomConditionSection => ({
+    id: `custom-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    title: t('conditions.customSectionDefaultTitle'),
+    content: '',
+  });
+  const addCustomSection = () => {
+    const newSection = createCustomSection();
+    setPendingScrollSectionId(newSection.id);
+    setModel((m: AnyRecord) => ({
+      ...m,
+      customSections: [...(Array.isArray(m.customSections) ? m.customSections : []), newSection],
+    }));
+  };
+  const updateCustomSection = (id: string, patch: Partial<CustomConditionSection>) =>
+    setModel((m: AnyRecord) => ({
+      ...m,
+      customSections: (Array.isArray(m.customSections) ? m.customSections : []).map((section: CustomConditionSection) =>
+        section.id === id ? { ...section, ...patch } : section
+      ),
+    }));
+  const removeCustomSection = (id: string) =>
+    setModel((m: AnyRecord) => ({
+      ...m,
+      customSections: (Array.isArray(m.customSections) ? m.customSections : []).filter(
+        (section: CustomConditionSection) => section.id !== id
+      ),
+    }));
+
   const setRoleToDelete = (sectionKey: 'base' | 'prelight' | 'pickup', role: string | null) => {
     if (role) {
       setRoleToDeleteInternal({ sectionKey, role });
@@ -125,6 +158,24 @@ function CondicionesSemanal({ project, onChange = () => {}, onRegisterExport, re
     roles,
     onRegisterExport,
   });
+
+  useEffect(() => {
+    if (!pendingScrollSectionId) return;
+    if (!customSections.some(section => section.id === pendingScrollSectionId)) return;
+
+    const scrollToSection = () => {
+      const element = document.querySelector(`[data-custom-section-id="${pendingScrollSectionId}"]`);
+      if (element instanceof HTMLElement) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        const input = element.querySelector('input, textarea') as HTMLElement | null;
+        input?.focus();
+        setPendingScrollSectionId(null);
+      }
+    };
+
+    const timeoutId = window.setTimeout(scrollToSection, 80);
+    return () => window.clearTimeout(timeoutId);
+  }, [customSections, pendingScrollSectionId]);
 
   return (
     <div className='space-y-2 sm:space-y-3 md:space-y-4 lg:space-y-6'>
@@ -148,9 +199,25 @@ function CondicionesSemanal({ project, onChange = () => {}, onRegisterExport, re
         readOnly={readOnly}
       />
 
+      <div className='flex justify-end'>
+        <button
+          type='button'
+          onClick={addCustomSection}
+          disabled={readOnly}
+          className={`btn-export-conditions rounded px-3 py-1.5 text-xs font-semibold ${
+            readOnly ? 'cursor-not-allowed opacity-50' : ''
+          }`}
+        >
+          {t('conditions.addCustomSection')}
+        </button>
+      </div>
+
       <InfoSections
         model={model}
         setText={setText}
+        customSections={customSections}
+        onUpdateCustomSection={updateCustomSection}
+        onRemoveCustomSection={removeCustomSection}
         readOnly={readOnly}
       />
 

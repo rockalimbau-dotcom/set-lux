@@ -9,6 +9,9 @@ export interface InfoCardProps {
   title: string;
   value: string;
   onChange?: (val: string) => void;
+  titleValue?: string;
+  onTitleChange?: (val: string) => void;
+  titlePlaceholder?: string;
   rightAddon?: React.ReactNode;
   readOnly?: boolean;
   template?: string;
@@ -16,6 +19,8 @@ export interface InfoCardProps {
   params?: Record<string, any>;
   translationKey?: string;
   onRestore?: () => void;
+  onRemove?: () => void;
+  removeLabel?: string;
 }
 
 export interface DuoField {
@@ -32,4 +37,3 @@ export interface ParamInputProps {
   type?: 'number' | 'time' | 'text';
   readOnly?: boolean;
 }
-

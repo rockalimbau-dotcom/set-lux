@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { renderWithParams, visibleToTemplate, TextAreaAuto, InfoCard, restoreStrongTags } from '../shared';
+import type { CustomConditionSection } from '../shared';
 import { getDefaultsSemanal } from '../../utils/translationHelpers';
 import { globalDynamicFestivosText } from './semanalData';
 import { AnyRecord } from '@shared/types/common';
@@ -8,10 +9,20 @@ import { useTheme } from '@shared/hooks/useTheme';
 interface InfoSectionsProps {
   model: AnyRecord;
   setText: (key: string, value: string) => void;
+  customSections: CustomConditionSection[];
+  onUpdateCustomSection: (id: string, patch: Partial<CustomConditionSection>) => void;
+  onRemoveCustomSection: (id: string) => void;
   readOnly: boolean;
 }
 
-export function InfoSections({ model, setText, readOnly }: InfoSectionsProps) {
+export function InfoSections({
+  model,
+  setText,
+  customSections,
+  onUpdateCustomSection,
+  onRemoveCustomSection,
+  readOnly,
+}: InfoSectionsProps) {
   const { t } = useTranslation();
   const theme = useTheme();
   const defaults = getDefaultsSemanal();
@@ -96,6 +107,21 @@ export function InfoSections({ model, setText, readOnly }: InfoSectionsProps) {
         translationKey='conditions.defaultPreProduction'
         onRestore={() => setText('preproTemplate', defaults.prepro)}
       />
+      {customSections.map(section => (
+        <div key={section.id} data-custom-section-id={section.id}>
+          <InfoCard
+            title={section.title}
+            titleValue={section.title}
+            titlePlaceholder={t('conditions.customSectionTitlePlaceholder')}
+            onTitleChange={value => onUpdateCustomSection(section.id, { title: value })}
+            value={section.content}
+            onChange={value => onUpdateCustomSection(section.id, { content: value })}
+            readOnly={readOnly}
+            onRemove={() => onRemoveCustomSection(section.id)}
+            removeLabel={t('conditions.removeCustomSection')}
+          />
+        </div>
+      ))}
       <InfoCard
         title={t('conditions.agreement')}
         value={renderWithParams(model.convenioTemplate, model.params)}
@@ -131,4 +157,3 @@ export function InfoSections({ model, setText, readOnly }: InfoSectionsProps) {
     </>
   );
 }
-
