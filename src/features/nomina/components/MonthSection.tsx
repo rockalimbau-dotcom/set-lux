@@ -195,7 +195,7 @@ function MonthSection({
   const doExport = () => {
     const rowsToExport = showRowSelection
       ? visibleEnriched.filter(r => {
-          const pKey = `${r.role}__${r.name}`;
+          const pKey = r._rowKey || `${r.role}__${r.name}`;
           return isRowSelected(pKey);
         })
       : visibleEnriched;
@@ -210,7 +210,7 @@ function MonthSection({
     
     const selectedEnriched = showRowSelection
       ? visibleEnriched.filter(r => {
-          const pKey = `${r.role}__${r.name}`;
+          const pKey = r._rowKey || `${r.role}__${r.name}`;
           return isRowSelected(pKey);
         })
       : visibleEnriched;

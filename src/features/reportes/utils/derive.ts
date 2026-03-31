@@ -1,5 +1,5 @@
 import { personaRole, personaName } from './model';
-import { isMemberRefuerzo } from './plan';
+import { BLOCKS, getDayBlockList, isMemberRefuerzo } from './plan';
 import { norm } from './text';
 import { hasRoleGroupSuffix, stripRoleSuffix, stripRefuerzoSuffix } from '@shared/constants/roles';
 
@@ -95,6 +95,14 @@ interface CollectWeekTeamWithSuffixFunction {
   (listKey: string, suffix: string): Persona[];
 }
 
+const listKeyToBlock = (listKey: string): string => {
+  if (listKey === 'team' || listKey === 'crewList') return BLOCKS.base;
+  if (listKey === 'prelight' || listKey === 'preList') return BLOCKS.pre;
+  if (listKey === 'pickup' || listKey === 'pickList') return BLOCKS.pick;
+  if (listKey === 'refList') return BLOCKS.extra;
+  return listKey;
+};
+
 export function collectWeekTeamWithSuffixFactory(
   findWeekAndDay: (iso: string) => WeekAndDay, 
   safeSemana: string[]
@@ -102,9 +110,10 @@ export function collectWeekTeamWithSuffixFactory(
   return function collectWeekTeamWithSuffix(listKey: string, suffix: string): Persona[] {
     const set = new Set<string>();
     const out: Persona[] = [];
+    const block = listKeyToBlock(listKey);
     for (const iso of safeSemana) {
       const { day } = findWeekAndDay(iso);
-      const lst = day?.[listKey] || [];
+      const lst = getDayBlockList(day, block);
       for (const m of lst) {
         if (!m) continue;
         const isRef = isMemberRefuerzo(m);
@@ -636,9 +645,10 @@ export function collectRefNamesForBlock(
   listKey: string
 ): Set<string> {
   const set = new Set<string>();
+  const block = listKeyToBlock(listKey);
   for (const iso of safeSemana) {
     const { day } = findWeekAndDay(iso);
-    const lst = day?.[listKey] || [];
+    const lst = getDayBlockList(day, block);
     for (const m of lst) {
       if (m && isMemberRefuerzo(m) && m.name) set.add(m.name);
     }
@@ -656,9 +666,10 @@ export function collectRefRolesForBlock(
   listKey: string
 ): Map<string, { role: string; name: string }> {
   const map = new Map<string, { role: string; name: string }>();
+  const block = listKeyToBlock(listKey);
   for (const iso of safeSemana) {
     const { day } = findWeekAndDay(iso);
-    const lst = day?.[listKey] || [];
+    const lst = getDayBlockList(day, block);
     for (const m of lst) {
       if (m && isMemberRefuerzo(m) && m.name) {
         const originalRole = String(m.role || '').trim();

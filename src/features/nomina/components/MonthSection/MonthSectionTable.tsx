@@ -48,6 +48,15 @@ export function MonthSectionTable({
   readOnly = false,
 }: MonthSectionTableProps) {
   const { t } = useTranslation();
+  const useJornadasLabels = projectMode === 'semanal' || projectMode === 'diario';
+  const workedLabel = useJornadasLabels ? t('payroll.workedShifts') : t('payroll.workedDays');
+  const totalWorkedLabel = useJornadasLabels ? t('payroll.totalShifts') : t('payroll.totalDays');
+  const localizacionLabel =
+    projectMode === 'diario' ? t('payroll.localizacionTecnicaShifts') : t('payroll.localizacionTecnica');
+  const totalLocalizacionLabel =
+    projectMode === 'diario'
+      ? t('payroll.totalLocalizacionTecnicaShifts')
+      : t('payroll.totalLocalizacionTecnica');
 
   // Calcular número de columnas para colSpan
   const colSpanCount =
@@ -67,6 +76,9 @@ export function MonthSectionTable({
 
   // Función para determinar el tipo de equipo de una fila
   const getTeamType = (r: any): 'base' | 'refuerzos' | 'prelight' | 'recogida' => {
+    if (r?._displayBlock === 'pre') return 'prelight';
+    if (r?._displayBlock === 'pick') return 'recogida';
+
     const originalRole = (r as any)._originalRole || r.role || '';
     const role = String(originalRole).toUpperCase();
     
@@ -110,30 +122,6 @@ export function MonthSectionTable({
     return groups.filter(g => g.rows.length > 0);
   }, [enriched]);
 
-  // Títulos de sección
-  const sectionTitles: Record<string, string> = {
-    base: t('team.baseTeam') || 'Equipo base',
-    refuerzos: t('team.reinforcements') || 'Refuerzos',
-    prelight: t('team.prelightTeam') || 'Equipo prelight',
-    recogida: t('team.pickupTeam') || 'Equipo recogida',
-  };
-
-  // Componente para renderizar fila de título de sección
-  const renderSectionHeader = (title: string) => (
-    <tr key={`section-${title}`}>
-      <Td
-        colSpan={colSpanCount}
-        className='bg-zinc-100/50 dark:bg-zinc-800/50 border-t border-b border-neutral-border'
-      >
-        <div className='px-2 py-1.5 sm:px-3 sm:py-2'>
-          <span className='text-[10px] sm:text-xs md:text-sm font-semibold text-zinc-700 dark:text-zinc-200 uppercase tracking-wide'>
-            {title}
-          </span>
-        </div>
-      </Td>
-    </tr>
-  );
-
   return (
     <div className='px-3 pb-3 sm:px-4 sm:pb-4 md:px-5 md:pb-5 overflow-x-auto' data-tutorial='payroll-table'>
       <table className='min-w-[800px] sm:min-w-[1000px] md:min-w-[1200px] w-full border-collapse text-[9px] sm:text-[10px] md:text-xs lg:text-sm'>
@@ -145,16 +133,15 @@ export function MonthSectionTable({
                   <input
                     type='checkbox'
                     checked={enriched.length > 0 && enriched.every(r => {
-                      const pKey = `${r.role}__${r.name}`;
+                      const pKey = r._rowKey || `${r.role}__${r.name}`;
                       return isRowSelected(pKey);
                     })}
                     onChange={e => {
                       if (readOnly) return;
                       if (e.target.checked) {
                         // Seleccionar todas
-                        const allKeys = enriched.map(r => `${r.role}__${r.name}`);
                         enriched.forEach(r => {
-                          const pKey = `${r.role}__${r.name}`;
+                          const pKey = r._rowKey || `${r.role}__${r.name}`;
                           if (!isRowSelected(pKey)) {
                             toggleRowSelection(pKey);
                           }
@@ -162,7 +149,7 @@ export function MonthSectionTable({
                       } else {
                         // Deseleccionar todas
                         enriched.forEach(r => {
-                          const pKey = `${r.role}__${r.name}`;
+                          const pKey = r._rowKey || `${r.role}__${r.name}`;
                           if (isRowSelected(pKey)) {
                             toggleRowSelection(pKey);
                           }
@@ -174,7 +161,7 @@ export function MonthSectionTable({
                       e.stopPropagation();
                     }}
                     title={enriched.length > 0 && enriched.every(r => {
-                      const pKey = `${r.role}__${r.name}`;
+                      const pKey = r._rowKey || `${r.role}__${r.name}`;
                       return isRowSelected(pKey);
                     }) ? t('payroll.deselectAll') : t('payroll.selectAll')}
                     className='accent-blue-500 dark:accent-[#f59e0b] cursor-pointer'
@@ -183,12 +170,12 @@ export function MonthSectionTable({
               </Th>
             )}
             <Th align='center'>{t('payroll.person')}</Th>
-            {hasWorkedDaysData && <Th align='center'>{t('payroll.workedDays')}</Th>}
-            {hasWorkedDaysData && <Th align='center'>{t('payroll.totalDays')}</Th>}
+            {hasWorkedDaysData && <Th align='center'>{workedLabel}</Th>}
+            {hasWorkedDaysData && <Th align='center'>{totalWorkedLabel}</Th>}
             {hasHalfDaysData && <Th align='center'>{t('payroll.halfDays')}</Th>}
             {hasHalfDaysData && <Th align='center'>{t('payroll.totalHalfDays')}</Th>}
-            {hasLocalizacionData && <Th align='center'>{t('payroll.localizacionTecnica')}</Th>}
-            {hasLocalizacionData && <Th align='center'>{t('payroll.totalLocalizacionTecnica')}</Th>}
+            {hasLocalizacionData && <Th align='center'>{localizacionLabel}</Th>}
+            {hasLocalizacionData && <Th align='center'>{totalLocalizacionLabel}</Th>}
             {hasCargaDescargaData && <Th align='center'>{t('payroll.cargaDescarga')}</Th>}
             {hasCargaDescargaData && <Th align='center'>{t('payroll.totalCargaDescarga')}</Th>}
             {columnVisibility.holidays && <Th align='center'>{t('payroll.holidayDays')}</Th>}
@@ -212,9 +199,8 @@ export function MonthSectionTable({
         <tbody>
           {groupedRows.map((group, groupIdx) => (
             <React.Fragment key={group.type}>
-              {renderSectionHeader(sectionTitles[group.type])}
               {group.rows.map((r, idx) => {
-                const pKey = `${r.role}__${r.name}`;
+                const pKey = r._rowKey || `${r.role}__${r.name}`;
                 let roleForColor = stripRoleSuffix(String(r.role || ''));
                 // Si el rol empieza con REF (REFG, REFBB, etc.), usar el rol base para el color
                 if (roleForColor.startsWith('REF') && roleForColor.length > 3) {

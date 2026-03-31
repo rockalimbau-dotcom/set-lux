@@ -9,7 +9,7 @@ import {
   buildPeoplePick,
   buildPeopleExtra,
 } from '../../utils/derive';
-import { findWeekAndDayFactory } from '../../utils/plan';
+import { BLOCKS, findWeekAndDayFactory, getDayBlockList } from '../../utils/plan';
 import { AnyRecord } from '@shared/types/common';
 import { needsDataToPlanData } from '@shared/utils/needsPlanAdapter';
 
@@ -47,7 +47,7 @@ export function useWeekData(
       return !!(
         day &&
         day.tipo !== 'Descanso' &&
-        ((day.prelight || []).length > 0 ||
+        (getDayBlockList(day, BLOCKS.pre).length > 0 ||
           day.prelightStart ||
           day.prelightEnd)
       );
@@ -60,7 +60,7 @@ export function useWeekData(
       return !!(
         day &&
         day.tipo !== 'Descanso' &&
-        ((day.pickup || []).length > 0 || day.pickupStart || day.pickupEnd)
+        (getDayBlockList(day, BLOCKS.pick).length > 0 || day.pickupStart || day.pickupEnd)
       );
     });
   }, [needsKey, JSON.stringify(safeSemana)]);
@@ -71,7 +71,7 @@ export function useWeekData(
       return !!(
         day &&
         day.tipo !== 'Descanso' &&
-        ((day.refList || []).length > 0 || day.refStart || day.refEnd)
+        (getDayBlockList(day, BLOCKS.extra).length > 0 || day.refStart || day.refEnd)
       );
     });
   }, [needsKey, JSON.stringify(safeSemana)]);
@@ -180,4 +180,3 @@ export function useWeekData(
     safePersonas,
   };
 }
-

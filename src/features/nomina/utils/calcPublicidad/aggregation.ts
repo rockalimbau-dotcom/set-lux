@@ -21,13 +21,25 @@ export function aggregateReports(project: any, weeks: any[], filterISO: ((iso: s
   const rolesInCondiciones = getRolesInCondiciones(project);
 
 
-  const ensure = (role: string, name: string, gender?: 'male' | 'female' | 'neutral') => {
-    const k = `${role}__${name}`;
+  const ensure = (
+    rowKey: string,
+    role: string,
+    name: string,
+    gender?: 'male' | 'female' | 'neutral',
+    source?: string,
+    matchRole?: string,
+    displayBlock?: 'base' | 'pre' | 'pick'
+  ) => {
+    const k = rowKey;
     if (!totals.has(k)) {
       totals.set(k, {
+        _rowKey: rowKey,
+        _matchRole: matchRole || role,
+        _displayBlock: displayBlock || 'base',
         role,
         name,
         gender,
+        source,
         extras: 0,
         horasExtra: 0,
         turnAround: 0,
@@ -42,6 +54,7 @@ export function aggregateReports(project: any, weeks: any[], filterISO: ((iso: s
         otherTotal: 0,
       });
     }
+    if (source && !totals.get(k).source) totals.get(k).source = source;
     return totals.get(k);
   };
 
@@ -60,12 +73,13 @@ export function aggregateReports(project: any, weeks: any[], filterISO: ((iso: s
     
 
     const rawPeople = weekAllPeopleActive(w);
-    const uniqStorage = new Map<string, { roleVisible: string; gender?: 'male' | 'female' | 'neutral' }>();
+    const uniqStorage = new Map<string, { roleVisible: string; gender?: 'male' | 'female' | 'neutral'; source?: string; rowKey: string; matchRole: string; displayBlock: 'base' | 'pre' | 'pick' }>();
     for (const p of rawPeople) {
       const r = p.role || '';
       const n = p.name || '';
-      const vk = visibleRoleFor(r, n, refuerzoSet);
+      const vk = visibleRoleFor(r, n, refuerzoSet, (p as any)?.source);
       const gender = (p as any)?.gender;
+      const source = (p as any)?.source;
       
       // REF no se procesa en diario (no hay refuerzos)
       if (vk === 'REF') {
@@ -73,9 +87,18 @@ export function aggregateReports(project: any, weeks: any[], filterISO: ((iso: s
       }
       
       // Detectar bloque basándose en el sufijo del rol
-      const block = r.endsWith('P') ? 'pre' : r.endsWith('R') ? 'pick' : undefined;
+      const block = source === 'pre' ? 'pre' : source === 'pick' ? 'pick' : r.endsWith('P') ? 'pre' : r.endsWith('R') ? 'pick' : undefined;
       const sk = storageKeyFor(r, n, block);
-      if (!uniqStorage.has(sk)) uniqStorage.set(sk, { roleVisible: vk, gender });
+      const displayBlock = block === 'pre' ? 'pre' : block === 'pick' ? 'pick' : 'base';
+      const rowKey =
+        displayBlock === 'pre'
+          ? `${vk}.pre__${n}`
+          : displayBlock === 'pick'
+          ? `${vk}.pick__${n}`
+          : `${vk}__${n}`;
+      const matchRole =
+        displayBlock === 'pre' ? `${stripPR(r)}P` : displayBlock === 'pick' ? `${stripPR(r)}R` : stripPR(r);
+      if (!uniqStorage.has(sk)) uniqStorage.set(sk, { roleVisible: vk, gender, source, rowKey, matchRole, displayBlock });
     }
 
 
@@ -87,7 +110,7 @@ export function aggregateReports(project: any, weeks: any[], filterISO: ((iso: s
 
       for (const iso of filteredDays) {
         const keysToUse = storageKeyVariants(pk);
-        const slot = ensure(roleVis, personName, meta.gender);
+        const slot = ensure(meta.rowKey, roleVis, personName, meta.gender, meta.source, meta.matchRole, meta.displayBlock);
 
         const he = parseHorasExtra(getCellValueCandidates(data, keysToUse, COL_CANDIDATES.extras, iso));
         const ta = parseNum(getCellValueCandidates(data, keysToUse, COL_CANDIDATES.ta, iso));
@@ -125,7 +148,7 @@ export function aggregateReports(project: any, weeks: any[], filterISO: ((iso: s
         }
       }
       if (usedMaterialPropioWeek) {
-        const slot = ensure(roleVis, personName, meta.gender);
+        const slot = ensure(meta.rowKey, roleVis, personName, meta.gender, meta.source, meta.matchRole, meta.displayBlock);
         slot.materialPropioWeeks += 1;
       }
     }
@@ -190,7 +213,7 @@ export function aggregateWindowedReport(project: any, weeks: any[], filterISO: (
     for (const p of rawPeople) {
       const r = p.role || '';
       const n = p.name || '';
-      const vk = visibleRoleFor(r, n, refuerzoSet);
+      const vk = visibleRoleFor(r, n, refuerzoSet, (p as any)?.source);
       
       // REF no se procesa en diario (no hay refuerzos)
       if (vk === 'REF') {
@@ -261,4 +284,3 @@ export function aggregateWindowedReport(project: any, weeks: any[], filterISO: (
 
   return totals;
 }
-

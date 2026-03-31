@@ -18,7 +18,7 @@ const normalizeNeedsDays = (days: any): AnyDay[] => {
   return [];
 };
 
-const withSource = (list: any, source: 'base' | 'pre' | 'pick') => {
+const withSource = (list: any, source: 'base' | 'pre' | 'pick' | 'ref') => {
   if (!Array.isArray(list)) return [];
   return list.map(m => ({
     ...m,
@@ -40,14 +40,26 @@ const withRoleSuffix = (list: any[], suffix: 'P' | 'R') => {
 
 export const needsDayToPlanDay = (day: AnyDay): AnyDay => {
   const crewList = withSource(day.crewList, 'base');
-  const refList = withSource(day.refList, 'base');
+  const refList = withSource(day.refList, 'ref');
   const preList = withRoleSuffix(withSource(day.preList, 'pre'), 'P');
   const pickList = withRoleSuffix(withSource(day.pickList, 'pick'), 'R');
   return {
     ...day,
     tipo: day?.crewTipo ?? day?.tipo ?? '',
+    crewList,
+    refList,
+    preList,
+    pickList,
+    crewStart: day?.crewStart ?? day?.start ?? '',
+    crewEnd: day?.crewEnd ?? day?.end ?? '',
     start: day?.crewStart ?? day?.start ?? '',
     end: day?.crewEnd ?? day?.end ?? '',
+    refStart: day?.refStart ?? '',
+    refEnd: day?.refEnd ?? '',
+    preStart: day?.preStart ?? day?.prelightStart ?? '',
+    preEnd: day?.preEnd ?? day?.prelightEnd ?? '',
+    pickStart: day?.pickStart ?? day?.pickupStart ?? '',
+    pickEnd: day?.pickEnd ?? day?.pickupEnd ?? '',
     prelightStart: day?.preStart ?? day?.prelightStart ?? '',
     prelightEnd: day?.preEnd ?? day?.prelightEnd ?? '',
     pickupStart: day?.pickStart ?? day?.pickupStart ?? '',

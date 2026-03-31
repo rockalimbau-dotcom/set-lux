@@ -39,7 +39,12 @@ export async function exportToPDF({
       if (isRefuerzo(row)) {
         rowsByBlock.refuerzos.push(row);
       } else {
-        const block = getBlockFromRole(row.role);
+        const block =
+          row?._displayBlock === 'pre'
+            ? 'pre'
+            : row?._displayBlock === 'pick'
+            ? 'pick'
+            : getBlockFromRole(row.role);
         rowsByBlock[block].push(row);
       }
     });
@@ -174,4 +179,3 @@ export async function exportToPDF({
     return false;
   }
 }
-

@@ -5,11 +5,24 @@ import { esc, displayValue, displayMoney, generateWorkedDaysText, generateExtras
 /**
  * Generate header cells based on column visibility
  */
-export const generateHeaderCells = (columnVisibility: ReturnType<typeof getColumnVisibility>): string[] => {
+export const generateHeaderCells = (
+  columnVisibility: ReturnType<typeof getColumnVisibility>,
+  projectMode: 'semanal' | 'mensual' | 'diario' = 'semanal'
+): string[] => {
+  const useJornadasLabels = projectMode === 'semanal' || projectMode === 'diario';
+  const workedLabel = useJornadasLabels ? i18n.t('payroll.workedShifts') : i18n.t('payroll.workedDays');
+  const totalWorkedLabel = useJornadasLabels ? i18n.t('payroll.totalShifts') : i18n.t('payroll.totalDays');
+  const localizacionLabel =
+    projectMode === 'diario' ? i18n.t('payroll.localizacionTecnicaShifts') : i18n.t('payroll.localizacionTecnica');
+  const totalLocalizacionLabel =
+    projectMode === 'diario'
+      ? i18n.t('payroll.totalLocalizacionTecnicaShifts')
+      : i18n.t('payroll.totalLocalizacionTecnica');
+
   const headerCells = [
     `<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.person')}</th>`,
-    `<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.workedDays')}</th>`,
-    `<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.totalDays')}</th>`,
+    `<th style="text-align:center !important;vertical-align:middle !important;">${workedLabel}</th>`,
+    `<th style="text-align:center !important;vertical-align:middle !important;">${totalWorkedLabel}</th>`,
   ];
 
   if (columnVisibility.halfDays) {
@@ -18,8 +31,8 @@ export const generateHeaderCells = (columnVisibility: ReturnType<typeof getColum
   }
 
   if (columnVisibility.localizacion) {
-    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.localizacionTecnica')}</th>`);
-    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.totalLocalizacionTecnica')}</th>`);
+    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;">${localizacionLabel}</th>`);
+    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;">${totalLocalizacionLabel}</th>`);
   }
 
   if (columnVisibility.cargaDescarga) {

@@ -31,7 +31,7 @@ export async function exportReportRangeToPDF(params: ExportReportRangeParams) {
 
   try {
     const { toDisplayDate, dayNameFromISO, mondayOf, toYYYYMMDD } = await import('@shared/utils/date');
-    const { findWeekAndDayFactory } = await import('../plan');
+    const { BLOCKS, findWeekAndDayFactory, getDayBlockList } = await import('../plan');
     const { DAY_NAMES, CONCEPTS } = await import('../../constants');
     const { 
       buildSafePersonas,
@@ -140,7 +140,7 @@ export async function exportReportRangeToPDF(params: ExportReportRangeParams) {
         return !!(
           day &&
           day.tipo !== 'Descanso' &&
-          ((day.prelight || []).length > 0 ||
+          (getDayBlockList(day, BLOCKS.pre).length > 0 ||
             day.prelightStart ||
             day.prelightEnd)
         );
@@ -159,7 +159,7 @@ export async function exportReportRangeToPDF(params: ExportReportRangeParams) {
         return !!(
           day &&
           day.tipo !== 'Descanso' &&
-          ((day.pickup || []).length > 0 || day.pickupStart || day.pickupEnd)
+          (getDayBlockList(day, BLOCKS.pick).length > 0 || day.pickupStart || day.pickupEnd)
         );
       });
       
@@ -176,7 +176,7 @@ export async function exportReportRangeToPDF(params: ExportReportRangeParams) {
         return !!(
           day &&
           day.tipo !== 'Descanso' &&
-          ((day.refList || []).length > 0 || day.refStart || day.refEnd)
+          (getDayBlockList(day, BLOCKS.extra).length > 0 || day.refStart || day.refEnd)
         );
       });
 
@@ -566,4 +566,3 @@ export async function exportReportRangeToPDF(params: ExportReportRangeParams) {
     return false;
   }
 }
-

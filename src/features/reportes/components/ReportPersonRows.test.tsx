@@ -1,5 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import React from 'react';
+import { vi } from 'vitest';
 
 import ReportPersonRows from './ReportPersonRows.jsx';
 
@@ -99,10 +100,47 @@ describe('ReportPersonRows (smoke)', () => {
       </table>
     );
 
-    // Check that cells for the non-working day have the conditional styling
-    const cellsWithOffStyling = container.querySelectorAll(
-      '.bg-orange-900\\/20'
-    );
+    // Check that cells for the non-working day have the off-state class
+    const cellsWithOffStyling = container.querySelectorAll('.report-off-cell');
     expect(cellsWithOffStyling.length).toBeGreaterThan(0);
+  });
+
+  it('passes the prelight block when checking off-map for non-ref roles', () => {
+    const semana = ['2025-01-06'];
+    const list = [{ role: 'E', name: 'Ricard Durany' }];
+    const collapsed = {};
+    const setCollapsed = fn => fn(collapsed);
+    const mockIsPersonScheduledOnBlock = vi.fn(() => true);
+
+    render(
+      <table>
+        <tbody>
+          <ReportPersonRows
+            list={list}
+            block='pre'
+            semana={semana}
+            collapsed={collapsed}
+            setCollapsed={setCollapsed}
+            data={{}}
+            setCell={noop}
+            findWeekAndDay={findWeekAndDay}
+            isPersonScheduledOnBlock={mockIsPersonScheduledOnBlock}
+            CONCEPTS={CONCEPTS}
+            DIETAS_OPCIONES={DIETAS_OPCIONES}
+            SI_NO={SI_NO}
+            parseDietas={parseDietas}
+            formatDietas={formatDietas}
+          />
+        </tbody>
+      </table>
+    );
+
+    expect(mockIsPersonScheduledOnBlock).toHaveBeenCalledWith(
+      '2025-01-06',
+      'E',
+      'Ricard Durany',
+      findWeekAndDay,
+      'pre'
+    );
   });
 });

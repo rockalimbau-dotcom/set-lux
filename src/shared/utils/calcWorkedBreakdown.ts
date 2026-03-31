@@ -119,9 +119,9 @@ export function calcWorkedBreakdown(
           activeSource = inPick ? 'pickup' : null;
         } else {
           isWorking = inTeam || inPre || inPick;
-          if (inTeam) activeSource = 'team';
-          else if (inPre) activeSource = 'prelight';
+          if (inPre) activeSource = 'prelight';
           else if (inPick) activeSource = 'pickup';
+          else if (inTeam) activeSource = 'team';
         }
       }
       

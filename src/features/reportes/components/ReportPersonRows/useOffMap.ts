@@ -36,7 +36,11 @@ export function useOffMap({
             visualRole === 'REF' ||
             (visualRole && visualRole.startsWith('REF') && visualRole.length > 3);
           const blockForCheck =
-            block === 'extra' ? 'extra' : isRef ? (block as any) || 'base' : undefined;
+            block && block !== 'base'
+              ? (block as any)
+              : isRef
+              ? 'base'
+              : undefined;
           const workedThisBlock = isPersonScheduledOnBlock(
             fecha,
             visualRole,
@@ -73,4 +77,3 @@ export function useOffMap({
     // NO incluir: data, horasExtraTipo, findWeekAndDay, isPersonScheduledOnBlock
   ]);
 }
-

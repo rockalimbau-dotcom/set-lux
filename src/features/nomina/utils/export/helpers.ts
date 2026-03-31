@@ -54,11 +54,7 @@ const translateDietItem = (item: string): string => {
 export const generateWorkedDaysText = (r: any): string => {
   const parts: string[] = [];
   
-  // Orden: Localizar, Oficina, Carga, Rodaje, Prelight, Recogida, Descarga
-  if ((r._localizar || 0) > 0) {
-    parts.push(`${i18n.t('payroll.dayTypes.location')} x${r._localizar}`);
-  }
-  
+  // Localizar no se repite aquí porque ya tiene su propia columna.
   if ((r._oficina || 0) > 0) {
     parts.push(`${i18n.t('payroll.dayTypes.office')} x${r._oficina}`);
   }

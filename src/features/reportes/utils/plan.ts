@@ -14,6 +14,41 @@ interface WeekAndDay {
   day: any;
 }
 
+const DAY_BLOCK_KEYS = {
+  [BLOCKS.base]: ['crewList', 'team'],
+  [BLOCKS.pre]: ['preList', 'prelight'],
+  [BLOCKS.pick]: ['pickList', 'pickup'],
+  [BLOCKS.extra]: ['refList'],
+} as const;
+
+const readFirstArray = (day: any, keys: readonly string[]) => {
+  for (const key of keys) {
+    if (Array.isArray(day?.[key])) return day[key];
+  }
+  return [];
+};
+
+export function getDayBlockList(day: any, block: string): any[] {
+  if (!day) return [];
+
+  if (block === BLOCKS.base) {
+    const crewList = readFirstArray(day, DAY_BLOCK_KEYS[BLOCKS.base]);
+    if (Array.isArray(day?.crewList)) return crewList;
+    return crewList.filter(member => !isMemberRefuerzo(member));
+  }
+
+  if (block === BLOCKS.extra) {
+    if (Array.isArray(day?.refList)) return day.refList;
+    const team = Array.isArray(day?.team) ? day.team : [];
+    return team.filter(member => isMemberRefuerzo(member));
+  }
+
+  if (block === BLOCKS.pre) return readFirstArray(day, DAY_BLOCK_KEYS[BLOCKS.pre]);
+  if (block === BLOCKS.pick) return readFirstArray(day, DAY_BLOCK_KEYS[BLOCKS.pick]);
+
+  return [];
+}
+
 export function refWorksOnBlock(
   findWeekAndDay: (iso: string) => WeekAndDay, 
   iso: string, 
@@ -24,10 +59,7 @@ export function refWorksOnBlock(
   if (!day || (day.tipo || '') === 'Descanso') return false;
   const any = (arr: any[]) =>
     (arr || []).some(m => norm(m?.name) === norm(name) && isMemberRefuerzo(m));
-  if (block === BLOCKS.pre) return any(day.prelight);
-  if (block === BLOCKS.pick) return any(day.pickup);
-  if (block === BLOCKS.extra) return any(day.refList);
-  return any(day.team); // base
+  return any(getDayBlockList(day, block || BLOCKS.base));
 }
 
 export function isPersonScheduledOnBlock(
@@ -53,15 +85,7 @@ export function isPersonScheduledOnBlock(
   }
 
   const baseRole = stripRoleSuffix(String(roleLabel || ''));
-  const suffix =
-    block === BLOCKS.pre
-      ? 'prelight'
-      : block === BLOCKS.pick
-      ? 'pickup'
-      : block === BLOCKS.extra
-      ? 'refList'
-      : 'team';
-  const list: Array<{ name?: string; role?: string }> = Array.isArray((day as any)[suffix]) ? (day as any)[suffix] : [];
+  const list: Array<{ name?: string; role?: string }> = getDayBlockList(day, block);
   return list.some(
     (m: { name?: string; role?: string }) => {
       const memberRole = String(m?.role || '');
@@ -138,16 +162,21 @@ export function personWorksOn(
   // Si el rol es REF o empieza con REF (REFG, REFBB, etc.), usar lógica de refuerzo
   const roleStr = String(roleLabel || '');
   if (roleStr === 'REF' || (roleStr.startsWith('REF') && roleStr.length > 3)) {
-    const any = (arr: any[]) =>
-      (arr || []).some(
-        m => (m.name || '') === (personName || '') && isMemberRefuerzo(m)
-      );
-    return any(day.team) || any(day.prelight) || any(day.pickup);
+    return (
+      refWorksOnBlock(findWeekAndDay, iso, personName, BLOCKS.base) ||
+      refWorksOnBlock(findWeekAndDay, iso, personName, BLOCKS.pre) ||
+      refWorksOnBlock(findWeekAndDay, iso, personName, BLOCKS.pick) ||
+      refWorksOnBlock(findWeekAndDay, iso, personName, BLOCKS.extra)
+    );
   }
   const suffix = hasRoleGroupSuffix(roleLabel) ? (/P$/i.test(roleLabel) ? 'P' : 'R') : '';
   const baseRole = stripRoleSuffix(String(roleLabel || ''));
   const list =
-    suffix === 'P' ? day.prelight : suffix === 'R' ? day.pickup : day.team;
+    suffix === 'P'
+      ? getDayBlockList(day, BLOCKS.pre)
+      : suffix === 'R'
+      ? getDayBlockList(day, BLOCKS.pick)
+      : getDayBlockList(day, BLOCKS.base);
   return (list || []).some(
     (m: { name?: string; role?: string }) => {
       const memberRole = String(m?.role || '');

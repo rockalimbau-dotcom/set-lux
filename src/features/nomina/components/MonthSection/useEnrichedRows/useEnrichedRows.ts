@@ -62,8 +62,9 @@ export function useEnrichedRows({
   roleLabelFromCode,
 }: UseEnrichedRowsProps) {
   const enriched = useMemo(() => {
-    return rows.map(r => {
-      const person = { role: r.role, name: r.name };
+    const enrichedRows = rows.map(r => {
+      const roleForBreakdown = (r as any)._matchRole || r.role;
+      const person = { role: roleForBreakdown, name: r.name };
       const breakdown = calcWorkedBreakdown(weeksForMonth, filterISO, person);
       const {
         workedDays,
@@ -86,12 +87,12 @@ export function useEnrichedRows({
       } = breakdown;
 
       // Obtener precios del rol
-      const keyNoPR = `${stripPR(r.role)}__${r.name}`;
-      const baseRoleCode = stripPR(r.role);
+      const keyNoPR = `${stripPR(roleForBreakdown)}__${r.name}`;
+      const baseRoleCode = stripPR(roleForBreakdown);
       const baseRoleLabel = roleLabelFromCode(baseRoleCode);
       
       // Preservar el sufijo P/R del rol original para determinar qué tabla de precios usar
-      const originalRole = r.role || '';
+      const originalRole = roleForBreakdown || '';
       const hasP = originalRole.endsWith('P') || originalRole.endsWith('p');
       const hasR = originalRole.endsWith('R') || originalRole.endsWith('r');
       const needsPrelightPrice = !hasP && !hasR && workedPre > 0 && workedBase === 0 && workedPick === 0;
@@ -142,6 +143,13 @@ export function useEnrichedRows({
       // Determinar role display
       const roleDisplay = determineRoleDisplay(r.role, baseRoleCode, workedBase, workedPre, workedPick);
       const roleForBadge = isRefuerzo ? originalRoleForBadge : roleDisplay;
+      const displayBlock =
+        (r as any)._displayBlock ||
+        (hasP || needsPrelightPrice
+          ? 'pre'
+          : hasR || needsPickupPrice
+          ? 'pick'
+          : 'base');
 
       // Obtener override de ventana contable si existe
       const pKey = `${r.role}__${r.name}`;
@@ -284,8 +292,10 @@ export function useEnrichedRows({
 
       return {
         ...r,
+        _rowKey: (r as any)._rowKey || `${r.role}__${r.name}`,
         role: roleDisplay,
         _originalRole: roleForBadge, // Mostrar sufijo P/R cuando aplique
+        _displayBlock: displayBlock,
         extras: extrasValue,
         horasExtra: horasExtraValue,
         turnAround: turnAroundValue,
@@ -336,6 +346,94 @@ export function useEnrichedRows({
         _missingPrices: missingPrices,
       };
     });
+
+    const mergeDietasMaps = (a?: Map<string, number>, b?: Map<string, number>) => {
+      const merged = new Map<string, number>();
+      for (const [key, value] of a || []) merged.set(key, value);
+      for (const [key, value] of b || []) {
+        merged.set(key, (merged.get(key) || 0) + value);
+      }
+      return merged;
+    };
+
+    const mergeMissingPrices = (a: any, b: any) => {
+      const merged = { ...(a || {}) };
+      for (const [key, value] of Object.entries(b || {})) {
+        merged[key] = merged[key] || value;
+      }
+      return merged;
+    };
+
+    const mergedByVisibleRow = new Map<string, any>();
+
+    for (const row of enrichedRows) {
+      const mergeKey = `${row.role}__${row.name}`;
+      const existing = mergedByVisibleRow.get(mergeKey);
+      if (!existing) {
+        mergedByVisibleRow.set(mergeKey, {
+          ...row,
+          _rowKey: mergeKey,
+        });
+        continue;
+      }
+
+      existing.extras += row.extras || 0;
+      existing.horasExtra += row.horasExtra || 0;
+      existing.turnAround += row.turnAround || 0;
+      existing.nocturnidad += row.nocturnidad || 0;
+      existing.penaltyLunch += row.penaltyLunch || 0;
+      existing.transporte += row.transporte || 0;
+      existing.km += row.km || 0;
+      existing.ticketTotal += row.ticketTotal || 0;
+      existing.otherTotal += row.otherTotal || 0;
+
+      existing._worked += row._worked || 0;
+      existing._halfDays += row._halfDays || 0;
+      existing._travel += row._travel || 0;
+      existing._holidays += row._holidays || 0;
+      existing._workedBase += row._workedBase || 0;
+      existing._workedPre += row._workedPre || 0;
+      existing._workedPick += row._workedPick || 0;
+      existing._rodaje += row._rodaje || 0;
+      existing._pruebasCamara += row._pruebasCamara || 0;
+      existing._oficina += row._oficina || 0;
+      existing._travelDay += row._travelDay || 0;
+      existing._carga += row._carga || 0;
+      existing._descarga += row._descarga || 0;
+      existing._localizar += row._localizar || 0;
+      existing._rodajeFestivo += row._rodajeFestivo || 0;
+      existing._prelight += row._prelight || 0;
+      existing._recogida += row._recogida || 0;
+      existing._totalDias += row._totalDias || 0;
+      existing._totalHalfDays += row._totalHalfDays || 0;
+      existing._totalTravel += row._totalTravel || 0;
+      existing._totalHolidays += row._totalHolidays || 0;
+      existing._totalExtras += row._totalExtras || 0;
+      existing._totalDietas += row._totalDietas || 0;
+      existing._totalTrans += row._totalTrans || 0;
+      existing._totalKm += row._totalKm || 0;
+      existing._totalBruto += row._totalBruto || 0;
+      existing._totalMaterialPropio += row._totalMaterialPropio || 0;
+      existing._totalLocalizacion += row._totalLocalizacion || 0;
+      existing._totalCargaDescarga += row._totalCargaDescarga || 0;
+      existing._localizarDays += row._localizarDays || 0;
+      existing._cargaDays += row._cargaDays || 0;
+      existing._descargaDays += row._descargaDays || 0;
+      existing._materialPropioDays += row._materialPropioDays || 0;
+      existing._materialPropioWeeks += row._materialPropioWeeks || 0;
+
+      existing.dietasCount = mergeDietasMaps(existing.dietasCount, row.dietasCount);
+      existing._dietasLabel = buildDietasLabel(existing.dietasCount, existing.ticketTotal, existing.otherTotal);
+      existing._missingPrices = mergeMissingPrices(existing._missingPrices, row._missingPrices);
+
+      if (existing._displayBlock !== 'base' && row._displayBlock === 'base') {
+        existing._displayBlock = 'base';
+      } else if (existing._displayBlock === 'pick' && row._displayBlock === 'pre') {
+        existing._displayBlock = 'pre';
+      }
+    }
+
+    return Array.from(mergedByVisibleRow.values());
   }, [
     rows,
     weeksForMonth,

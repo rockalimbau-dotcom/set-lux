@@ -16,11 +16,7 @@ export default function WorkedDaysSummary({ carga, descarga, localizar, rodaje, 
   const { t } = useTranslation();
   const parts: string[] = [];
   
-  // Orden: Localizar, Oficina, Carga, Pruebas de cámara, Rodaje, Prelight, Recogida, Descarga
-  if (localizar > 0) {
-    parts.push(`${t('payroll.dayTypes.location')} x${localizar}`);
-  }
-  
+  // Localizar no se repite aquí porque ya tiene su propia columna.
   if (oficina > 0) {
     parts.push(`${t('payroll.dayTypes.office')} x${oficina}`);
   }

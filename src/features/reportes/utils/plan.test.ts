@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 
 import {
   BLOCKS,
+  getDayBlockList,
   isMemberRefuerzo,
   refWorksOnBlock,
   isPersonScheduledOnBlock,
@@ -27,7 +28,32 @@ describe('plan utils', () => {
         base: 'base',
         pre: 'pre',
         pick: 'pick',
+        extra: 'extra',
       });
+    });
+  });
+
+  describe('getDayBlockList', () => {
+    it('should keep base block free of refuerzo members when only team exists', () => {
+      const day = {
+        team: [
+          { name: 'Carlos', role: 'TÉCNICO' },
+          { name: 'Refuerzo Ana', role: 'REF' },
+        ],
+      };
+
+      expect(getDayBlockList(day, BLOCKS.base)).toEqual([{ name: 'Carlos', role: 'TÉCNICO' }]);
+    });
+
+    it('should derive extra block from team when refList is missing', () => {
+      const day = {
+        team: [
+          { name: 'Carlos', role: 'TÉCNICO' },
+          { name: 'Ana', role: 'REF' },
+        ],
+      };
+
+      expect(getDayBlockList(day, BLOCKS.extra)).toEqual([{ name: 'Ana', role: 'REF' }]);
     });
   });
 
@@ -99,7 +125,7 @@ describe('plan utils', () => {
       expect(result).toBe(false);
     });
 
-    it('should check team list for base block', () => {
+    it('should check team fallback for extra block', () => {
       const day = {
         tipo: 'Trabajo',
         team: [
@@ -113,7 +139,7 @@ describe('plan utils', () => {
         mockFindWeekAndDay,
         '2024-01-15',
         'Juan',
-        'base'
+        'extra'
       );
 
       expect(result).toBe(true);
@@ -148,6 +174,23 @@ describe('plan utils', () => {
         '2024-01-15',
         'Ana',
         'pick'
+      );
+
+      expect(result).toBe(true);
+    });
+
+    it('should check fallback extra list from team when refList is missing', () => {
+      const day = {
+        tipo: 'Trabajo',
+        team: [{ name: 'Ana', role: 'REF' }],
+      };
+      mockFindWeekAndDay.mockReturnValue({ day });
+
+      const result = refWorksOnBlock(
+        mockFindWeekAndDay,
+        '2024-01-15',
+        'Ana',
+        'extra'
       );
 
       expect(result).toBe(true);
@@ -204,7 +247,7 @@ describe('plan utils', () => {
       expect(result).toBe(false);
     });
 
-    it('should handle REF role with blockForRef', () => {
+    it('should handle REF role with extra block fallback', () => {
       const day = {
         tipo: 'Trabajo',
         team: [{ name: 'Juan', role: 'REFUERZO' }],
@@ -216,7 +259,7 @@ describe('plan utils', () => {
         'REF',
         'Juan',
         mockFindWeekAndDay,
-        'base'
+        'extra'
       );
 
       expect(result).toBe(true);
@@ -268,6 +311,24 @@ describe('plan utils', () => {
         'TÉCNICO',
         'Carlos',
         mockFindWeekAndDay
+      );
+
+      expect(result).toBe(true);
+    });
+
+    it('should check extra block with refList when asked explicitly', () => {
+      const day = {
+        tipo: 'Trabajo',
+        refList: [{ name: 'Ana', role: 'REF' }],
+      };
+      mockFindWeekAndDay.mockReturnValue({ day });
+
+      const result = isPersonScheduledOnBlock(
+        '2024-01-15',
+        'REF',
+        'Ana',
+        mockFindWeekAndDay,
+        'extra'
       );
 
       expect(result).toBe(true);

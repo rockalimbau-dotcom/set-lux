@@ -21,6 +21,10 @@ export type RowIn = {
   role: string;
   name: string;
   gender?: 'male' | 'female' | 'neutral';
+  source?: string;
+  _rowKey?: string;
+  _matchRole?: string;
+  _displayBlock?: 'base' | 'pre' | 'pick';
   extras: number;
   horasExtra: number;
   turnAround: number;

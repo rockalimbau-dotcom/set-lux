@@ -1,4 +1,3 @@
-import i18n from '../../../../i18n/config';
 import { getBlockFromRole, sortRowsByRole } from './helpers';
 import { generateRowDataCells } from './tableHelpers';
 
@@ -32,7 +31,12 @@ function groupRowsByBlock(enrichedRows: any[]) {
     if (isRefuerzo(row)) {
       rowsByBlock.refuerzos.push(row);
     } else {
-      const block = getBlockFromRole(row.role);
+      const block =
+        row?._displayBlock === 'pre'
+          ? 'pre'
+          : row?._displayBlock === 'pick'
+          ? 'pick'
+          : getBlockFromRole(row.role);
       rowsByBlock[block].push(row);
     }
   });
@@ -43,38 +47,6 @@ function groupRowsByBlock(enrichedRows: any[]) {
   rowsByBlock.pick = sortRowsByRole(rowsByBlock.pick, 'pick');
 
   return rowsByBlock;
-}
-
-/**
- * Generate block title row HTML
- */
-function generateBlockTitle(block: 'base' | 'refuerzos' | 'pre' | 'pick', numColumns: number): string {
-  const blockConfig = {
-    base: {
-      label: i18n.t('team.baseTeam') || 'Equipo base',
-      style: 'background:#fff3e0;color:#e65100',
-    },
-    refuerzos: {
-      label: i18n.t('team.reinforcements') || 'Refuerzos',
-      style: 'background:#fff8e1;color:#f57c00',
-    },
-    pre: {
-      label: i18n.t('team.prelightTeam') || 'Equipo prelight',
-      style: 'background:#e3f2fd;color:#1565c0',
-    },
-    pick: {
-      label: i18n.t('team.pickupTeam') || 'Equipo recogida',
-      style: 'background:#e3f2fd;color:#1565c0',
-    },
-  };
-
-  const config = blockConfig[block];
-  return `
-      <tr>
-        <td colspan="${numColumns}" style="border:1px solid #999;padding:12px 8px;font-weight:700;${config.style};text-align:center !important;vertical-align:middle !important;height:40px;line-height:1.2;display:table-cell;">
-          ${config.label}
-        </td>
-      </tr>`;
 }
 
 /**
@@ -91,28 +63,23 @@ export function generateTableBody({ enrichedRows, columnVisibility, numColumns }
 
   // Equipo base (sin refuerzos)
   if (rowsByBlock.base.length > 0) {
-    bodyParts.push(generateBlockTitle('base', numColumns));
     bodyParts.push(...rowsByBlock.base.map(generateRowHTML));
   }
 
   // Refuerzos (separados del equipo base)
   if (rowsByBlock.refuerzos.length > 0) {
-    bodyParts.push(generateBlockTitle('refuerzos', numColumns));
     bodyParts.push(...rowsByBlock.refuerzos.map(generateRowHTML));
   }
 
   // Equipo prelight
   if (rowsByBlock.pre.length > 0) {
-    bodyParts.push(generateBlockTitle('pre', numColumns));
     bodyParts.push(...rowsByBlock.pre.map(generateRowHTML));
   }
 
   // Equipo recogida
   if (rowsByBlock.pick.length > 0) {
-    bodyParts.push(generateBlockTitle('pick', numColumns));
     bodyParts.push(...rowsByBlock.pick.map(generateRowHTML));
   }
 
   return bodyParts.join('');
 }
-

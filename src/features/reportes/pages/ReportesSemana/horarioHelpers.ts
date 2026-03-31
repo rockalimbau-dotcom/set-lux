@@ -1,5 +1,5 @@
 import { translateJornadaType as translateJornadaTypeUtil } from '@shared/utils/jornadaTranslations';
-import { useTranslation } from 'react-i18next';
+import { BLOCKS, getDayBlockList } from '../../utils/plan';
 
 export const createHorarioHelpers = (
   findWeekAndDay: (iso: string) => { day: any },
@@ -9,7 +9,8 @@ export const createHorarioHelpers = (
     const { day } = findWeekAndDay(iso);
     if (!day) return '';
     if ((day.tipo || '') === 'Descanso') return t('reports.rest');
-    const hasBase = Array.isArray(day.crewList) && day.crewList.length > 0;
+    const baseList = getDayBlockList(day, BLOCKS.base);
+    const hasBase = Array.isArray(baseList) && baseList.length > 0;
     if (!hasBase) return '';
     
     const translateJornadaType = (tipo: string): string => {
@@ -26,7 +27,8 @@ export const createHorarioHelpers = (
   const horarioPrelight = (iso: string) => {
     const { day } = findWeekAndDay(iso);
     if (!day || day.tipo === 'Descanso') return '';
-    if (!Array.isArray(day.preList) || day.preList.length === 0) return '';
+    const preList = getDayBlockList(day, BLOCKS.pre);
+    if (!Array.isArray(preList) || preList.length === 0) return '';
     if (!day.prelightStart || !day.prelightEnd)
       return t('reports.addInPlanning');
     return `${day.prelightStart}–${day.prelightEnd}`;
@@ -35,7 +37,8 @@ export const createHorarioHelpers = (
   const horarioPickup = (iso: string) => {
     const { day } = findWeekAndDay(iso);
     if (!day || day.tipo === 'Descanso') return '';
-    if (!Array.isArray(day.pickList) || day.pickList.length === 0) return '';
+    const pickList = getDayBlockList(day, BLOCKS.pick);
+    if (!Array.isArray(pickList) || pickList.length === 0) return '';
     if (!day.pickupStart || !day.pickupEnd) return t('reports.addInPlanning');
     return `${day.pickupStart}–${day.pickupEnd}`;
   };
@@ -43,11 +46,11 @@ export const createHorarioHelpers = (
   const horarioExtra = (iso: string) => {
     const { day } = findWeekAndDay(iso);
     if (!day || day.tipo === 'Descanso') return '';
-    if (!Array.isArray(day.refList) || day.refList.length === 0) return '';
+    const refList = getDayBlockList(day, BLOCKS.extra);
+    if (!Array.isArray(refList) || refList.length === 0) return '';
     if (!day.refStart || !day.refEnd) return t('reports.addInPlanning');
     return `${day.refStart}–${day.refEnd}`;
   };
 
   return { horarioTexto, horarioPrelight, horarioPickup, horarioExtra };
 };
-

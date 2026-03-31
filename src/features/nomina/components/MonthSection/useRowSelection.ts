@@ -21,7 +21,7 @@ export function useRowSelection({ persistKey, enriched }: UseRowSelectionProps) 
   const hasInitializedRef = useRef(false);
   useEffect(() => {
     if (!hasInitializedRef.current && selectedRowsArray.length === 0 && enriched.length > 0) {
-      const allKeys = enriched.map(r => `${r.role}__${r.name}`);
+      const allKeys = enriched.map(r => r._rowKey || `${r.role}__${r.name}`);
       setSelectedRowsArray(allKeys);
       hasInitializedRef.current = true;
     } else if (enriched.length > 0 && !hasInitializedRef.current) {
@@ -51,4 +51,3 @@ export function useRowSelection({ persistKey, enriched }: UseRowSelectionProps) 
     isRowSelected,
   };
 }
-

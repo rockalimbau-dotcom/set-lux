@@ -18,6 +18,22 @@ vi.mock('./model.ts', () => ({
 }));
 
 vi.mock('./plan.ts', () => ({
+  BLOCKS: {
+    base: 'base',
+    pre: 'pre',
+    pick: 'pick',
+    extra: 'extra',
+  },
+  getDayBlockList: vi.fn((day, block) => {
+    if (!day) return [];
+    if (block === 'base') {
+      return (day.team || []).filter(m => !(m.role === 'REF' || m.role?.includes('REFUERZO')));
+    }
+    if (block === 'pre') return day.prelight || [];
+    if (block === 'pick') return day.pickup || [];
+    if (block === 'extra') return day.refList || [];
+    return [];
+  }),
   isMemberRefuerzo: vi.fn(
     m => m.role === 'REF' || m.role?.includes('REFUERZO')
   ),
@@ -40,9 +56,9 @@ describe('derive', () => {
       const mockDay = {
         team: [
           { role: 'DIRECTOR', name: 'Juan' },
-          { role: 'REF', name: 'María' },
           { role: 'PRODUCTOR', name: 'Carlos' },
         ],
+        refList: [{ role: 'REF', name: 'María' }],
       };
       mockFindWeekAndDay.mockReturnValue({ day: mockDay });
 
@@ -53,10 +69,25 @@ describe('derive', () => {
       const result = collectFn('team', 'P');
 
       expect(result).toEqual([
-        { role: 'DIRECTORP', name: 'Juan' },
-        { role: 'REF', name: 'María' },
-        { role: 'PRODUCTORP', name: 'Carlos' },
+        { role: 'DIRECTOR', name: 'Juan', gender: undefined, source: undefined },
+        { role: 'PRODUCTOR', name: 'Carlos', gender: undefined, source: undefined },
       ]);
+    });
+
+    it('should collect refuerzos from extra block separately', () => {
+      const mockDay = {
+        team: [{ role: 'DIRECTOR', name: 'Juan' }],
+        refList: [{ role: 'REF', name: 'María' }],
+      };
+      mockFindWeekAndDay.mockReturnValue({ day: mockDay });
+
+      const collectFn = collectWeekTeamWithSuffixFactory(
+        mockFindWeekAndDay,
+        mockSafeSemana
+      );
+      const result = collectFn('refList', '');
+
+      expect(result).toEqual([{ role: 'REF', name: 'María' }]);
     });
 
     it('should handle empty team list', () => {
@@ -88,7 +119,7 @@ describe('derive', () => {
       const result = collectFn('team', 'P');
 
       expect(result).toHaveLength(1);
-      expect(result[0]).toEqual({ role: 'DIRECTORP', name: 'Juan' });
+      expect(result[0]).toEqual({ role: 'DIRECTOR', name: 'Juan', gender: undefined, source: undefined });
     });
 
     it('should handle missing day data', () => {
@@ -169,7 +200,7 @@ describe('derive', () => {
       const result = buildSafePersonas(providedPersonas, false, [], false, [], false, []);
 
       expect(result).toEqual([
-        { role: 'REF', name: 'María' },
+        { role: 'REFUERZO', name: 'María' },
         { role: 'REF', name: 'Carlos' },
       ]);
     });
@@ -274,8 +305,8 @@ describe('derive', () => {
       const result = buildPeoplePre(true, prelightPeople, refNamesPre);
 
       expect(result).toEqual([
-        { role: 'TÉCNICO', name: 'Carlos', __block: 'pre' },
-        { role: 'REF', name: 'María', __block: 'pre' },
+        { role: 'TÉCNICOP', name: 'Carlos', gender: undefined, __block: 'pre' },
+        { role: 'REF', name: 'María', gender: undefined, __block: 'pre' },
         { role: 'REF', name: 'Ana', __block: 'pre' },
       ]);
     });
@@ -319,8 +350,8 @@ describe('derive', () => {
       const result = buildPeoplePick(true, pickupPeople, refNamesPick);
 
       expect(result).toEqual([
-        { role: 'TÉCNICO', name: 'Ana', __block: 'pick' },
-        { role: 'REF', name: 'Carlos', __block: 'pick' },
+        { role: 'TÉCNICOR', name: 'Ana', gender: undefined, __block: 'pick' },
+        { role: 'REF', name: 'Carlos', gender: undefined, __block: 'pick' },
         { role: 'REF', name: 'María', __block: 'pick' },
       ]);
     });
@@ -356,9 +387,9 @@ describe('derive', () => {
   describe('collectRefNamesForBlock', () => {
     it('should collect refuerzo names for a block', () => {
       const mockDay = {
-        team: [
+        team: [{ role: 'DIRECTOR', name: 'Juan' }],
+        refList: [
           { role: 'REF', name: 'María' },
-          { role: 'DIRECTOR', name: 'Juan' },
           { role: 'REFUERZO', name: 'Carlos' },
         ],
       };
@@ -367,7 +398,7 @@ describe('derive', () => {
       const result = collectRefNamesForBlock(
         mockSafeSemana,
         mockFindWeekAndDay,
-        'team'
+        'refList'
       );
 
       expect(result).toEqual(new Set(['María', 'Carlos']));

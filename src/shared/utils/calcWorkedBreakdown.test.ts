@@ -176,6 +176,31 @@ describe('calcWorkedBreakdown', () => {
       expect(result.workedDays).toBe(1);
       expect(result.workedPick).toBe(1);
     });
+
+    it('prioritizes prelight over base when the same base role is present in both lists', () => {
+      const weeksWithBaseAndPrelight = [
+        {
+          days: [
+            {
+              tipo: 'Rodaje',
+              team: [{ role: 'E', name: 'Ricard Durany' }],
+              prelight: [{ role: 'EP', name: 'Ricard Durany' }],
+              prelightTipo: 'Prelight',
+            },
+          ],
+        },
+      ];
+
+      const result = calcWorkedBreakdown(
+        weeksWithBaseAndPrelight,
+        () => true,
+        { role: 'E', name: 'Ricard Durany' },
+        'diario'
+      );
+
+      expect(result.workedPre).toBe(1);
+      expect(result.workedBase).toBe(0);
+      expect(result.prelight).toBe(1);
+    });
   });
 });
-

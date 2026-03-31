@@ -43,12 +43,17 @@ export function determineRoleDisplay(
   if (role === 'REF' || (role && role.startsWith('REF') && role.length > 3)) {
     return 'REF';
   }
-  if (workedPre > 0 && workedBase === 0 && workedPick === 0) {
+
+  const roleUpper = String(role || '').toUpperCase();
+  const createdInPrelight = roleUpper.endsWith('P');
+  const createdInPickup = roleUpper.endsWith('R');
+
+  if (createdInPrelight && workedPre > 0 && workedBase === 0 && workedPick === 0) {
     return `${baseRoleCode}P`;
   }
-  if (workedPick > 0 && workedBase === 0 && workedPre === 0) {
+  if (createdInPickup && workedPick > 0 && workedBase === 0 && workedPre === 0) {
     return `${baseRoleCode}R`;
   }
+
   return baseRoleCode;
 }
-

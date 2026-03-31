@@ -12,7 +12,8 @@ export function buildNominaMonthHTML({
   monthLabelEs,
 }: BuildNominaMonthHTMLParams): string {
   const columnVisibility = getColumnVisibility(enrichedRows);
-  const headerCells = generateHeaderCells(columnVisibility);
+  const projectMode = project?.conditions?.tipo === 'mensual' ? 'mensual' : project?.conditions?.tipo === 'diario' ? 'diario' : 'semanal';
+  const headerCells = generateHeaderCells(columnVisibility, projectMode);
   const head = `<tr>${headerCells.join('')}</tr>`;
   const numColumns = headerCells.length;
 

@@ -21,16 +21,24 @@ import {
  */
 function ensureSlot(
   totals: Map<string, any>,
+  rowKey: string,
   role: string,
   name: string,
-  gender?: 'male' | 'female' | 'neutral'
+  gender?: 'male' | 'female' | 'neutral',
+  source?: string,
+  matchRole?: string,
+  displayBlock?: 'base' | 'pre' | 'pick'
 ) {
-  const k = `${role}__${name}`;
+  const k = rowKey;
   if (!totals.has(k)) {
     totals.set(k, {
+      _rowKey: rowKey,
+      _matchRole: matchRole || role,
+      _displayBlock: displayBlock || 'base',
       role,
       name,
       gender,
+      source,
       extras: 0,
       horasExtra: 0,
       turnAround: 0,
@@ -45,6 +53,9 @@ function ensureSlot(
       otherTotal: 0,
     });
   }
+  if (source && !totals.get(k).source) totals.get(k).source = source;
+  if (matchRole && !totals.get(k)._matchRole) totals.get(k)._matchRole = matchRole;
+  if (displayBlock && !totals.get(k)._displayBlock) totals.get(k)._displayBlock = displayBlock;
   return totals.get(k);
 }
 
@@ -127,7 +138,16 @@ export function aggregateReports(
     const uniqStorageKeys = buildUniqueStorageKeys(w, refuerzoSet);
 
     for (const [pk, info] of uniqStorageKeys) {
-      const slot = ensureSlot(totals, info.roleVisible, info.name, info.gender);
+      const slot = ensureSlot(
+        totals,
+        info.rowKey,
+        info.roleVisible,
+        info.name,
+        info.gender,
+        info.source,
+        info.matchRole,
+        info.displayBlock
+      );
       let usedMaterialPropioWeek = false;
       for (const iso of days) {
         const keysToUse = getKeysToUse(pk, info.roleVisible);
@@ -148,4 +168,3 @@ export function aggregateReports(
     }
   );
 }
-

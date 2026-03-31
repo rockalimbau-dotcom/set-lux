@@ -79,7 +79,7 @@ export function isRoleInCondiciones(roleCode: string, rolesInCondiciones: Set<st
 /**
  * Get visible role for a role code and name
  */
-export function visibleRoleFor(roleCode: string, name: string, refuerzoSet: Set<string>): string {
+export function visibleRoleFor(roleCode: string, name: string, refuerzoSet: Set<string>, source?: string): string {
   // Si el rol empieza con "REF" (REFG, REFBB, etc.), tratarlo como refuerzo
   if (roleCode && roleCode.startsWith('REF') && roleCode.length > 3) {
     return 'REF';
@@ -87,6 +87,7 @@ export function visibleRoleFor(roleCode: string, name: string, refuerzoSet: Set<
   const base = stripRoleSuffix(roleCode || '');
   const keyNoPR = `${base}__${name || ''}`;
   if (refuerzoSet.has(keyNoPR)) return 'REF';
+  if (source === 'base') return base;
   const suffix = hasRoleGroupSuffix(roleCode || '') ? roleCode.slice(-1) : '';
   return suffix ? `${base}${suffix}` : base;
 }
@@ -118,4 +119,3 @@ export const ROLE_ORDER: Record<string, number> = {
   // EQUIPO RECOGIDA
   GR: 17, BBR: 18, ER: 19, TMR: 20, FBR: 21, AUXR: 22, MR: 23, RIGR: 24
 };
-
