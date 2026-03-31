@@ -67,10 +67,6 @@ export interface AutoResult {
 
 export interface AutoByDate {
   [iso: string]: {
-    base: AutoResult;
-    pre: AutoResult;
-    pick: AutoResult;
-    extra: AutoResult;
+    [block: string]: AutoResult;
   };
 }
-

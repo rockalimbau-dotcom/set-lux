@@ -14,6 +14,10 @@ export function buildReportWeekHTMLForPDF({
   dayNameFromISO,
   toDisplayDate,
   horarioTexto,
+  horarioPrelight,
+  horarioPickup,
+  horarioExtraByBlock,
+  groupedPersonKeys,
   CONCEPTS,
   data,
 }: Omit<BuildReportWeekHTMLParams, 'personaKey' | 'personaRole' | 'personaName'>): string {
@@ -27,9 +31,17 @@ export function buildReportWeekHTMLForPDF({
   // IMPORTANTE: Si data tiene bloques pre-agrupados (desde exportReportRangeToPDF),
   // usar esos bloques directamente para respetar la paginación por bloques
   let personsByBlock: { base: string[]; extra: string[]; pre: string[]; pick: string[] };
-  let finalPersonKeys: string[];
+  let extraGroups: Array<{ blockKey: string; people: string[] }>;
   
-  if ((data as any).__blocks) {
+  if (groupedPersonKeys) {
+    personsByBlock = {
+      base: groupedPersonKeys.base || [],
+      extra: groupedPersonKeys.extraGroups.flatMap(group => group.people),
+      pre: groupedPersonKeys.pre || [],
+      pick: groupedPersonKeys.pick || [],
+    };
+    extraGroups = groupedPersonKeys.extraGroups || [];
+  } else if ((data as any).__blocks) {
     // Usar bloques pre-agrupados de la paginación
     const rawBlocks = (data as any).__blocks || {};
     personsByBlock = {
@@ -38,14 +50,17 @@ export function buildReportWeekHTMLForPDF({
       pre: rawBlocks.pre || [],
       pick: rawBlocks.pick || [],
     };
-    finalPersonKeys = [...personsByBlock.base, ...personsByBlock.extra, ...personsByBlock.pre, ...personsByBlock.pick];
+    const grouped = groupAndSortPersonsByBlock(finalData, true);
+    extraGroups = grouped.extraGroups.filter(group =>
+      group.people.some(pk => personsByBlock.extra.includes(pk))
+    );
     // Eliminar la propiedad especial del finalData para no afectar el procesamiento
     delete finalData.__blocks;
   } else {
     // Agrupar normalmente
     const grouped = groupAndSortPersonsByBlock(finalData);
     personsByBlock = grouped.personsByBlock;
-    finalPersonKeys = grouped.finalPersonKeys;
+    extraGroups = grouped.extraGroups;
   }
 
 
@@ -65,7 +80,17 @@ export function buildReportWeekHTMLForPDF({
   const headHorario = generateScheduleHeader(safeSemanaWithData, horarioTexto);
 
   // Generate body grouped by blocks
-  const body = generateBodyByBlocks(personsByBlock, safeSemanaWithData, conceptosConDatos, finalData, genderMap);
+  const body = generateBodyByBlocks(
+    personsByBlock,
+    extraGroups,
+    safeSemanaWithData,
+    conceptosConDatos,
+    finalData,
+    genderMap,
+    horarioPrelight,
+    horarioPickup,
+    horarioExtraByBlock
+  );
 
   // Generate HTML
   const html = `<!DOCTYPE html>

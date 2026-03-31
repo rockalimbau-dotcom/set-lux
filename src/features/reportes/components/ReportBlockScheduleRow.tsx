@@ -14,15 +14,15 @@ function ReportBlockScheduleRow({ label, semana, valueForISO }: Props) {
   const values = useMemo(() => semana.map(iso => valueForISO(iso)), [semana, valueForISO]);
   
   // Translate label if it matches known patterns
-  const translatedLabel = label === 'Horario Prelight' 
+  const translatedLabel = label === 'Horario Prelight' || label === 'Horario Equipo Prelight'
     ? t('reports.prelightSchedule')
-    : label === 'Horario Recogida'
+    : label === 'Horario Recogida' || label === 'Horario Equipo Recogida'
     ? t('reports.pickupSchedule')
     : label;
   
   return (
     <tr className='schedule-row'>
-      <Td className='whitespace-nowrap align-middle bg-white/5' align='middle'>
+      <Td className='whitespace-nowrap align-middle bg-white/5 report-sticky-first-col' align='middle'>
         <div className='text-[9px] sm:text-[10px] md:text-xs lg:text-sm font-semibold text-zinc-200 flex items-center'>{translatedLabel}</div>
       </Td>
       {semana.map((iso, i) => (

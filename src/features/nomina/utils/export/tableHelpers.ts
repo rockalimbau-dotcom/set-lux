@@ -7,8 +7,10 @@ import { esc, displayValue, displayMoney, generateWorkedDaysText, generateExtras
  */
 export const generateHeaderCells = (
   columnVisibility: ReturnType<typeof getColumnVisibility>,
-  projectMode: 'semanal' | 'mensual' | 'diario' = 'semanal'
+  projectMode: 'semanal' | 'mensual' | 'diario' = 'semanal',
+  options: { forPDF?: boolean } = {}
 ): string[] => {
+  const { forPDF = false } = options;
   const useJornadasLabels = projectMode === 'semanal' || projectMode === 'diario';
   const workedLabel = useJornadasLabels ? i18n.t('payroll.workedShifts') : i18n.t('payroll.workedDays');
   const totalWorkedLabel = useJornadasLabels ? i18n.t('payroll.totalShifts') : i18n.t('payroll.totalDays');
@@ -18,11 +20,23 @@ export const generateHeaderCells = (
     projectMode === 'diario'
       ? i18n.t('payroll.totalLocalizacionTecnicaShifts')
       : i18n.t('payroll.totalLocalizacionTecnica');
+  const workedStyle = forPDF
+    ? 'text-align:center !important;vertical-align:middle !important;white-space:normal !important;'
+    : `text-align:center !important;vertical-align:middle !important;white-space:nowrap !important;min-width:${useJornadasLabels ? '190px' : 'auto'};`;
+  const totalWorkedStyle = forPDF
+    ? 'text-align:center !important;vertical-align:middle !important;white-space:normal !important;'
+    : `text-align:center !important;vertical-align:middle !important;white-space:nowrap !important;min-width:${useJornadasLabels ? '160px' : 'auto'};`;
+  const localizacionStyle = forPDF
+    ? 'text-align:center !important;vertical-align:middle !important;white-space:normal !important;'
+    : `text-align:center !important;vertical-align:middle !important;white-space:nowrap !important;min-width:${projectMode === 'diario' ? '240px' : 'auto'};`;
+  const totalLocalizacionStyle = forPDF
+    ? 'text-align:center !important;vertical-align:middle !important;white-space:normal !important;'
+    : `text-align:center !important;vertical-align:middle !important;white-space:nowrap !important;min-width:${projectMode === 'diario' ? '290px' : 'auto'};`;
 
   const headerCells = [
     `<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.person')}</th>`,
-    `<th style="text-align:center !important;vertical-align:middle !important;">${workedLabel}</th>`,
-    `<th style="text-align:center !important;vertical-align:middle !important;">${totalWorkedLabel}</th>`,
+    `<th style="${workedStyle}">${workedLabel}</th>`,
+    `<th style="${totalWorkedStyle}">${totalWorkedLabel}</th>`,
   ];
 
   if (columnVisibility.halfDays) {
@@ -31,8 +45,8 @@ export const generateHeaderCells = (
   }
 
   if (columnVisibility.localizacion) {
-    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;">${localizacionLabel}</th>`);
-    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;">${totalLocalizacionLabel}</th>`);
+    headerCells.push(`<th style="${localizacionStyle}">${localizacionLabel}</th>`);
+    headerCells.push(`<th style="${totalLocalizacionStyle}">${totalLocalizacionLabel}</th>`);
   }
 
   if (columnVisibility.cargaDescarga) {

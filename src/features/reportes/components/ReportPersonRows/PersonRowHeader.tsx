@@ -78,7 +78,7 @@ export function PersonRowHeader({
 
   return (
     <tr>
-      <Td className='whitespace-nowrap align-middle' scope='row'>
+      <Td className='whitespace-nowrap align-middle report-sticky-first-col' scope='row'>
         <div className='flex items-center gap-1 sm:gap-1.5 md:gap-2'>
           <button
             onClick={() => !readOnly && setCollapsed(c => ({ ...c, [pKey]: !c[pKey] }))}
@@ -127,4 +127,3 @@ export function PersonRowHeader({
     </tr>
   );
 }
-

@@ -8,6 +8,7 @@ import {
   getDays,
   translateLocationValue,
 } from '../helpers';
+import { normalizeExtraBlocks } from '@shared/utils/extraBlocks';
 
 /**
  * Render cell content
@@ -128,6 +129,40 @@ function listRowWithSchedule(
   return `<tr><td style="border:1px solid #999;padding:6px;font-weight:600;background:#f8fafc;">${esc(label)}</td>${tds}</tr>`;
 }
 
+function extraBlocksRow(
+  label: string,
+  DAYS: ReturnType<typeof getDays>,
+  valuesByDay: DayValues[]
+): string {
+  const tds = DAYS.map((_, i) => {
+    const blocks = normalizeExtraBlocks(valuesByDay[i] || {});
+    const content = blocks
+      .map(block => {
+        const scheduleLine = [block.tipo, block.start || block.end ? `${block.start}${block.start && block.end ? ' - ' : ''}${block.end}` : '']
+          .filter(Boolean)
+          .join(' | ');
+        const header = scheduleLine
+          ? `<div style="margin-bottom:6px;font-weight:600;">${esc(scheduleLine)}</div>`
+          : '';
+        const chips = (block.list || [])
+          .map(m => {
+            const role = (m?.role || '').toUpperCase();
+            const badgeDisplay = applyGenderToBadge(getRoleBadgeCode(role, i18n.language), m?.gender);
+            const name = m?.name || '';
+            return `<div>• ${esc(badgeDisplay ? `${badgeDisplay}: ` : '')}${esc(name)}</div>`;
+          })
+          .join('');
+        const notes = block.text || '';
+        return `<div style="padding:6px 0;${header || chips || notes ? '' : 'min-height:18px;'}">
+          ${header}${chips}${notes ? `<hr style="margin:6px 0;border:none;border-top:1px solid #ddd;"/>${renderCell(notes)}` : ''}
+        </div>`;
+      })
+      .join('<div style="border-top:1px dashed #ddd;"></div>');
+    return `<td style="border:1px solid #999;padding:6px;vertical-align:top;">${content || renderCell('')}</td>`;
+  }).join('');
+  return `<tr><td style="border:1px solid #999;padding:6px;font-weight:600;background:#f8fafc;">${esc(label)}</td>${tds}</tr>`;
+}
+
 function fieldRowWithTime(
   key: string,
   timeKey: string,
@@ -158,6 +193,9 @@ function isFieldRowEmpty(key: string, valuesByDay: DayValues[]): boolean {
  * Check if a list row is empty (all days have empty lists and notes)
  */
 function isListRowEmpty(listKey: string, notesKey: string, valuesByDay: DayValues[]): boolean {
+  if (listKey === 'refList') {
+    return valuesByDay.every(day => normalizeExtraBlocks(day || {}).length === 0);
+  }
   return valuesByDay.every(day => {
     const list = Array.isArray(day[listKey]) ? day[listKey] : [];
     const notes = day[notesKey] || '';
@@ -218,16 +256,7 @@ export function generateTableBody(
     {
       key: 'refList',
       generate: () =>
-        listRowWithSchedule(
-          i18n.t('needs.reinforcements'),
-          'refList',
-          'refTxt',
-          'refTipo',
-          'refStart',
-          'refEnd',
-          DAYS,
-          valuesByDay
-        ),
+        extraBlocksRow(i18n.t('needs.reinforcements'), DAYS, valuesByDay),
       isEmpty: () => isListRowEmpty('refList', 'refTxt', valuesByDay),
     },
     { key: 'needTransport', generate: () => fieldRow('needTransport', i18n.t('needs.transport'), DAYS, valuesByDay), isEmpty: () => isFieldRowEmpty('needTransport', valuesByDay) },

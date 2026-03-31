@@ -22,6 +22,7 @@ export function useRowSelection({ persistKey, rowKeys }: UseRowSelectionProps) {
 
   // Inicializar todas las filas como seleccionadas solo si no hay selección guardada y hay filas
   const hasInitializedRef = useRef(false);
+  const knownRowKeysRef = useRef<string[]>([]);
   useEffect(() => {
     if (!hasInitializedRef.current && selectedRowsArray.length === 0 && rowKeys.length > 0) {
       setSelectedRowsArray([...rowKeys]);
@@ -29,14 +30,20 @@ export function useRowSelection({ persistKey, rowKeys }: UseRowSelectionProps) {
     } else if (rowKeys.length > 0 && !hasInitializedRef.current) {
       hasInitializedRef.current = true;
     }
+    if (rowKeys.length > 0) {
+      knownRowKeysRef.current = rowKeys;
+    }
   }, [rowKeys.length, selectedRowsArray.length, setSelectedRowsArray, rowKeys]);
 
   // Si aparecen nuevas filas (p.ej. nuevas claves de exportación), añadirlas por defecto
   useEffect(() => {
     if (rowKeys.length === 0) return;
-    const missing = rowKeys.filter(key => !selectedRowsArray.includes(key));
-    if (missing.length === 0) return;
-    setSelectedRowsArray([...selectedRowsArray, ...missing]);
+    const previousRowKeys = knownRowKeysRef.current;
+    const newRowKeys = rowKeys.filter(key => !previousRowKeys.includes(key));
+    const missingNewKeys = newRowKeys.filter(key => !selectedRowsArray.includes(key));
+    knownRowKeysRef.current = rowKeys;
+    if (missingNewKeys.length === 0) return;
+    setSelectedRowsArray([...selectedRowsArray, ...missingNewKeys]);
   }, [rowKeys, selectedRowsArray, setSelectedRowsArray]);
 
   const toggleRowSelection = (rowKey: string) => {

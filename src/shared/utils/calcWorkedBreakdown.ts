@@ -1,6 +1,7 @@
 import { weekISOdays } from '@features/nomina/utils/plan';
 import { hasRoleGroupSuffix, stripRoleSuffix } from '@shared/constants/roles';
 import { norm, nameEq as nameEqUtil } from './normalize';
+import { normalizeExtraBlocks } from './extraBlocks';
 
 export interface WorkedBreakdownResult {
   workedDays: number;
@@ -34,7 +35,7 @@ export interface WorkedBreakdownResult {
 export function calcWorkedBreakdown(
   weeks: any[],
   filterISO: (iso: string) => boolean,
-  person: { role: string; name: string },
+  person: { role: string; name: string; source?: string },
   projectMode: 'semanal' | 'mensual' | 'publicidad' | 'diario' = 'semanal'
 ): WorkedBreakdownResult {
   const isWantedISO = filterISO || (() => true);
@@ -45,6 +46,7 @@ export function calcWorkedBreakdown(
       ? 'P'
       : 'R'
     : '';
+  const wantedSource = String(person.source || '').trim().toLowerCase();
   const wantedNameNorm = norm(person.name || '');
 
   let workedBase = 0;
@@ -79,6 +81,7 @@ export function calcWorkedBreakdown(
       const day = (w.days || [])[idx];
       const iso = isos[idx];
       if (!isWantedISO(iso)) continue;
+      let matchedExtraType = '';
       
       // Si encontramos "Fin" en el día principal, detener el conteo (no contar este día ni los siguientes)
       if ((day?.tipo || '') === 'Fin') {
@@ -107,9 +110,27 @@ export function calcWorkedBreakdown(
             return !m?.role || !wantedBase || mBase === wantedBase;
           });
 
-        const inTeam = matches(day?.team);
+        const extraBlocks = normalizeExtraBlocks(day);
+        const matchingExtraBlocks = extraBlocks.filter(block =>
+          (block?.list || []).some((m: any) => {
+            if (!nameEq(m?.name)) return false;
+            const mBase = stripRoleSuffix(String(m?.role || ''));
+            return !m?.role || !wantedBase || mBase === wantedBase;
+          })
+        );
+
+        const inTeam = (day?.team || []).some((m: any) => {
+          if (String(m?.source || '').trim().toLowerCase() === 'ref') return false;
+          if (!nameEq(m?.name)) return false;
+          const mBase = stripRoleSuffix(String(m?.role || ''));
+          return !m?.role || !wantedBase || mBase === wantedBase;
+        });
         const inPre = matches(day?.prelight);
         const inPick = matches(day?.pickup);
+        const inExtra = matchingExtraBlocks.length > 0;
+        matchedExtraType =
+          String(matchingExtraBlocks[0]?.tipo || '').trim() ||
+          String(day?.refTipo || '').trim();
 
         if (wantedSuffix === 'P') {
           isWorking = inPre;
@@ -117,10 +138,18 @@ export function calcWorkedBreakdown(
         } else if (wantedSuffix === 'R') {
           isWorking = inPick;
           activeSource = inPick ? 'pickup' : null;
+        } else if (wantedSource === 'ref') {
+          isWorking = inExtra;
+          activeSource = inExtra ? 'extra' : null;
+        } else if (wantedSource === 'base-strict') {
+          isWorking = inTeam || inExtra;
+          if (inExtra && !inTeam) activeSource = 'extra';
+          else if (inTeam) activeSource = 'team';
         } else {
-          isWorking = inTeam || inPre || inPick;
+          isWorking = inTeam || inPre || inPick || inExtra;
           if (inPre) activeSource = 'prelight';
           else if (inPick) activeSource = 'pickup';
+          else if (inExtra && !inTeam) activeSource = 'extra';
           else if (inTeam) activeSource = 'team';
         }
       }
@@ -133,6 +162,8 @@ export function calcWorkedBreakdown(
         dayTypeForSkip = day.prelightTipo;
       } else if (wantedSuffix === 'R' && day?.pickupTipo) {
         dayTypeForSkip = day.pickupTipo;
+      } else if ((wantedSource === 'ref' || activeSource === 'extra') && matchedExtraType) {
+        dayTypeForSkip = matchedExtraType;
       } else if (activeSource === 'prelight' && day?.prelightTipo) {
         dayTypeForSkip = day.prelightTipo;
       } else if (activeSource === 'pickup' && day?.pickupTipo) {
@@ -151,6 +182,8 @@ export function calcWorkedBreakdown(
         dayType = day.prelightTipo;
       } else if (wantedSuffix === 'R' && day?.pickupTipo) {
         dayType = day.pickupTipo;
+      } else if ((wantedSource === 'ref' || activeSource === 'extra') && matchedExtraType) {
+        dayType = matchedExtraType;
       } else if (activeSource === 'prelight' && day?.prelightTipo) {
         dayType = day.prelightTipo;
       } else if (activeSource === 'pickup' && day?.pickupTipo) {

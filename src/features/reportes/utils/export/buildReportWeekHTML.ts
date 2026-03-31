@@ -10,30 +10,32 @@ import {
   sortPersonKeysByRole,
   isMeaningfulValue,
 } from './dataHelpers';
+import { groupAndSortPersonsByBlock } from './buildReportWeekHTMLForPDF/sortingHelpers';
 
 function parsePersonKeyForDisplay(pk: string): { role: string; name: string } {
   let role = '';
   let name = '';
-  if (pk.includes('.pre__')) {
+  const extraMatch = pk.match(/^(.*?)\.(extra(?::\d+)?)__(.*)$/);
+  if (extraMatch) {
+    role = extraMatch[1] || '';
+    name = extraMatch[3] || '';
+    if (role.startsWith('REF')) {
+      role = stripRefuerzoSuffix(role);
+    }
+  } else if (pk.includes('.pre__')) {
     const [rolePart, ...nameParts] = pk.split('.pre__');
     role = rolePart || '';
     name = nameParts.join('.pre__');
-    const isRefuerzo = role.startsWith('REF');
-    if (!isRefuerzo) {
-      role = `${role}P`;
+    if (role.startsWith('REF')) {
+      role = stripRefuerzoSuffix(role);
     }
   } else if (pk.includes('.pick__')) {
     const [rolePart, ...nameParts] = pk.split('.pick__');
     role = rolePart || '';
     name = nameParts.join('.pick__');
-    const isRefuerzo = role.startsWith('REF');
-    if (!isRefuerzo) {
-      role = `${role}R`;
+    if (role.startsWith('REF')) {
+      role = stripRefuerzoSuffix(role);
     }
-  } else if (pk.includes('.extra__')) {
-    const [rolePart, ...nameParts] = pk.split('.extra__');
-    role = rolePart || '';
-    name = nameParts.join('.extra__');
   } else {
     const [rolePart, ...nameParts] = pk.split('__');
     role = rolePart || '';
@@ -52,6 +54,10 @@ export function buildReportWeekHTML({
   dayNameFromISO,
   toDisplayDate,
   horarioTexto,
+  horarioPrelight,
+  horarioPickup,
+  horarioExtraByBlock,
+  groupedPersonKeys,
   CONCEPTS,
   data,
 }: BuildReportWeekHTMLParams): string {
@@ -73,7 +79,23 @@ export function buildReportWeekHTML({
     );
   });
   const conceptosConDatos = [...CONCEPTS];
-  const finalPersonKeys = sortedPersonKeys;
+  const grouped = groupedPersonKeys
+    ? {
+        personsByBlock: {
+          base: groupedPersonKeys.base || [],
+          extra: groupedPersonKeys.extraGroups.flatMap(group => group.people),
+          pre: groupedPersonKeys.pre || [],
+          pick: groupedPersonKeys.pick || [],
+        },
+        extraGroups: groupedPersonKeys.extraGroups || [],
+        finalPersonKeys: [
+          ...(groupedPersonKeys.base || []),
+          ...groupedPersonKeys.extraGroups.flatMap(group => group.people),
+          ...(groupedPersonKeys.pre || []),
+          ...(groupedPersonKeys.pick || []),
+        ],
+      }
+    : groupAndSortPersonsByBlock(finalData);
 
   // Generate table headers
   const headDays = `
@@ -104,9 +126,18 @@ export function buildReportWeekHTML({
         <th style="border:1px solid #999;padding:6px;text-align:left;background:#1e40af;color:#fff;">${esc(getTranslation('reports.week', 'Semana'))}</th>
       </tr>`;
 
-  // Generate body rows
-  const body = finalPersonKeys
-    .map(pk => {
+  const generateScheduleRow = (label: string, valueForISO: (iso: string) => string) => `
+        <tr>
+          <td style="border:1px solid #999;padding:6px;font-weight:700;background:#f8fafc;">${esc(label)}</td>
+          ${safeSemanaWithData
+            .map(iso => `<td style="border:1px solid #999;padding:6px;font-weight:700;background:#fff8e8;">${esc(valueForISO(iso))}</td>`)
+            .join('')}
+          <td style="border:1px solid #999;padding:6px;">&nbsp;</td>
+        </tr>`;
+
+  const renderPersonBlock = (keys: string[]) =>
+    keys
+      .map(pk => {
       const { role, name } = parsePersonKeyForDisplay(String(pk));
 
       // Skip entries with empty or invalid roles/names
@@ -134,7 +165,6 @@ export function buildReportWeekHTML({
 
       const rows = conceptosConDatos
         .filter(c => {
-          if (c === 'Dietas') return true;
           // Only show concepts that have meaningful data for this person
           return safeSemanaWithData.some(iso => {
             const value = finalData?.[pk]?.[c]?.[iso];
@@ -195,9 +225,43 @@ export function buildReportWeekHTML({
         })
         .join('');
 
-      return head + rows;
-    })
-    .join('');
+        return head + rows;
+      })
+      .join('');
+
+  const bodyParts: string[] = [];
+  bodyParts.push(renderPersonBlock(grouped.personsByBlock.base));
+  grouped.extraGroups.forEach(group => {
+    if (typeof horarioExtraByBlock === 'function') {
+      bodyParts.push(
+        generateScheduleRow(
+          getTranslation('reports.extraSchedule', 'Equipo extra / Dif horarios'),
+          iso => horarioExtraByBlock(group.blockKey, iso)
+        )
+      );
+    }
+    bodyParts.push(renderPersonBlock(group.people));
+  });
+  if (grouped.personsByBlock.pre.length > 0 && typeof horarioPrelight === 'function') {
+    bodyParts.push(
+      generateScheduleRow(
+        getTranslation('reports.prelightSchedule', 'Horario Equipo Prelight'),
+        horarioPrelight
+      )
+    );
+  }
+  bodyParts.push(renderPersonBlock(grouped.personsByBlock.pre));
+  if (grouped.personsByBlock.pick.length > 0 && typeof horarioPickup === 'function') {
+    bodyParts.push(
+      generateScheduleRow(
+        getTranslation('reports.pickupSchedule', 'Horario Equipo Recogida'),
+        horarioPickup
+      )
+    );
+  }
+  bodyParts.push(renderPersonBlock(grouped.personsByBlock.pick));
+
+  const body = bodyParts.join('');
 
   // Generate HTML
   const html = `<!DOCTYPE html>
@@ -215,13 +279,46 @@ export function buildReportWeekHTML({
       font-size: 12px;
     }
     .container { max-width: 100%; margin: 0 auto; background: white; min-height: 100vh; display: flex; flex-direction: column; padding-bottom: 0; position: relative; }
-    .header { background: linear-gradient(135deg, #f97316 0%, #3b82f6 100%); color: white; padding: 12px 20px; text-align: center; flex-shrink: 0; }
-    .header h1 { margin: 0; font-size: 16px; font-weight: 700; letter-spacing: -0.5px; }
+    .header { background: white; color: #0f172a; flex-shrink: 0; }
+    .title-bar {
+      background: linear-gradient(135deg, #f97316 0%, #3b82f6 100%);
+      color: #ffffff;
+      padding: 10px 20px;
+      text-align: center;
+    }
+    .title-text {
+      font-size: 16px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.2px;
+    }
     .content { padding: 12px 20px; flex: 1; margin-bottom: 0; }
-    .info-panel { background: #f1f5f9; padding: 8px 12px; border-radius: 6px; margin-bottom: 12px; display: flex; gap: 24px; align-items: center; }
-    .info-item { display: flex; flex-direction: column; align-items: flex-start; }
-    .info-label { font-size: 9px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
-    .info-value { font-size: 11px; color: #1e293b; font-weight: 500; }
+    .info-panel {
+      background: #f1f5f9;
+      margin: 10px 0 6px 0;
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+    }
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px 18px;
+    }
+    .info-grid-secondary { margin-top: 18px; }
+    .info-column { display: grid; gap: 4px; }
+    .info-column-right { text-align: right; align-items: flex-end; justify-self: end; }
+    .info-row {
+      display: flex;
+      gap: 6px;
+      align-items: baseline;
+      flex-wrap: wrap;
+      font-size: 10px;
+      color: #334155;
+    }
+    .info-row-right { justify-content: flex-end; text-align: right; }
+    .info-label { font-weight: 700; color: #1f2937; }
+    .info-value { font-weight: 500; color: #0f172a; }
     .week-title { font-size: 14px; font-weight: 600; color: #1e293b; margin: 12px 0 8px 0; padding: 4px 0; border-bottom: 1px solid #e2e8f0; }
     .table-container { background: white; border-radius: 6px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
     table { width: 100%; border-collapse: collapse; font-size: 10px; border: 2px solid #1e3a8a; }
@@ -268,17 +365,33 @@ export function buildReportWeekHTML({
 <body>
   <div class="container">
     <div class="header">
-      <h1>${esc(getTranslation('reports.reports', 'Reportes'))} - ${title?.includes('-') ? esc(getTranslation('planning.preproduction', 'Preproducción')) : title?.match(/\d+/) ? esc(getTranslation('planning.production', 'Producción')) : esc(getTranslation('reports.week', 'Semana'))}</h1>
+      <div class="title-bar">
+        <div class="title-text">${esc(getTranslation('pdf.reportsTitle', 'REPORTES ELÉCTRICOS'))}</div>
+      </div>
     </div>
     <div class="content">
       <div class="info-panel">
-        <div class="info-item">
-          <div class="info-label">${esc(getTranslation('common.productionLabel', 'Producción'))}</div>
-          <div class="info-value">${esc(project?.produccion || '—')}</div>
-        </div>
-        <div class="info-item">
-          <div class="info-label">${esc(getTranslation('common.project', 'Proyecto'))}</div>
-          <div class="info-value">${esc(project?.nombre || getTranslation('common.project', 'Proyecto'))}</div>
+        <div class="info-grid info-grid-top">
+          <div class="info-row">
+            <span class="info-label">${esc(getTranslation('pdf.production', 'Producción'))}:</span>
+            <span class="info-value">${esc(project?.productora || project?.produccion || '')}</span>
+          </div>
+          <div class="info-row info-row-right">
+            <span class="info-label">${esc(getTranslation('pdf.dop', 'DoP'))}:</span>
+            <span class="info-value">${esc(project?.dop || '')}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">${esc(getTranslation('pdf.project', 'Proyecto'))}:</span>
+            <span class="info-value">${esc(project?.nombre || getTranslation('common.project', 'Proyecto'))}</span>
+          </div>
+          <div class="info-row info-row-right">
+            <span class="info-label">${esc(getTranslation('pdf.gaffer', 'Gaffer'))}:</span>
+            <span class="info-value">${esc((project as any)?.gaffer || '')}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">${esc(getTranslation('pdf.warehouse', 'Almacén'))}:</span>
+            <span class="info-value">${esc(project?.almacen || '')}</span>
+          </div>
         </div>
       </div>
       <div class="week-title">${esc(title || getTranslation('reports.week', 'Semana'))}</div>
@@ -306,4 +419,3 @@ export function buildReportWeekHTML({
 
   return html;
 }
-

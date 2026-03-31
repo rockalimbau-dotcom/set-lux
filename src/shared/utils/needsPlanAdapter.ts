@@ -1,5 +1,6 @@
 import { AnyRecord } from '@shared/types/common';
 import { hasRoleGroupSuffix } from '@shared/constants/roles';
+import { flattenExtraBlockMembers, normalizeExtraBlocks } from './extraBlocks';
 
 type AnyDay = AnyRecord & { [key: string]: any };
 type AnyWeek = AnyRecord & { days?: any };
@@ -40,9 +41,11 @@ const withRoleSuffix = (list: any[], suffix: 'P' | 'R') => {
 
 export const needsDayToPlanDay = (day: AnyDay): AnyDay => {
   const crewList = withSource(day.crewList, 'base');
-  const refList = withSource(day.refList, 'ref');
+  const refBlocks = normalizeExtraBlocks(day);
+  const refList = withSource(flattenExtraBlockMembers(refBlocks), 'ref');
   const preList = withRoleSuffix(withSource(day.preList, 'pre'), 'P');
   const pickList = withRoleSuffix(withSource(day.pickList, 'pick'), 'R');
+  const firstExtraBlock = refBlocks[0];
   return {
     ...day,
     tipo: day?.crewTipo ?? day?.tipo ?? '',
@@ -54,8 +57,10 @@ export const needsDayToPlanDay = (day: AnyDay): AnyDay => {
     crewEnd: day?.crewEnd ?? day?.end ?? '',
     start: day?.crewStart ?? day?.start ?? '',
     end: day?.crewEnd ?? day?.end ?? '',
-    refStart: day?.refStart ?? '',
-    refEnd: day?.refEnd ?? '',
+    refBlocks,
+    refStart: firstExtraBlock?.start ?? day?.refStart ?? '',
+    refEnd: firstExtraBlock?.end ?? day?.refEnd ?? '',
+    refTipo: firstExtraBlock?.tipo ?? day?.refTipo ?? '',
     preStart: day?.preStart ?? day?.prelightStart ?? '',
     preEnd: day?.preEnd ?? day?.prelightEnd ?? '',
     pickStart: day?.pickStart ?? day?.pickupStart ?? '',

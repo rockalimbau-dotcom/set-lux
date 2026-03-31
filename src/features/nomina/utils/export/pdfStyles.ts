@@ -194,6 +194,7 @@ export const PDF_STYLES = `
     table {
       width: 100%;
       border-collapse: collapse;
+      table-layout: fixed;
       font-size: 10px;
       border: 2px solid #1e3a8a;
     }
@@ -211,6 +212,8 @@ export const PDF_STYLES = `
       height: 40px !important;
       line-height: 1.2 !important;
       display: table-cell !important;
+      word-break: break-word !important;
+      overflow-wrap: anywhere !important;
     }
     
     thead th {
@@ -221,12 +224,14 @@ export const PDF_STYLES = `
     }
     
     td {
-      padding: 6px 6px;
+      padding: 5px 4px;
       border: 1px solid #999;
       background: white;
       vertical-align: middle !important;
       text-align: center !important;
       color: #1e293b;
+      word-break: break-word;
+      overflow-wrap: anywhere;
     }
     
     td.text-right {

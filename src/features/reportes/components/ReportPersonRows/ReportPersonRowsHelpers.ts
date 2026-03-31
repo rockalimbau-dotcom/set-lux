@@ -50,11 +50,11 @@ export const personaKeyFrom = (
   if (role === 'REF' || (role && role.startsWith('REF') && role.length > 3)) {
     if (block === 'pre') pLike.__block = 'pre';
     if (block === 'pick') pLike.__block = 'pick';
-    if (block === 'extra') pLike.__block = 'extra';
+    if (String(block).startsWith('extra')) pLike.__block = block;
   } else {
     if (block === 'pre') pLike.__block = 'pre';
     if (block === 'pick') pLike.__block = 'pick';
-    if (block === 'extra') pLike.__block = 'extra';
+    if (String(block).startsWith('extra')) pLike.__block = block;
   }
   return buildPersonaKey(pLike);
 };
@@ -154,4 +154,3 @@ export const calculateTotal = (
   
   return total > 0 ? total : '';
 };
-

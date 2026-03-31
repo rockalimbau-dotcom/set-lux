@@ -9,6 +9,15 @@ interface UseReportExportProps {
   title: string;
   safeSemana: string[];
   horarioTexto: (iso: string) => string;
+  horarioPrelight: (iso: string) => string;
+  horarioPickup: (iso: string) => string;
+  horarioExtraByBlock: (blockKey: string, iso: string) => string;
+  groupedPersonKeys: {
+    base: string[];
+    pre: string[];
+    pick: string[];
+    extraGroups: Array<{ blockKey: string; people: string[] }>;
+  };
   data: AnyRecord;
   onExportWeekHTML?: () => void;
   onExportWeekPDF?: () => void;
@@ -27,6 +36,10 @@ export function useReportExport({
   title,
   safeSemana,
   horarioTexto,
+  horarioPrelight,
+  horarioPickup,
+  horarioExtraByBlock,
+  groupedPersonKeys,
   data,
   onExportWeekHTML,
   onExportWeekPDF,
@@ -44,6 +57,10 @@ export function useReportExport({
       safeSemana,
       dayNameFromISOFn,
       horarioTexto,
+      horarioPrelight,
+      horarioPickup,
+      horarioExtraByBlock,
+      groupedPersonKeys,
       data
     );
   };
@@ -55,6 +72,10 @@ export function useReportExport({
       safeSemana,
       dayNameFromISOFn,
       horarioTexto,
+      horarioPrelight,
+      horarioPickup,
+      horarioExtraByBlock,
+      groupedPersonKeys,
       data,
       onExportWeekPDF,
       () => defaultExportWeek(
@@ -63,6 +84,10 @@ export function useReportExport({
         safeSemana,
         dayNameFromISOFn,
         horarioTexto,
+        horarioPrelight,
+        horarioPickup,
+        horarioExtraByBlock,
+        groupedPersonKeys,
         data
       )
     );
@@ -70,4 +95,3 @@ export function useReportExport({
 
   return { handleExportHTML, handleExportPDFAsync };
 }
-

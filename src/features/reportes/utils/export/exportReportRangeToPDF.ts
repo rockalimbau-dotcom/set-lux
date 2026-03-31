@@ -14,6 +14,7 @@ import { norm } from '../text';
 import html2canvas from 'html2canvas';
 import { shareOrSavePDF } from '@shared/utils/pdfShare';
 import { needsDataToPlanData } from '@shared/utils/needsPlanAdapter';
+import { hasExtraBlockContent } from '../extra';
 
 export async function exportReportRangeToPDF(params: ExportReportRangeParams) {
   const {
@@ -176,7 +177,7 @@ export async function exportReportRangeToPDF(params: ExportReportRangeParams) {
         return !!(
           day &&
           day.tipo !== 'Descanso' &&
-          (getDayBlockList(day, BLOCKS.extra).length > 0 || day.refStart || day.refEnd)
+          (getDayBlockList(day, BLOCKS.extra).length > 0 || hasExtraBlockContent(day) || day.refStart || day.refEnd)
         );
       });
 

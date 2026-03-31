@@ -15,7 +15,7 @@ export function buildNominaMonthHTMLForPDF({
 }: BuildNominaMonthHTMLParams & { _currentPage?: number; _totalPages?: number }): string {
   const columnVisibility = getColumnVisibility(enrichedRows);
   const projectMode = project?.conditions?.tipo === 'mensual' ? 'mensual' : project?.conditions?.tipo === 'diario' ? 'diario' : 'semanal';
-  const headerCells = generateHeaderCells(columnVisibility, projectMode);
+  const headerCells = generateHeaderCells(columnVisibility, projectMode, { forPDF: true });
   const head = `<tr>${headerCells.join('')}</tr>`;
   const numColumns = headerCells.length;
 

@@ -91,11 +91,13 @@ export function findPrevISOForBlock(
  */
 export function determineRowBlock(
   pk: string,
-  explicitBlock?: 'pre' | 'pick' | 'extra'
-): 'base' | 'pre' | 'pick' | 'extra' {
+  explicitBlock?: 'pre' | 'pick' | 'extra' | string
+): 'base' | 'pre' | 'pick' | 'extra' | string {
   if (explicitBlock) return explicitBlock;
   if (/\.pre__/.test(pk) || /REF\.pre__/.test(pk)) return 'pre';
   if (/\.pick__/.test(pk) || /REF\.pick__/.test(pk)) return 'pick';
+  const dynamicExtraMatch = pk.match(/\.(extra(?::\d+)?)__/);
+  if (dynamicExtraMatch?.[1]) return dynamicExtraMatch[1];
   if (/\.extra__/.test(pk) || /REF\.extra__/.test(pk)) return 'extra';
   return 'base';
 }
@@ -105,13 +107,12 @@ export function determineRowBlock(
  */
 export function determineRoleForCheck(
   role: string,
-  rowBlock: 'base' | 'pre' | 'pick' | 'extra'
+  rowBlock: 'base' | 'pre' | 'pick' | 'extra' | string
 ): string {
   // Si el rol es REF o empieza con REF (REFG, REFBB, etc.), devolver 'REF'
   if (role === 'REF' || (role && role.startsWith('REF') && role.length > 3)) return 'REF';
   if (rowBlock === 'pre') return `${role}P`;
   if (rowBlock === 'pick') return `${role}R`;
-  if (rowBlock === 'extra') return role;
+  if (String(rowBlock).startsWith('extra')) return role;
   return role;
 }
-

@@ -69,90 +69,89 @@ export default function useAutoCalculations({
     const { baseHours, cortes, taD, taF } = normalizeParams(params);
     const autoByDate: AutoByDate = {};
 
+    const computeForISOAndBlock = (iso: string, block: string): AutoResult => {
+      const { day } = findWeekAndDay(iso) as WeekAndDay;
+      const { start, end } = getBlockWindow(day, block);
+      if (!start) return { extra: '', ta: '', noct: '' };
+
+      // Calcular horas extra
+      const extras = calculateHorasExtra({
+        start,
+        end,
+        iso,
+        baseHours,
+        cortes,
+        horasExtraTipo,
+        calcHorasExtraMin,
+        buildDateTime,
+      });
+      const extraStr = typeof extras === 'string' ? extras : extras > 0 ? String(extras) : '';
+
+      // Calcular Turn Around según el bloque
+      let taHours = 0;
+      if (block === 'base') {
+        taHours = computeBaseTurnAround(
+          iso,
+          start,
+          findWeekAndDay,
+          getBlockWindow,
+          buildDateTime,
+          findPrevWorkingContext,
+          params,
+          debugEnabled
+        );
+      } else if (block === 'pre') {
+        taHours = computePrelightTurnAround(
+          iso,
+          start,
+          findWeekAndDay,
+          getBlockWindow,
+          buildDateTime,
+          findPrevWorkingContext,
+          params
+        );
+      } else if (block === 'pick') {
+        taHours = computePickupTurnAround(
+          iso,
+          start,
+          findWeekAndDay,
+          getBlockWindow,
+          buildDateTime,
+          findPrevWorkingContext,
+          params,
+          debugEnabled
+        );
+      } else if (String(block).startsWith('extra')) {
+        taHours = computeExtraTurnAround(
+          iso,
+          start,
+          findWeekAndDay,
+          getBlockWindow,
+          buildDateTime,
+          findPrevWorkingContext,
+          params,
+          debugEnabled
+        );
+      }
+
+      // Calcular nocturnidad
+      const noct = end ? calculateNocturnidad(start, end, params) : false;
+      const noctStr = noct ? 'SI' : '';
+
+      return {
+        extra: extraStr,
+        ta: taHours > 0 ? String(taHours) : '',
+        noct: noctStr,
+      };
+    };
+
     // Calcular valores automáticos para cada día
     for (const iso of safeSemana as string[]) {
-      const { day } = findWeekAndDay(iso) as WeekAndDay;
-
-      const computeForBlock = (block: string): AutoResult => {
-        const { start, end } = getBlockWindow(day, block);
-        if (!start) return { extra: '', ta: '', noct: '' };
-
-        // Calcular horas extra
-        const extras = calculateHorasExtra({
-          start,
-          end,
-          iso,
-          baseHours,
-          cortes,
-          horasExtraTipo,
-          calcHorasExtraMin,
-          buildDateTime,
-        });
-        const extraStr = typeof extras === 'string' ? extras : extras > 0 ? String(extras) : '';
-
-        // Calcular Turn Around según el bloque
-        let taHours = 0;
-        if (block === 'base') {
-          taHours = computeBaseTurnAround(
-            iso,
-            start,
-            findWeekAndDay,
-            getBlockWindow,
-            buildDateTime,
-            findPrevWorkingContext,
-            params,
-            debugEnabled
-          );
-        } else if (block === 'pre') {
-          taHours = computePrelightTurnAround(
-            iso,
-            start,
-            findWeekAndDay,
-            getBlockWindow,
-            buildDateTime,
-            findPrevWorkingContext,
-            params
-          );
-        } else if (block === 'pick') {
-          taHours = computePickupTurnAround(
-            iso,
-            start,
-            findWeekAndDay,
-            getBlockWindow,
-            buildDateTime,
-            findPrevWorkingContext,
-            params,
-            debugEnabled
-          );
-        } else if (block === 'extra') {
-          taHours = computeExtraTurnAround(
-            iso,
-            start,
-            findWeekAndDay,
-            getBlockWindow,
-            buildDateTime,
-            findPrevWorkingContext,
-            params,
-            debugEnabled
-          );
-        }
-
-        // Calcular nocturnidad
-        const noct = end ? calculateNocturnidad(start, end, params) : false;
-        const noctStr = noct ? 'SI' : '';
-
-        return {
-          extra: extraStr,
-          ta: taHours > 0 ? String(taHours) : '',
-          noct: noctStr,
-        };
-      };
-
       autoByDate[iso] = {
-        base: computeForBlock('base'),
-        pre: computeForBlock('pre'),
-        pick: computeForBlock('pick'),
-        extra: computeForBlock('extra'),
+        base: computeForISOAndBlock(iso, 'base'),
+        pre: computeForISOAndBlock(iso, 'pre'),
+        pick: computeForISOAndBlock(iso, 'pick'),
+        extra: computeForISOAndBlock(iso, 'extra'),
       };
     }
 
@@ -179,6 +178,9 @@ export default function useAutoCalculations({
           const explicitBlock = ((p as any)?.__block as 'pre' | 'pick' | 'extra' | undefined) || undefined;
           const rowBlock = determineRowBlock(pk, explicitBlock);
 
+          if (autoByDate[iso] && !(rowBlock in autoByDate[iso])) {
+            (autoByDate[iso] as any)[rowBlock] = computeForISOAndBlock(iso, rowBlock);
+          }
           const auto = (autoByDate[iso] && (autoByDate[iso] as any)[rowBlock]) || {
             extra: '',
             ta: '',

@@ -171,10 +171,10 @@ export const deduplicateData = (data: any): any => {
       role = rolePart || '';
       name = nameParts.join('.pick__') || '';
       block = 'pick';
-    } else if (k.includes('.extra__')) {
-      const [rolePart, ...nameParts] = k.split('.extra__');
+    } else if (/\.extra(?::\d+)?__/.test(k)) {
+      const [rolePart, ...nameParts] = k.split(/\.extra(?::\d+)?__/);
       role = rolePart || '';
-      name = nameParts.join('.extra__') || '';
+      name = nameParts.join('') || '';
       block = 'extra';
     } else {
       const [rolePart, ...nameParts] = k.split('__');
@@ -195,8 +195,8 @@ export const deduplicateData = (data: any): any => {
     // Si es refuerzo, usar solo el nombre normalizado como clave de deduplicación
     const isRefuerzo = role === 'REF' || (role.startsWith('REF') && role.length > 3);
     const dedupKey = isRefuerzo 
-      ? `REF__${normalizedName}` // Todos los refuerzos se agrupan por nombre
-      : `${role}__${normalizedName}`; // Roles normales: rol + nombre
+      ? `REF.${block}__${normalizedName}` // Refuerzos se agrupan por nombre, pero respetando bloque
+      : `${role}.${block}__${normalizedName}`; // Roles normales: respetar bloque para no fusionar base/pre/pick/extra
     
     if (roleNameMap.has(dedupKey)) {
       // Duplicado encontrado
@@ -208,8 +208,8 @@ export const deduplicateData = (data: any): any => {
           ? originalKey.split('.pre__')[0]
           : originalKey.includes('.pick__')
           ? originalKey.split('.pick__')[0]
-          : originalKey.includes('.extra__')
-          ? originalKey.split('.extra__')[0]
+          : /\.extra(?::\d+)?__/.test(originalKey)
+          ? originalKey.split(/\.extra(?::\d+)?__/)[0]
           : originalKey.split('__')[0];
         
         // Si el original es REF genérico y este es código completo, reemplazar
@@ -288,8 +288,8 @@ export const sortPersonKeysByRole = (personKeys: string[]): string[] => {
       roleA = a.split('.pre__')[0];
     } else if (a.includes('.pick__')) {
       roleA = a.split('.pick__')[0];
-    } else if (a.includes('.extra__')) {
-      roleA = a.split('.extra__')[0];
+    } else if (/\.extra(?::\d+)?__/.test(a)) {
+      roleA = a.split(/\.extra(?::\d+)?__/)[0] || '';
     } else {
       roleA = a.split('__')[0];
     }
@@ -298,8 +298,8 @@ export const sortPersonKeysByRole = (personKeys: string[]): string[] => {
       roleB = b.split('.pre__')[0];
     } else if (b.includes('.pick__')) {
       roleB = b.split('.pick__')[0];
-    } else if (b.includes('.extra__')) {
-      roleB = b.split('.extra__')[0];
+    } else if (/\.extra(?::\d+)?__/.test(b)) {
+      roleB = b.split(/\.extra(?::\d+)?__/)[0] || '';
     } else {
       roleB = b.split('__')[0];
     }
@@ -321,8 +321,8 @@ export const sortPersonKeysByRole = (personKeys: string[]): string[] => {
         nameA = a.split('.pre__')[1] || '';
       } else if (a.includes('.pick__')) {
         nameA = a.split('.pick__')[1] || '';
-      } else if (a.includes('.extra__')) {
-        nameA = a.split('.extra__')[1] || '';
+      } else if (/\.extra(?::\d+)?__/.test(a)) {
+        nameA = a.split(/\.extra(?::\d+)?__/)[1] || '';
       } else {
         nameA = a.split('__').slice(1).join('__') || '';
       }
@@ -331,8 +331,8 @@ export const sortPersonKeysByRole = (personKeys: string[]): string[] => {
         nameB = b.split('.pre__')[1] || '';
       } else if (b.includes('.pick__')) {
         nameB = b.split('.pick__')[1] || '';
-      } else if (b.includes('.extra__')) {
-        nameB = b.split('.extra__')[1] || '';
+      } else if (/\.extra(?::\d+)?__/.test(b)) {
+        nameB = b.split(/\.extra(?::\d+)?__/)[1] || '';
       } else {
         nameB = b.split('__').slice(1).join('__') || '';
       }
@@ -388,4 +388,3 @@ export const isMeaningfulValue = (value: any): boolean => {
   if (trimmedValue === '0,0') return false;
   return true;
 };
-

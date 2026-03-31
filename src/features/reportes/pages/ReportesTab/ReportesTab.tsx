@@ -114,6 +114,12 @@ export default function ReportesTab({ project, mode = 'semanal', readOnly = fals
 
   return (
     <div className='space-y-2 sm:space-y-3 md:space-y-4 lg:space-y-6'>
+      <div className='no-pdf'>
+        <span className='text-[9px] sm:text-[10px] md:text-xs text-zinc-400 dark:text-white'>
+          <strong>Tip:</strong> {t('reports.scrollTip')}
+        </span>
+      </div>
+
       {mode !== 'diario' && weeksByMonth ? (
         // Mostrar agrupado por mes con botón PDF y campos de fecha
         Array.from(weeksByMonth.entries()).map(([monthKey, weeks]) => {
@@ -223,4 +229,3 @@ export default function ReportesTab({ project, mode = 'semanal', readOnly = fals
     </div>
   );
 }
-

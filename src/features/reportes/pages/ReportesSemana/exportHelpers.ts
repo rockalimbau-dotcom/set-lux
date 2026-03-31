@@ -5,12 +5,23 @@ import { DAY_NAMES, CONCEPTS } from '../../constants';
 import { personaKey, personaRole, personaName } from '../../utils/model';
 import { Project } from './ReportesSemanaTypes';
 
+type GroupedPersonKeys = {
+  base: string[];
+  pre: string[];
+  pick: string[];
+  extraGroups: Array<{ blockKey: string; people: string[] }>;
+};
+
 export const defaultExportWeek = (
   project: Project | undefined,
   title: string,
   safeSemana: string[],
   dayNameFromISO: (iso: string, index: number) => string,
   horarioTexto: (iso: string) => string,
+  horarioPrelight: (iso: string) => string,
+  horarioPickup: (iso: string) => string,
+  horarioExtraByBlock: (blockKey: string, iso: string) => string,
+  groupedPersonKeys: GroupedPersonKeys,
   data: any
 ) => {
   const css = `body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif;color:#111;padding:20px} table{width:100%;border-collapse:collapse;font-size:12px;margin:8px 0} th,td{border:1px solid #222;padding:6px;vertical-align:top} thead th{background:#eee}`;
@@ -21,6 +32,10 @@ export const defaultExportWeek = (
     dayNameFromISO,
     toDisplayDate,
     horarioTexto,
+    horarioPrelight,
+    horarioPickup,
+    horarioExtraByBlock,
+    groupedPersonKeys,
     CONCEPTS: [...CONCEPTS],
     data,
     personaKey,
@@ -41,6 +56,10 @@ export const handleExportPDF = async (
   safeSemana: string[],
   dayNameFromISO: (iso: string, index: number) => string,
   horarioTexto: (iso: string) => string,
+  horarioPrelight: (iso: string) => string,
+  horarioPickup: (iso: string) => string,
+  horarioExtraByBlock: (blockKey: string, iso: string) => string,
+  groupedPersonKeys: GroupedPersonKeys,
   data: any,
   onExportWeekPDF?: () => void,
   defaultExport?: () => void
@@ -53,6 +72,10 @@ export const handleExportPDF = async (
     dayNameFromISO,
     toDisplayDate,
     horarioTexto,
+    horarioPrelight,
+    horarioPickup,
+    horarioExtraByBlock,
+    groupedPersonKeys,
     CONCEPTS: [...CONCEPTS],
     data,
     personaKey,
@@ -62,4 +85,3 @@ export const handleExportPDF = async (
   });
   if (!ok && defaultExport) defaultExport();
 };
-

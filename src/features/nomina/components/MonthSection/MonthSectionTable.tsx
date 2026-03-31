@@ -57,6 +57,10 @@ export function MonthSectionTable({
     projectMode === 'diario'
       ? t('payroll.totalLocalizacionTecnicaShifts')
       : t('payroll.totalLocalizacionTecnica');
+  const workedHeaderClass = useJornadasLabels ? 'min-w-[170px] whitespace-normal break-words' : '';
+  const totalWorkedHeaderClass = useJornadasLabels ? 'min-w-[150px] whitespace-normal break-words' : '';
+  const localizacionHeaderClass = projectMode === 'diario' ? 'min-w-[210px] whitespace-normal break-words' : '';
+  const totalLocalizacionHeaderClass = projectMode === 'diario' ? 'min-w-[230px] whitespace-normal break-words' : '';
 
   // Calcular número de columnas para colSpan
   const colSpanCount =
@@ -123,12 +127,47 @@ export function MonthSectionTable({
   }, [enriched]);
 
   return (
-    <div className='px-3 pb-3 sm:px-4 sm:pb-4 md:px-5 md:pb-5 overflow-x-auto' data-tutorial='payroll-table'>
-      <table className='min-w-[800px] sm:min-w-[1000px] md:min-w-[1200px] w-full border-collapse text-[9px] sm:text-[10px] md:text-xs lg:text-sm'>
+    <div
+      className='px-3 pb-3 sm:px-4 sm:pb-4 md:px-5 md:pb-5 overflow-x-auto overflow-y-auto overscroll-contain max-h-[70vh]'
+      data-tutorial='payroll-table'
+    >
+      <table
+        className={`payroll-month-table ${
+          showRowSelection ? 'payroll-month-table--with-selection' : ''
+        } min-w-[760px] sm:min-w-[920px] md:min-w-[1080px] w-full table-fixed border-separate border-spacing-0 text-[9px] sm:text-[10px] md:text-xs lg:text-sm`}
+      >
+        <colgroup>
+          {showRowSelection && <col className='payroll-month-col-checkbox' />}
+          <col className='payroll-month-col-person' />
+          {hasWorkedDaysData && <col className='payroll-month-col-standard' />}
+          {hasWorkedDaysData && <col className='payroll-month-col-standard' />}
+          {hasHalfDaysData && <col className='payroll-month-col-narrow' />}
+          {hasHalfDaysData && <col className='payroll-month-col-narrow' />}
+          {hasLocalizacionData && <col className='payroll-month-col-wide' />}
+          {hasLocalizacionData && <col className='payroll-month-col-wide' />}
+          {hasCargaDescargaData && <col className='payroll-month-col-standard' />}
+          {hasCargaDescargaData && <col className='payroll-month-col-standard' />}
+          {columnVisibility.holidays && <col className='payroll-month-col-standard' />}
+          {columnVisibility.holidays && <col className='payroll-month-col-standard' />}
+          {columnVisibility.travel && <col className='payroll-month-col-standard' />}
+          {columnVisibility.travel && <col className='payroll-month-col-standard' />}
+          {columnVisibility.extras && <col className='payroll-month-col-standard' />}
+          {columnVisibility.extras && <col className='payroll-month-col-standard' />}
+          {columnVisibility.materialPropio && <col className='payroll-month-col-standard' />}
+          {columnVisibility.materialPropio && <col className='payroll-month-col-standard' />}
+          {columnVisibility.dietas && <col className='payroll-month-col-standard' />}
+          {columnVisibility.dietas && <col className='payroll-month-col-standard' />}
+          {columnVisibility.transporte && <col className='payroll-month-col-standard' />}
+          {columnVisibility.transporte && <col className='payroll-month-col-standard' />}
+          {columnVisibility.km && <col className='payroll-month-col-standard' />}
+          {columnVisibility.km && <col className='payroll-month-col-standard' />}
+          <col className='payroll-month-col-narrow' />
+          <col className='payroll-month-col-received' />
+        </colgroup>
         <thead>
-          <tr>
+          <tr className='payroll-sticky-row payroll-sticky-row--header'>
             {showRowSelection && (
-              <Th align='center'>
+              <Th align='center' className='payroll-sticky-checkbox-col'>
                 <div className='flex justify-center'>
                   <input
                     type='checkbox'
@@ -169,13 +208,15 @@ export function MonthSectionTable({
                 </div>
               </Th>
             )}
-            <Th align='center'>{t('payroll.person')}</Th>
-            {hasWorkedDaysData && <Th align='center'>{workedLabel}</Th>}
-            {hasWorkedDaysData && <Th align='center'>{totalWorkedLabel}</Th>}
+            <Th align='center' className='payroll-sticky-first-col'>
+              {t('payroll.person')}
+            </Th>
+            {hasWorkedDaysData && <Th align='center' className={workedHeaderClass}>{workedLabel}</Th>}
+            {hasWorkedDaysData && <Th align='center' className={totalWorkedHeaderClass}>{totalWorkedLabel}</Th>}
             {hasHalfDaysData && <Th align='center'>{t('payroll.halfDays')}</Th>}
             {hasHalfDaysData && <Th align='center'>{t('payroll.totalHalfDays')}</Th>}
-            {hasLocalizacionData && <Th align='center'>{localizacionLabel}</Th>}
-            {hasLocalizacionData && <Th align='center'>{totalLocalizacionLabel}</Th>}
+            {hasLocalizacionData && <Th align='center' className={localizacionHeaderClass}>{localizacionLabel}</Th>}
+            {hasLocalizacionData && <Th align='center' className={totalLocalizacionHeaderClass}>{totalLocalizacionLabel}</Th>}
             {hasCargaDescargaData && <Th align='center'>{t('payroll.cargaDescarga')}</Th>}
             {hasCargaDescargaData && <Th align='center'>{t('payroll.totalCargaDescarga')}</Th>}
             {columnVisibility.holidays && <Th align='center'>{t('payroll.holidayDays')}</Th>}

@@ -12,6 +12,8 @@ import {
 import { BLOCKS, findWeekAndDayFactory, getDayBlockList } from '../../utils/plan';
 import { AnyRecord } from '@shared/types/common';
 import { needsDataToPlanData } from '@shared/utils/needsPlanAdapter';
+import { getExtraBlockCount, getExtraBlocks, hasExtraBlockContent } from '../../utils/extra';
+import { personaKey } from '../../utils/model';
 
 export function useWeekData(
   project: { id?: string; nombre?: string } | undefined,
@@ -71,7 +73,7 @@ export function useWeekData(
       return !!(
         day &&
         day.tipo !== 'Descanso' &&
-        (getDayBlockList(day, BLOCKS.extra).length > 0 || day.refStart || day.refEnd)
+        (getDayBlockList(day, BLOCKS.extra).length > 0 || hasExtraBlockContent(day) || day.refStart || day.refEnd)
       );
     });
   }, [needsKey, JSON.stringify(safeSemana)]);
@@ -97,33 +99,81 @@ export function useWeekData(
     [weekExtraActive, needsKey, JSON.stringify(safeSemana)]
   );
 
+  const extraGroups = useMemo(() => {
+    const maxBlocks = safeSemana.reduce((max, iso) => {
+      const { day } = findWeekAndDay(iso);
+      return Math.max(max, getExtraBlockCount(day));
+    }, 0);
+
+    return Array.from({ length: maxBlocks }, (_, index) => {
+      const seen = new Set<string>();
+      const people: AnyRecord[] = [];
+
+      safeSemana.forEach(iso => {
+        const { day } = findWeekAndDay(iso);
+        const block = getExtraBlocks(day)[index];
+        const members = Array.isArray(block?.list) ? block.list : [];
+        members.forEach((member: AnyRecord) => {
+          const role = String(member?.role || '').trim().toUpperCase();
+          const name = String(member?.name || '').trim();
+          const key = `${role}__${name}`;
+          if (!role && !name) return;
+          if (seen.has(key)) return;
+          seen.add(key);
+          people.push({
+            role,
+            name,
+            gender: member?.gender,
+            source: member?.source,
+            __block: `extra:${index}`,
+          });
+        });
+      });
+
+      return {
+        index,
+        blockKey: `extra:${index}`,
+        people,
+      };
+    }).filter(group => group.people.length > 0);
+  }, [safeSemana, needsKey]);
+
   // IMPORTANTE: Obtener basePeople directamente del plan, igual que prelight y pickup
   const basePeople = useMemo(
     () => collectWeekTeamWithSuffix('team', ''),
     [needsKey, JSON.stringify(safeSemana)]
   );
 
-  const safePersonas = useMemo(
-    () =>
-      buildSafePersonas(
-        providedPersonas,
-        weekPrelightActive,
-        prelightPeople,
-        weekPickupActive,
-        pickupPeople,
-        weekExtraActive,
-        extraPeople
-      ),
-    [
-      JSON.stringify(providedPersonas),
+  const safePersonas = useMemo(() => {
+    const baseSafe = buildSafePersonas(
+      providedPersonas,
       weekPrelightActive,
+      prelightPeople,
       weekPickupActive,
-      weekExtraActive,
-      JSON.stringify(prelightPeople),
-      JSON.stringify(pickupPeople),
-      JSON.stringify(extraPeople),
-    ]
-  );
+      pickupPeople,
+      false,
+      []
+    );
+    const merged = [...baseSafe];
+    const seen = new Set(merged.map(personaKey));
+    extraGroups.forEach(group => {
+      group.people.forEach(person => {
+        const key = personaKey(person);
+        if (!seen.has(key)) {
+          seen.add(key);
+          merged.push(person);
+        }
+      });
+    });
+    return merged;
+  }, [
+    JSON.stringify(providedPersonas),
+    weekPrelightActive,
+    weekPickupActive,
+    JSON.stringify(prelightPeople),
+    JSON.stringify(pickupPeople),
+    JSON.stringify(extraGroups),
+  ]);
 
   const peopleBase = useMemo(() => {
     // IMPORTANTE: NO usar refNamesBase porque collectWeekTeamWithSuffix ya procesa
@@ -177,6 +227,7 @@ export function useWeekData(
     peoplePre,
     peoplePick,
     peopleExtra,
+    extraGroups,
     safePersonas,
   };
 }

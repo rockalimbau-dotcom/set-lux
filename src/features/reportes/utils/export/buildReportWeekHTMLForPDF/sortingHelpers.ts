@@ -7,8 +7,24 @@ import { stripRoleSuffix, stripRefuerzoSuffix } from '@shared/constants/roles';
 function getBlockFromKey(key: string): 'base' | 'extra' | 'pre' | 'pick' {
   if (/\.pre__/.test(key) || /REF\.pre__/.test(key)) return 'pre';
   if (/\.pick__/.test(key) || /REF\.pick__/.test(key)) return 'pick';
-  if (/\.extra__/.test(key) || /REF\.extra__/.test(key)) return 'extra';
+  if (/\.extra(?::\d+)?__/.test(key) || /REF\.extra(?::\d+)?__/.test(key)) return 'extra';
   return 'base';
+}
+
+function getExtraGroupKeyFromKey(key: string): string {
+  const match = key.match(/\.(extra(?::\d+)?)__/);
+  return match?.[1] || 'extra';
+}
+
+function sortExtraGroupKeys(keys: string[]): string[] {
+  return [...keys].sort((a, b) => {
+    const aMatch = a.match(/^extra:(\d+)$/);
+    const bMatch = b.match(/^extra:(\d+)$/);
+    if (aMatch && bMatch) return Number(aMatch[1]) - Number(bMatch[1]);
+    if (a === 'extra') return -1;
+    if (b === 'extra') return 1;
+    return a.localeCompare(b);
+  });
 }
 
 /**
@@ -50,8 +66,8 @@ function sortByRoleHierarchy(
       roleA = a.split('.pre__')[0];
     } else if (a.includes('.pick__')) {
       roleA = a.split('.pick__')[0];
-    } else if (a.includes('.extra__')) {
-      roleA = a.split('.extra__')[0];
+    } else if (/\.extra(?::\d+)?__/.test(a)) {
+      roleA = a.split(/\.extra(?::\d+)?__/)[0] || '';
     } else {
       roleA = a.split('__')[0];
     }
@@ -60,8 +76,8 @@ function sortByRoleHierarchy(
       roleB = b.split('.pre__')[0];
     } else if (b.includes('.pick__')) {
       roleB = b.split('.pick__')[0];
-    } else if (b.includes('.extra__')) {
-      roleB = b.split('.extra__')[0];
+    } else if (/\.extra(?::\d+)?__/.test(b)) {
+      roleB = b.split(/\.extra(?::\d+)?__/)[0] || '';
     } else {
       roleB = b.split('__')[0];
     }
@@ -83,8 +99,8 @@ function sortByRoleHierarchy(
         nameA = a.split('.pre__')[1] || '';
       } else if (a.includes('.pick__')) {
         nameA = a.split('.pick__')[1] || '';
-      } else if (a.includes('.extra__')) {
-        nameA = a.split('.extra__')[1] || '';
+      } else if (/\.extra(?::\d+)?__/.test(a)) {
+        nameA = a.split(/\.extra(?::\d+)?__/)[1] || '';
       } else {
         nameA = a.split('__').slice(1).join('__') || '';
       }
@@ -93,8 +109,8 @@ function sortByRoleHierarchy(
         nameB = b.split('.pre__')[1] || '';
       } else if (b.includes('.pick__')) {
         nameB = b.split('.pick__')[1] || '';
-      } else if (b.includes('.extra__')) {
-        nameB = b.split('.extra__')[1] || '';
+      } else if (/\.extra(?::\d+)?__/.test(b)) {
+        nameB = b.split(/\.extra(?::\d+)?__/)[1] || '';
       } else {
         nameB = b.split('__').slice(1).join('__') || '';
       }
@@ -118,8 +134,8 @@ function sortByRoleHierarchy(
       nameA = a.split('.pre__')[1] || '';
     } else if (a.includes('.pick__')) {
       nameA = a.split('.pick__')[1] || '';
-    } else if (a.includes('.extra__')) {
-      nameA = a.split('.extra__')[1] || '';
+    } else if (/\.extra(?::\d+)?__/.test(a)) {
+      nameA = a.split(/\.extra(?::\d+)?__/)[1] || '';
     } else {
       nameA = a.split('__').slice(1).join('__') || '';
     }
@@ -128,8 +144,8 @@ function sortByRoleHierarchy(
       nameB = b.split('.pre__')[1] || '';
     } else if (b.includes('.pick__')) {
       nameB = b.split('.pick__')[1] || '';
-    } else if (b.includes('.extra__')) {
-      nameB = b.split('.extra__')[1] || '';
+    } else if (/\.extra(?::\d+)?__/.test(b)) {
+      nameB = b.split(/\.extra(?::\d+)?__/)[1] || '';
     } else {
       nameB = b.split('__').slice(1).join('__') || '';
     }
@@ -145,6 +161,7 @@ function sortByRoleHierarchy(
  */
 export function groupAndSortPersonsByBlock(data: any, preserveOrder: boolean = false): {
   personsByBlock: { base: string[]; extra: string[]; pre: string[]; pick: string[] };
+  extraGroups: Array<{ blockKey: string; people: string[] }>;
   finalPersonKeys: string[];
 } {
   const personsByBlock = {
@@ -188,6 +205,19 @@ export function groupAndSortPersonsByBlock(data: any, preserveOrder: boolean = f
     ...personsByBlock.pick,
   ];
 
-  return { personsByBlock, finalPersonKeys };
-}
+  const extraGroupsMap = new Map<string, string[]>();
+  personsByBlock.extra.forEach(key => {
+    const blockKey = getExtraGroupKeyFromKey(key);
+    if (!extraGroupsMap.has(blockKey)) {
+      extraGroupsMap.set(blockKey, []);
+    }
+    extraGroupsMap.get(blockKey)!.push(key);
+  });
 
+  const extraGroups = sortExtraGroupKeys(Array.from(extraGroupsMap.keys())).map(blockKey => ({
+    blockKey,
+    people: extraGroupsMap.get(blockKey) || [],
+  }));
+
+  return { personsByBlock, extraGroups, finalPersonKeys };
+}

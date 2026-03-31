@@ -66,7 +66,7 @@ type JornadaDropdownCellProps = {
   translateJornadaType: (value: string) => string;
 };
 
-function JornadaDropdownCell({
+export function JornadaDropdownCell({
   value,
   onChange,
   readOnly,
@@ -168,7 +168,7 @@ function JornadaDropdownCell({
   );
 }
 
-function MemberDropdown({
+export function MemberDropdown({
   options,
   onSelect,
   readOnly = false,
@@ -344,7 +344,7 @@ type MembersRowProps = {
   defaultCollapsed?: boolean;
 };
 
-const JORNADA_OPTIONS = [
+export const JORNADA_OPTIONS = [
   'Localizar',
   'Oficina',
   'Carga',
@@ -489,7 +489,7 @@ export function MembersRow({
             </div>
           </Td>
         )}
-      <Td className='border border-neutral-border px-1 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-1 font-semibold bg-white/5 whitespace-normal break-words text-[9px] sm:text-[10px] md:text-xs lg:text-sm align-middle'>
+      <Td className='border border-neutral-border px-1 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-1 font-semibold bg-white/5 whitespace-nowrap text-[9px] sm:text-[10px] md:text-xs lg:text-sm align-middle'>
           <div className='flex items-center gap-2'>
             {collapsible && (
               <button
@@ -562,6 +562,7 @@ export function MembersRow({
                           const clearKeys = [
                             'crewList',
                             'refList',
+                            'refBlocks',
                             'preList',
                             'pickList',
                             'crewTxt',

@@ -1,6 +1,7 @@
 // Utils specific to planning access used by ReportesSemana
 import { norm } from './text';
 import { hasRoleGroupSuffix, stripRoleSuffix } from '@shared/constants/roles';
+import { getExtraBlockByIndex } from './extra';
 
 export const BLOCKS = { base: 'base', pre: 'pre', pick: 'pick', extra: 'extra' } as const;
 
@@ -41,6 +42,13 @@ export function getDayBlockList(day: any, block: string): any[] {
     if (Array.isArray(day?.refList)) return day.refList;
     const team = Array.isArray(day?.team) ? day.team : [];
     return team.filter(member => isMemberRefuerzo(member));
+  }
+
+  if (typeof block === 'string' && block.startsWith('extra:')) {
+    const index = Number(block.split(':')[1] || '-1');
+    if (!Number.isFinite(index) || index < 0) return [];
+    const extraBlock = getExtraBlockByIndex(day, index);
+    return Array.isArray(extraBlock?.list) ? extraBlock.list : [];
   }
 
   if (block === BLOCKS.pre) return readFirstArray(day, DAY_BLOCK_KEYS[BLOCKS.pre]);

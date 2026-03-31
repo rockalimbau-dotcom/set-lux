@@ -22,34 +22,30 @@ function generatePersonHeader(
   let role = '';
   let name = '';
   
-  if (pk.includes('.pre__')) {
+  const extraMatch = pk.match(/^(.*?)\.(extra(?::\d+)?)__(.*)$/);
+
+  if (extraMatch) {
+    role = extraMatch[1] || '';
+    name = extraMatch[3] || '';
+    if (role.startsWith('REF')) {
+      role = stripRefuerzoSuffix(role);
+    }
+  } else if (pk.includes('.pre__')) {
     // Prelight: formato "role.pre__name"
     const [rolePart, ...nameParts] = pk.split('.pre__');
     role = rolePart || '';
     name = nameParts.join('.pre__');
-    
-    // Convertir: G.pre -> GP, E.pre -> EP, REFE.pre -> REFE, REF.pre -> REF, etc.
-    // IMPORTANTE: Todos los refuerzos (REF, REFG, REFE, REFBB, etc.) NO llevan sufijos P o R
-    const isRefuerzo = role.startsWith('REF');
-    if (!isRefuerzo) {
-      // Rol normal: añadir P (G -> GP, E -> EP, etc.)
-      role = `${role}P`;
+    if (role.startsWith('REF')) {
+      role = stripRefuerzoSuffix(role);
     }
-    // Si es refuerzo (REF, REFE, REFG, etc.), mantener sin cambios
   } else if (pk.includes('.pick__')) {
     // Pickup: formato "role.pick__name"
     const [rolePart, ...nameParts] = pk.split('.pick__');
     role = rolePart || '';
     name = nameParts.join('.pick__');
-    
-    // Convertir: G.pick -> GR, E.pick -> ER, REFE.pick -> REFE, REF.pick -> REF, etc.
-    // IMPORTANTE: Todos los refuerzos (REF, REFG, REFE, REFBB, etc.) NO llevan sufijos P o R
-    const isRefuerzo = role.startsWith('REF');
-    if (!isRefuerzo) {
-      // Rol normal: añadir R (G -> GR, E -> ER, etc.)
-      role = `${role}R`;
+    if (role.startsWith('REF')) {
+      role = stripRefuerzoSuffix(role);
     }
-    // Si es refuerzo (REF, REFE, REFG, etc.), mantener sin cambios
   } else {
     // Base: formato "role__name"
     const [rolePart, ...nameParts] = pk.split('__');
@@ -156,7 +152,6 @@ function generatePersonConceptRows(
 ): string {
   return conceptosConDatos
     .filter(c => {
-      if (c === 'Dietas') return true;
       // Only show concepts that have meaningful data for this person
       return safeSemanaWithData.some(iso => {
         const value = finalData?.[pk]?.[c]?.[iso];
@@ -198,4 +193,3 @@ export function generatePersonHTML(
   const rows = generatePersonConceptRows(pk, conceptosConDatos, safeSemanaWithData, finalData);
   return header + rows;
 }
-

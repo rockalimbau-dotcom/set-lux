@@ -17,7 +17,7 @@ interface UseEnrichedRowsProps {
   calcWorkedBreakdown: (
     weeks: any[],
     filterISO: (iso: string) => boolean,
-    person: { role: string; name: string }
+    person: { role: string; name: string; source?: string }
   ) => {
     workedDays: number;
     travelDays: number;
@@ -62,9 +62,26 @@ export function useEnrichedRows({
   roleLabelFromCode,
 }: UseEnrichedRowsProps) {
   const enriched = useMemo(() => {
+    const visibleBlocksByKey = new Map<string, Set<string>>();
+    for (const row of rows) {
+      const visibleKey = `${row.role}__${row.name}`;
+      const block = (row as any)._displayBlock || 'base';
+      if (!visibleBlocksByKey.has(visibleKey)) {
+        visibleBlocksByKey.set(visibleKey, new Set<string>());
+      }
+      visibleBlocksByKey.get(visibleKey)!.add(block);
+    }
+
     const enrichedRows = rows.map(r => {
       const roleForBreakdown = (r as any)._matchRole || r.role;
-      const person = { role: roleForBreakdown, name: r.name };
+      const visibleKey = `${r.role}__${r.name}`;
+      const siblingBlocks = visibleBlocksByKey.get(visibleKey) || new Set<string>();
+      const sourceForBreakdown =
+        ((r as any)._displayBlock || 'base') === 'base' &&
+        (siblingBlocks.has('pre') || siblingBlocks.has('pick'))
+          ? 'base-strict'
+          : r.source;
+      const person = { role: roleForBreakdown, name: r.name, source: sourceForBreakdown };
       const breakdown = calcWorkedBreakdown(weeksForMonth, filterISO, person);
       const {
         workedDays,

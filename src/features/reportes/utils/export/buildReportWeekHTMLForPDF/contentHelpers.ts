@@ -1,77 +1,95 @@
 import { esc } from '../htmlHelpers';
 import { getTranslation } from '../translationHelpers';
-import { isMeaningfulValue } from '../dataHelpers';
 import { generatePersonHTML } from './personHTMLHelpers';
-import { generateTeamBlockTitle } from './tableHelpers';
+
+function generateScheduleRow(
+  label: string,
+  safeSemanaWithData: string[],
+  valueForISO: (iso: string) => string
+): string {
+  return `
+    <tr>
+      <td style="border:1px solid #999;padding:6px;text-align:left;background:#1e40af;color:#fff;font-weight:700;font-size:9px;text-transform:uppercase;">${esc(label)}</td>
+      ${safeSemanaWithData
+        .map(
+          iso =>
+            `<td style="border:1px solid #999;padding:6px;text-align:left;background:#1e40af;color:#fff;font-weight:700;font-size:9px;">${esc(
+              valueForISO(iso)
+            )}</td>`
+        )
+        .join('')}
+      <td style="border:1px solid #999;padding:6px;text-align:left;background:#1e40af;color:#fff;font-weight:700;font-size:9px;">&nbsp;</td>
+    </tr>`;
+}
 
 /**
  * Generate body HTML grouped by blocks
  */
 export function generateBodyByBlocks(
   personsByBlock: { base: string[]; extra: string[]; pre: string[]; pick: string[] },
+  extraGroups: Array<{ blockKey: string; people: string[] }>,
   safeSemanaWithData: string[],
   conceptosConDatos: string[],
   finalData: any,
-  genderMap?: Record<string, string>
+  genderMap?: Record<string, string>,
+  horarioPrelight?: (iso: string) => string,
+  horarioPickup?: (iso: string) => string,
+  horarioExtraByBlock?: (blockKey: string, iso: string) => string
 ): string {
   const bodyParts: string[] = [];
 
-  // Helper to filter persons with data
-  const filterPersonsWithData = (personKeys: string[]): string[] => {
-    return personKeys;
-  };
+  bodyParts.push(
+    ...personsByBlock.base.map(pk =>
+      generatePersonHTML(pk, conceptosConDatos, safeSemanaWithData, finalData, genderMap)
+    )
+  );
 
-  // Base team
-  const basePersons = filterPersonsWithData(personsByBlock.base);
-  if (basePersons.length > 0) {
-    const baseTitle = generateTeamBlockTitle(
-      getTranslation('payroll.teamBase', 'EQUIPO BASE'),
-      safeSemanaWithData.length + 2,
-      '#fff3e0',
-      '#e65100'
+  extraGroups.forEach(group => {
+    if (typeof horarioExtraByBlock === 'function') {
+      bodyParts.push(
+        generateScheduleRow(
+          getTranslation('reports.extraSchedule', 'Equipo extra / Dif horarios'),
+          safeSemanaWithData,
+          iso => horarioExtraByBlock(group.blockKey, iso)
+        )
+      );
+    }
+    bodyParts.push(
+      ...group.people.map(pk =>
+        generatePersonHTML(pk, conceptosConDatos, safeSemanaWithData, finalData, genderMap)
+      )
     );
-    bodyParts.push(baseTitle);
-    bodyParts.push(...basePersons.map(pk => generatePersonHTML(pk, conceptosConDatos, safeSemanaWithData, finalData, genderMap)));
-  }
+  });
 
-  // Extra team
-  const extraPersons = filterPersonsWithData(personsByBlock.extra);
-  if (extraPersons.length > 0) {
-    const extraTitle = generateTeamBlockTitle(
-      getTranslation('payroll.teamExtra', 'EQUIPO EXTRA'),
-      safeSemanaWithData.length + 2,
-      '#fff3e0',
-      '#e65100'
+  if (personsByBlock.pre.length > 0 && typeof horarioPrelight === 'function') {
+    bodyParts.push(
+      generateScheduleRow(
+        getTranslation('reports.prelightSchedule', 'Horario Equipo Prelight'),
+        safeSemanaWithData,
+        horarioPrelight
+      )
     );
-    bodyParts.push(extraTitle);
-    bodyParts.push(...extraPersons.map(pk => generatePersonHTML(pk, conceptosConDatos, safeSemanaWithData, finalData, genderMap)));
   }
+  bodyParts.push(
+    ...personsByBlock.pre.map(pk =>
+      generatePersonHTML(pk, conceptosConDatos, safeSemanaWithData, finalData, genderMap)
+    )
+  );
 
-  // Prelight team
-  const prePersons = filterPersonsWithData(personsByBlock.pre);
-  if (prePersons.length > 0) {
-    const preTitle = generateTeamBlockTitle(
-      getTranslation('payroll.teamPrelight', 'EQUIPO PRELIGHT'),
-      safeSemanaWithData.length + 2,
-      '#e3f2fd',
-      '#1565c0'
+  if (personsByBlock.pick.length > 0 && typeof horarioPickup === 'function') {
+    bodyParts.push(
+      generateScheduleRow(
+        getTranslation('reports.pickupSchedule', 'Horario Equipo Recogida'),
+        safeSemanaWithData,
+        horarioPickup
+      )
     );
-    bodyParts.push(preTitle);
-    bodyParts.push(...prePersons.map(pk => generatePersonHTML(pk, conceptosConDatos, safeSemanaWithData, finalData, genderMap)));
   }
-
-  // Pickup team
-  const pickPersons = filterPersonsWithData(personsByBlock.pick);
-  if (pickPersons.length > 0) {
-    const pickTitle = generateTeamBlockTitle(
-      getTranslation('payroll.teamPickup', 'EQUIPO RECOGIDA'),
-      safeSemanaWithData.length + 2,
-      '#e3f2fd',
-      '#1565c0'
-    );
-    bodyParts.push(pickTitle);
-    bodyParts.push(...pickPersons.map(pk => generatePersonHTML(pk, conceptosConDatos, safeSemanaWithData, finalData, genderMap)));
-  }
+  bodyParts.push(
+    ...personsByBlock.pick.map(pk =>
+      generatePersonHTML(pk, conceptosConDatos, safeSemanaWithData, finalData, genderMap)
+    )
+  );
 
   return bodyParts.join('');
 }

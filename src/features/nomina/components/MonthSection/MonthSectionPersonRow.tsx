@@ -115,7 +115,7 @@ export function MonthSectionPersonRow({
   return (
     <tr>
       {showRowSelection && (
-        <Td align='middle'>
+        <Td align='middle' className='payroll-sticky-checkbox-col'>
           <div className='flex justify-center'>
             <input
               type='checkbox'
@@ -128,25 +128,25 @@ export function MonthSectionPersonRow({
           </div>
         </Td>
       )}
-      <Td className='whitespace-nowrap align-middle'>
+      <Td className='payroll-sticky-first-col whitespace-nowrap align-middle'>
         <div className='flex items-center gap-1 sm:gap-1.5 md:gap-2'>
-        <span
-          className='inline-flex items-center gap-1 sm:gap-1.5 md:gap-2 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded sm:rounded-md md:rounded-lg border border-neutral-border bg-black/40'
-          title={`${r.role} - ${r.name}`}
-        >
           <span
-            className={`inline-flex items-center justify-center h-3.5 sm:h-4 md:h-5 rounded sm:rounded-md md:rounded-lg font-bold text-[8px] sm:text-[9px] md:text-[10px] ${badgeWidthClass}`}
-            style={{ 
-              background: roleBgColor, 
-              color: roleFgColor,
-              WebkitTextFillColor: roleFgColor,
-              textFillColor: roleFgColor
-            } as React.CSSProperties}
-            >
-              {roleCode || '—'}
-            </span>
-          <span className='text-[9px] sm:text-[10px] md:text-xs text-zinc-200'>{r.name}</span>
-        </span>
+            className='inline-flex items-center gap-1 sm:gap-1.5 md:gap-2 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded sm:rounded-md md:rounded-lg border border-neutral-border bg-black/40'
+            title={`${r.role} - ${r.name}`}
+          >
+            <span
+              className={`inline-flex items-center justify-center h-3.5 sm:h-4 md:h-5 rounded sm:rounded-md md:rounded-lg font-bold text-[8px] sm:text-[9px] md:text-[10px] ${badgeWidthClass}`}
+              style={{ 
+                background: roleBgColor, 
+                color: roleFgColor,
+                WebkitTextFillColor: roleFgColor,
+                textFillColor: roleFgColor
+              } as React.CSSProperties}
+              >
+                {roleCode || '—'}
+              </span>
+            <span className='text-[9px] sm:text-[10px] md:text-xs text-zinc-200'>{r.name}</span>
+          </span>
         </div>
       </Td>
 

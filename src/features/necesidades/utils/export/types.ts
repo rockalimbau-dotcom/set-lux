@@ -29,6 +29,14 @@ export interface DayValues {
   refTipo?: string;
   refStart?: string;
   refEnd?: string;
+  refBlocks?: Array<{
+    id?: string;
+    tipo?: string;
+    start?: string;
+    end?: string;
+    text?: string;
+    list?: Array<{ role?: string; name?: string; [key: string]: any }>;
+  }>;
   preList?: Array<{ role?: string; name?: string; [key: string]: any }>;
   preTxt?: string;
   preNote?: string;
@@ -62,4 +70,3 @@ export interface NeedsData {
   pre: WeekEntry[];
   pro: WeekEntry[];
 }
-

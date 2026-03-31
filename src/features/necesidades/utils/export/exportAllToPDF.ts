@@ -101,6 +101,7 @@ export async function exportAllToPDF(
               filteredDay.refTipo = day.refTipo;
               filteredDay.refStart = day.refStart;
               filteredDay.refEnd = day.refEnd;
+              filteredDay.refBlocks = day.refBlocks;
             } else {
               filteredDay[fieldKey] = day[fieldKey];
             }

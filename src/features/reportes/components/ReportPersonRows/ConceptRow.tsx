@@ -52,7 +52,7 @@ export function ConceptRow({
 
   return (
     <tr id={`person-${pKey}-rows`}>
-      <Td className='whitespace-nowrap align-middle'>
+      <Td className='whitespace-nowrap align-middle report-sticky-first-col'>
         <div className='text-[9px] sm:text-[10px] md:text-xs text-zinc-300'>
           {translateConcept(concepto, t)}
         </div>
@@ -256,4 +256,3 @@ function TotalCell({ pKey, concepto, semana, data, parseDietas, horasExtraTipo, 
   
   return total.toString();
 }
-

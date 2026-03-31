@@ -14,14 +14,27 @@ export async function exportReportWeekToPDF(params: BuildPdfParams) {
     dayNameFromISO,
     toDisplayDate,
     horarioTexto,
+    horarioPrelight,
+    horarioPickup,
+    horarioExtraByBlock,
+    groupedPersonKeys,
     CONCEPTS,
     data,
     filename,
   } = params;
 
   try {
+    const orderedPersonKeys = groupedPersonKeys
+      ? [
+          ...(groupedPersonKeys.base || []),
+          ...((groupedPersonKeys.extraGroups || []).flatMap(group => group.people)),
+          ...(groupedPersonKeys.pre || []),
+          ...(groupedPersonKeys.pick || []),
+        ]
+      : Object.keys(data || {}).filter(key => !String(key).startsWith('__'));
+
     // Calculate pagination
-    const personKeys = Object.keys(data || {});
+    const personKeys = orderedPersonKeys;
     const totalPersons = personKeys.length;
     
     const { personsPerPage, totalPages } = calculatePersonsPerPage(totalPersons, CONCEPTS);
@@ -44,6 +57,23 @@ export async function exportReportWeekToPDF(params: BuildPdfParams) {
       pagePersonKeys.forEach(pk => {
         pageData[pk] = data[pk];
       });
+      if ((data as any)?.__genderMap) {
+        pageData.__genderMap = (data as any).__genderMap;
+      }
+
+      const pageGroupedPersonKeys = groupedPersonKeys
+        ? {
+            base: (groupedPersonKeys.base || []).filter(pk => pagePersonKeys.includes(pk)),
+            pre: (groupedPersonKeys.pre || []).filter(pk => pagePersonKeys.includes(pk)),
+            pick: (groupedPersonKeys.pick || []).filter(pk => pagePersonKeys.includes(pk)),
+            extraGroups: (groupedPersonKeys.extraGroups || [])
+              .map(group => ({
+                blockKey: group.blockKey,
+                people: group.people.filter(pk => pagePersonKeys.includes(pk)),
+              }))
+              .filter(group => group.people.length > 0),
+          }
+        : undefined;
       
       // Generate HTML for this page
       const html = buildReportWeekHTMLForPDF({
@@ -53,6 +83,10 @@ export async function exportReportWeekToPDF(params: BuildPdfParams) {
         dayNameFromISO,
         toDisplayDate,
         horarioTexto,
+        horarioPrelight,
+        horarioPickup,
+        horarioExtraByBlock,
+        groupedPersonKeys: pageGroupedPersonKeys,
         CONCEPTS,
         data: pageData,
       });
@@ -126,4 +160,3 @@ export async function exportReportWeekToPDF(params: BuildPdfParams) {
     return false;
   }
 }
-

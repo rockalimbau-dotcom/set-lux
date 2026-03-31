@@ -700,6 +700,291 @@ html input[style*="borderWidth"] {
   }
 }
 
+.report-week-table .report-sticky-row > th,
+.report-week-table .report-sticky-row > td {
+  position: sticky;
+  top: var(--report-sticky-row-top, 0px);
+}
+
+.report-week-table .report-sticky-row--header > th,
+.report-week-table .report-sticky-row--header > td {
+  z-index: 30;
+}
+
+.report-week-table .report-sticky-row--date > th,
+.report-week-table .report-sticky-row--date > td {
+  z-index: 28;
+}
+
+.report-week-table .report-sticky-first-col {
+  position: sticky !important;
+  left: 0;
+  z-index: 18;
+  width: var(--report-sticky-label-width, 140px);
+  min-width: var(--report-sticky-label-width, 140px);
+  max-width: var(--report-sticky-label-width, 140px);
+  box-shadow: 1px 0 0 rgba(148, 163, 184, 0.18);
+  background-clip: padding-box;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.report-week-table thead th:first-child,
+.report-week-table tbody td:first-child:not([colspan]) {
+  width: var(--report-sticky-label-width, 140px);
+  min-width: var(--report-sticky-label-width, 140px);
+  max-width: var(--report-sticky-label-width, 140px);
+}
+
+.report-week-table .report-week-col-label {
+  width: var(--report-sticky-label-width, 140px);
+}
+
+.report-week-table .report-week-col-total {
+  width: 84px;
+}
+
+.report-week-table .report-sticky-row .report-sticky-first-col {
+  z-index: 34 !important;
+}
+
+[data-theme='light'] .report-week-table .report-sticky-first-col,
+[data-theme='light'] .report-week-table .report-sticky-row > th,
+[data-theme='light'] .report-week-table .report-sticky-row > td {
+  background-color: #f8f6ef;
+}
+
+[data-theme='dark'] .report-week-table .report-sticky-first-col,
+[data-theme='dark'] .report-week-table .report-sticky-row > th,
+[data-theme='dark'] .report-week-table .report-sticky-row > td {
+  background-color: #171717;
+}
+
+@media (min-width: 640px) {
+  .report-week-table {
+    --report-sticky-label-width: 180px;
+  }
+}
+
+@media (min-width: 768px) {
+  .report-week-table {
+    --report-sticky-label-width: 210px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .report-week-table {
+    --report-sticky-label-width: 230px;
+  }
+}
+
+.payroll-month-table {
+  --payroll-sticky-checkbox-width: 44px;
+  --payroll-sticky-label-width: 170px;
+}
+
+.payroll-month-table--with-selection {
+  --payroll-sticky-label-left: var(--payroll-sticky-checkbox-width);
+}
+
+.payroll-month-table .payroll-sticky-row > th,
+.payroll-month-table .payroll-sticky-row > td {
+  position: sticky;
+  top: var(--payroll-sticky-row-top, 0px);
+  z-index: 26;
+}
+
+.payroll-month-table .payroll-sticky-row--header > th,
+.payroll-month-table .payroll-sticky-row--header > td {
+  z-index: 30;
+}
+
+.payroll-month-table .payroll-sticky-checkbox-col {
+  position: sticky !important;
+  left: 0;
+  z-index: 20;
+  width: var(--payroll-sticky-checkbox-width);
+  min-width: var(--payroll-sticky-checkbox-width);
+  max-width: var(--payroll-sticky-checkbox-width);
+  background-clip: padding-box;
+  overflow: hidden;
+  isolation: isolate;
+  background-color: inherit;
+}
+
+.payroll-month-table .payroll-sticky-first-col {
+  position: sticky !important;
+  left: 0;
+  z-index: 18;
+  width: var(--payroll-sticky-label-width);
+  min-width: var(--payroll-sticky-label-width);
+  max-width: var(--payroll-sticky-label-width);
+  box-shadow: 1px 0 0 rgba(148, 163, 184, 0.18);
+  background-clip: padding-box;
+  overflow: hidden;
+  isolation: isolate;
+  background-color: inherit;
+}
+
+.payroll-month-table--with-selection .payroll-sticky-first-col {
+  left: var(--payroll-sticky-checkbox-width);
+}
+
+.payroll-month-table thead th:first-child,
+.payroll-month-table tbody td:first-child:not([colspan]) {
+  width: var(--payroll-sticky-label-width);
+  min-width: var(--payroll-sticky-label-width);
+  max-width: var(--payroll-sticky-label-width);
+}
+
+.payroll-month-table--with-selection thead th:first-child,
+.payroll-month-table--with-selection tbody td:first-child:not([colspan]) {
+  width: var(--payroll-sticky-checkbox-width);
+  min-width: var(--payroll-sticky-checkbox-width);
+  max-width: var(--payroll-sticky-checkbox-width);
+}
+
+.payroll-month-table--with-selection thead th:nth-child(2),
+.payroll-month-table--with-selection tbody td:nth-child(2):not([colspan]) {
+  width: var(--payroll-sticky-label-width);
+  min-width: var(--payroll-sticky-label-width);
+  max-width: var(--payroll-sticky-label-width);
+}
+
+.payroll-month-table thead th:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 34;
+}
+
+.payroll-month-table tbody td:first-child:not([colspan]) {
+  position: sticky;
+  left: 0;
+  z-index: 15;
+}
+
+.payroll-month-table--with-selection tbody td:nth-child(2):not([colspan]) {
+  position: sticky;
+  left: var(--payroll-sticky-checkbox-width);
+  z-index: 16;
+}
+
+.payroll-month-table--with-selection thead th:first-child,
+.payroll-month-table--with-selection tbody td:first-child:not([colspan]) {
+  left: 0;
+}
+
+.payroll-month-table--with-selection thead th:nth-child(2) {
+  position: sticky;
+  left: var(--payroll-sticky-checkbox-width);
+  z-index: 35;
+}
+
+.payroll-month-table thead th,
+.payroll-month-table tbody td:first-child:not([colspan]),
+.payroll-month-table--with-selection tbody td:nth-child(2):not([colspan]),
+.payroll-month-table .payroll-sticky-row > th,
+.payroll-month-table .payroll-sticky-row > td {
+  box-shadow: 1px 0 0 rgba(148, 163, 184, 0.18);
+  background-clip: padding-box;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.payroll-month-table .payroll-month-col-checkbox {
+  width: var(--payroll-sticky-checkbox-width);
+}
+
+.payroll-month-table .payroll-month-col-person {
+  width: var(--payroll-sticky-label-width);
+}
+
+.payroll-month-table .payroll-month-col-narrow {
+  width: 92px;
+}
+
+.payroll-month-table .payroll-month-col-standard {
+  width: 145px;
+}
+
+.payroll-month-table .payroll-month-col-wide {
+  width: 210px;
+}
+
+.payroll-month-table .payroll-month-col-received {
+  width: 210px;
+}
+
+.payroll-month-table .payroll-sticky-row .payroll-sticky-checkbox-col {
+  z-index: 34 !important;
+}
+
+.payroll-month-table .payroll-sticky-row .payroll-sticky-first-col {
+  z-index: 33 !important;
+}
+
+[data-theme='light'] .payroll-month-table .payroll-sticky-row > th,
+[data-theme='light'] .payroll-month-table .payroll-sticky-row > td,
+[data-theme='light'] .payroll-month-table thead th,
+[data-theme='light'] .payroll-month-table tbody td:first-child:not([colspan]),
+[data-theme='light'] .payroll-month-table--with-selection tbody td:nth-child(2):not([colspan]) {
+  background-color: #f8f6ef;
+}
+
+[data-theme='dark'] .payroll-month-table .payroll-sticky-row > th,
+[data-theme='dark'] .payroll-month-table .payroll-sticky-row > td,
+[data-theme='dark'] .payroll-month-table thead th,
+[data-theme='dark'] .payroll-month-table tbody td:first-child:not([colspan]),
+[data-theme='dark'] .payroll-month-table--with-selection tbody td:nth-child(2):not([colspan]) {
+  background-color: #171717;
+}
+
+@media (min-width: 640px) {
+  .payroll-month-table {
+    --payroll-sticky-checkbox-width: 48px;
+    --payroll-sticky-label-width: 190px;
+  }
+
+  .payroll-month-table .payroll-month-col-standard {
+    width: 155px;
+  }
+
+  .payroll-month-table .payroll-month-col-wide {
+    width: 230px;
+  }
+
+  .payroll-month-table .payroll-month-col-received {
+    width: 220px;
+  }
+
+}
+
+@media (min-width: 768px) {
+  .payroll-month-table {
+    --payroll-sticky-checkbox-width: 52px;
+    --payroll-sticky-label-width: 215px;
+  }
+
+  .payroll-month-table .payroll-month-col-standard {
+    width: 165px;
+  }
+
+  .payroll-month-table .payroll-month-col-wide {
+    width: 250px;
+  }
+
+}
+
+@media (min-width: 1024px) {
+  .payroll-month-table {
+    --payroll-sticky-label-width: 235px;
+  }
+
+  .payroll-month-table .payroll-month-col-wide {
+    width: 270px;
+  }
+}
+
 /* Landing form overrides in light mode: white inputs with black text */
 [data-theme='light'] .landing input {
   background-color: #ffffff !important;

@@ -8,6 +8,10 @@ type Props = {
   DAY_NAMES: readonly string[];
   toDisplayDate: (iso: string) => string;
   horarioTexto: (iso: string) => string;
+  headerRowRef?: React.RefObject<HTMLTableRowElement | null>;
+  dateRowRef?: React.RefObject<HTMLTableRowElement | null>;
+  headerTop?: number;
+  dateTop?: number;
 };
 
 function ReportTableHead({
@@ -16,6 +20,10 @@ function ReportTableHead({
   DAY_NAMES,
   toDisplayDate,
   horarioTexto,
+  headerRowRef,
+  dateRowRef,
+  headerTop = 0,
+  dateTop = 0,
 }: Props) {
   const { t } = useTranslation();
   const dayNames = useMemo(() => semana.map((iso, i) => dayNameFromISO(iso, i, DAY_NAMES)), [semana, DAY_NAMES, dayNameFromISO]);
@@ -24,8 +32,12 @@ function ReportTableHead({
 
   return (
     <thead>
-      <tr>
-        <Th aria-label={t('reports.person')} scope='col' align='left' />
+      <tr
+        ref={headerRowRef}
+        className='report-sticky-row report-sticky-row--header'
+        style={{ ['--report-sticky-row-top' as string]: `${headerTop}px` }}
+      >
+        <Th aria-label={t('reports.person')} scope='col' align='left' className='report-sticky-first-col' />
         {semana.map((iso, i) => (
           <Th key={`dname_${iso}`} scope='col' align='center'>
             {dayNames[i]}
@@ -34,8 +46,12 @@ function ReportTableHead({
         <Th scope='col' className='font-bold whitespace-nowrap' align='center'>{t('reports.total')}</Th>
       </tr>
 
-      <tr>
-        <Th scope='col' align='left'>{t('reports.date')}</Th>
+      <tr
+        ref={dateRowRef}
+        className='report-sticky-row report-sticky-row--date'
+        style={{ ['--report-sticky-row-top' as string]: `${dateTop}px` }}
+      >
+        <Th scope='col' align='left' className='report-sticky-first-col'>{t('reports.date')}</Th>
         {semana.map((iso, i) => (
           <Th key={`fecha_${iso}`} scope='col' align='center'>
             {dates[i]}
@@ -45,7 +61,7 @@ function ReportTableHead({
       </tr>
 
       <tr>
-        <Th scope='col' align='left'>{t('reports.scheduleBase')}</Th>
+        <Th scope='col' align='left' className='report-sticky-first-col'>{t('reports.scheduleBase')}</Th>
         {semana.map((iso, i) => (
           <Th key={`hor_${iso}`} scope='col' align='center'>
             {horarios[i]}

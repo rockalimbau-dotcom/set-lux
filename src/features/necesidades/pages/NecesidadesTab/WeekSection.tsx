@@ -9,12 +9,14 @@ import FieldRow from '../../components/FieldRow';
 import { JornadaRow } from '../../components/JornadaRow';
 import { ScheduleRow } from '../../components/ScheduleRow';
 import { MembersRow } from '../../components/MembersRow';
+import { ExtraBlocksRow } from '../../components/ExtraBlocksRow';
 import TextAreaAuto from '../../components/TextAreaAuto';
 import { DayInfo } from './NecesidadesTabTypes';
 import { parseYYYYMMDD, addDays, formatDDMMYYYY, translateWeekLabel } from './NecesidadesTabUtils';
 import { useRowSelection } from '../../hooks/useRowSelection';
 import { useColumnSelection } from '../../hooks/useColumnSelection';
 import { ConfirmModal } from '../../components/ConfirmModal';
+import { dayHasExtraBlocks } from '@shared/utils/extraBlocks';
 
 interface SelectedDayForSwap {
   weekId: string;
@@ -94,14 +96,6 @@ export function WeekSection({
   });
   const monday = parseYYYYMMDD(wk.startDate);
   const datesRow = useMemo(() => DAYS.map((_, i) => formatDDMMYYYY(addDays(monday, i))), [monday, DAYS]);
-  const reinforcementOptions = useMemo(
-    () => [
-      ...refsRoster.map(m => ({ ...m, source: m?.source || 'ref' })),
-      ...preRoster.map(m => ({ ...m, source: m?.source || 'pre' })),
-      ...pickRoster.map(m => ({ ...m, source: m?.source || 'pick' })),
-    ],
-    [refsRoster, preRoster, pickRoster]
-  );
   const allTeamOptions = useMemo(
     () => [
       ...baseRoster.map(m => ({ ...m, source: m?.source || 'base' })),
@@ -297,6 +291,7 @@ export function WeekSection({
     days.some(day => keys.some(key => String(day?.[key] ?? '').trim() !== ''));
   const hasAnyList = (key: string) =>
     days.some(day => Array.isArray(day?.[key]) && (day[key] as AnyRecord[]).length > 0);
+  const hasAnyExtraBlocks = () => days.some(day => dayHasExtraBlocks(day));
   const isBlockCollapsed = (key: string) => !!collapsedBlocks[key];
   const toggleBlock = (key: string) =>
     setCollapsedBlocks(prev => ({ ...prev, [key]: !prev[key] }));
@@ -413,7 +408,7 @@ export function WeekSection({
                 ☑ ↔
               </button>
               {actionsOpen && (
-                <div className='no-pdf absolute left-0 mt-0.5 sm:mt-1 min-w-[160px] w-full border border-neutral-border rounded sm:rounded-md md:rounded-lg shadow-lg z-10 bg-white dark:bg-neutral-panel/95'>
+                <div className='no-pdf absolute left-0 mt-0.5 sm:mt-1 min-w-[160px] w-full border border-neutral-border rounded sm:rounded-md md:rounded-lg shadow-lg z-[120] bg-white dark:bg-neutral-panel/95'>
                   <button
                     className={`w-full text-left px-2 py-1 sm:px-2.5 sm:py-1.5 md:px-3 md:py-2 text-[9px] sm:text-[10px] md:text-xs transition-colors ${
                       theme === 'light' ? 'text-gray-900' : 'text-zinc-300'
@@ -516,7 +511,7 @@ export function WeekSection({
           <table className={`needs-week-table min-w-[600px] sm:min-w-[680px] md:min-w-[760px] w-full table-fixed border-separate border-spacing-0 text-[9px] sm:text-[10px] md:text-xs lg:text-sm ${showExportControls ? 'needs-week-table--selectable' : ''}`}>
             <colgroup>
               {showExportControls && <col className='w-6 sm:w-7 md:w-8' />}
-              <col className='w-[95px] sm:w-[110px] md:w-[125px] lg:w-[140px]' />
+              <col className='w-[150px] sm:w-[180px] md:w-[210px] lg:w-[240px]' />
               <col span={DAYS.length} className='w-[110px] sm:w-[130px] md:w-[150px] lg:w-[170px]' />
             </colgroup>
             <thead>
@@ -834,24 +829,18 @@ export function WeekSection({
                   endKey='crewEnd'
                 />
               )}
-              {!isBlockCollapsed('team') && (!hideEmptyRows || hasAnyList('refList') || hasAnyValue(['refStart', 'refEnd', 'refTipo'])) && (
-                <MembersRow
+              {!isBlockCollapsed('team') && (!hideEmptyRows || hasAnyExtraBlocks() || hasAnyList('refList') || hasAnyValue(['refStart', 'refEnd', 'refTipo'])) && (
+                <ExtraBlocksRow
                   label={t('needs.reinforcements')}
-                  listKey='refList'
                   weekId={wid}
                   weekObj={wk}
-                  options={reinforcementOptions}
-                  removeFromList={removeFromList}
+                  options={allTeamOptions}
                   setCell={setCell}
                   readOnly={readOnly}
                   rowKey={`${wid}_refList`}
                   isSelected={isRowSelected(`${wid}_refList`)}
                   toggleRowSelection={toggleRowSelection}
                   showSelection={showExportControls}
-                  showSchedule
-                  jornadaKey='refTipo'
-                  startKey='refStart'
-                  endKey='refEnd'
                   collapsible
                   defaultCollapsed
                 />
@@ -965,7 +954,7 @@ export function WeekSection({
                     <button
                       type='button'
                       onClick={() => toggleBlock('extraCrew')}
-                      className='phase-block-button w-full flex items-center gap-2 font-medium'
+                      className='phase-block-button w-full flex items-center gap-2 font-medium whitespace-nowrap'
                       style={{ color: 'var(--text)' }}
                     >
                       <span className={`transition-transform opacity-80 text-[8px] sm:text-[9px] md:text-[10px] ${isBlockCollapsed('extraCrew') ? '-rotate-90' : ''}`}>⌄</span>

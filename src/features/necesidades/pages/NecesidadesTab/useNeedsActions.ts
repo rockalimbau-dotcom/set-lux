@@ -7,6 +7,7 @@ import { parseYYYYMMDD, addDays, pad2 } from '@shared/utils/date';
 import { mdKey } from '@shared/utils/dateKey';
 import { relabelNeedsWeekByCalendar } from '../../utils/calendar';
 import { sortTeam } from '@features/equipo/pages/EquipoTab/EquipoTabUtils';
+import { applyExtraBlocksToDay } from '@shared/utils/extraBlocks';
 
 interface UseNeedsActionsProps {
   storageKey: string;
@@ -248,6 +249,13 @@ export function useNeedsActions({
     updateNeeds((prev: AnyRecord) =>
       updateWeekById(prev, weekId, (w: AnyRecord) => {
         const day: AnyRecord = (w.days && (w.days as AnyRecord[])[dayIdx]) || {};
+        if (fieldKey === 'refBlocks') {
+          const nextDay = applyExtraBlocksToDay(day, Array.isArray(value) ? (value as AnyRecord[]) : []);
+          return {
+            ...w,
+            days: { ...w.days, [dayIdx]: nextDay },
+          };
+        }
         if (fieldKey === 'crewTipo') {
           const nextTipo = String(value || '').trim();
           const normalized = nextTipo.toLowerCase();
@@ -277,6 +285,12 @@ export function useNeedsActions({
             nextDay.crewTxt = '';
             nextDay.crewStart = '';
             nextDay.crewEnd = '';
+            nextDay.refList = [];
+            nextDay.refTxt = '';
+            nextDay.refTipo = '';
+            nextDay.refStart = '';
+            nextDay.refEnd = '';
+            nextDay.refBlocks = [];
             return {
               ...w,
               days: { ...w.days, [dayIdx]: nextDay },

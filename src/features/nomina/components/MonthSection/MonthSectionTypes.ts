@@ -70,7 +70,7 @@ export interface MonthSectionProps {
   calcWorkedBreakdown: (
     weeks: any[],
     filterISO: (iso: string) => boolean,
-    person: { role: string; name: string }
+    person: { role: string; name: string; source?: string }
   ) => { 
     workedDays: number; 
     travelDays: number; 

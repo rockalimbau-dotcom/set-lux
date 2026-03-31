@@ -202,5 +202,127 @@ describe('calcWorkedBreakdown', () => {
       expect(result.workedBase).toBe(0);
       expect(result.prelight).toBe(1);
     });
+
+    it('uses extra block jornada type for extra crew rows', () => {
+      const weeksWithExtraBlocks = [
+        {
+          days: [
+            {
+              tipo: 'Rodaje',
+              team: [
+                { role: 'E', name: 'Ricard Durany', source: 'ref' },
+                { role: 'E', name: 'Oriol Monguilod', source: 'ref' },
+              ],
+              refBlocks: [
+                {
+                  id: 'extra_1',
+                  tipo: 'Rodaje',
+                  start: '07:00',
+                  end: '18:00',
+                  list: [{ role: 'E', name: 'Ricard Durany', source: 'ref' }],
+                  text: '',
+                },
+                {
+                  id: 'extra_2',
+                  tipo: '1/2 jornada',
+                  start: '08:00',
+                  end: '14:00',
+                  list: [{ role: 'E', name: 'Oriol Monguilod', source: 'ref' }],
+                  text: '',
+                },
+              ],
+            },
+          ],
+        },
+      ];
+
+      const ricard = calcWorkedBreakdown(
+        weeksWithExtraBlocks,
+        () => true,
+        { role: 'E', name: 'Ricard Durany', source: 'ref' },
+        'diario'
+      );
+      const oriol = calcWorkedBreakdown(
+        weeksWithExtraBlocks,
+        () => true,
+        { role: 'E', name: 'Oriol Monguilod', source: 'ref' },
+        'diario'
+      );
+
+      expect(ricard.rodaje).toBe(1);
+      expect(ricard.halfDays).toBe(0);
+      expect(oriol.rodaje).toBe(0);
+      expect(oriol.halfDays).toBe(1);
+    });
+
+    it('still uses extra block jornada type when the row source is missing', () => {
+      const weeksWithExtraBlocks = [
+        {
+          days: [
+            {
+              tipo: 'Rodaje',
+              team: [{ role: 'E', name: 'Oriol Monguilod', source: 'ref' }],
+              refBlocks: [
+                {
+                  id: 'extra_half',
+                  tipo: '1/2 jornada',
+                  start: '08:00',
+                  end: '14:00',
+                  list: [{ role: 'E', name: 'Oriol Monguilod', source: 'ref' }],
+                  text: '',
+                },
+              ],
+            },
+          ],
+        },
+      ];
+
+      const oriol = calcWorkedBreakdown(
+        weeksWithExtraBlocks,
+        () => true,
+        { role: 'E', name: 'Oriol Monguilod' },
+        'diario'
+      );
+
+      expect(oriol.rodaje).toBe(0);
+      expect(oriol.halfDays).toBe(1);
+    });
+
+    it('keeps base rows from double-counting pickup days when a pickup row also exists', () => {
+      const weeksWithBaseAndPickup = [
+        {
+          days: [
+            {
+              tipo: 'Rodaje',
+              pickup: [{ role: 'ER', name: 'Pol Peitx', source: 'base' }],
+              pickupTipo: 'Recogida',
+            },
+            {
+              tipo: 'Rodaje',
+              team: [{ role: 'E', name: 'Pol Peitx', source: 'base' }],
+            },
+          ],
+        },
+      ];
+
+      const baseRow = calcWorkedBreakdown(
+        weeksWithBaseAndPickup,
+        () => true,
+        { role: 'E', name: 'Pol Peitx', source: 'base-strict' as any },
+        'diario'
+      );
+      const pickupRow = calcWorkedBreakdown(
+        weeksWithBaseAndPickup,
+        () => true,
+        { role: 'ER', name: 'Pol Peitx', source: 'base' },
+        'diario'
+      );
+
+      expect(baseRow.rodaje).toBe(1);
+      expect(baseRow.recogida).toBe(0);
+      expect(pickupRow.rodaje).toBe(0);
+      expect(pickupRow.recogida).toBe(1);
+      expect((baseRow.rodaje || 0) + (pickupRow.recogida || 0)).toBe(2);
+    });
   });
 });

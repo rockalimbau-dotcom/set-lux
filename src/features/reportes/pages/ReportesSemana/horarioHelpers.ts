@@ -1,5 +1,6 @@
 import { translateJornadaType as translateJornadaTypeUtil } from '@shared/utils/jornadaTranslations';
 import { BLOCKS, getDayBlockList } from '../../utils/plan';
+import { formatExtraScheduleByIndex, formatExtraSchedules } from '../../utils/extra';
 
 export const createHorarioHelpers = (
   findWeekAndDay: (iso: string) => { day: any },
@@ -48,9 +49,15 @@ export const createHorarioHelpers = (
     if (!day || day.tipo === 'Descanso') return '';
     const refList = getDayBlockList(day, BLOCKS.extra);
     if (!Array.isArray(refList) || refList.length === 0) return '';
-    if (!day.refStart || !day.refEnd) return t('reports.addInPlanning');
-    return `${day.refStart}–${day.refEnd}`;
+    const formatted = formatExtraSchedules(day, t('reports.addInPlanning'), t);
+    return formatted || t('reports.addInPlanning');
   };
 
-  return { horarioTexto, horarioPrelight, horarioPickup, horarioExtra };
+  const horarioExtraByIndex = (index: number) => (iso: string) => {
+    const { day } = findWeekAndDay(iso);
+    if (!day || day.tipo === 'Descanso') return '';
+    return formatExtraScheduleByIndex(day, index, t('reports.addInPlanning'), t);
+  };
+
+  return { horarioTexto, horarioPrelight, horarioPickup, horarioExtra, horarioExtraByIndex };
 };

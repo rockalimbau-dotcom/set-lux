@@ -1,5 +1,6 @@
 import { parseNum, parseHHMM, diffMinutes, ceilHours } from './numbers';
 import { storage } from '@shared/services/localStorage.service';
+import { getExtraBlockWindowByIndex, getExtraWindow } from './extra';
 
 interface Project {
   id?: string;
@@ -107,12 +108,17 @@ export function readCondParams(project: Project, mode?: 'semanal' | 'mensual' | 
 
 export function getBlockWindow(day: any, block: 'base' | 'pre' | 'pick' | 'extra'): { start: string | null; end: string | null } {
   if (!day || day.tipo === 'Descanso') return { start: null, end: null };
+  if (typeof block === 'string' && block.startsWith('extra:')) {
+    const index = Number(block.split(':')[1] || '-1');
+    if (!Number.isFinite(index) || index < 0) return { start: null, end: null };
+    return getExtraBlockWindowByIndex(day, index);
+  }
   if (block === 'pre')
     return { start: day.prelightStart || null, end: day.prelightEnd || null };
   if (block === 'pick')
     return { start: day.pickupStart || null, end: day.pickupEnd || null };
   if (block === 'extra')
-    return { start: day.refStart || null, end: day.refEnd || null };
+    return getExtraWindow(day);
   return { start: day.start || null, end: day.end || null };
 }
 

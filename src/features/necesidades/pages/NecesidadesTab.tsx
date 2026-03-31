@@ -12,6 +12,7 @@ import { useRoster } from '@shared/hooks/useRoster';
 import { useHolidays } from '@shared/hooks/useHolidays';
 import { syncDayListWithRosterBlankOnly } from '@shared/utils/rosterSync';
 import { NecesidadesTabContent } from './NecesidadesTab/NecesidadesTabContent';
+import { applyExtraBlocksToDay, normalizeExtraBlocks } from '@shared/utils/extraBlocks';
 
 export default function NecesidadesTab({ project, readOnly = false }: NecesidadesTabProps) {
   const { t } = useTranslation();
@@ -111,6 +112,10 @@ export default function NecesidadesTab({ project, readOnly = false }: Necesidade
     () => JSON.stringify({ baseRoster, preRoster, pickRoster, refsRoster }),
     [baseRoster, preRoster, pickRoster, refsRoster]
   );
+  const extraRoster = useMemo(
+    () => [...baseRoster, ...refsRoster, ...preRoster, ...pickRoster],
+    [baseRoster, refsRoster, preRoster, pickRoster]
+  );
 
   useEffect(() => {
     if (!isLoaded) return;
@@ -144,7 +149,8 @@ export default function NecesidadesTab({ project, readOnly = false }: Necesidade
               if (Array.isArray(d?.preList) && d.preList.length > 0) changed = true;
               if (Array.isArray(d?.pickList) && d.pickList.length > 0) changed = true;
               if (Array.isArray(d?.refList) && d.refList.length > 0) changed = true;
-              return { ...d, crewList: [], preList: [], pickList: [], refList: [] };
+              if (Array.isArray(d?.refBlocks) && d.refBlocks.length > 0) changed = true;
+              return { ...d, crewList: [], preList: [], pickList: [], refList: [], refBlocks: [] };
             }
             const current = Array.isArray(d?.crewList) ? d.crewList : [];
             const synced = current.length === 0
@@ -192,21 +198,21 @@ export default function NecesidadesTab({ project, readOnly = false }: Necesidade
               });
             if (!samePick) changed = true;
 
-            const currentRef = Array.isArray(d?.refList) ? d.refList : [];
-            const syncedRef =
-              currentRef.length === 0
-                ? currentRef
-                : syncDayListWithRosterBlankOnly(currentRef, refsRoster || [], 'ref');
-            const sameRef = currentRef.length === syncedRef.length &&
-              currentRef.every((m: AnyRecord, idx: number) => {
-                const s = syncedRef[idx];
-                return (m?.role || '') === (s?.role || '') &&
-                  (m?.name || '') === (s?.name || '') &&
-                  (m?.gender || '') === (s?.gender || '');
-              });
-            if (!sameRef) changed = true;
+            const currentBlocks = normalizeExtraBlocks(d);
+            const syncedBlocks = currentBlocks.map(block => ({
+              ...block,
+              list:
+                block.list.length === 0
+                  ? block.list
+                  : syncDayListWithRosterBlankOnly(block.list, extraRoster || [], 'ref'),
+            }));
+            const sameBlocks = JSON.stringify(currentBlocks) === JSON.stringify(syncedBlocks);
+            if (!sameBlocks) changed = true;
 
-            return { ...d, crewList: synced, preList: syncedPre, pickList: syncedPick, refList: syncedRef };
+            return applyExtraBlocksToDay(
+              { ...d, crewList: synced, preList: syncedPre, pickList: syncedPick },
+              syncedBlocks
+            );
           });
           return { ...w, days: nextDays };
         });
@@ -218,7 +224,7 @@ export default function NecesidadesTab({ project, readOnly = false }: Necesidade
         pro: syncWeeks(prev.pro || []),
       };
     });
-  }, [isLoaded, rosterKey, baseRoster, setNeeds]);
+  }, [isLoaded, rosterKey, baseRoster, extraRoster, setNeeds]);
 
   // Actions
   const { setCell, setWeekStart, removeFromList, setWeekOpen, swapDays, addCustomRow, updateCustomRowLabel, removeCustomRow, addWeek, duplicateWeek, deleteWeek } = useNeedsActions({
@@ -313,6 +319,7 @@ export default function NecesidadesTab({ project, readOnly = false }: Necesidade
             filteredDay.refTipo = day.refTipo;
             filteredDay.refStart = day.refStart;
             filteredDay.refEnd = day.refEnd;
+            filteredDay.refBlocks = day.refBlocks;
           } else {
             filteredDay[fieldKey] = day[fieldKey];
           }

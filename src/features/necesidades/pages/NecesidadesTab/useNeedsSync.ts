@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { storage } from '@shared/services/localStorage.service';
 import { AnyRecord } from '@shared/types/common';
+import { applyExtraBlocksToDay, normalizeExtraBlocks } from '@shared/utils/extraBlocks';
 
 interface UseNeedsSyncProps {
   planKey: string;
@@ -179,6 +180,7 @@ export function useNeedsSync({
               day.refTipo = day.refTipo || '';
               day.refStart = day.refStart || '';
               day.refEnd = day.refEnd || '';
+              Object.assign(day, applyExtraBlocksToDay(day, normalizeExtraBlocks(day)));
               day.preTxt = day.preTxt || '';
               day.prelightTipo = day.prelightTipo || (day as AnyRecord).preTipo || '';
               day.preStart = day.preStart || '';
@@ -323,4 +325,3 @@ export function useNeedsSync({
 
   return { syncFromPlanRaw };
 }
-

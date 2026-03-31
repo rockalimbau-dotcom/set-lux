@@ -15,7 +15,12 @@ export function normalizePersonaKey(key: string): string {
   let name = '';
   let block = '';
   
-  if (key.includes('.pre__')) {
+  const extraMatch = key.match(/^(.*?)\.(extra(?::\d+)?)__(.*)$/);
+  if (extraMatch) {
+    role = extraMatch[1] || '';
+    block = extraMatch[2] || 'extra';
+    name = extraMatch[3] || '';
+  } else if (key.includes('.pre__')) {
     const [rolePart, ...nameParts] = key.split('.pre__');
     role = rolePart || '';
     name = nameParts.join('.pre__') || '';
@@ -47,7 +52,7 @@ export function normalizePersonaKey(key: string): string {
     return `${role}.pre__${name}`;
   } else if (block === 'pick') {
     return `${role}.pick__${name}`;
-  } else if (block === 'extra') {
+  } else if (block.startsWith('extra')) {
     return `${role}.extra__${name}`;
   } else {
     return `${role}__${name}`;
@@ -101,7 +106,7 @@ export function personaKey(p: any): string {
     const block = (p && (p.__block || p.block)) || '';
     if (block === 'pre') return `${role}.pre__${name}`; // REFE.pre__name, REFG.pre__name, etc.
     if (block === 'pick') return `${role}.pick__${name}`; // REFE.pick__name, REFG.pick__name, etc.
-    if (block === 'extra') return `${role}.extra__${name}`; // REFE.extra__name, REFG.extra__name, etc.
+    if (String(block).startsWith('extra')) return `${role}.${block}__${name}`; // REFE.extra__name, REFE.extra:1__name
     return `${role}__${name}`; // REFE__name, REFG__name, etc.
   }
   
@@ -109,7 +114,7 @@ export function personaKey(p: any): string {
   const block = (p && (p.__block || p.block)) || '';
   if (block === 'pre') return `${role}.pre__${name}`;
   if (block === 'pick') return `${role}.pick__${name}`;
-  if (block === 'extra') return `${role}.extra__${name}`;
+  if (String(block).startsWith('extra')) return `${role}.${block}__${name}`;
   return `${role}__${name}`;
 }
 
