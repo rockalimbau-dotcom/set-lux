@@ -39,6 +39,7 @@ export function useLanguageSync({ model: _model, setModel }: UseLanguageSyncProp
         const getDefaultDietas = () => getDefaultsDiario().dietas;
         const getDefaultTransportes = () => getDefaultsDiario().transportes;
         const getDefaultAlojamiento = () => getDefaultsDiario().alojamiento;
+        const getDefaultPrepro = () => getDefaultsDiario().prepro;
         const getDefaultConvenio = () => getDefaultsDiario().convenio;
         
         const newDefaultLegend = getDefaultLegendPubli();
@@ -46,6 +47,7 @@ export function useLanguageSync({ model: _model, setModel }: UseLanguageSyncProp
         const newDefaultDietas = getDefaultDietas();
         const newDefaultTransportes = getDefaultTransportes();
         const newDefaultAlojamiento = getDefaultAlojamiento();
+        const newDefaultPrepro = getDefaultPrepro();
         const newDefaultConvenio = getDefaultConvenio();
         
         // Render current template and defaults with same parameters for comparison
@@ -55,6 +57,7 @@ export function useLanguageSync({ model: _model, setModel }: UseLanguageSyncProp
         const currentDietasRendered = renderWithParams(m.dietasTemplate || '', params);
         const currentTransportesRendered = renderWithParams(m.transportesTemplate || '', params);
         const currentAlojamientoRendered = renderWithParams(m.alojamientoTemplate || '', params);
+        const currentPreproRendered = renderWithParams(m.preproTemplate || '', params);
         const currentConvenioRendered = renderWithParams(m.convenioTemplate || '', params);
         
         // Compare rendered text with defaults rendered from all languages
@@ -139,6 +142,9 @@ export function useLanguageSync({ model: _model, setModel }: UseLanguageSyncProp
         }
         if (isRenderedDefault(currentAlojamientoRendered, m.alojamientoTemplate || '', 'conditions.defaultAccommodation')) {
           updated.alojamientoTemplate = newDefaultAlojamiento;
+        }
+        if (isRenderedDefault(currentPreproRendered, m.preproTemplate || '', 'conditions.defaultPreProduction')) {
+          updated.preproTemplate = newDefaultPrepro;
         }
         if (isRenderedDefault(currentConvenioRendered, m.convenioTemplate || '', 'conditions.defaultAgreement')) {
           updated.convenioTemplate = newDefaultConvenio;

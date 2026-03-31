@@ -99,14 +99,10 @@ export async function exportCondicionesToPDF(
       format: 'a4'
     });
 
-    // Generar festivos dinámicos en el idioma actual
-    const currentFestivosText = await generateDynamicFestivosText();
-    
-    // Para el PDF, siempre usar los textos traducidos actuales para estos campos
-    const festivosText = currentFestivosText;
-    const alojamientoText = getDefaultAlojamiento();
-    const preproText = getDefaultPrepro();
-    const convenioText = getDefaultConvenio();
+    const festivosText = model.festivosTemplate ?? await generateDynamicFestivosText();
+    const alojamientoText = model.alojamientoTemplate ?? getDefaultAlojamiento();
+    const preproText = model.preproTemplate ?? getDefaultPrepro();
+    const convenioText = model.convenioTemplate ?? getDefaultConvenio();
 
     // Calcular paginación con ajuste dinámico
     // Convertir Markdown a HTML para el PDF

@@ -99,6 +99,18 @@ export function InfoSections({ model, setText, readOnly }: InfoSectionsProps) {
         onRestore={() => setText('alojamientoTemplate', defaults.alojamiento)}
       />
       <InfoCard
+        title={t('conditions.preProduction')}
+        value={renderWithParams(model.preproTemplate, model.params)}
+        onChange={v =>
+          setText('preproTemplate', visibleToTemplate(v, model.params))
+        }
+        readOnly={readOnly}
+        template={model.preproTemplate}
+        params={model.params}
+        translationKey='conditions.defaultPreProduction'
+        onRestore={() => setText('preproTemplate', defaults.prepro)}
+      />
+      <InfoCard
         title={t('conditions.agreement')}
         value={renderWithParams(model.convenioTemplate, model.params)}
         onChange={v =>
@@ -135,4 +147,3 @@ export function InfoSections({ model, setText, readOnly }: InfoSectionsProps) {
     </>
   );
 }
-

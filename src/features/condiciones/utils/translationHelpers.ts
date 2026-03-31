@@ -90,6 +90,6 @@ export const getDefaultsDiario = () => ({
   dietas: getDefaultDietasDiario(),
   transportes: getDefaultTransportes(),
   alojamiento: getDefaultAlojamiento(),
+  prepro: getDefaultPrepro(),
   convenio: getDefaultConvenio(),
 });
-

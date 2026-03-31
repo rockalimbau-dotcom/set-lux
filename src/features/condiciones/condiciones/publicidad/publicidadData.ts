@@ -23,6 +23,7 @@ const getDefaultHorarios = () => getDefaultsDiario().horarios;
 const getDefaultDietas = () => getDefaultsDiario().dietas;
 const getDefaultTransportes = () => getDefaultsDiario().transportes;
 const getDefaultAlojamiento = () => getDefaultsDiario().alojamiento;
+const getDefaultPrepro = () => getDefaultsDiario().prepro;
 const getDefaultConvenio = () => getDefaultsDiario().convenio;
 
 export function loadOrSeedDiario(storageKey: string): AnyRecord {
@@ -80,6 +81,7 @@ export function loadOrSeedDiario(storageKey: string): AnyRecord {
     dietasTemplate: getDefaultDietas(),
     transportesTemplate: getDefaultTransportes(),
     alojamientoTemplate: getDefaultAlojamiento(),
+    preproTemplate: getDefaultPrepro(),
     convenioTemplate: getDefaultConvenio(),
     params: {
       jornadaTrabajo: '10',
@@ -150,6 +152,10 @@ export function loadOrSeedDiario(storageKey: string): AnyRecord {
         parsed.alojamientoTemplate = parsed.alojamiento;
         delete parsed.alojamiento;
       }
+      if (parsed.prepro && !parsed.preproTemplate) {
+        parsed.preproTemplate = parsed.prepro;
+        delete parsed.prepro;
+      }
       
       if (parsed.convenio && !parsed.convenioTemplate) {
         parsed.convenioTemplate = parsed.convenio;
@@ -183,6 +189,7 @@ export function loadOrSeedDiario(storageKey: string): AnyRecord {
       parsed.dietasTemplate = parsed.dietasTemplate ?? getDefaultDietas();
       parsed.transportesTemplate = parsed.transportesTemplate ?? getDefaultTransportes();
       parsed.alojamientoTemplate = parsed.alojamientoTemplate ?? getDefaultAlojamiento();
+      parsed.preproTemplate = parsed.preproTemplate ?? getDefaultPrepro();
       parsed.convenioTemplate = parsed.convenioTemplate ?? getDefaultConvenio();
 
       // Asegurar que roles existe y tiene valores por defecto si está vacío
@@ -273,4 +280,3 @@ export function loadOrSeedDiario(storageKey: string): AnyRecord {
 }
 
 export { globalDynamicFestivosText };
-
