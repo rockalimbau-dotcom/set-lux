@@ -719,33 +719,27 @@ function AppInner() {
           const currentId = tutorialSteps[tutorialStep]?.id;
           const nextId = tutorialSteps[nextIndex]?.id;
           if (currentId === 'profile-menu' && nextId === 'profile-menu-open') {
-            setTutorialStep(nextIndex);
-            setTimeout(() => {
-              try {
-                window.dispatchEvent(new CustomEvent('tutorial-profile-menu-open'));
-              } catch {}
-            }, 0);
+            try {
+              window.dispatchEvent(new CustomEvent('tutorial-profile-menu-open'));
+            } catch {}
+            requestAnimationFrame(() => setTutorialStep(nextIndex));
             return;
           }
           if (
             currentId === 'profile-menu-open' &&
             (nextId === 'profile-menu' || nextId === 'new-project')
           ) {
-            setTutorialStep(nextIndex);
-            setTimeout(() => {
-              try {
-                window.dispatchEvent(new CustomEvent('tutorial-profile-menu-close'));
-              } catch {}
-            }, 0);
+            try {
+              window.dispatchEvent(new CustomEvent('tutorial-profile-menu-close'));
+            } catch {}
+            requestAnimationFrame(() => setTutorialStep(nextIndex));
             return;
           }
           if (currentId === 'new-project' && nextId === 'profile-menu-open') {
-            setTutorialStep(nextIndex);
-            setTimeout(() => {
-              try {
-                window.dispatchEvent(new CustomEvent('tutorial-profile-menu-open'));
-              } catch {}
-            }, 0);
+            try {
+              window.dispatchEvent(new CustomEvent('tutorial-profile-menu-open'));
+            } catch {}
+            requestAnimationFrame(() => setTutorialStep(nextIndex));
             return;
           }
           if (currentId === 'new-project' && nextId === 'new-project-form') {

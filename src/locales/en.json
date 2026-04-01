@@ -802,7 +802,7 @@
       },
       "newProjectForm": {
         "title": "Project editor",
-        "body": "Enter and edit the project's general details"
+        "body": "Enter and edit the project's general details.\nTo continue, you need to fill in the project name."
       },
       "team": {
         "title": "Team",

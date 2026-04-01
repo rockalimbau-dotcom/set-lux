@@ -21,6 +21,7 @@ export function ProjectsScreenHeader({
 }: ProjectsScreenHeaderProps) {
   const { t } = useTranslation();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [menuLockedByTutorial, setMenuLockedByTutorial] = useState(false);
   const [hoveredUserMenuOption, setHoveredUserMenuOption] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const theme = document.documentElement.getAttribute('data-theme') || 'light';
@@ -31,8 +32,14 @@ export function ProjectsScreenHeader({
   const genderContext = gender === 'male' || gender === 'female' || gender === 'neutral' ? gender : 'neutral';
 
   useEffect(() => {
-    const handleOpen = () => setMenuOpen(true);
-    const handleClose = () => setMenuOpen(false);
+    const handleOpen = () => {
+      setMenuLockedByTutorial(true);
+      setMenuOpen(true);
+    };
+    const handleClose = () => {
+      setMenuLockedByTutorial(false);
+      setMenuOpen(false);
+    };
     window.addEventListener('tutorial-profile-menu-open', handleOpen as EventListener);
     window.addEventListener('tutorial-profile-menu-close', handleClose as EventListener);
     return () => {
@@ -43,12 +50,14 @@ export function ProjectsScreenHeader({
 
   useEffect(() => {
     const handleDocClick = (event: MouseEvent) => {
+      if (menuLockedByTutorial) return;
       if (!menuRef.current) return;
       if (!menuRef.current.contains(event.target as Node)) {
         setMenuOpen(false);
       }
     };
     const handleEsc = (event: KeyboardEvent) => {
+      if (menuLockedByTutorial) return;
       if (event.key === 'Escape') setMenuOpen(false);
     };
     document.addEventListener('mousedown', handleDocClick);
@@ -57,7 +66,7 @@ export function ProjectsScreenHeader({
       document.removeEventListener('mousedown', handleDocClick);
       document.removeEventListener('keydown', handleEsc);
     };
-  }, []);
+  }, [menuLockedByTutorial]);
 
   return (
     <div className='px-5 sm:px-6 md:px-7 lg:px-8 xl:px-6' style={{backgroundColor: 'var(--bg)', minHeight: 'auto', position: 'relative', contain: 'layout style', marginTop: 0, paddingTop: '1.5rem', paddingBottom: '0.5rem', zIndex: 10}}>
@@ -87,7 +96,10 @@ export function ProjectsScreenHeader({
             {/* Menú de usuario */}
             <div className='absolute right-0 top-full mt-1 sm:mt-2' ref={menuRef}>
               <button
-                onClick={() => setMenuOpen(!menuOpen)}
+                onClick={() => {
+                  if (menuLockedByTutorial) return;
+                  setMenuOpen(!menuOpen);
+                }}
                 data-tutorial='projects-user-menu-trigger'
                 aria-haspopup='menu'
                 aria-expanded={menuOpen}

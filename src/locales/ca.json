@@ -810,7 +810,7 @@
       },
       "newProjectForm": {
         "title": "Editor de projecte",
-        "body": "Introdueix i edita les dades generals del projecte"
+        "body": "Introdueix i edita les dades generals del projecte.\nPer avançar, has d'omplir el nom del projecte."
       },
       "team": {
         "title": "Equip",

@@ -803,7 +803,7 @@
       },
       "newProjectForm": {
         "title": "Editor de proyecto",
-        "body": "Introduce y edita los datos generales del proyecto"
+        "body": "Introduce y edita los datos generales del proyecto.\nPara avanzar, tienes que rellenar el nombre del proyecto."
       },
       "team": {
         "title": "Equipo",
