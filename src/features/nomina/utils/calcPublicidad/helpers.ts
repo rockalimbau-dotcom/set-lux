@@ -50,6 +50,18 @@ export function isoInRange(iso: string, start: Date, end: Date) {
  */
 export function storageKeyVariants(baseKey: string): string[] {
   const variants = [baseKey];
+  const [rolePart, name = ''] = String(baseKey || '').split('__');
+  const extraMatch = String(rolePart || '').match(/^(.*)\.(extra(?::\d+)?)$/);
+  if (extraMatch) {
+    const rawRole = extraMatch[1] || '';
+    const extraBlock = extraMatch[2] || 'extra';
+    variants.push(`${rawRole}.${extraBlock}__${name}`);
+    variants.push(`${rawRole}.extra__${name}`);
+    variants.push(`${stripPR(rawRole)}.${extraBlock}__${name}`);
+    variants.push(`${stripPR(rawRole)}.extra__${name}`);
+    variants.push(`${stripPR(rawRole)}__${name}`);
+    return [...new Set(variants)];
+  }
   
   // Si es una clave con sufijo, agregar variantes sin sufijo
   if (/[PR]__/.test(baseKey)) {
@@ -93,8 +105,8 @@ export function getCellValueCandidates(
 ): string | undefined {
   // Priorizar claves específicas (que contienen .pre__ o .pick__) sobre genéricas
   const prioritizedKeys = [...storageKeys].sort((a, b) => {
-    const aSpecific = a.includes('.pre__') || a.includes('.pick__');
-    const bSpecific = b.includes('.pre__') || b.includes('.pick__');
+    const aSpecific = a.includes('.pre__') || a.includes('.pick__') || /\.extra(?::\d+)?__/.test(a);
+    const bSpecific = b.includes('.pre__') || b.includes('.pick__') || /\.extra(?::\d+)?__/.test(b);
     if (aSpecific && !bSpecific) return -1;
     if (!aSpecific && bSpecific) return 1;
     return 0;
@@ -141,6 +153,7 @@ export function storageKeyFor(roleCode: string, name: string, block?: string): s
   // En diario NO hay refuerzos, pero SÍ hay prelight y pickup
   if (block === 'pre') return `${base}.pre__${name || ''}`;
   if (block === 'pick') return `${base}.pick__${name || ''}`;
+  if (typeof block === 'string' && block.startsWith('extra:')) return `${base}.${block}__${name || ''}`;
   
   // Usar la clave base sin sufijo P/R para coincidir con reportes
   return `${base}__${name || ''}`;
@@ -157,4 +170,3 @@ export function valIsYes(v: unknown): boolean {
     .trim();
   return s === 'SI' || s === 'YES' || s === 'TRUE' || s === '1';
 }
-

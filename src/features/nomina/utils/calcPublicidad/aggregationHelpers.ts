@@ -101,6 +101,7 @@ export const COL_CANDIDATES = {
   noct: ['Nocturnidad', 'Noct', 'Nocturnidades'] as const,
   dietas: ['Dietas', 'Dietas / Ticket', 'Ticket', 'Tickets'] as const,
   km: ['Kilometraje', 'KM', 'Km'] as const,
+  gasolina: ['Gasolina'] as const,
   transp: ['Transporte', 'Transportes'] as const,
   penalty: ['Penalty lunch', 'Penalty Lunch', 'Penalty', 'PL'] as const,
   materialPropio: ['Material propio', 'Material Propio'] as const,

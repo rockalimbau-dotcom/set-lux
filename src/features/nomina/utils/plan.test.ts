@@ -99,6 +99,21 @@ describe('plan.ts', () => {
       expect(index.has('GAFFE__Juan')).toBe(true); // stripPR removes trailing R, so GAFFER becomes GAFFE
     });
 
+    it('should detect refuerzo members inside extra blocks', () => {
+      const weeks = [{
+        days: [{
+          refBlocks: [
+            {
+              list: [{ role: 'REF', name: 'Extra Pedro' }],
+            },
+          ],
+        }],
+      }];
+
+      const index = buildRefuerzoIndex(weeks);
+      expect(index.has('REF__Extra Pedro')).toBe(true);
+    });
+
     it('should return empty set for no refuerzo members', () => {
       const weeks = [{
         days: [{
@@ -181,6 +196,27 @@ describe('plan.ts', () => {
       expect(people).toHaveLength(3);
     });
 
+    it('should include people from extra blocks with block metadata', () => {
+      const week = {
+        days: [{
+          refBlocks: [
+            {
+              list: [{ role: 'E', name: 'Oriol Monguilod', gender: 'male' }],
+            },
+          ],
+        }],
+      };
+
+      const people = weekAllPeopleActive(week);
+      expect(people).toContainEqual({
+        role: 'E',
+        name: 'Oriol Monguilod',
+        gender: 'male',
+        source: 'extra',
+        block: 'extra:0',
+      });
+    });
+
     it('should generate default names for people without names', () => {
       const week = {
         days: [{
@@ -205,4 +241,3 @@ describe('plan.ts', () => {
     });
   });
 });
-

@@ -28,6 +28,7 @@ type MonthSectionPersonRowProps = {
     extras: boolean;
     transporte: boolean;
     km: boolean;
+    gasolina: boolean;
     dietas: boolean;
     materialPropio: boolean;
   };
@@ -337,6 +338,12 @@ export function MonthSectionPersonRow({
           ) : (
             <span className='text-[9px] sm:text-[10px] md:text-xs'>{displayMoney(r._totalKm, 2)}</span>
           )}
+        </Td>
+      )}
+
+      {columnVisibility.gasolina && (
+        <Td align='middle' className='text-center'>
+          <span className='text-[9px] sm:text-[10px] md:text-xs'>{displayMoney(r._totalGasolina, 2)}</span>
         </Td>
       )}
 

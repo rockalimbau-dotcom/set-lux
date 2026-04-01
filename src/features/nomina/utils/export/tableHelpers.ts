@@ -89,6 +89,10 @@ export const generateHeaderCells = (
     headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.totalKilometraje')}</th>`);
   }
 
+  if (columnVisibility.gasolina) {
+    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.totalGasoline')}</th>`);
+  }
+
   headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.totalBruto')}</th>`);
 
   return headerCells;
@@ -167,6 +171,10 @@ export const generateRowDataCells = (
   if (columnVisibility.km) {
     dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;">${esc(displayValue(r.km, 1))}</td>`);
     dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;">${esc(displayMoney(r._totalKm, 2))}</td>`);
+  }
+
+  if (columnVisibility.gasolina) {
+    dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;">${esc(displayMoney(r._totalGasolina, 2))}</td>`);
   }
 
   dataCells.push(`<td class="total-cell" style="text-align:center !important;vertical-align:middle !important;">${esc(displayMoney(r._totalBruto, 2))}</td>`);

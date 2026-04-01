@@ -28,7 +28,7 @@ export function aggregateReports(project: any, weeks: any[], filterISO: ((iso: s
     gender?: 'male' | 'female' | 'neutral',
     source?: string,
     matchRole?: string,
-    displayBlock?: 'base' | 'pre' | 'pick'
+    displayBlock?: 'base' | 'pre' | 'pick' | 'extra'
   ) => {
     const k = rowKey;
     if (!totals.has(k)) {
@@ -47,6 +47,7 @@ export function aggregateReports(project: any, weeks: any[], filterISO: ((iso: s
         penaltyLunch: 0,
         transporte: 0,
         km: 0,
+        gasolina: 0,
         materialPropioDays: 0,
         materialPropioWeeks: 0,
         dietasCount: new Map<string, number>(),
@@ -73,13 +74,14 @@ export function aggregateReports(project: any, weeks: any[], filterISO: ((iso: s
     
 
     const rawPeople = weekAllPeopleActive(w);
-    const uniqStorage = new Map<string, { roleVisible: string; gender?: 'male' | 'female' | 'neutral'; source?: string; rowKey: string; matchRole: string; displayBlock: 'base' | 'pre' | 'pick' }>();
+    const uniqStorage = new Map<string, { roleVisible: string; gender?: 'male' | 'female' | 'neutral'; source?: string; rowKey: string; matchRole: string; displayBlock: 'base' | 'pre' | 'pick' | 'extra' }>();
     for (const p of rawPeople) {
       const r = p.role || '';
       const n = p.name || '';
       const vk = visibleRoleFor(r, n, refuerzoSet, (p as any)?.source);
       const gender = (p as any)?.gender;
       const source = (p as any)?.source;
+      const block = (p as any)?.block;
       
       // REF no se procesa en diario (no hay refuerzos)
       if (vk === 'REF') {
@@ -87,14 +89,27 @@ export function aggregateReports(project: any, weeks: any[], filterISO: ((iso: s
       }
       
       // Detectar bloque basándose en el sufijo del rol
-      const block = source === 'pre' ? 'pre' : source === 'pick' ? 'pick' : r.endsWith('P') ? 'pre' : r.endsWith('R') ? 'pick' : undefined;
-      const sk = storageKeyFor(r, n, block);
-      const displayBlock = block === 'pre' ? 'pre' : block === 'pick' ? 'pick' : 'base';
+      const blockType =
+        typeof block === 'string' && block.startsWith('extra:')
+          ? 'extra'
+          : source === 'pre'
+          ? 'pre'
+          : source === 'pick'
+          ? 'pick'
+          : r.endsWith('P')
+          ? 'pre'
+          : r.endsWith('R')
+          ? 'pick'
+          : undefined;
+      const sk = storageKeyFor(r, n, blockType === 'extra' ? block : blockType);
+      const displayBlock = blockType === 'pre' ? 'pre' : blockType === 'pick' ? 'pick' : blockType === 'extra' ? 'extra' : 'base';
       const rowKey =
         displayBlock === 'pre'
           ? `${vk}.pre__${n}`
           : displayBlock === 'pick'
           ? `${vk}.pick__${n}`
+          : displayBlock === 'extra'
+          ? `${vk}.extra__${n}`
           : `${vk}__${n}`;
       const matchRole =
         displayBlock === 'pre' ? `${stripPR(r)}P` : displayBlock === 'pick' ? `${stripPR(r)}R` : stripPR(r);
@@ -135,6 +150,7 @@ export function aggregateReports(project: any, weeks: any[], filterISO: ((iso: s
         }
 
         slot.km += parseNum(getCellValueCandidates(data, keysToUse, COL_CANDIDATES.km, iso));
+        slot.gasolina += parseNum(getCellValueCandidates(data, keysToUse, COL_CANDIDATES.gasolina, iso));
         
         // Para dietas, usar las mismas claves que las otras columnas
         const dVal = getCellValueCandidates(data, keysToUse, COL_CANDIDATES.dietas, iso) || '';
@@ -184,6 +200,7 @@ export function aggregateWindowedReport(project: any, weeks: any[], filterISO: (
         penaltyLunch: 0,
         transporte: 0,
         km: 0,
+        gasolina: 0,
         materialPropioDays: 0,
         materialPropioWeeks: 0,
         dietasCount: new Map<string, number>(),
@@ -221,8 +238,16 @@ export function aggregateWindowedReport(project: any, weeks: any[], filterISO: (
       }
       
       // Detectar bloque basándose en el sufijo del rol
-      const block = r.endsWith('P') ? 'pre' : r.endsWith('R') ? 'pick' : undefined;
-      const sk = storageKeyFor(r, n, block);
+      const block = (p as any)?.block;
+      const blockType =
+        typeof block === 'string' && block.startsWith('extra:')
+          ? 'extra'
+          : r.endsWith('P')
+          ? 'pre'
+          : r.endsWith('R')
+          ? 'pick'
+          : undefined;
+      const sk = storageKeyFor(r, n, blockType === 'extra' ? block : blockType);
       if (!uniqStorage.has(sk)) uniqStorage.set(sk, vk);
     }
 
@@ -263,6 +288,7 @@ export function aggregateWindowedReport(project: any, weeks: any[], filterISO: (
         }
 
         slot.km += parseNum(getCellValueCandidates(data, keysToUse, COL_CANDIDATES.km, iso));
+        slot.gasolina += parseNum(getCellValueCandidates(data, keysToUse, COL_CANDIDATES.gasolina, iso));
         
         // Para dietas, usar las mismas claves que las otras columnas
         const dVal = getCellValueCandidates(data, keysToUse, COL_CANDIDATES.dietas, iso) || '';

@@ -262,7 +262,7 @@ export default function useAutoCalculations({
             manual: manualNoct,
             off,
           });
-          if (!off && autoNoct === '') {
+          if (!off && autoNoct === '' && !manualNoct) {
             next[pk]['Nocturnidad'][iso] = '';
             if (next[pk].__manual__?.['Nocturnidad']?.[iso]) {
               next[pk].__manual__ = next[pk].__manual__ || {};

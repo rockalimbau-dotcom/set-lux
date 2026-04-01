@@ -27,7 +27,7 @@ function ensureSlot(
   gender?: 'male' | 'female' | 'neutral',
   source?: string,
   matchRole?: string,
-  displayBlock?: 'base' | 'pre' | 'pick'
+  displayBlock?: 'base' | 'pre' | 'pick' | 'extra'
 ) {
   const k = rowKey;
   if (!totals.has(k)) {
@@ -46,6 +46,7 @@ function ensureSlot(
       penaltyLunch: 0,
       transporte: 0,
       km: 0,
+      gasolina: 0,
       materialPropioDays: 0,
       materialPropioWeeks: 0,
       dietasCount: new Map<string, number>(),
@@ -96,6 +97,7 @@ function processDay(
   const mpYes = valIsYes(mpVal);
   if (mpYes) slot.materialPropioDays += 1;
   slot.km += parseNum(getCellValueCandidates(data, keysToUse, COL_CANDIDATES.km, iso));
+  slot.gasolina += parseNum(getCellValueCandidates(data, keysToUse, COL_CANDIDATES.gasolina, iso));
 
   // Para dietas, usar solo la clave original para evitar "comida" fantasma
   const dVal = getCellValueCandidates(data, [originalKey], COL_CANDIDATES.dietas, iso) || '';

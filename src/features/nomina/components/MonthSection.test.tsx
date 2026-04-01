@@ -16,6 +16,7 @@ const mockProps = {
       penaltyLunch: 0,
       transporte: 2,
       km: 50,
+      gasolina: 42,
       dietasCount: new Map([['Comida', 3]]),
       ticketTotal: 25,
       otherTotal: 0,
@@ -71,6 +72,8 @@ describe('MonthSection with holiday days and conditional columns', () => {
     // Check that the new column headers are present
     expect(getByText('Días festivos')).toBeInTheDocument();
     expect(getByText('Total días festivos')).toBeInTheDocument();
+    expect(getByText('Gasolina')).toBeInTheDocument();
+    expect(getByText('Total gasolina')).toBeInTheDocument();
   });
 
   it('should calculate and display holiday totals correctly', () => {
@@ -111,6 +114,7 @@ describe('MonthSection with holiday days and conditional columns', () => {
           extras: 0, // No extras
           transporte: 0, // No transporte
           km: 0, // No km
+          gasolina: 0, // No gasolina
           dietasCount: new Map(), // No dietas
           ticketTotal: 0, // No ticket
           otherTotal: 0,
@@ -141,6 +145,8 @@ describe('MonthSection with holiday days and conditional columns', () => {
     expect(queryByText('Total transportes')).not.toBeInTheDocument();
     expect(queryByText('Kilometraje')).not.toBeInTheDocument();
     expect(queryByText('Total kilometraje')).not.toBeInTheDocument();
+    expect(queryByText('Gasolina')).not.toBeInTheDocument();
+    expect(queryByText('Total gasolina')).not.toBeInTheDocument();
     expect(queryByText('Dietas')).not.toBeInTheDocument();
     expect(queryByText('Total dietas')).not.toBeInTheDocument();
 
@@ -179,6 +185,7 @@ describe('MonthSection with holiday days and conditional columns', () => {
           extras: 0,
           transporte: 0,
           km: 0,
+          gasolina: 0,
           dietasCount: new Map(),
           ticketTotal: 0,
           otherTotal: 0,

@@ -6,28 +6,39 @@ import { stripRoleSuffix } from '@shared/constants/roles';
  */
 export function storageKeyVariants(storageKey: string): string[] {
   const [rolePart, name = ''] = String(storageKey || '').split('__');
-  const baseRole = stripRoleSuffix(String(rolePart || ''));
+  const extraMatch = String(rolePart || '').match(/^(.*)\.(extra(?::\d+)?)$/);
+  const rawRole = extraMatch?.[1] || String(rolePart || '');
+  const extraBlock = extraMatch?.[2] || '';
+  const baseRole = stripRoleSuffix(rawRole);
   const variants = new Set<string>();
   
   // Claves base
   variants.add(`${rolePart}__${name}`);
-  variants.add(`${baseRole}__${name}`);
-  variants.add(`${baseRole}P__${name}`);
-  variants.add(`${baseRole}R__${name}`);
+  if (extraBlock) {
+    variants.add(`${rawRole}.${extraBlock}__${name}`);
+    variants.add(`${baseRole}.${extraBlock}__${name}`);
+    variants.add(`${baseRole}.extra__${name}`);
+    variants.add(`${rawRole}.extra__${name}`);
+    variants.add(`${baseRole}__${name}`);
+  } else {
+    variants.add(`${baseRole}__${name}`);
+    variants.add(`${baseRole}P__${name}`);
+    variants.add(`${baseRole}R__${name}`);
   
-  // Claves específicas de Reportes (las que realmente se usan)
-  variants.add(`${baseRole}.pre__${name}`);  // G.pre__nombre
-  variants.add(`${baseRole}.pick__${name}`); // G.pick__nombre
+    // Claves específicas de Reportes (las que realmente se usan)
+    variants.add(`${baseRole}.pre__${name}`);  // G.pre__nombre
+    variants.add(`${baseRole}.pick__${name}`); // G.pick__nombre
   
-  // Variantes históricas con guiones bajos
-  variants.add(`${baseRole}_pre__${name}`);
-  variants.add(`${baseRole}_pick__${name}`);
+    // Variantes históricas con guiones bajos
+    variants.add(`${baseRole}_pre__${name}`);
+    variants.add(`${baseRole}_pick__${name}`);
   
-  // Variantes con el rol completo (ej: GP/GR) por si almacenamiento usó el rol extendido
-  variants.add(`${rolePart}.pre__${name}`);
-  variants.add(`${rolePart}.pick__${name}`);
-  variants.add(`${rolePart}_pre__${name}`);
-  variants.add(`${rolePart}_pick__${name}`);
+    // Variantes con el rol completo (ej: GP/GR) por si almacenamiento usó el rol extendido
+    variants.add(`${rolePart}.pre__${name}`);
+    variants.add(`${rolePart}.pick__${name}`);
+    variants.add(`${rolePart}_pre__${name}`);
+    variants.add(`${rolePart}_pick__${name}`);
+  }
   
   return Array.from(variants);
 }
@@ -43,8 +54,8 @@ export function getCellValueCandidates(
 ) {
   // Priorizar claves específicas de GP/GR (.pre__, .pick__) sobre claves base
   const sortedKeys = [...storageKeys].sort((a, b) => {
-    const aIsSpecific = a.includes('.pre__') || a.includes('.pick__');
-    const bIsSpecific = b.includes('.pre__') || b.includes('.pick__');
+    const aIsSpecific = a.includes('.pre__') || a.includes('.pick__') || /\.extra(?::\d+)?__/.test(a);
+    const bIsSpecific = b.includes('.pre__') || b.includes('.pick__') || /\.extra(?::\d+)?__/.test(b);
     if (aIsSpecific && !bIsSpecific) return -1; // a primero
     if (!aIsSpecific && bIsSpecific) return 1;  // b primero
     return 0; // mismo orden
@@ -123,6 +134,7 @@ export const COL_CANDIDATES = {
   noct: ['Nocturnidad', 'Noct', 'Nocturnidades'] as const,
   dietas: ['Dietas', 'Dietas / Ticket', 'Ticket', 'Tickets'] as const,
   km: ['Kilometraje', 'KM', 'Km'] as const,
+  gasolina: ['Gasolina'] as const,
   transp: ['Transporte', 'Transportes'] as const,
   penalty: ['Penalty lunch', 'Penalty Lunch', 'Penalty', 'PL'] as const,
   materialPropio: ['Material propio', 'Material Propio'] as const,
@@ -142,4 +154,3 @@ export const ROLE_ORDER: Record<string, number> = {
   // EQUIPO RECOGIDA
   GR: 29, BBR: 30, ER: 31, TMR: 32, FBR: 33, AUXR: 34, MR: 35, RGR: 36, RBBR: 37, RER: 38, TGR: 39, EPOR: 40, TPR: 41, RIGR: 42
 };
-

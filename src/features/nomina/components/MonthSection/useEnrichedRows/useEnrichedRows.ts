@@ -192,6 +192,7 @@ export function useEnrichedRows({
       const penaltyLunchValue = getValueWithOverride(ov, 'penaltyLunch', useFilteredData, filteredRow, r.penaltyLunch);
       const transporteValue = getValueWithOverride(ov, 'transporte', useFilteredData, filteredRow, r.transporte);
       const kmValue = getValueWithOverride(ov, 'km', useFilteredData, filteredRow, r.km);
+      const gasolinaValue = getValueWithOverride(ov, 'gasolina', useFilteredData, filteredRow, (r as any).gasolina || 0);
       const dietasMap = getValueWithOverride(ov, 'dietasCount', useFilteredData, filteredRow, r.dietasCount);
       const ticketValue = getValueWithOverride(ov, 'ticketTotal', useFilteredData, filteredRow, r.ticketTotal);
       const otherValue = getValueWithOverride(ov, 'otherTotal', useFilteredData, filteredRow, r.otherTotal);
@@ -250,6 +251,7 @@ export function useEnrichedRows({
           penaltyLunchValue,
           transporteValue,
           kmValue,
+          gasolinaValue,
           totalDietas,
           effectivePr,
           prelight,
@@ -273,6 +275,7 @@ export function useEnrichedRows({
           penaltyLunchValue,
           transporteValue,
           kmValue,
+          gasolinaValue,
           totalDietas,
           effectivePr,
           priceDays,
@@ -297,6 +300,7 @@ export function useEnrichedRows({
           penaltyLunch: penaltyLunchValue,
           transporte: transporteValue,
           km: kmValue,
+          gasolina: gasolinaValue,
           rodaje,
           oficina,
           localizar,
@@ -330,6 +334,7 @@ export function useEnrichedRows({
         penaltyLunch: penaltyLunchValue,
         transporte: transporteValue,
         km: kmValue,
+        gasolina: gasolinaValue,
         dietasCount: dietasMap,
         ticketTotal: ticketValue,
         otherTotal: otherValue,
@@ -358,6 +363,7 @@ export function useEnrichedRows({
         _totalDietas: totalDietas,
         _totalTrans: totals.totalTrans,
         _totalKm: totals.totalKm,
+        _totalGasolina: totals.totalGasolina || 0,
         _totalBruto: totals.totalBruto,
         _totalMaterialPropio: totals.totalMaterialPropio || 0,
         _totalLocalizacion: projectMode === 'diario' ? totals.totalLocalizacion || 0 : 0,
@@ -412,6 +418,7 @@ export function useEnrichedRows({
       existing.penaltyLunch += row.penaltyLunch || 0;
       existing.transporte += row.transporte || 0;
       existing.km += row.km || 0;
+      existing.gasolina += row.gasolina || 0;
       existing.ticketTotal += row.ticketTotal || 0;
       existing.otherTotal += row.otherTotal || 0;
 
@@ -440,6 +447,7 @@ export function useEnrichedRows({
       existing._totalDietas += row._totalDietas || 0;
       existing._totalTrans += row._totalTrans || 0;
       existing._totalKm += row._totalKm || 0;
+      existing._totalGasolina += row._totalGasolina || 0;
       existing._totalBruto += row._totalBruto || 0;
       existing._totalMaterialPropio += row._totalMaterialPropio || 0;
       existing._totalLocalizacion += row._totalLocalizacion || 0;

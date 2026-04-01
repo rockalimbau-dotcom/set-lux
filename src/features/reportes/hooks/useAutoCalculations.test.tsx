@@ -391,4 +391,57 @@ describe('useAutoCalculations', () => {
     // extra: extras > 0 ? String(extras) : '',
     // ta: taHours > 0 ? String(taHours) : '',
   });
+
+  it('preserves manual nocturnidad when auto calculation is empty', () => {
+    const mockSetData = vi.fn();
+
+    renderHook(() =>
+      useAutoCalculations({
+        safeSemana: ['2024-01-15'],
+        findWeekAndDay: vi.fn(() => ({
+          day: { start: '09:00', end: '17:00' },
+        })),
+        getBlockWindow: vi.fn(() => ({ start: '09:00', end: '17:00' })),
+        calcHorasExtraMin: vi.fn(() => 0),
+        buildDateTime: vi.fn((iso, time) => new Date(`${iso}T${time}:00`)),
+        findPrevWorkingContext: vi.fn(() => ({
+          prevISO: null,
+          consecDesc: 0,
+        })),
+        params: {
+          jornadaTrabajo: 8,
+          jornadaComida: 1,
+          cortesiaMin: 15,
+          taDiario: 12,
+          taFinde: 48,
+          nocturnoIni: '22:00',
+          nocturnoFin: '06:00',
+        },
+        safePersonas: [{ role: 'E', name: 'Pol Peitx' }],
+        personaKey: vi.fn(() => 'E__Pol Peitx'),
+        personaRole: vi.fn(() => 'E'),
+        personaName: vi.fn(() => 'Pol Peitx'),
+        isPersonScheduledOnBlock: vi.fn(() => true),
+        setData: mockSetData,
+      })
+    );
+
+    expect(mockSetData).toHaveBeenCalled();
+
+    const updater = mockSetData.mock.calls.at(-1)?.[0];
+    expect(typeof updater).toBe('function');
+
+    const previousState = {
+      'E__Pol Peitx': {
+        Nocturnidad: { '2024-01-15': 'Sí' },
+        __manual__: {
+          Nocturnidad: { '2024-01-15': true },
+        },
+      },
+    };
+
+    const nextState = updater(previousState);
+    expect(nextState['E__Pol Peitx']['Nocturnidad']['2024-01-15']).toBe('Sí');
+    expect(nextState['E__Pol Peitx'].__manual__.Nocturnidad['2024-01-15']).toBe(true);
+  });
 });

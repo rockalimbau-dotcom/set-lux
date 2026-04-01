@@ -17,6 +17,7 @@ export function calculateDiarioTotals(
   penaltyLunchValue: number,
   transporteValue: number,
   kmValue: number,
+  gasolinaValue: number,
   totalDietas: number,
   effectivePr: any,
   prelight?: number | undefined,
@@ -32,6 +33,7 @@ export function calculateDiarioTotals(
   totalExtras: number;
   totalTrans: number;
   totalKm: number;
+  totalGasolina: number;
   totalLocalizacion: number;
   totalCargaDescarga: number;
   totalMaterialPropio: number;
@@ -62,6 +64,7 @@ export function calculateDiarioTotals(
 
   const totalTrans = transporteValue * (effectivePr.transporte || 0);
   const totalKm = (kmValue || 0) * (effectivePr.km || 0);
+  const totalGasolina = gasolinaValue || 0;
   const materialPropioValue = effectivePr.materialPropioValue || 0;
   const materialPropioType = effectivePr.materialPropioType || 'diario';
   const materialPropioCount =
@@ -83,6 +86,7 @@ export function calculateDiarioTotals(
     totalDietas +
     totalTrans +
     totalKm +
+    totalGasolina +
     totalMaterialPropio;
 
   return {
@@ -93,6 +97,7 @@ export function calculateDiarioTotals(
     totalExtras,
     totalTrans,
     totalKm,
+    totalGasolina,
     totalLocalizacion,
     totalCargaDescarga,
     totalMaterialPropio,
@@ -116,6 +121,7 @@ export function calculateStandardTotals(
   penaltyLunchValue: number,
   transporteValue: number,
   kmValue: number,
+  gasolinaValue: number,
   totalDietas: number,
   effectivePr: any,
   priceDays: number,
@@ -130,6 +136,7 @@ export function calculateStandardTotals(
   totalExtras: number;
   totalTrans: number;
   totalKm: number;
+  totalGasolina: number;
   totalMaterialPropio: number;
   totalBruto: number;
 } {
@@ -153,6 +160,7 @@ export function calculateStandardTotals(
     (effectivePr.horaExtra || 0);
   const totalTrans = transporteValue * (effectivePr.transporte || 0);
   const totalKm = (kmValue || 0) * (effectivePr.km || 0);
+  const totalGasolina = gasolinaValue || 0;
   const materialPropioValue = effectivePr.materialPropioValue || 0;
   const materialPropioType = effectivePr.materialPropioType || 'semanal';
   const materialPropioCount =
@@ -172,6 +180,7 @@ export function calculateStandardTotals(
     totalDietas +
     totalTrans +
     totalKm +
+    totalGasolina +
     totalMaterialPropio;
 
   return {
@@ -182,6 +191,7 @@ export function calculateStandardTotals(
     totalExtras,
     totalTrans,
     totalKm,
+    totalGasolina,
     totalMaterialPropio,
     totalBruto,
   };

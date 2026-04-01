@@ -23,4 +23,28 @@ describe('payroll mensual visibleRoleFor', () => {
     expect(entry.displayBlock).toBe('pick');
     expect(entry.matchRole).toBe('ER');
   });
+
+  it('creates extra-block storage and row keys for people scheduled in dynamic extra blocks', () => {
+    const week = {
+      days: [
+        {
+          refBlocks: [
+            {
+              list: [{ role: 'E', name: 'Oriol Monguilod', gender: 'male' }],
+            },
+          ],
+          team: [],
+          prelight: [],
+          pickup: [],
+        },
+      ],
+    };
+    const keys = buildUniqueStorageKeys(week, new Set());
+    const [[storageKey, entry]] = Array.from(keys.entries());
+
+    expect(storageKey).toBe('E.extra:0__Oriol Monguilod');
+    expect(entry.rowKey).toBe('E.extra__Oriol Monguilod');
+    expect(entry.displayBlock).toBe('extra');
+    expect(entry.matchRole).toBe('E');
+  });
 });

@@ -166,6 +166,7 @@ function MonthSection({
         (r.penaltyLunch || 0) > 0 ||
         (r.transporte || 0) > 0 ||
         (r.km || 0) > 0 ||
+        (r.gasolina || 0) > 0 ||
         (r._totalDietas || 0) > 0 ||
         (r._materialPropioDays || 0) > 0 ||
         (r._materialPropioWeeks || 0) > 0 ||

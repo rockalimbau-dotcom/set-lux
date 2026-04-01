@@ -11,6 +11,7 @@ export function useColumnVisibility({ enriched }: UseColumnVisibilityProps) {
     const hasExtras = enriched.some(r => r.extras > 0);
     const hasTransporte = enriched.some(r => r.transporte > 0);
     const hasKm = enriched.some(r => r.km > 0);
+    const hasGasolina = enriched.some(r => (r.gasolina || 0) > 0 || (r._totalGasolina || 0) > 0);
     const hasDietas = enriched.some(r => r._totalDietas > 0);
     const hasMaterialPropio = enriched.some(
       r =>
@@ -26,6 +27,7 @@ export function useColumnVisibility({ enriched }: UseColumnVisibilityProps) {
       extras: hasExtras,
       transporte: hasTransporte,
       km: hasKm,
+      gasolina: hasGasolina,
       dietas: hasDietas,
       materialPropio: hasMaterialPropio,
     };

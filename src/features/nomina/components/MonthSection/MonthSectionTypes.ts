@@ -24,7 +24,7 @@ export type RowIn = {
   source?: string;
   _rowKey?: string;
   _matchRole?: string;
-  _displayBlock?: 'base' | 'pre' | 'pick';
+  _displayBlock?: 'base' | 'pre' | 'pick' | 'extra';
   extras: number;
   horasExtra: number;
   turnAround: number;
@@ -32,6 +32,7 @@ export type RowIn = {
   penaltyLunch: number;
   transporte: number;
   km: number;
+  gasolina?: number;
   dietasCount: Map<string, number>;
   ticketTotal: number;
   otherTotal: number;
@@ -45,6 +46,7 @@ export type WindowOverride = Map<string, {
   penaltyLunch?: number;
   transporte?: number;
   km?: number;
+  gasolina?: number;
   dietasCount?: Map<string, number>;
   ticketTotal?: number;
   otherTotal?: number;

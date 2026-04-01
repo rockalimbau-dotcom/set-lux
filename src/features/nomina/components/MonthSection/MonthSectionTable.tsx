@@ -17,6 +17,7 @@ type MonthSectionTableProps = {
     extras: boolean;
     transporte: boolean;
     km: boolean;
+    gasolina: boolean;
     dietas: boolean;
     materialPropio: boolean;
   };
@@ -76,6 +77,7 @@ export function MonthSectionTable({
     (columnVisibility.dietas ? 2 : 0) + // Dietas, Total
     (columnVisibility.transporte ? 2 : 0) + // Transportes, Total
     (columnVisibility.km ? 2 : 0) + // Kilometraje, Total
+    (columnVisibility.gasolina ? 1 : 0) + // Total gasolina
     2; // TOTAL BRUTO, Nómina recibida
 
   // Función para determinar el tipo de equipo de una fila
@@ -162,6 +164,7 @@ export function MonthSectionTable({
           {columnVisibility.transporte && <col className='payroll-month-col-standard' />}
           {columnVisibility.km && <col className='payroll-month-col-standard' />}
           {columnVisibility.km && <col className='payroll-month-col-standard' />}
+          {columnVisibility.gasolina && <col className='payroll-month-col-standard' />}
           <col className='payroll-month-col-total' />
           <col className='payroll-month-col-received' />
         </colgroup>
@@ -234,6 +237,7 @@ export function MonthSectionTable({
             {columnVisibility.transporte && <Th align='center'>{t('payroll.totalTransportes')}</Th>}
             {columnVisibility.km && <Th align='center'>{t('payroll.kilometraje')}</Th>}
             {columnVisibility.km && <Th align='center'>{t('payroll.totalKilometraje')}</Th>}
+            {columnVisibility.gasolina && <Th align='center'>{t('payroll.totalGasoline')}</Th>}
             <Th align='center'>{t('payroll.totalBruto')}</Th>
             <Th align='center'>{t('payroll.received')}</Th>
           </tr>
@@ -291,6 +295,7 @@ export function MonthSectionTable({
                 (columnVisibility.dietas ? 2 : 0) + // Dietas + Total dietas
                 (columnVisibility.transporte ? 2 : 0) + // Transportes + Total transportes
                 (columnVisibility.km ? 2 : 0) + // Kilometraje + Total kilometraje
+                (columnVisibility.gasolina ? 1 : 0) + // Total gasolina
                 (hasLocalizacionData ? 2 : 0) + // Localización técnica + Total
                 (hasCargaDescargaData ? 2 : 0) // Carga/Descarga + Total
               } align='center' className='text-center'>

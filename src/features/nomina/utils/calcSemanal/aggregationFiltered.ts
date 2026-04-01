@@ -34,6 +34,7 @@ function ensureSlot(
       penaltyLunch: 0,
       transporte: 0,
       km: 0,
+      gasolina: 0,
       materialPropioDays: 0,
       materialPropioWeeks: 0,
       dietasCount: new Map<string, number>(),
@@ -80,6 +81,7 @@ function processDayFiltered(
   if (mpYes) slot.materialPropioDays += 1;
 
   slot.km += parseNum(getCellValueCandidates(data, keysToUse, COL_CANDIDATES.km, iso));
+  slot.gasolina += parseNum(getCellValueCandidates(data, keysToUse, COL_CANDIDATES.gasolina, iso));
 
   const dVal = getCellValueCandidates(data, [originalKey], COL_CANDIDATES.dietas, iso) || '';
   const { labels, ticket, other } = parseDietasValue(dVal);
@@ -153,4 +155,3 @@ export function aggregateFilteredConcepts(
 
   return totals;
 }
-
