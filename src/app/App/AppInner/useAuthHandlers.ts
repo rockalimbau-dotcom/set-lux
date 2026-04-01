@@ -60,7 +60,7 @@ if(
   && !(login.user === 'PepZueras' && login.pass === '1234')
   && !(login.user === 'JorgeAznar' && login.pass === '1234')
   && !(login.user === 'MartiPluma' && login.pass === '1234')
-  && !(login.user === 'IsaacMartinez' && login.pass === '1234')
+  && !(login.user === 'JamboLights' && login.pass === '1234')
   && !(login.user === 'OscarVallejo' && login.pass === '1234')
   && !(login.user === 'JorgeBarros' && login.pass === '1234')
   
