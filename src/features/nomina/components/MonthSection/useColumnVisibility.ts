@@ -13,7 +13,11 @@ export function useColumnVisibility({ enriched }: UseColumnVisibilityProps) {
     const hasKm = enriched.some(r => r.km > 0);
     const hasDietas = enriched.some(r => r._totalDietas > 0);
     const hasMaterialPropio = enriched.some(
-      r => (r._materialPropioDays || 0) > 0 || (r._materialPropioWeeks || 0) > 0 || (r._totalMaterialPropio || 0) > 0
+      r =>
+        (r._materialPropioDays || 0) > 0 ||
+        (r._materialPropioWeeks || 0) > 0 ||
+        (r._materialPropioUnique || 0) > 0 ||
+        (r._totalMaterialPropio || 0) > 0
     );
 
     return {

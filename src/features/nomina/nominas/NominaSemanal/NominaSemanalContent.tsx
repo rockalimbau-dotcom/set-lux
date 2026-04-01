@@ -116,10 +116,10 @@ export function NominaSemanalContent({
             ROLE_COLORS={ROLE_COLORS as any}
             roleLabelFromCode={roleLabelFromCode}
             readOnly={readOnly}
+            isFirstProjectMonth={mk === monthKeys[0]}
           />
         );
       })}
     </div>
   );
 }
-

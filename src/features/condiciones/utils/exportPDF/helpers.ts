@@ -187,6 +187,8 @@ export function generatePriceTableHTML(
                   ? i18n.t('common.weekly')
                   : tipo === 'diario'
                   ? i18n.t('common.advertising')
+                  : tipo === 'unico'
+                  ? i18n.t('common.unique')
                   : '';
                 const display = rawVal && tipoLabel ? `${rawVal} (${tipoLabel})` : rawVal;
                 return `<td>${esc(display)}</td>`;

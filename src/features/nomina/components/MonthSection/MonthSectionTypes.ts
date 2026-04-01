@@ -9,7 +9,7 @@ export type RolePrices = {
     km: number;
     dietas: Record<string, number>;
     materialPropioValue?: number;
-    materialPropioType?: 'semanal' | 'diario';
+    materialPropioType?: 'semanal' | 'diario' | 'unico';
     // Campos específicos de diario
     cargaDescarga?: number;
     localizacionTecnica?: number;
@@ -92,4 +92,5 @@ export interface MonthSectionProps {
   ROLE_COLORS: Record<string, { bg: string; fg: string }>;
   roleLabelFromCode: (code: string) => string;
   readOnly?: boolean;
+  isFirstProjectMonth?: boolean;
 }

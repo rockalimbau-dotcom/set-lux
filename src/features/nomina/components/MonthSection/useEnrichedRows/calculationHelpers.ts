@@ -22,7 +22,8 @@ export function calculateDiarioTotals(
   prelight?: number | undefined,
   recogida?: number | undefined,
   materialPropioDays: number = 0,
-  materialPropioWeeks: number = 0
+  materialPropioWeeks: number = 0,
+  materialPropioUnique: number = 0
 ): {
   totalDias: number;
   totalHalfDays: number;
@@ -63,7 +64,12 @@ export function calculateDiarioTotals(
   const totalKm = (kmValue || 0) * (effectivePr.km || 0);
   const materialPropioValue = effectivePr.materialPropioValue || 0;
   const materialPropioType = effectivePr.materialPropioType || 'diario';
-  const materialPropioCount = materialPropioType === 'semanal' ? materialPropioWeeks : materialPropioDays;
+  const materialPropioCount =
+    materialPropioType === 'unico'
+      ? materialPropioUnique
+      : materialPropioType === 'semanal'
+      ? materialPropioWeeks
+      : materialPropioDays;
   const totalMaterialPropio = materialPropioCount * materialPropioValue;
 
   const totalBruto =
@@ -114,7 +120,8 @@ export function calculateStandardTotals(
   effectivePr: any,
   priceDays: number,
   materialPropioDays: number = 0,
-  materialPropioWeeks: number = 0
+  materialPropioWeeks: number = 0,
+  materialPropioUnique: number = 0
 ): {
   totalDias: number;
   totalHalfDays: number;
@@ -148,7 +155,12 @@ export function calculateStandardTotals(
   const totalKm = (kmValue || 0) * (effectivePr.km || 0);
   const materialPropioValue = effectivePr.materialPropioValue || 0;
   const materialPropioType = effectivePr.materialPropioType || 'semanal';
-  const materialPropioCount = materialPropioType === 'semanal' ? materialPropioWeeks : materialPropioDays;
+  const materialPropioCount =
+    materialPropioType === 'unico'
+      ? materialPropioUnique
+      : materialPropioType === 'semanal'
+      ? materialPropioWeeks
+      : materialPropioDays;
   const totalMaterialPropio = materialPropioCount * materialPropioValue;
 
   const totalBruto =

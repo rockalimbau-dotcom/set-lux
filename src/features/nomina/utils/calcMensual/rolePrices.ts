@@ -260,7 +260,7 @@ export function makeRolePrices(project: any) {
       horaExtra,
       holidayDay,
       materialPropioValue: materialPropioValue || 0,
-      materialPropioType: materialPropioType === 'diario' ? 'diario' : 'semanal',
+      materialPropioType: materialPropioType === 'unico' ? 'unico' : materialPropioType === 'diario' ? 'diario' : 'semanal',
       precioMensual, // Añadir precio mensual al resultado
       transporte: num(p.transporteDia),
       km: num(p.kilometrajeKm),

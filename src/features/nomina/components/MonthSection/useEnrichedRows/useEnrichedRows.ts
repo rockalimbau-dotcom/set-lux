@@ -42,6 +42,7 @@ interface UseEnrichedRowsProps {
   calculateWorkingDaysInMonthValue: number;
   priceDays: number;
   roleLabelFromCode: (code: string) => string;
+  isFirstProjectMonth: boolean;
 }
 
 export function useEnrichedRows({
@@ -60,6 +61,7 @@ export function useEnrichedRows({
   calculateWorkingDaysInMonthValue,
   priceDays,
   roleLabelFromCode,
+  isFirstProjectMonth,
 }: UseEnrichedRowsProps) {
   const enriched = useMemo(() => {
     const visibleBlocksByKey = new Map<string, Set<string>>();
@@ -209,6 +211,12 @@ export function useEnrichedRows({
         filteredRow,
         (r as any).materialPropioWeeks || 0
       );
+      const materialPropioUnique =
+        (effectivePr as any).materialPropioType === 'unico' &&
+        ((effectivePr as any).materialPropioValue || 0) > 0 &&
+        isFirstProjectMonth
+          ? 1
+          : 0;
 
       // Calcular totales según el modo del proyecto
       let totals: {
@@ -247,7 +255,8 @@ export function useEnrichedRows({
           prelight,
           recogida,
           materialPropioDays,
-          materialPropioWeeks
+          materialPropioWeeks,
+          materialPropioUnique
         );
         totals = publicidadTotals;
       } else {
@@ -268,7 +277,8 @@ export function useEnrichedRows({
           effectivePr,
           priceDays,
           materialPropioDays,
-          materialPropioWeeks
+          materialPropioWeeks,
+          materialPropioUnique
         );
         totals = standardTotals;
       }
@@ -357,6 +367,7 @@ export function useEnrichedRows({
         _descargaDays: projectMode === 'diario' ? (descarga || 0) : 0,
         _materialPropioDays: materialPropioDays,
         _materialPropioWeeks: materialPropioWeeks,
+        _materialPropioUnique: materialPropioUnique,
         _materialPropioType: (effectivePr as any).materialPropioType || 'semanal',
         _dietasLabel: dietasLabel,
         _pr: effectivePr,
@@ -438,6 +449,7 @@ export function useEnrichedRows({
       existing._descargaDays += row._descargaDays || 0;
       existing._materialPropioDays += row._materialPropioDays || 0;
       existing._materialPropioWeeks += row._materialPropioWeeks || 0;
+      existing._materialPropioUnique += row._materialPropioUnique || 0;
 
       existing.dietasCount = mergeDietasMaps(existing.dietasCount, row.dietasCount);
       existing._dietasLabel = buildDietasLabel(existing.dietasCount, existing.ticketTotal, existing.otherTotal);

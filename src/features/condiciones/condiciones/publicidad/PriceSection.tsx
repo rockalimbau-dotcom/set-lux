@@ -227,7 +227,8 @@ export function PriceSection({
       </div>
 
       {/* Tabla de precios */}
-      <section className='rounded sm:rounded-md md:rounded-lg lg:rounded-xl xl:rounded-2xl border border-neutral-border bg-neutral-panel/90 overflow-x-auto'>
+      <section className='rounded sm:rounded-md md:rounded-lg lg:rounded-xl xl:rounded-2xl border border-neutral-border bg-neutral-panel/90 relative overflow-visible'>
+        <div className='overflow-x-auto overflow-y-visible'>
         <table className='min-w-[600px] sm:min-w-[720px] md:min-w-[920px] w-full border-collapse text-[9px] sm:text-[10px] md:text-xs lg:text-sm'>
           <thead>
             <tr>
@@ -293,7 +294,7 @@ export function PriceSection({
                                 }`}
                               />
                               <MaterialPropioTypeDropdown
-                                value={(prices[role]?.['Material propio tipo'] || defaultMaterialType) as 'semanal' | 'diario'}
+                                value={(prices[role]?.['Material propio tipo'] || defaultMaterialType) as 'semanal' | 'diario' | 'unico'}
                                 onChange={val => !readOnly && handlePriceChange(sectionKey, role, 'Material propio tipo', val)}
                                 readOnly={readOnly}
                                 disabled={!canEdit}
@@ -326,6 +327,7 @@ export function PriceSection({
             )}
           </tbody>
         </table>
+        </div>
       </section>
     </div>
   );

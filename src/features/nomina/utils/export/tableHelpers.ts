@@ -141,10 +141,15 @@ export const generateRowDataCells = (
   }
 
   if (columnVisibility.materialPropio) {
-    const materialType = r._materialPropioType === 'diario' ? 'diario' : 'semanal';
+    const materialType = r._materialPropioType === 'unico' ? 'unico' : r._materialPropioType === 'diario' ? 'diario' : 'semanal';
     const materialCount =
-      materialType === 'semanal' ? (r._materialPropioWeeks || 0) : (r._materialPropioDays || 0);
-    const materialLabel = materialCount > 0 ? `${materialCount} ${materialType === 'semanal' ? 'semanas' : 'días'}` : '—';
+      materialType === 'unico' ? (r._materialPropioUnique || 0) : materialType === 'semanal' ? (r._materialPropioWeeks || 0) : (r._materialPropioDays || 0);
+    const materialLabel =
+      materialCount > 0
+        ? materialType === 'unico'
+          ? i18n.t('common.unique')
+          : `${materialCount} ${materialType === 'semanal' ? 'semanas' : 'días'}`
+        : '—';
     dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;">${esc(materialLabel)}</td>`);
     dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;">${esc(displayMoney(r._totalMaterialPropio, 2))}</td>`);
   }

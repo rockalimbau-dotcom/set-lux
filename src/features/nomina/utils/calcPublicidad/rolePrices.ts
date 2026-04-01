@@ -154,7 +154,7 @@ export function makeRolePrices(project: any) {
     const rawMaterialType =
       (row?.['Material propio tipo'] ?? row?.['Material Propio tipo'] ?? '').toString().trim();
     const materialPropioType =
-      rawMaterialType === 'semanal' || rawMaterialType === 'diario' ? rawMaterialType : 'diario';
+      rawMaterialType === 'semanal' || rawMaterialType === 'diario' || rawMaterialType === 'unico' ? rawMaterialType : 'diario';
 
     const result = {
       jornada,

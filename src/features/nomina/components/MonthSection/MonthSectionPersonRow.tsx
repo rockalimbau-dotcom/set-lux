@@ -102,14 +102,23 @@ export function MonthSectionPersonRow({
     ? 'min-w-[32px] sm:min-w-[36px] md:min-w-[40px] px-2 sm:px-2.5 md:px-3'
     : 'w-4 sm:w-5 md:w-6';
 
-  const materialPropioType = (r as any)._materialPropioType === 'diario' ? 'diario' : 'semanal';
+  const materialPropioType =
+    (r as any)._materialPropioType === 'unico'
+      ? 'unico'
+      : (r as any)._materialPropioType === 'diario'
+      ? 'diario'
+      : 'semanal';
   const materialPropioCount =
-    materialPropioType === 'semanal'
+    materialPropioType === 'unico'
+      ? ((r as any)._materialPropioUnique || 0)
+      : materialPropioType === 'semanal'
       ? ((r as any)._materialPropioWeeks || 0)
       : ((r as any)._materialPropioDays || 0);
   const materialPropioLabel =
     materialPropioCount > 0
-      ? `${materialPropioCount} ${materialPropioType === 'semanal' ? 'semanas' : 'días'}`
+      ? materialPropioType === 'unico'
+        ? t('common.unique')
+        : `${materialPropioCount} ${materialPropioType === 'semanal' ? 'semanas' : 'días'}`
       : '—';
 
   return (

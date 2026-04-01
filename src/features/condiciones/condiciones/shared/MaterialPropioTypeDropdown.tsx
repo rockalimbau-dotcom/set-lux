@@ -1,12 +1,19 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 
-type MaterialPropioType = 'semanal' | 'diario';
+type MaterialPropioType = 'semanal' | 'diario' | 'unico';
 
 interface DropdownState {
   isOpen: boolean;
   hoveredOption: string | null;
   isButtonHovered: boolean;
+}
+
+interface DropdownPosition {
+  top: number;
+  left: number;
+  width: number;
 }
 
 interface MaterialPropioTypeDropdownProps {
@@ -24,6 +31,7 @@ const MaterialPropioTypeDropdown: React.FC<MaterialPropioTypeDropdownProps> = ({
 }) => {
   const { t } = useTranslation();
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
     if (typeof document !== 'undefined') {
       return (document.documentElement.getAttribute('data-theme') || 'light') as 'dark' | 'light';
@@ -35,11 +43,13 @@ const MaterialPropioTypeDropdown: React.FC<MaterialPropioTypeDropdownProps> = ({
     hoveredOption: null,
     isButtonHovered: false,
   });
+  const [dropdownPosition, setDropdownPosition] = useState<DropdownPosition | null>(null);
 
   const focusColor = theme === 'light' ? '#0476D9' : '#F27405';
   const options: Array<{ value: MaterialPropioType; label: string }> = [
     { value: 'semanal', label: t('common.weekly') },
     { value: 'diario', label: t('common.advertising') },
+    { value: 'unico', label: t('common.unique') },
   ];
 
   useEffect(() => {
@@ -77,9 +87,36 @@ const MaterialPropioTypeDropdown: React.FC<MaterialPropioTypeDropdownProps> = ({
 
   const isDisabled = readOnly || disabled;
 
+  useEffect(() => {
+    if (!dropdownState.isOpen) {
+      setDropdownPosition(null);
+      return;
+    }
+
+    const updatePosition = () => {
+      if (!buttonRef.current) return;
+      const rect = buttonRef.current.getBoundingClientRect();
+      setDropdownPosition({
+        top: rect.bottom + 4,
+        left: rect.left,
+        width: rect.width,
+      });
+    };
+
+    updatePosition();
+    window.addEventListener('resize', updatePosition);
+    window.addEventListener('scroll', updatePosition, true);
+
+    return () => {
+      window.removeEventListener('resize', updatePosition);
+      window.removeEventListener('scroll', updatePosition, true);
+    };
+  }, [dropdownState.isOpen]);
+
   return (
     <div className='w-full relative' ref={dropdownRef}>
       <button
+        ref={buttonRef}
         type='button'
         onClick={() => !isDisabled && setDropdownState(prev => ({ ...prev, isOpen: !prev.isOpen }))}
         onMouseEnter={() => !isDisabled && setDropdownState(prev => ({ ...prev, isButtonHovered: true }))}
@@ -103,41 +140,49 @@ const MaterialPropioTypeDropdown: React.FC<MaterialPropioTypeDropdownProps> = ({
       >
         {options.find(opt => opt.value === value)?.label || '\u00A0'}
       </button>
-      {dropdownState.isOpen && (
-        <div
-          className={`absolute top-full left-0 mt-0.5 sm:mt-1 w-full border border-neutral-border rounded sm:rounded-md md:rounded-lg shadow-lg z-50 overflow-y-auto max-h-48 sm:max-h-56 md:max-h-60 ${
-            theme === 'light' ? 'bg-white' : 'bg-neutral-panel'
-          }`}
-        >
-          {options.map(opt => (
-            <button
-              key={opt.value}
-              type='button'
-              onClick={() => {
-                if (isDisabled) return;
-                onChange(opt.value);
-                setDropdownState(prev => ({ ...prev, isOpen: false, hoveredOption: null }));
-              }}
-              disabled={isDisabled}
-              onMouseEnter={() => setDropdownState(prev => ({ ...prev, hoveredOption: opt.value }))}
-              onMouseLeave={() => setDropdownState(prev => ({ ...prev, hoveredOption: null }))}
-              className={`w-full text-left px-2 py-1 sm:px-2.5 sm:py-1.5 md:px-3 md:py-2 text-[8px] sm:text-[9px] md:text-[10px] transition-colors ${
-                theme === 'light' ? 'text-gray-900' : 'text-zinc-300'
+      {dropdownState.isOpen && dropdownPosition && typeof document !== 'undefined'
+        ? createPortal(
+            <div
+              className={`fixed border border-neutral-border rounded sm:rounded-md md:rounded-lg shadow-xl z-[10000] overflow-y-auto max-h-48 sm:max-h-56 md:max-h-60 ${
+                theme === 'light' ? 'bg-white' : 'bg-neutral-panel'
               }`}
               style={{
-                backgroundColor: dropdownState.hoveredOption === opt.value
-                  ? (theme === 'light' ? '#A0D3F2' : focusColor)
-                  : 'transparent',
-                color: dropdownState.hoveredOption === opt.value
-                  ? (theme === 'light' ? '#111827' : 'white')
-                  : 'inherit',
+                top: dropdownPosition.top,
+                left: dropdownPosition.left,
+                width: dropdownPosition.width,
               }}
             >
-              {opt.label}
-            </button>
-          ))}
-        </div>
-      )}
+              {options.map(opt => (
+                <button
+                  key={opt.value}
+                  type='button'
+                  onClick={() => {
+                    if (isDisabled) return;
+                    onChange(opt.value);
+                    setDropdownState(prev => ({ ...prev, isOpen: false, hoveredOption: null }));
+                  }}
+                  disabled={isDisabled}
+                  onMouseEnter={() => setDropdownState(prev => ({ ...prev, hoveredOption: opt.value }))}
+                  onMouseLeave={() => setDropdownState(prev => ({ ...prev, hoveredOption: null }))}
+                  className={`w-full text-left px-2 py-1 sm:px-2.5 sm:py-1.5 md:px-3 md:py-2 text-[8px] sm:text-[9px] md:text-[10px] transition-colors ${
+                    theme === 'light' ? 'text-gray-900' : 'text-zinc-300'
+                  }`}
+                  style={{
+                    backgroundColor: dropdownState.hoveredOption === opt.value
+                      ? (theme === 'light' ? '#A0D3F2' : focusColor)
+                      : 'transparent',
+                    color: dropdownState.hoveredOption === opt.value
+                      ? (theme === 'light' ? '#111827' : 'white')
+                      : 'inherit',
+                  }}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>,
+            document.body
+          )
+        : null}
     </div>
   );
 };

@@ -44,6 +44,7 @@
     "weekly": "Weekly",
     "monthly": "Monthly",
     "advertising": "Daily",
+    "unique": "One-time",
     "sortBy": "Sort by",
     "name": "Name",
     "sortOrder": "Order",

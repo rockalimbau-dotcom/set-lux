@@ -76,6 +76,7 @@ function MonthSection({
   ROLE_COLORS,
   roleLabelFromCode,
   readOnly = false,
+  isFirstProjectMonth = false,
 }: MonthSectionProps) {
   const openKey = `${persistKeyBase}_${monthKey}_open`;
   const [open, setOpen] = useLocalStorage<boolean>(openKey, defaultOpen);
@@ -149,6 +150,7 @@ function MonthSection({
     calculateWorkingDaysInMonthValue,
     priceDays,
     roleLabelFromCode,
+    isFirstProjectMonth,
   });
 
   const visibleEnriched = useMemo(() => {
@@ -167,6 +169,8 @@ function MonthSection({
         (r._totalDietas || 0) > 0 ||
         (r._materialPropioDays || 0) > 0 ||
         (r._materialPropioWeeks || 0) > 0 ||
+        (r._materialPropioUnique || 0) > 0 ||
+        (r._totalMaterialPropio || 0) > 0 ||
         (r._localizarDays || 0) > 0 ||
         (r._cargaDays || 0) > 0 ||
         (r._descargaDays || 0) > 0;
