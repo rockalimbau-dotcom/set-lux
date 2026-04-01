@@ -78,10 +78,13 @@ export function useEnrichedRows({
       const roleForBreakdown = (r as any)._matchRole || r.role;
       const visibleKey = `${r.role}__${r.name}`;
       const siblingBlocks = visibleBlocksByKey.get(visibleKey) || new Set<string>();
+      const rowDisplayBlock = (r as any)._displayBlock || 'base';
       const sourceForBreakdown =
-        ((r as any)._displayBlock || 'base') === 'base' &&
-        (siblingBlocks.has('pre') || siblingBlocks.has('pick'))
-          ? 'base-strict'
+        rowDisplayBlock === 'extra'
+          ? 'ref'
+          : rowDisplayBlock === 'base' &&
+            (siblingBlocks.has('pre') || siblingBlocks.has('pick') || siblingBlocks.has('extra'))
+            ? 'base-strict'
           : r.source;
       const person = { role: roleForBreakdown, name: r.name, source: sourceForBreakdown };
       const breakdown = calcWorkedBreakdown(weeksForMonth, filterISO, person);
@@ -163,7 +166,7 @@ export function useEnrichedRows({
       const roleDisplay = determineRoleDisplay(r.role, baseRoleCode, workedBase, workedPre, workedPick);
       const roleForBadge = isRefuerzo ? originalRoleForBadge : roleDisplay;
       const displayBlock =
-        (r as any)._displayBlock ||
+        rowDisplayBlock ||
         (hasP || needsPrelightPrice
           ? 'pre'
           : hasR || needsPickupPrice

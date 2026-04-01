@@ -324,5 +324,47 @@ describe('calcWorkedBreakdown', () => {
       expect(pickupRow.recogida).toBe(1);
       expect((baseRow.rodaje || 0) + (pickupRow.recogida || 0)).toBe(2);
     });
+
+    it('keeps base rows from double-counting extra blocks when an extra row also exists', () => {
+      const weeksWithBaseAndExtra = [
+        {
+          days: [
+            {
+              tipo: 'Rodaje',
+              team: [
+                { role: 'E', name: 'Ricard Durany', source: 'ref' },
+                { role: 'E', name: 'Jordi', source: 'base' },
+              ],
+              refBlocks: [
+                {
+                  id: 'extra_1',
+                  tipo: 'Rodaje',
+                  start: '07:00',
+                  end: '18:00',
+                  list: [{ role: 'E', name: 'Ricard Durany', source: 'ref' }],
+                  text: '',
+                },
+              ],
+            },
+          ],
+        },
+      ];
+
+      const baseRow = calcWorkedBreakdown(
+        weeksWithBaseAndExtra,
+        () => true,
+        { role: 'E', name: 'Ricard Durany', source: 'base-strict' as any },
+        'diario'
+      );
+      const extraRow = calcWorkedBreakdown(
+        weeksWithBaseAndExtra,
+        () => true,
+        { role: 'E', name: 'Ricard Durany', source: 'ref' },
+        'diario'
+      );
+
+      expect(baseRow.rodaje).toBe(0);
+      expect(extraRow.rodaje).toBe(1);
+    });
   });
 });

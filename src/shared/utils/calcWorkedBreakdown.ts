@@ -142,9 +142,8 @@ export function calcWorkedBreakdown(
           isWorking = inExtra;
           activeSource = inExtra ? 'extra' : null;
         } else if (wantedSource === 'base-strict') {
-          isWorking = inTeam || inExtra;
-          if (inExtra && !inTeam) activeSource = 'extra';
-          else if (inTeam) activeSource = 'team';
+          isWorking = inTeam;
+          activeSource = inTeam ? 'team' : null;
         } else {
           isWorking = inTeam || inPre || inPick || inExtra;
           if (inPre) activeSource = 'prelight';
