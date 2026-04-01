@@ -780,7 +780,7 @@ html input[style*="borderWidth"] {
 
 .payroll-month-table {
   --payroll-sticky-checkbox-width: 44px;
-  --payroll-sticky-label-width: 170px;
+  --payroll-sticky-label-width: 160px;
 }
 
 .payroll-month-table--with-selection {
@@ -900,19 +900,23 @@ html input[style*="borderWidth"] {
 }
 
 .payroll-month-table .payroll-month-col-narrow {
-  width: 92px;
+  width: 108px;
 }
 
 .payroll-month-table .payroll-month-col-standard {
-  width: 145px;
+  width: 132px;
 }
 
 .payroll-month-table .payroll-month-col-wide {
-  width: 210px;
+  width: 200px;
+}
+
+.payroll-month-table .payroll-month-col-total {
+  width: 150px;
 }
 
 .payroll-month-table .payroll-month-col-received {
-  width: 210px;
+  width: 180px;
 }
 
 .payroll-month-table .payroll-sticky-row .payroll-sticky-checkbox-col {
@@ -942,19 +946,27 @@ html input[style*="borderWidth"] {
 @media (min-width: 640px) {
   .payroll-month-table {
     --payroll-sticky-checkbox-width: 48px;
-    --payroll-sticky-label-width: 190px;
+    --payroll-sticky-label-width: 175px;
+  }
+
+  .payroll-month-table .payroll-month-col-narrow {
+    width: 118px;
   }
 
   .payroll-month-table .payroll-month-col-standard {
-    width: 155px;
+    width: 142px;
   }
 
   .payroll-month-table .payroll-month-col-wide {
-    width: 230px;
+    width: 215px;
+  }
+
+  .payroll-month-table .payroll-month-col-total {
+    width: 160px;
   }
 
   .payroll-month-table .payroll-month-col-received {
-    width: 220px;
+    width: 190px;
   }
 
 }
@@ -962,26 +974,54 @@ html input[style*="borderWidth"] {
 @media (min-width: 768px) {
   .payroll-month-table {
     --payroll-sticky-checkbox-width: 52px;
-    --payroll-sticky-label-width: 215px;
+    --payroll-sticky-label-width: 195px;
+  }
+
+  .payroll-month-table .payroll-month-col-narrow {
+    width: 126px;
   }
 
   .payroll-month-table .payroll-month-col-standard {
-    width: 165px;
+    width: 150px;
   }
 
   .payroll-month-table .payroll-month-col-wide {
-    width: 250px;
+    width: 225px;
+  }
+
+  .payroll-month-table .payroll-month-col-total {
+    width: 170px;
+  }
+
+  .payroll-month-table .payroll-month-col-received {
+    width: 200px;
   }
 
 }
 
 @media (min-width: 1024px) {
   .payroll-month-table {
-    --payroll-sticky-label-width: 235px;
+    --payroll-sticky-label-width: 210px;
+  }
+
+  .payroll-month-table .payroll-month-col-narrow {
+    width: 132px;
+  }
+
+  .payroll-month-table .payroll-month-col-standard {
+    width: 156px;
   }
 
   .payroll-month-table .payroll-month-col-wide {
-    width: 270px;
+    width: 240px;
+  }
+
+  .payroll-month-table .payroll-month-col-total {
+    width: 176px;
+  }
+
+  .payroll-month-table .payroll-month-col-received {
+    width: 210px;
   }
 }
 

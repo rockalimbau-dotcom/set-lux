@@ -127,15 +127,16 @@ export function MonthSectionTable({
   }, [enriched]);
 
   return (
-    <div
-      className='px-3 pb-3 sm:px-4 sm:pb-4 md:px-5 md:pb-5 overflow-x-auto overflow-y-auto overscroll-contain max-h-[70vh]'
-      data-tutorial='payroll-table'
-    >
-      <table
-        className={`payroll-month-table ${
-          showRowSelection ? 'payroll-month-table--with-selection' : ''
-        } min-w-[760px] sm:min-w-[920px] md:min-w-[1080px] w-full table-fixed border-separate border-spacing-0 text-[9px] sm:text-[10px] md:text-xs lg:text-sm`}
+    <div className='px-3 pb-3 sm:px-4 sm:pb-4 md:px-5 md:pb-5'>
+      <div
+        className='overflow-x-auto overflow-y-auto overscroll-contain max-h-[70vh]'
+        data-tutorial='payroll-table'
       >
+        <table
+          className={`payroll-month-table ${
+            showRowSelection ? 'payroll-month-table--with-selection' : ''
+          } min-w-[760px] sm:min-w-[920px] md:min-w-[1080px] w-full table-fixed border-separate border-spacing-0 text-[9px] sm:text-[10px] md:text-xs lg:text-sm`}
+        >
         <colgroup>
           {showRowSelection && <col className='payroll-month-col-checkbox' />}
           <col className='payroll-month-col-person' />
@@ -161,7 +162,7 @@ export function MonthSectionTable({
           {columnVisibility.transporte && <col className='payroll-month-col-standard' />}
           {columnVisibility.km && <col className='payroll-month-col-standard' />}
           {columnVisibility.km && <col className='payroll-month-col-standard' />}
-          <col className='payroll-month-col-narrow' />
+          <col className='payroll-month-col-total' />
           <col className='payroll-month-col-received' />
         </colgroup>
         <thead>
@@ -300,7 +301,8 @@ export function MonthSectionTable({
             </tr>
           )}
         </tbody>
-      </table>
+        </table>
+      </div>
     </div>
   );
 }

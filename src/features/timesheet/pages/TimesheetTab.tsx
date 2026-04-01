@@ -296,13 +296,21 @@ function extractWorkersFromWeek(week: AnyRecord): Worker[] {
   }
   const roleForRank = (role: string): string => {
     const normalized = normalizeRole(role).toUpperCase();
-    if (normalized.startsWith('REF') && normalized.length > 3) return normalized.substring(3);
+    if (normalized.startsWith('REF')) return 'REF';
     return normalized;
   };
+  const normalizeNameForSort = (name: string): string =>
+    String(name || '')
+      .trim()
+      .toLocaleLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
   return Array.from(out.values()).sort((a, b) => {
     const rankA = roleRank(roleForRank(a.role));
     const rankB = roleRank(roleForRank(b.role));
     if (rankA !== rankB) return rankA - rankB;
+    const nameCompare = normalizeNameForSort(a.name).localeCompare(normalizeNameForSort(b.name));
+    if (nameCompare !== 0) return nameCompare;
     return a.order - b.order;
   });
 }
