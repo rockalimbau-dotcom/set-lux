@@ -15,6 +15,9 @@ import { needsDataToPlanData } from '@shared/utils/needsPlanAdapter';
 import { getExtraBlockCount, getExtraBlocks, hasExtraBlockContent } from '../../utils/extra';
 import { personaKey } from '../../utils/model';
 
+const getMemberIdentityKey = (member: AnyRecord): string =>
+  `${String(member?.personId || member?.roleId || member?.role || '').trim().toUpperCase()}__${String(member?.name || '').trim()}`;
+
 export function useWeekData(
   project: { id?: string; nombre?: string } | undefined,
   semana: string[],
@@ -116,15 +119,18 @@ export function useWeekData(
         members.forEach((member: AnyRecord) => {
           const role = String(member?.role || '').trim().toUpperCase();
           const name = String(member?.name || '').trim();
-          const key = `${role}__${name}`;
+          const key = getMemberIdentityKey(member);
           if (!role && !name) return;
           if (seen.has(key)) return;
           seen.add(key);
           people.push({
             role,
             name,
+            personId: member?.personId,
             gender: member?.gender,
             source: member?.source,
+            roleId: member?.roleId,
+            roleLabel: member?.roleLabel,
             __block: `extra:${index}`,
           });
         });
@@ -180,10 +186,10 @@ export function useWeekData(
     // TODOS los miembros del equipo base, incluyendo refuerzos. Usar refNamesBase causaría duplicados.
     // Siempre pasar un Set vacío para refNamesBase
     const extrasKey = new Set(
-      (extraPeople || []).map(m => `${String(m.role || '')}__${String(m.name || '')}`)
+      (extraPeople || []).map(m => getMemberIdentityKey(m))
     );
     const cleanedBase = (basePeople || []).filter(m => {
-      const key = `${String(m.role || '')}__${String(m.name || '')}`;
+      const key = getMemberIdentityKey(m);
       return !extrasKey.has(key);
     });
     return buildPeopleBase(cleanedBase, new Set<string>());

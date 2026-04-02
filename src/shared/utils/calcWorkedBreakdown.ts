@@ -35,11 +35,13 @@ export interface WorkedBreakdownResult {
 export function calcWorkedBreakdown(
   weeks: any[],
   filterISO: (iso: string) => boolean,
-  person: { role: string; name: string; source?: string },
+  person: { role: string; roleId?: string; personId?: string; name: string; source?: string },
   projectMode: 'semanal' | 'mensual' | 'publicidad' | 'diario' = 'semanal'
 ): WorkedBreakdownResult {
   const isWantedISO = filterISO || (() => true);
   const wantedRole = String(person.role || '');
+  const wantedRoleId = String(person.roleId || '').trim();
+  const wantedPersonId = String(person.personId || '').trim();
   const wantedBase = stripRoleSuffix(wantedRole);
   const wantedSuffix = hasRoleGroupSuffix(wantedRole)
     ? /P$/i.test(wantedRole)
@@ -68,7 +70,67 @@ export function calcWorkedBreakdown(
   let prelight = 0;
   let recogida = 0;
 
+  const multiTariffIdentities = (() => {
+    const identities = new Map<string, Set<string>>();
+    const register = (member: any) => {
+      const nameNorm = norm(member?.name || '');
+      const personId = String(member?.personId || '').trim();
+      const identity = personId || nameNorm;
+      if (!identity) return;
+      const roleIdentity = String(member?.roleId || stripRoleSuffix(String(member?.role || '')) || '').trim();
+      if (!roleIdentity) return;
+      if (!identities.has(identity)) identities.set(identity, new Set<string>());
+      identities.get(identity)!.add(roleIdentity);
+    };
+
+    for (const week of weeks || []) {
+      for (const day of week?.days || []) {
+        (day?.team || []).forEach(register);
+        (day?.prelight || []).forEach(register);
+        (day?.pickup || []).forEach(register);
+        normalizeExtraBlocks(day).forEach(block => {
+          (block?.list || []).forEach(register);
+        });
+      }
+    }
+
+    return new Set(
+      Array.from(identities.entries())
+        .filter(([, roles]) => roles.size > 1)
+        .map(([identity]) => identity)
+    );
+  })();
+
   const nameEq = (s: string) => nameEqUtil(s, person.name || '');
+
+  const matchesScheduledMember = (member: any): boolean => {
+    if (!nameEq(member?.name)) return false;
+
+    const memberPersonId = String(member?.personId || '').trim();
+    const memberRoleId = String(member?.roleId || '').trim();
+    const memberBaseRole = stripRoleSuffix(String(member?.role || ''));
+    const memberIdentity = memberPersonId || norm(member?.name || '');
+    const isAmbiguousIdentity = multiTariffIdentities.has(memberIdentity);
+
+    if (wantedRoleId) {
+      if (memberRoleId) {
+        if (memberRoleId !== wantedRoleId) return false;
+        if (wantedPersonId && memberPersonId && memberPersonId !== wantedPersonId) return false;
+        return true;
+      }
+
+      if (isAmbiguousIdentity) return false;
+      if (wantedPersonId && memberPersonId && memberPersonId !== wantedPersonId) return false;
+      return !member?.role || !wantedBase || memberBaseRole === wantedBase;
+    }
+
+    if (wantedPersonId) {
+      if (memberPersonId) return memberPersonId === wantedPersonId;
+      return !member?.role || !wantedBase || memberBaseRole === wantedBase;
+    }
+
+    return !member?.role || !wantedBase || memberBaseRole === wantedBase;
+  };
 
   // Flag para detener el conteo cuando se encuentre "Fin"
   let foundFin = false;
@@ -98,32 +160,23 @@ export function calcWorkedBreakdown(
           (arr || []).some((m: any) => {
             const role = String(m?.role || '');
             const isRefRole = role === 'REF' || (role.startsWith('REF') && role.length > 3) || /ref/i.test(role);
-            return nameEq(m?.name) && isRefRole;
+            if (!nameEq(m?.name) || !isRefRole) return false;
+            return matchesScheduledMember(m);
           });
         isWorking = anyRef(day?.team) || anyRef(day?.prelight) || anyRef(day?.pickup);
         if (isWorking) activeSource = 'team';
       } else {
         const matches = (list: any[]) =>
-          (list || []).some((m: any) => {
-            if (!nameEq(m?.name)) return false;
-            const mBase = stripRoleSuffix(String(m?.role || ''));
-            return !m?.role || !wantedBase || mBase === wantedBase;
-          });
+          (list || []).some((m: any) => matchesScheduledMember(m));
 
         const extraBlocks = normalizeExtraBlocks(day);
         const matchingExtraBlocks = extraBlocks.filter(block =>
-          (block?.list || []).some((m: any) => {
-            if (!nameEq(m?.name)) return false;
-            const mBase = stripRoleSuffix(String(m?.role || ''));
-            return !m?.role || !wantedBase || mBase === wantedBase;
-          })
+          (block?.list || []).some((m: any) => matchesScheduledMember(m))
         );
 
         const inTeam = (day?.team || []).some((m: any) => {
           if (String(m?.source || '').trim().toLowerCase() === 'ref') return false;
-          if (!nameEq(m?.name)) return false;
-          const mBase = stripRoleSuffix(String(m?.role || ''));
-          return !m?.role || !wantedBase || mBase === wantedBase;
+          return matchesScheduledMember(m);
         });
         const inPre = matches(day?.prelight);
         const inPick = matches(day?.pickup);

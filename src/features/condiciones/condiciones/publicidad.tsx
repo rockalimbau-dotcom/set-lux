@@ -18,6 +18,7 @@ import { useExportRegistration } from './publicidad/useExportRegistration';
 import { AnyRecord } from '@shared/types/common';
 import type { CondicionesExportSections } from '../utils/exportPDF';
 import type { CustomConditionSection } from './shared';
+import { normalizeConditionModel } from './roleCatalog';
 
 function CondicionesPublicidad({
   project,
@@ -31,18 +32,37 @@ function CondicionesPublicidad({
   readOnly?: boolean;
 }) {
   const { t } = useTranslation();
-  const { translateHeader, translateRoleName } = useDiarioTranslations();
+  const { translateHeader, translateRoleName } = useDiarioTranslations(project);
   
   const storageKey = useMemo(() => {
     const base = (project as AnyRecord)?.id || (project as AnyRecord)?.nombre || 'tmp';
     return `cond_${base}_diario`;
   }, [project?.id, project?.nombre]);
+  const projectModel = (project as AnyRecord)?.conditions?.diario as AnyRecord | undefined;
+  const normalizedProjectModel = useMemo(
+    () => (projectModel ? normalizeConditionModel(project, projectModel, PRICE_ROLES_DIARIO, true) : null),
+    [project, projectModel]
+  );
 
   const [showParams, setShowParams] = useState(false);
   const [pendingScrollSectionId, setPendingScrollSectionId] = useState<string | null>(null);
+  const [syncReady, setSyncReady] = useState(() => !normalizedProjectModel);
   const [model, setModel] = useLocalStorage<AnyRecord>(storageKey, () =>
-    loadOrSeedDiario(storageKey)
+    normalizeConditionModel(project, projectModel || loadOrSeedDiario(storageKey), PRICE_ROLES_DIARIO, true)
   );
+
+  useEffect(() => {
+    if (!normalizedProjectModel) {
+      setSyncReady(true);
+      return;
+    }
+    if (JSON.stringify(normalizedProjectModel) === JSON.stringify(model)) {
+      setSyncReady(true);
+      return;
+    }
+    setSyncReady(false);
+    setModel(() => normalizedProjectModel);
+  }, [model, normalizedProjectModel, setModel]);
 
   // Sincronizar roles con prices inmediatamente después de cargar
   // IMPORTANTE: Esto debe ejecutarse siempre para asegurar que prices tenga entradas para todos los roles
@@ -50,59 +70,17 @@ function CondicionesPublicidad({
   const syncedKeyRef = useRef<string>('');
   useEffect(() => {
     if (!model) return;
-    
-    // Resetear el ref si cambió el storageKey (nuevo proyecto)
-    if (syncedKeyRef.current !== storageKey) {
-      syncedKeyRef.current = storageKey;
-    } else {
-      // Si ya sincronizamos para este storageKey, solo verificar si necesita sincronización
-      // pero no ejecutar de nuevo para evitar loops
-      const currentRoles = model.roles && Array.isArray(model.roles) && model.roles.length > 0 
-        ? model.roles 
-        : ['Gaffer', 'Eléctrico'];
-      
-      const currentPrices = model.prices || {};
-      const allRolesHavePrices = currentRoles.every((role: string) => currentPrices[role] !== undefined);
-      
-      // Si todos los roles tienen precios, no hacer nada
-      if (allRolesHavePrices && currentRoles.length > 0) return;
-    }
-    
-    const currentRoles = model.roles && Array.isArray(model.roles) && model.roles.length > 0 
-      ? model.roles 
-      : ['Gaffer', 'Eléctrico'];
-    
-    const currentPrices = model.prices || {};
-    let needsSync = false;
-    const syncedPrices = { ...currentPrices };
-    
-    // Inicializar precios vacíos para todos los roles del equipo base
-    // Esto es crítico: asegurar que prices tenga entradas para Gaffer y Eléctrico
-    for (const role of currentRoles) {
-      if (!syncedPrices[role]) {
-        syncedPrices[role] = {};
-        needsSync = true;
-      }
-    }
-    
-    // Verificar si roles está vacío o mal formado
-    const needsRolesSync = !model.roles || !Array.isArray(model.roles) || model.roles.length === 0;
-    
-    // Si necesita sincronización, actualizar el modelo
-    if (needsSync || needsRolesSync) {
-      setModel((m: AnyRecord) => ({ 
-        ...m, 
-        roles: currentRoles,
-        prices: syncedPrices 
-      }));
-      syncedKeyRef.current = storageKey;
-    }
-  }, [model, storageKey, setModel]); // Ejecutar cuando cambie el modelo o el proyecto
+    if (syncedKeyRef.current !== storageKey) syncedKeyRef.current = storageKey;
+
+    const normalizedModel = normalizeConditionModel(project, model, PRICE_ROLES_DIARIO, true);
+    if (JSON.stringify(normalizedModel) === JSON.stringify(model)) return;
+    setModel(() => normalizedModel);
+  }, [model, project, storageKey, setModel]);
 
   // Custom hooks
   useLanguageSync({ model, setModel });
   useModelPersistence({ storageKey, model });
-  useModelSync({ model, onChange });
+  useModelSync({ model, onChange, enabled: syncReady });
 
   const {
     setParam,
@@ -112,7 +90,7 @@ function CondicionesPublicidad({
     removeRole,
     roleToDelete,
     setRoleToDelete,
-  } = useDiarioHandlers({ model, setModel });
+  } = useDiarioHandlers({ project, model, setModel });
 
   const customSections = (Array.isArray(model.customSections) ? model.customSections : []) as CustomConditionSection[];
   const createCustomSection = (): CustomConditionSection => ({
@@ -193,6 +171,7 @@ function CondicionesPublicidad({
       />
 
       <PricesTable
+        project={project}
         model={model}
         setModel={setModel}
         roles={roles}
@@ -228,7 +207,7 @@ function CondicionesPublicidad({
 
       {roleToDelete && typeof document !== 'undefined' && createPortal(
         <DeleteRoleConfirmModal
-          roleName={roleToDelete.role}
+          roleName={translateRoleName(roleToDelete.role, roleToDelete.sectionKey)}
           onClose={() => setRoleToDelete(null)}
           onConfirm={() => {
             if (roleToDelete) {

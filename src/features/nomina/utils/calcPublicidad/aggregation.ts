@@ -25,10 +25,13 @@ export function aggregateReports(project: any, weeks: any[], filterISO: ((iso: s
     rowKey: string,
     role: string,
     name: string,
+    personId?: string,
     gender?: 'male' | 'female' | 'neutral',
     source?: string,
     matchRole?: string,
-    displayBlock?: 'base' | 'pre' | 'pick' | 'extra'
+    displayBlock?: 'base' | 'pre' | 'pick' | 'extra',
+    roleId?: string,
+    roleLabel?: string
   ) => {
     const k = rowKey;
     if (!totals.has(k)) {
@@ -38,6 +41,9 @@ export function aggregateReports(project: any, weeks: any[], filterISO: ((iso: s
         _displayBlock: displayBlock || 'base',
         role,
         name,
+        personId,
+        roleId,
+        roleLabel,
         gender,
         source,
         extras: 0,
@@ -56,6 +62,9 @@ export function aggregateReports(project: any, weeks: any[], filterISO: ((iso: s
       });
     }
     if (source && !totals.get(k).source) totals.get(k).source = source;
+    if (personId && !totals.get(k).personId) totals.get(k).personId = personId;
+    if (roleId && !totals.get(k).roleId) totals.get(k).roleId = roleId;
+    if (roleLabel && !totals.get(k).roleLabel) totals.get(k).roleLabel = roleLabel;
     return totals.get(k);
   };
 
@@ -74,13 +83,16 @@ export function aggregateReports(project: any, weeks: any[], filterISO: ((iso: s
     
 
     const rawPeople = weekAllPeopleActive(w);
-    const uniqStorage = new Map<string, { roleVisible: string; gender?: 'male' | 'female' | 'neutral'; source?: string; rowKey: string; matchRole: string; displayBlock: 'base' | 'pre' | 'pick' | 'extra' }>();
+    const uniqStorage = new Map<string, { roleVisible: string; personId?: string; gender?: 'male' | 'female' | 'neutral'; source?: string; rowKey: string; matchRole: string; displayBlock: 'base' | 'pre' | 'pick' | 'extra'; roleId?: string; roleLabel?: string }>();
     for (const p of rawPeople) {
       const r = p.role || '';
       const n = p.name || '';
       const vk = visibleRoleFor(r, n, refuerzoSet, (p as any)?.source);
+      const personId = (p as any)?.personId;
       const gender = (p as any)?.gender;
       const source = (p as any)?.source;
+      const roleId = (p as any)?.roleId;
+      const roleLabel = (p as any)?.roleLabel;
       const block = (p as any)?.block;
       
       // REF no se procesa en diario (no hay refuerzos)
@@ -101,19 +113,20 @@ export function aggregateReports(project: any, weeks: any[], filterISO: ((iso: s
           : r.endsWith('R')
           ? 'pick'
           : undefined;
-      const sk = storageKeyFor(r, n, blockType === 'extra' ? block : blockType);
+      const sk = storageKeyFor(r, n, blockType === 'extra' ? block : blockType, roleId);
       const displayBlock = blockType === 'pre' ? 'pre' : blockType === 'pick' ? 'pick' : blockType === 'extra' ? 'extra' : 'base';
+      const rowIdentity = String(roleId || vk || '').trim();
       const rowKey =
         displayBlock === 'pre'
-          ? `${vk}.pre__${n}`
+          ? `${rowIdentity}.pre__${n}`
           : displayBlock === 'pick'
-          ? `${vk}.pick__${n}`
+          ? `${rowIdentity}.pick__${n}`
           : displayBlock === 'extra'
-          ? `${vk}.extra__${n}`
-          : `${vk}__${n}`;
+          ? `${rowIdentity}.extra__${n}`
+          : `${rowIdentity}__${n}`;
       const matchRole =
         displayBlock === 'pre' ? `${stripPR(r)}P` : displayBlock === 'pick' ? `${stripPR(r)}R` : stripPR(r);
-      if (!uniqStorage.has(sk)) uniqStorage.set(sk, { roleVisible: vk, gender, source, rowKey, matchRole, displayBlock });
+      if (!uniqStorage.has(sk)) uniqStorage.set(sk, { roleVisible: vk, personId, gender, source, rowKey, matchRole, displayBlock, roleId, roleLabel });
     }
 
 
@@ -125,7 +138,7 @@ export function aggregateReports(project: any, weeks: any[], filterISO: ((iso: s
 
       for (const iso of filteredDays) {
         const keysToUse = storageKeyVariants(pk);
-        const slot = ensure(meta.rowKey, roleVis, personName, meta.gender, meta.source, meta.matchRole, meta.displayBlock);
+        const slot = ensure(meta.rowKey, roleVis, personName, meta.personId, meta.gender, meta.source, meta.matchRole, meta.displayBlock, meta.roleId, meta.roleLabel);
 
         const he = parseHorasExtra(getCellValueCandidates(data, keysToUse, COL_CANDIDATES.extras, iso));
         const ta = parseNum(getCellValueCandidates(data, keysToUse, COL_CANDIDATES.ta, iso));
@@ -164,7 +177,7 @@ export function aggregateReports(project: any, weeks: any[], filterISO: ((iso: s
         }
       }
       if (usedMaterialPropioWeek) {
-        const slot = ensure(meta.rowKey, roleVis, personName, meta.gender, meta.source, meta.matchRole, meta.displayBlock);
+        const slot = ensure(meta.rowKey, roleVis, personName, meta.personId, meta.gender, meta.source, meta.matchRole, meta.displayBlock, meta.roleId, meta.roleLabel);
         slot.materialPropioWeeks += 1;
       }
     }
@@ -247,7 +260,7 @@ export function aggregateWindowedReport(project: any, weeks: any[], filterISO: (
           : r.endsWith('R')
           ? 'pick'
           : undefined;
-      const sk = storageKeyFor(r, n, blockType === 'extra' ? block : blockType);
+      const sk = storageKeyFor(r, n, blockType === 'extra' ? block : blockType, (p as any)?.roleId);
       if (!uniqStorage.has(sk)) uniqStorage.set(sk, vk);
     }
 

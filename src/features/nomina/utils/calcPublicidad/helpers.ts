@@ -147,7 +147,13 @@ export function getCellValueCandidates(
 /**
  * Get storage key for a role and name, considering blocks
  */
-export function storageKeyFor(roleCode: string, name: string, block?: string): string {
+export function storageKeyFor(roleCode: string, name: string, block?: string, roleId?: string): string {
+  if (roleId) {
+    if (block === 'pre') return `${roleId}.pre__${name || ''}`;
+    if (block === 'pick') return `${roleId}.pick__${name || ''}`;
+    if (typeof block === 'string' && block.startsWith('extra:')) return `${roleId}.${block}__${name || ''}`;
+    return `${roleId}__${name || ''}`;
+  }
   const base = stripPR(roleCode || '');
   
   // En diario NO hay refuerzos, pero SÍ hay prelight y pickup

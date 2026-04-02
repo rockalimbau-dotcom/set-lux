@@ -22,12 +22,20 @@ function ReportBlockScheduleRow({ label, semana, valueForISO }: Props) {
   
   return (
     <tr className='schedule-row'>
-      <Td className='whitespace-nowrap align-middle bg-white/5 report-sticky-first-col' align='middle'>
-        <div className='text-[9px] sm:text-[10px] md:text-xs lg:text-sm font-semibold text-zinc-200 flex items-center'>{translatedLabel}</div>
+      <Td className='align-middle bg-white/5 report-sticky-first-col' align='middle'>
+        <div className='text-[9px] sm:text-[10px] md:text-xs lg:text-sm font-semibold text-zinc-200 flex items-center whitespace-normal break-words leading-tight'>
+          {translatedLabel}
+        </div>
       </Td>
       {semana.map((iso, i) => (
-        <Td key={`sched_${label}_${iso}`} className='text-[9px] sm:text-[10px] md:text-xs lg:text-sm font-semibold text-center align-middle bg-white/5 whitespace-nowrap' align='middle'>
-          <div className='flex items-center justify-center'>{values[i]}</div>
+        <Td
+          key={`sched_${label}_${iso}`}
+          className='text-[9px] sm:text-[10px] md:text-xs lg:text-sm font-semibold text-center align-middle bg-white/5'
+          align='middle'
+        >
+          <div className='flex items-center justify-center whitespace-normal break-words leading-tight text-center min-h-[1.5rem]'>
+            {values[i]}
+          </div>
         </Td>
       ))}
       <Td className='text-center align-middle bg-white/5' align='middle'>&nbsp;</Td>

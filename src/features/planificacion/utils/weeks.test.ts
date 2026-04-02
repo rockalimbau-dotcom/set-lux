@@ -35,6 +35,27 @@ describe('weeks utils', () => {
       expect(day2.tipo).toBe('Rodaje');
       expect(day2.team).toEqual([]);
     });
+
+    it('should preserve role metadata from base team', () => {
+      const day = createEmptyDay('Lunes', [
+        {
+          role: 'E',
+          roleId: 'electric_night',
+          roleLabel: 'Eléctrico noche',
+          name: 'Ana',
+          gender: 'female',
+        },
+      ]);
+
+      expect(day.team[0]).toMatchObject({
+        role: 'E',
+        roleId: 'electric_night',
+        roleLabel: 'Eléctrico noche',
+        name: 'Ana',
+        gender: 'female',
+        source: 'base',
+      });
+    });
   });
 
   describe('createWeek', () => {

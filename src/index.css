@@ -620,7 +620,7 @@ html input[style*="borderWidth"] {
 [data-theme='dark'] .needs-week-table--selectable tbody td:nth-child(2):not([colspan]),
 [data-theme='dark'] .needs-week-table .needs-sticky-row > th,
 [data-theme='dark'] .needs-week-table .needs-sticky-row > td {
-  background-color: #171717;
+  background-color: var(--panel);
 }
 
 .needs-week-table td.phase-block {
@@ -648,7 +648,7 @@ html input[style*="borderWidth"] {
 }
 
 [data-theme='dark'] .needs-week-table td.phase-block .phase-block-sticky {
-  background-color: #171717;
+  background-color: var(--panel);
 }
 
 .needs-week-table td.phase-block .phase-block-button {
@@ -757,7 +757,7 @@ html input[style*="borderWidth"] {
 [data-theme='dark'] .report-week-table .report-sticky-first-col,
 [data-theme='dark'] .report-week-table .report-sticky-row > th,
 [data-theme='dark'] .report-week-table .report-sticky-row > td {
-  background-color: #171717;
+  background-color: var(--panel);
 }
 
 @media (min-width: 640px) {
@@ -940,7 +940,7 @@ html input[style*="borderWidth"] {
 [data-theme='dark'] .payroll-month-table thead th,
 [data-theme='dark'] .payroll-month-table tbody td:first-child:not([colspan]),
 [data-theme='dark'] .payroll-month-table--with-selection tbody td:nth-child(2):not([colspan]) {
-  background-color: #171717;
+  background-color: var(--panel);
 }
 
 @media (min-width: 640px) {

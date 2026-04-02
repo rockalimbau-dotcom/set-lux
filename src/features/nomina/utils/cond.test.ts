@@ -14,6 +14,13 @@ Object.defineProperty(window, 'localStorage', {
   value: localStorageMock,
 });
 
+const expectLegacyPricesPreserved = (result: any, prices: Record<string, any>) => {
+  expect(result).toMatchObject({ params: expect.any(Object), prices: expect.any(Object) });
+  Object.entries(prices).forEach(([key, value]) => {
+    expect(result.prices[key]).toEqual(value);
+  });
+};
+
 describe('nomina/utils/cond', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -43,7 +50,8 @@ describe('nomina/utils/cond', () => {
       expect(localStorageMock.getItem).toHaveBeenCalledWith(
         'cond_test-project_semanal'
       );
-      expect(result).toEqual(mockModel);
+      expectLegacyPricesPreserved(result, mockModel.prices);
+      expect(result.roles).toEqual(['g_default', 'e_default']);
     });
 
     it('loads model with project nombre when id is not available', () => {
@@ -64,7 +72,8 @@ describe('nomina/utils/cond', () => {
       expect(localStorageMock.getItem).toHaveBeenCalledWith(
         'cond_test-project-name_mensual'
       );
-      expect(result).toEqual(mockModel);
+      expectLegacyPricesPreserved(result, mockModel.prices);
+      expect(result.roles).toEqual(['g_default', 'e_default']);
     });
 
     it('uses conditions.tipo when conditionsMode is not available', () => {
@@ -90,17 +99,12 @@ describe('nomina/utils/cond', () => {
       const result = loadCondModel(mockProject);
 
       expect(localStorageMock.getItem).toHaveBeenCalledWith(
-        'cond_test-project_publicidad'
+        'cond_test-project_diario'
       );
-      // Ahora loadCondModel filtra prices para incluir solo los roles en roles
-      expect(result).toEqual({
-        roles: ['Gaffer', 'Eléctrico'],
-        prices: { 
-          'Gaffer': { 'Precio jornada': '510' },
-          'Eléctrico': { 'Precio jornada': '310' }
-        },
-        params: { kilometrajeKm: '0.5' },
-      });
+      expect(result.roles).toEqual(['g_default', 'e_default']);
+      expect(result.prices.g_default).toEqual({ 'Precio jornada': '510' });
+      expect(result.prices.e_default).toEqual({ 'Precio jornada': '310' });
+      expect(result.params).toEqual({ kilometrajeKm: '0.5' });
     });
 
     it('uses conditions.mode when tipo is not available', () => {
@@ -123,7 +127,8 @@ describe('nomina/utils/cond', () => {
       expect(localStorageMock.getItem).toHaveBeenCalledWith(
         'cond_test-project_semanal'
       );
-      expect(result).toEqual(mockModel);
+      expectLegacyPricesPreserved(result, mockModel.prices);
+      expect(result.roles).toEqual(['g_default', 'e_default']);
     });
 
     it('defaults to semanal when no mode is specified', () => {
@@ -143,7 +148,8 @@ describe('nomina/utils/cond', () => {
       expect(localStorageMock.getItem).toHaveBeenCalledWith(
         'cond_test-project_semanal'
       );
-      expect(result).toEqual(mockModel);
+      expectLegacyPricesPreserved(result, mockModel.prices);
+      expect(result.roles).toEqual(['g_default', 'e_default']);
     });
 
     it('uses modeOverride when provided', () => {
@@ -167,17 +173,12 @@ describe('nomina/utils/cond', () => {
       const result = loadCondModel(mockProject, 'diario');
 
       expect(localStorageMock.getItem).toHaveBeenCalledWith(
-        'cond_test-project_publicidad'
+        'cond_test-project_diario'
       );
-      // Ahora loadCondModel filtra prices para incluir solo los roles en roles
-      expect(result).toEqual({
-        roles: ['Gaffer', 'Eléctrico'],
-        prices: { 
-          'Gaffer': { 'Precio jornada': '510' },
-          'Eléctrico': { 'Precio jornada': '310' }
-        },
-        params: { gastosBolsillo: '10' },
-      });
+      expect(result.roles).toEqual(['g_default', 'e_default']);
+      expect(result.prices.g_default).toEqual({ 'Precio jornada': '510' });
+      expect(result.prices.e_default).toEqual({ 'Precio jornada': '310' });
+      expect(result.params).toEqual({ gastosBolsillo: '10' });
     });
 
     it('tries multiple keys in order of priority', () => {
@@ -204,7 +205,8 @@ describe('nomina/utils/cond', () => {
       expect(localStorageMock.getItem).toHaveBeenCalledWith(
         'cond_test-project_mensual'
       );
-      expect(result).toEqual(mockModel);
+      expectLegacyPricesPreserved(result, mockModel.prices);
+      expect(result.roles).toEqual(['g_default', 'e_default']);
     });
 
     it('tries all fallback keys when primary key fails', () => {
@@ -233,15 +235,47 @@ describe('nomina/utils/cond', () => {
       const result = loadCondModel(mockProject);
 
       expect(localStorageMock.getItem).toHaveBeenCalledTimes(4);
-      // Ahora loadCondModel filtra prices para incluir solo los roles en roles
-      expect(result).toEqual({
-        roles: ['Gaffer', 'Eléctrico'],
-        prices: { 
-          'Gaffer': { 'Precio jornada': '510' },
-          'Eléctrico': { 'Precio jornada': '310' }
+      expect(result.roles).toEqual(['g_default', 'e_default']);
+      expect(result.prices.g_default).toEqual({ 'Precio jornada': '510' });
+      expect(result.prices.e_default).toEqual({ 'Precio jornada': '310' });
+      expect(result.params).toEqual({ dietaSinPernocta: '30' });
+    });
+
+    it('prioritizes project.conditions content over stale localStorage', () => {
+      const mockProject = {
+        id: 'test-project',
+        conditions: {
+          tipo: 'diario',
+          diario: {
+            roles: ['gaffer_default', 'electric_default', 'electric_factura'],
+            prices: {
+              gaffer_default: { 'Precio jornada': '510' },
+              electric_default: { 'Precio jornada': '350' },
+              electric_factura: { 'Precio jornada': '300' },
+            },
+            params: { kilometrajeKm: '0.4' },
+          },
         },
-        params: { dietaSinPernocta: '30' },
-      });
+      };
+
+      localStorageMock.getItem.mockReturnValue(
+        JSON.stringify({
+          roles: ['Gaffer', 'Eléctrico'],
+          prices: {
+            Gaffer: { 'Precio jornada': '510' },
+            'Eléctrico': { 'Precio jornada': '310' },
+          },
+        })
+      );
+
+      const result = loadCondModel(mockProject);
+
+      expect(result.roles).toEqual(['electric_default', 'electric_factura', 'gaffer_default']);
+      expect(result.prices.gaffer_default).toEqual({ 'Precio jornada': '510' });
+      expect(result.prices.electric_default).toEqual({ 'Precio jornada': '350' });
+      expect(result.prices.electric_factura).toEqual({ 'Precio jornada': '300' });
+      expect(result.params).toEqual({ kilometrajeKm: '0.4' });
+      expect(localStorageMock.setItem).toHaveBeenCalled();
     });
 
     it('returns empty object when no model is found', () => {
@@ -253,7 +287,7 @@ describe('nomina/utils/cond', () => {
 
       const result = loadCondModel(mockProject);
 
-      expect(localStorageMock.getItem).toHaveBeenCalledTimes(4);
+      expect(localStorageMock.getItem).toHaveBeenCalledTimes(5);
       expect(result).toEqual({});
     });
 
@@ -266,7 +300,7 @@ describe('nomina/utils/cond', () => {
 
       const result = loadCondModel(mockProject);
 
-      expect(localStorageMock.getItem).toHaveBeenCalledTimes(4);
+      expect(localStorageMock.getItem).toHaveBeenCalledTimes(5);
       expect(result).toEqual({});
     });
 
@@ -302,7 +336,8 @@ describe('nomina/utils/cond', () => {
       expect(localStorageMock.getItem).toHaveBeenCalledWith(
         'cond_test-project_semanal'
       );
-      expect(result).toEqual(mockModel);
+      expectLegacyPricesPreserved(result, mockModel.prices);
+      expect(result.roles).toEqual(['g_default', 'e_default']);
     });
 
     it('handles null project gracefully', () => {

@@ -2,8 +2,10 @@ import { useEffect, useMemo } from 'react';
 import { AnyRecord } from '@shared/types/common';
 import { PRICE_ROLES } from '../shared.constants';
 import { computeFromMonthly } from './mensualUtils';
+import { normalizeConditionRoleKey, sortConditionRoleKeys } from '../roleCatalog';
 
 interface UseMensualRolesProps {
+  project?: AnyRecord | null;
   model: AnyRecord;
   setModel: React.Dispatch<React.SetStateAction<AnyRecord>>;
 }
@@ -18,7 +20,7 @@ interface UseMensualRolesReturn {
 /**
  * Hook to manage roles in mensual conditions
  */
-export function useMensualRoles({ model, setModel }: UseMensualRolesProps): UseMensualRolesReturn {
+export function useMensualRoles({ project, model, setModel }: UseMensualRolesProps): UseMensualRolesReturn {
   const roles = useMemo(() => model.roles || PRICE_ROLES, [model.roles]);
   const paramsKey = useMemo(() => JSON.stringify(model.params || {}), [model.params]);
   const monthlyKey = useMemo(() => {
@@ -92,29 +94,15 @@ export function useMensualRoles({ model, setModel }: UseMensualRolesProps): UseM
     if (!newRole) return;
     
     setModel((m: AnyRecord) => {
-      const currentRoles = m.roles || PRICE_ROLES;
-      if (currentRoles.includes(newRole)) return m;
-      
-      const nextRoles: string[] = [];
-      const currentSet = new Set(currentRoles);
-      
-      for (const role of PRICE_ROLES) {
-        if (role === newRole) {
-          nextRoles.push(newRole);
-        } else if (currentSet.has(role)) {
-          nextRoles.push(role);
-        }
-      }
-      
-      if (!PRICE_ROLES.includes(newRole)) {
-        nextRoles.push(newRole);
-      }
-      
-      // IMPORTANTE: Inicializar entrada vacía en prices para el nuevo rol
-      // Esto asegura que el rol aparezca inmediatamente en la tabla
+      const normalizedRole = normalizeConditionRoleKey(project, newRole);
+      const currentRoles = Array.isArray(m.roles) && m.roles.length > 0 ? m.roles : PRICE_ROLES;
+      const normalizedRoles = currentRoles.map((role: string) => normalizeConditionRoleKey(project, role));
+      if (normalizedRoles.includes(normalizedRole)) return m;
+      const nextRoles = sortConditionRoleKeys(project, [...normalizedRoles, normalizedRole], PRICE_ROLES);
+
       const nextPrices = { ...(m.prices || {}) };
-      if (!nextPrices[newRole]) {
-        nextPrices[newRole] = {};
+      if (!nextPrices[normalizedRole]) {
+        nextPrices[normalizedRole] = {};
       }
       
       return { ...m, roles: nextRoles, prices: nextPrices };
@@ -125,14 +113,17 @@ export function useMensualRoles({ model, setModel }: UseMensualRolesProps): UseM
     setModel((m: AnyRecord) => {
       if (sectionKey === 'base') {
         const roles = m.roles || PRICE_ROLES;
-        const nextRoles = roles.filter((r: string) => r !== role);
+        const normalizedRole = normalizeConditionRoleKey(project, role);
+        const nextRoles = roles
+          .map((r: string) => normalizeConditionRoleKey(project, r))
+          .filter((r: string) => r !== normalizedRole);
         const nextPrices = { ...m.prices };
-        delete nextPrices[role];
+        delete nextPrices[normalizedRole];
         return { ...m, roles: nextRoles, prices: nextPrices };
       } else {
         const priceKey = sectionKey === 'prelight' ? 'pricesPrelight' : 'pricesPickup';
         const next = { ...m, [priceKey]: { ...(m[priceKey] || {}) } };
-        delete next[priceKey][role];
+        delete next[priceKey][normalizeConditionRoleKey(project, role)];
         // Si no quedan roles en esta sección, eliminar la sección
         if (Object.keys(next[priceKey]).length === 0) {
           delete next[priceKey];

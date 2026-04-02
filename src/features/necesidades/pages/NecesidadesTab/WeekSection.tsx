@@ -580,9 +580,9 @@ export function WeekSection({
                   
                   return (
                     <Th
-                      key={d.key} 
-                      align='center' 
-                      className={`text-center relative group ${isSelected ? 'bg-blue-500/20 dark:bg-blue-500/30 border-2 border-blue-500' : ''} ${isOtherSelected ? 'hover:bg-zinc-100/10 dark:hover:bg-zinc-800/20' : ''}`}
+                      key={d.key}
+                      align='center'
+                      className={`text-center relative group ${isSelected ? 'bg-blue-500/20 dark:bg-[#f59e0b]/30 border-2 border-blue-500 dark:border-[#f59e0b]' : ''} ${isOtherSelected ? 'hover:bg-zinc-100/10 dark:hover:bg-zinc-800/20' : ''}`}
                     >
                       <div className='flex items-center justify-between gap-1 min-h-[20px] sm:min-h-[24px] md:min-h-[28px]'>
                         <div className='w-4 flex justify-start'>

@@ -1,5 +1,10 @@
 import { ProjectTeam } from './ProjectDetailTypes';
 
+export interface TeamNameValidationIssue {
+  role: string;
+  group: string;
+}
+
 export const isEmptyTeam = (t: ProjectTeam | undefined): boolean => {
   if (!t) return true;
   const lens = [
@@ -11,7 +16,7 @@ export const isEmptyTeam = (t: ProjectTeam | undefined): boolean => {
   return lens.every(n => n === 0);
 };
 
-export const validateTeamNames = (team: ProjectTeam | undefined): { role: string; group: string } | null => {
+export const validateTeamNames = (team: ProjectTeam | undefined): TeamNameValidationIssue | null => {
   if (!team) return null;
   
   const groups = [
@@ -24,7 +29,7 @@ export const validateTeamNames = (team: ProjectTeam | undefined): { role: string
   for (const group of groups) {
     for (const member of group.members) {
       if (!member.name || member.name.trim() === '') {
-        return { role: member.role || 'Sin rol', group: group.name };
+        return { role: member.roleLabel || member.role || 'Sin rol', group: group.name };
       }
     }
   }
@@ -38,4 +43,3 @@ export const formatMode = (m: string | undefined): string => {
   if (v === 'diario') return 'diario';
   return 'semanales'; // por defecto
 };
-

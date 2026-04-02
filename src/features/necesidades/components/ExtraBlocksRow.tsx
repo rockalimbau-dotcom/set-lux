@@ -298,7 +298,7 @@ export function ExtraBlocksRow({
                         )}
                         {block.list.map((member, idx) => (
                           <Chip
-                            key={`${block.id}-${member.role}-${member.name}-${idx}`}
+                            key={`${block.id}-${member.roleId || member.role}-${member.name}-${idx}`}
                             role={member?.role}
                             name={member?.name}
                             gender={member?.gender}

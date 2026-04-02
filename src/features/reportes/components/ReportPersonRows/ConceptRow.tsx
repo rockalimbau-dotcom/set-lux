@@ -48,7 +48,9 @@ export function ConceptRow({
 }: ConceptRowProps) {
   const visualRole = person?.role || '';
   const name = person?.name || '';
-  const pKey = personaKeyFrom(visualRole, name, block);
+  const personId = person?.personId;
+  const roleId = person?.roleId;
+  const pKey = personaKeyFrom(visualRole, name, block, { roleId });
 
   return (
     <tr id={`person-${pKey}-rows`}>
@@ -70,7 +72,7 @@ export function ConceptRow({
 
       {semana.map(fecha => {
         const val = data?.[pKey]?.[concepto]?.[fecha] ?? '';
-        const key = `${visualRole}_${name}_${fecha}_${block}`;
+        const key = `${roleId || personId || visualRole}_${name}_${fecha}_${block}`;
         const off = offMap.get(key) ?? false;
         const cellClasses = off && concepto !== 'Dietas' ? 'report-off-cell' : '';
 

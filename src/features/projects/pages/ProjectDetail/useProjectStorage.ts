@@ -4,6 +4,27 @@ import { useEffect } from 'react';
 import { Project, ProjectTeam } from './ProjectDetailTypes';
 import { isEmptyTeam } from './ProjectDetailUtils';
 import { useProjectSync } from './useProjectSync';
+import { normalizeProjectWithRoleCatalog } from '@shared/utils/projectRoles';
+
+export function shouldSyncProjectMetadata(project: Project | null | undefined, proj: Project | null | undefined): boolean {
+  if (!project || !proj) return false;
+  return (
+    JSON.stringify(project?.conditions || null) !== JSON.stringify(proj?.conditions || null) ||
+    project?.estado !== proj?.estado ||
+    project?.nombre !== proj?.nombre ||
+    project?.dop !== proj?.dop ||
+    project?.almacen !== proj?.almacen ||
+    project?.productora !== proj?.productora ||
+    project?.gaffer !== proj?.gaffer ||
+    project?.jefeProduccion !== proj?.jefeProduccion ||
+    project?.transportes !== proj?.transportes ||
+    project?.localizaciones !== proj?.localizaciones ||
+    project?.coordinadoraProduccion !== proj?.coordinadoraProduccion ||
+    project?.country !== proj?.country ||
+    project?.region !== proj?.region ||
+    JSON.stringify(project?.roleCatalog || null) !== JSON.stringify(proj?.roleCatalog || null)
+  );
+}
 
 interface UseProjectStorageProps {
   project: Project | null;
@@ -33,7 +54,7 @@ export function useProjectStorage({ project }: UseProjectStorageProps): UseProje
 
   // Estado inicial del proyecto
   const initialProject: Project = useMemo(() => ({
-    ...project,
+    ...normalizeProjectWithRoleCatalog((project || {}) as Project),
     team: project?.team || {
       base: [],
       reinforcements: [],
@@ -62,63 +83,36 @@ export function useProjectStorage({ project }: UseProjectStorageProps): UseProje
   // Esto asegura que cambios como el tipo de condiciones se reflejen en localStorage
   useEffect(() => {
     if (!loaded || !project) return;
-    
-    // Comparar campos importantes que pueden cambiar desde EditProjectModal
-    const tipoChanged = project?.conditions?.tipo !== proj?.conditions?.tipo;
-    const estadoChanged = project?.estado !== proj?.estado;
-    const nombreChanged = project?.nombre !== proj?.nombre;
-    const dopChanged = project?.dop !== proj?.dop;
-    const almacenChanged = project?.almacen !== proj?.almacen;
-    const productoraChanged = project?.productora !== proj?.productora;
-    const gafferChanged = project?.gaffer !== proj?.gaffer;
-    const jefeProduccionChanged = project?.jefeProduccion !== proj?.jefeProduccion;
-    const transportesChanged = project?.transportes !== proj?.transportes;
-    const localizacionesChanged = project?.localizaciones !== proj?.localizaciones;
-    const coordinadoraProduccionChanged = project?.coordinadoraProduccion !== proj?.coordinadoraProduccion;
-    const countryChanged = project?.country !== proj?.country;
-    const regionChanged = project?.region !== proj?.region;
-    
+    const normalizedIncoming = normalizeProjectWithRoleCatalog(project);
+
     // Si hay cambios importantes, actualizar el proyecto en localStorage
-    if (
-      tipoChanged ||
-      estadoChanged ||
-      nombreChanged ||
-      dopChanged ||
-      almacenChanged ||
-      productoraChanged ||
-      gafferChanged ||
-      jefeProduccionChanged ||
-      transportesChanged ||
-      localizacionesChanged ||
-      coordinadoraProduccionChanged ||
-      countryChanged ||
-      regionChanged
-    ) {
+    if (shouldSyncProjectMetadata(normalizedIncoming, proj)) {
       setProj(prev => ({
         ...prev,
-        nombre: project.nombre,
-        dop: project.dop,
-        almacen: project.almacen,
-        productora: project.productora,
-        gaffer: project.gaffer,
-        jefeProduccion: project.jefeProduccion,
-        transportes: project.transportes,
-        localizaciones: project.localizaciones,
-        coordinadoraProduccion: project.coordinadoraProduccion,
-        estado: project.estado,
-        country: project.country,
-        region: project.region,
+        nombre: normalizedIncoming.nombre,
+        dop: normalizedIncoming.dop,
+        almacen: normalizedIncoming.almacen,
+        productora: normalizedIncoming.productora,
+        gaffer: normalizedIncoming.gaffer,
+        jefeProduccion: normalizedIncoming.jefeProduccion,
+        transportes: normalizedIncoming.transportes,
+        localizaciones: normalizedIncoming.localizaciones,
+        coordinadoraProduccion: normalizedIncoming.coordinadoraProduccion,
+        estado: normalizedIncoming.estado,
+        country: normalizedIncoming.country,
+        region: normalizedIncoming.region,
+        roleCatalog: normalizedIncoming.roleCatalog,
         conditions: {
           ...(prev?.conditions || {}),
-          ...(project?.conditions || {}),
-          tipo: project?.conditions?.tipo || prev?.conditions?.tipo || 'semanal',
+          ...(normalizedIncoming?.conditions || {}),
+          tipo: normalizedIncoming?.conditions?.tipo || prev?.conditions?.tipo || 'semanal',
         },
       }));
     }
   }, [
     project,
     loaded,
-    proj?.conditions?.tipo,
+    JSON.stringify(proj?.conditions || null),
     proj?.estado,
     proj?.nombre,
     proj?.dop,
@@ -131,6 +125,7 @@ export function useProjectStorage({ project }: UseProjectStorageProps): UseProje
     proj?.coordinadoraProduccion,
     proj?.country,
     proj?.region,
+    JSON.stringify(proj?.roleCatalog || null),
     setProj
   ]);
 

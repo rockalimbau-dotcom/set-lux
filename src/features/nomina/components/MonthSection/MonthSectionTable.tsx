@@ -266,6 +266,7 @@ export function MonthSectionTable({
                     personKey={pKey}
                     roleForColor={roleForColor}
                     col={col}
+                    roleLabelFromCode={roleLabelFromCode}
                     received={received}
                     isSelected={isRowSelected(pKey)}
                     toggleRowSelection={toggleRowSelection}

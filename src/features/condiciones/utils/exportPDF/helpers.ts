@@ -1,4 +1,5 @@
 import i18n from '../../../../i18n/config';
+import { getConditionRoleLabel, sortConditionRoleKeys } from '../../condiciones/roleCatalog';
 
 /**
  * Escape HTML special characters
@@ -33,80 +34,15 @@ function translateHeader(header: string): string {
 /**
  * Translate role name to current language
  */
-function translateRoleName(roleName: string, sectionKey?: 'base' | 'prelight' | 'pickup'): string {
-  // Si el nombre del rol empieza con "REF" seguido de un código (REFG, REFBB, etc.), es un refuerzo
-  if (roleName.startsWith('REF') && roleName.length > 3) {
-    // Extraer el código del rol base (G, BB, E, etc.)
-    const baseRoleCode = roleName.substring(3);
-    const roleNameToCode: Record<string, string> = {
-      'G': 'G',
-      'BB': 'BB',
-      'E': 'E',
-      'AUX': 'AUX',
-      'M': 'M',
-      'TM': 'TM',
-      'FB': 'FB',
-    };
-    const code = roleNameToCode[baseRoleCode] || baseRoleCode;
-    const translationKey = `team.roles.${code}`;
-    const baseLabel = i18n.t(translationKey) !== translationKey ? i18n.t(translationKey) : baseRoleCode;
-    
-    // Añadir prefijo de refuerzo antes del nombre del rol base
-    let refuerzoLabel = `${i18n.t('team.reinforcementPrefix')} ${baseLabel}`;
-    
-    // Añadir sufijo según la sección
-    if (sectionKey === 'prelight') {
-      refuerzoLabel += ' Prelight';
-    } else if (sectionKey === 'pickup') {
-      refuerzoLabel += ' Recogida';
-    }
-    
-    return refuerzoLabel;
-  }
-  
-  // Mapeo de nombres de roles en español a códigos
-  const roleNameToCode: Record<string, string> = {
-    'Gaffer': 'G',
-    'Best boy': 'BB',
-    'Rigging Gaffer': 'RG',
-    'Rigging Best Boy': 'RBB',
-    'Rigging Eléctrico': 'RE',
-    'Eléctrico': 'E',
-    'Auxiliar': 'AUX',
-    'Meritorio': 'M',
-    'Técnico de mesa': 'TM',
-    'Finger boy': 'FB',
-    'Técnico de Generador': 'TG',
-    'Grupista eléctrico': 'TG',
-    'Chofer eléctrico': 'CE',
-    'Eléctrico de potencia': 'EPO',
-    'Técnico de prácticos': 'TP',
-    'Refuerzo': 'REF',
-  };
-  
-  const roleCode = roleNameToCode[roleName];
-  if (roleCode) {
-    const translationKey = `team.roles.${roleCode}`;
-    const translated = i18n.t(translationKey);
-    // Si la traducción existe (no es la clave misma), devolverla; si no, devolver el nombre original
-    let result = translated !== translationKey ? translated : roleName;
-    
-    // Añadir sufijo según la sección
-    if (sectionKey === 'prelight') {
-      result += ' Prelight';
-    } else if (sectionKey === 'pickup') {
-      result += ' Recogida';
-    }
-    
-    return result;
-  }
-  return roleName;
+function translateRoleName(project: any, roleName: string, sectionKey?: 'base' | 'prelight' | 'pickup'): string {
+  return getConditionRoleLabel(project, roleName, sectionKey);
 }
 
 /**
  * Filter roles that have at least one non-empty price
  */
 export function filterRolesWithPrices(
+  project: any,
   PRICE_ROLES: string[],
   PRICE_HEADERS: string[],
   model: any,
@@ -123,7 +59,15 @@ export function filterRolesWithPrices(
       ? PRICE_HEADERS
       : PRICE_HEADERS.filter(header => header !== 'Precio refuerzo');
 
-  return PRICE_ROLES.filter(role => {
+  const explicitRoles = Array.isArray(model?.roles) && model.roles.length > 0
+    ? model.roles
+    : PRICE_ROLES;
+  const sectionRoles = sectionKey === 'base'
+    ? explicitRoles
+    : Object.keys(prices || {});
+  const orderedRoles = sortConditionRoleKeys(project, sectionRoles, PRICE_ROLES);
+
+  return orderedRoles.filter(role => {
     return relevantHeaders.some(header => {
       const precio = prices[role]?.[header];
       return precio && precio.toString().trim() !== '';
@@ -135,6 +79,7 @@ export function filterRolesWithPrices(
  * Generate table HTML for prices
  */
 export function generatePriceTableHTML(
+  project: any,
   rolesConPrecios: string[],
   PRICE_HEADERS: string[],
   model: any,
@@ -178,7 +123,7 @@ export function generatePriceTableHTML(
         ${rolesConPrecios.map(
           role => `
           <tr>
-            <td style="font-weight:600;">${esc(translateRoleName(role, sectionKey))}</td>
+            <td style="font-weight:600;">${esc(translateRoleName(project, role, sectionKey))}</td>
             ${headersWithValues.map(h => {
               if (h === 'Material propio') {
                 const rawVal = prices[role]?.[h] ?? '';

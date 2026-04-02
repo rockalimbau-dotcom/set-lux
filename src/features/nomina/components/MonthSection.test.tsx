@@ -217,4 +217,74 @@ describe('MonthSection with holiday days and conditional columns', () => {
       'Nómina recibida',
     ]);
   });
+
+  it('shows one payroll row with a role breakdown when the same person has multiple tariffs', () => {
+    const multiRoleProps = {
+      ...mockProps,
+      rows: [
+        {
+          role: 'E',
+          roleId: 'electric_default',
+          roleLabel: 'Eléctrico/a',
+          personId: 'person_pol',
+          name: 'Pol Peitx',
+          extras: 0,
+          horasExtra: 0,
+          turnAround: 0,
+          nocturnidad: 0,
+          penaltyLunch: 0,
+          transporte: 0,
+          km: 0,
+          gasolina: 0,
+          dietasCount: new Map(),
+          ticketTotal: 0,
+          otherTotal: 0,
+        },
+        {
+          role: 'E',
+          roleId: 'electric_factura',
+          roleLabel: 'Eléctrico factura',
+          personId: 'person_pol',
+          name: 'Pol Peitx',
+          extras: 0,
+          horasExtra: 0,
+          turnAround: 0,
+          nocturnidad: 0,
+          penaltyLunch: 0,
+          transporte: 0,
+          km: 0,
+          gasolina: 0,
+          dietasCount: new Map(),
+          ticketTotal: 0,
+          otherTotal: 0,
+        },
+      ],
+      rolePrices: {
+        getForRole: (_role, _base, options) => ({
+          jornada: options?.roleId === 'electric_factura' ? 300 : 350,
+          travelDay: 0,
+          horaExtra: 0,
+          holidayDay: 0,
+          transporte: 0,
+          km: 0,
+          dietas: {},
+        }),
+      },
+      calcWorkedBreakdown: (_weeks, _filter, person) => ({
+        workedDays: person.roleId === 'electric_factura' ? 1 : 1,
+        travelDays: 0,
+        holidayDays: 0,
+        workedBase: 1,
+        workedPre: 0,
+        workedPick: 0,
+      }),
+    };
+
+    const { getAllByText, getByText } = render(<MonthSection {...multiRoleProps} />);
+
+    expect(getAllByText('Pol Peitx')).toHaveLength(1);
+    expect(getByText('Eléctrico/a: 350€')).toBeInTheDocument();
+    expect(getByText('Eléctrico factura: 300€')).toBeInTheDocument();
+    expect(getByText('650€')).toBeInTheDocument();
+  });
 });

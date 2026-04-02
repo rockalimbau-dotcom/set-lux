@@ -35,7 +35,14 @@ export default function useReportData(
   safePersonas: Persona[],
   safeSemana: string[],
   CONCEPTS: string[],
-  isPersonScheduledOn: (fecha: string, role: string, name: string, findWeekAndDay: (iso: string) => WeekAndDay, block?: 'base' | 'pre' | 'pick' | 'extra') => boolean,
+  isPersonScheduledOn: (
+    fecha: string,
+    role: string,
+    name: string,
+    findWeekAndDay: (iso: string) => WeekAndDay,
+    block?: 'base' | 'pre' | 'pick' | 'extra',
+    options?: { roleId?: string }
+  ) => boolean,
   findWeekAndDay: (iso: string) => WeekAndDay
 ): UseReportDataReturn {
   const normalizeRole = (role: string) => (String(role || '').toUpperCase() === 'RIG' ? 'RE' : role);
@@ -189,10 +196,14 @@ export default function useReportData(
         return;
       }
       
-      const who: { [key: string]: { role: string; name: string } } = {};
+      const who: { [key: string]: { role: string; name: string; roleId?: string } } = {};
       for (const p of safePersonas) {
         const k = personaKey(p);
-        who[k] = { role: personaRole(p), name: personaName(p) };
+        who[k] = {
+          role: personaRole(p),
+          name: personaName(p),
+          roleId: String((p as any)?.roleId || '').trim() || undefined,
+        };
       }
       setData((prev: ReportData) => {
         const copy = { ...(prev || {}) };
@@ -214,6 +225,7 @@ export default function useReportData(
           if (k === pKey) continue;
           const r = who[k]?.role || '';
           const n = who[k]?.name || '';
+          const roleId = who[k]?.roleId;
           const tgtBlock = blockOf(k);
           if (tgtBlock !== srcBlock) continue; // sólo mismo bloque
           // Para no-REF, ajustar role con sufijo para que busque en la lista correcta
@@ -224,7 +236,7 @@ export default function useReportData(
             : (tgtBlock === 'pre' ? `${r}P` : (tgtBlock === 'pick' ? `${r}R` : r));
           const blockForRef: 'base' | 'pre' | 'pick' | 'extra' | undefined =
             isRefRole ? tgtBlock : (tgtBlock === 'extra' ? 'extra' : undefined);
-          const isScheduled = isPersonScheduledOn(fecha, roleForCheck, n, findWeekAndDay, blockForRef);
+          const isScheduled = isPersonScheduledOn(fecha, roleForCheck, n, findWeekAndDay, blockForRef, { roleId });
           if (isScheduled) {
             copy[k] = { ...(copy[k] || {}) };
             copy[k]['Dietas'] = { ...(copy[k]['Dietas'] || {}) };

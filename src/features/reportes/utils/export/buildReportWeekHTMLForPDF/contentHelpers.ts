@@ -32,6 +32,7 @@ export function generateBodyByBlocks(
   conceptosConDatos: string[],
   finalData: any,
   genderMap?: Record<string, string>,
+  project?: any,
   horarioPrelight?: (iso: string) => string,
   horarioPickup?: (iso: string) => string,
   horarioExtraByBlock?: (blockKey: string, iso: string) => string
@@ -40,7 +41,7 @@ export function generateBodyByBlocks(
 
   bodyParts.push(
     ...personsByBlock.base.map(pk =>
-      generatePersonHTML(pk, conceptosConDatos, safeSemanaWithData, finalData, genderMap)
+      generatePersonHTML(pk, conceptosConDatos, safeSemanaWithData, finalData, genderMap, project)
     )
   );
 
@@ -56,7 +57,7 @@ export function generateBodyByBlocks(
     }
     bodyParts.push(
       ...group.people.map(pk =>
-        generatePersonHTML(pk, conceptosConDatos, safeSemanaWithData, finalData, genderMap)
+        generatePersonHTML(pk, conceptosConDatos, safeSemanaWithData, finalData, genderMap, project)
       )
     );
   });
@@ -72,7 +73,7 @@ export function generateBodyByBlocks(
   }
   bodyParts.push(
     ...personsByBlock.pre.map(pk =>
-      generatePersonHTML(pk, conceptosConDatos, safeSemanaWithData, finalData, genderMap)
+      generatePersonHTML(pk, conceptosConDatos, safeSemanaWithData, finalData, genderMap, project)
     )
   );
 
@@ -87,7 +88,7 @@ export function generateBodyByBlocks(
   }
   bodyParts.push(
     ...personsByBlock.pick.map(pk =>
-      generatePersonHTML(pk, conceptosConDatos, safeSemanaWithData, finalData, genderMap)
+      generatePersonHTML(pk, conceptosConDatos, safeSemanaWithData, finalData, genderMap, project)
     )
   );
 

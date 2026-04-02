@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import type { Project as UIProject } from '../../../features/projects/types';
+import { normalizeProjectWithRoleCatalog } from '../../../shared/utils/projectRoles';
 import type { AppRouterProps } from './AppRouterTypes';
 
 /**
@@ -23,13 +24,13 @@ export function useProjectHandlers({
 
   const onCreateProject = (p: UIProject) => {
     const id = p?.id || makeId();
-    const proj: UIProject = { ...p, id };
+    const proj: UIProject = normalizeProjectWithRoleCatalog({ ...p, id });
     setProjects((prev: UIProject[]) => [proj, ...(prev || [])]);
   };
 
   const onOpenProject = (p: UIProject) => {
     const id = p?.id || makeId();
-    const proj: UIProject = { ...p, id };
+    const proj: UIProject = normalizeProjectWithRoleCatalog({ ...p, id });
     setActiveProject(proj);
     // If id was missing, update the list in memory
     if (!p?.id) {
@@ -44,13 +45,14 @@ export function useProjectHandlers({
   };
 
   const onUpdateProject = (updatedProject: UIProject) => {
+    const normalizedProject = normalizeProjectWithRoleCatalog(updatedProject);
     setProjects((prev: UIProject[]) => {
-      if (!Array.isArray(prev)) return [updatedProject];
+      if (!Array.isArray(prev)) return [normalizedProject];
       return prev.map((p: UIProject) => 
-        p.id === updatedProject.id ? updatedProject : p
+        p.id === normalizedProject.id ? normalizedProject : p
       );
     });
-    setActiveProject(updatedProject);
+    setActiveProject(normalizedProject);
   };
 
   const onDeleteProject = (projectId: string) => {
@@ -72,4 +74,3 @@ export function useProjectHandlers({
     onBack,
   };
 }
-

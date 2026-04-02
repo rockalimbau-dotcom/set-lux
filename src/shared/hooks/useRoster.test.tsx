@@ -1,40 +1,53 @@
 import { renderHook } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 import { useRoster } from './useRoster';
 
 describe('useRoster', () => {
-  beforeEach(() => {
-    Object.defineProperty(window, 'localStorage', {
-      value: {
-        getItem: vi.fn((key: string) => {
-          if (key === 'team_p1') {
-            return JSON.stringify({
-              base: [{ role: 'E', name: 'Nombre Antiguo' }],
-            });
-          }
-          return null;
-        }),
-        setItem: vi.fn(),
-        removeItem: vi.fn(),
-      },
-      configurable: true,
-    });
-  });
-
-  it('prioritizes project.team over persisted team storage', () => {
+  it('enriches roster members with roleLabel from the project role catalog', () => {
     const project = {
       id: 'p1',
+      nombre: 'Proyecto',
+      roleCatalog: {
+        version: 1 as const,
+        roles: [
+          {
+            id: 'e_default',
+            label: 'Eléctrico/a',
+            legacyCode: 'E',
+            baseRole: 'E',
+            sortOrder: 1,
+            active: true,
+            supportsPrelight: true,
+            supportsPickup: true,
+            supportsRefuerzo: true,
+          },
+          {
+            id: 'e_factura',
+            label: 'Eléctrico factura',
+            legacyCode: 'E',
+            baseRole: 'E',
+            sortOrder: 1,
+            active: true,
+            supportsPrelight: true,
+            supportsPickup: true,
+            supportsRefuerzo: true,
+          },
+        ],
+      },
       team: {
-        base: [{ role: 'E', name: 'Nombre Nuevo' }],
-        reinforcements: [],
-        prelight: [],
-        pickup: [],
+        base: [
+          { role: 'E', roleId: 'e_default', name: 'ricard durany' },
+          { role: 'E', roleId: 'e_factura', name: 'pol peitx' },
+        ],
       },
     };
 
     const { result } = renderHook(() => useRoster(project, [], [], [], []));
 
-    expect(result.current.baseRoster).toEqual([{ role: 'E', name: 'Nombre Nuevo' }]);
+    expect(result.current.baseRoster).toEqual([
+      { role: 'E', roleId: 'e_default', roleLabel: 'Eléctrico/a', name: 'ricard durany' },
+      { role: 'E', roleId: 'e_factura', roleLabel: 'Eléctrico factura', name: 'pol peitx' },
+    ]);
   });
 });

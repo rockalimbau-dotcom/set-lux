@@ -17,6 +17,20 @@ function renderCell(text: any): string {
   return `<div style="white-space:pre-wrap;line-height:1.35">${esc(text || '')}</div>`;
 }
 
+function formatMemberDisplay(
+  member: { role?: string; roleLabel?: string; gender?: 'male' | 'female' | 'neutral' },
+  suffix = ''
+): string {
+  const role = (member?.role || '').toUpperCase();
+  const roleLabel = String(member?.roleLabel || '').trim();
+  const isCustomLabel = roleLabel !== '' && roleLabel.toUpperCase() !== role;
+  if (isCustomLabel) {
+    return `${roleLabel}${suffix}`.trim();
+  }
+  const badge = getRoleBadgeCode(role, i18n.language);
+  return applyGenderToBadge(`${badge}${suffix}`, member?.gender);
+}
+
 /**
  * Generate field row HTML
  */
@@ -78,9 +92,7 @@ function listRow(
         const role = (m?.role || '').toUpperCase();
         const isRefRole = role === 'REF' || (role && role.startsWith('REF') && role.length > 3);
         const suffix = !isRefRole && listKey === 'preList' ? 'P' : !isRefRole && listKey === 'pickList' ? 'R' : '';
-        const baseBadge = getRoleBadgeCode(role, i18n.language);
-        const badgeWithSuffix = isRefRole ? baseBadge : `${baseBadge}${suffix}`;
-        const badgeDisplay = applyGenderToBadge(badgeWithSuffix, m?.gender);
+        const badgeDisplay = formatMemberDisplay(m, isRefRole ? '' : suffix);
         const name = m?.name || '';
         return `<div>• ${esc(badgeDisplay ? `${badgeDisplay}: ` : '')}${esc(name)}</div>`;
       })
@@ -115,9 +127,7 @@ function listRowWithSchedule(
         const role = (m?.role || '').toUpperCase();
         const isRefRole = role === 'REF' || (role && role.startsWith('REF') && role.length > 3);
         const suffix = !isRefRole && listKey === 'preList' ? 'P' : !isRefRole && listKey === 'pickList' ? 'R' : '';
-        const baseBadge = getRoleBadgeCode(role, i18n.language);
-        const badgeWithSuffix = isRefRole ? baseBadge : `${baseBadge}${suffix}`;
-        const badgeDisplay = applyGenderToBadge(badgeWithSuffix, m?.gender);
+        const badgeDisplay = formatMemberDisplay(m, isRefRole ? '' : suffix);
         const name = m?.name || '';
         return `<div>• ${esc(badgeDisplay ? `${badgeDisplay}: ` : '')}${esc(name)}</div>`;
       })
@@ -147,7 +157,8 @@ function extraBlocksRow(
         const chips = (block.list || [])
           .map(m => {
             const role = (m?.role || '').toUpperCase();
-            const badgeDisplay = applyGenderToBadge(getRoleBadgeCode(role, i18n.language), m?.gender);
+            const isRefRole = role === 'REF' || (role && role.startsWith('REF') && role.length > 3);
+            const badgeDisplay = formatMemberDisplay(m, isRefRole ? '' : '');
             const name = m?.name || '';
             return `<div>• ${esc(badgeDisplay ? `${badgeDisplay}: ` : '')}${esc(name)}</div>`;
           })

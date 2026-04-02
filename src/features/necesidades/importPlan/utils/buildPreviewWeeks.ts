@@ -7,6 +7,8 @@ const normalizeBaseRoster = (baseRoster?: AnyRecord[]) =>
   (baseRoster || [])
     .map(m => ({
       role: (m?.role || '').toUpperCase(),
+      roleId: m?.roleId,
+      roleLabel: m?.roleLabel,
       name: (m?.name || '').trim(),
       gender: m?.gender,
       source: 'base',

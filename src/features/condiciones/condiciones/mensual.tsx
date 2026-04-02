@@ -5,11 +5,13 @@ import { useTranslation } from 'react-i18next';
 
 import { AnyRecord } from '@shared/types/common';
 import { loadOrSeed, updateDynamicFestivos } from './mensual/mensualData';
+import { PRICE_ROLES } from './shared.constants';
 import { DeleteRoleConfirmModal } from './publicidad/DeleteRoleConfirmModal';
 import { ParametersSection } from './mensual/ParametersSection';
 import { PricesTable } from './mensual/PricesTable';
 import { InfoSections } from './mensual/InfoSections';
 import { useMensualTranslations } from './mensual/mensualHelpers';
+import { normalizeConditionModel } from './roleCatalog';
 import { useMensualDefaults } from './mensual/useMensualDefaults';
 import { useMensualLanguageSync } from './mensual/useMensualLanguageSync';
 import { useMensualModel } from './mensual/useMensualModel';
@@ -27,12 +29,17 @@ interface CondicionesMensualProps {
 
 function CondicionesMensual({ project, onChange = () => {}, onRegisterExport, readOnly = false }: CondicionesMensualProps) {
   const { t } = useTranslation();
-  const { translateHeader, translateRoleName } = useMensualTranslations();
+  const { translateHeader, translateRoleName } = useMensualTranslations(project);
   
   const storageKey = useMemo(() => {
     const base = (project as AnyRecord)?.id || (project as AnyRecord)?.nombre || 'tmp';
     return `cond_${base}_mensual`;
   }, [project?.id, project?.nombre]);
+  const projectModel = (project as AnyRecord)?.conditions?.mensual as AnyRecord | undefined;
+  const normalizedProjectModel = useMemo(
+    () => (projectModel ? normalizeConditionModel(project, projectModel, PRICE_ROLES, true) : null),
+    [project, projectModel]
+  );
 
   useEffect(() => {
     updateDynamicFestivos();
@@ -40,9 +47,23 @@ function CondicionesMensual({ project, onChange = () => {}, onRegisterExport, re
 
   const [showParams, setShowParams] = useState(false);
   const [pendingScrollSectionId, setPendingScrollSectionId] = useState<string | null>(null);
+  const [syncReady, setSyncReady] = useState(() => !normalizedProjectModel);
   const [model, setModel] = useLocalStorage<AnyRecord>(storageKey, () =>
-    loadOrSeed(storageKey)
+    normalizeConditionModel(project, projectModel || loadOrSeed(storageKey), PRICE_ROLES, true)
   );
+
+  useEffect(() => {
+    if (!normalizedProjectModel) {
+      setSyncReady(true);
+      return;
+    }
+    if (JSON.stringify(normalizedProjectModel) === JSON.stringify(model)) {
+      setSyncReady(true);
+      return;
+    }
+    setSyncReady(false);
+    setModel(() => normalizedProjectModel);
+  }, [model, normalizedProjectModel, setModel]);
 
   // Sincronizar roles con prices inmediatamente después de cargar
   // IMPORTANTE: Esto debe ejecutarse siempre para asegurar que prices tenga entradas para todos los roles
@@ -50,54 +71,12 @@ function CondicionesMensual({ project, onChange = () => {}, onRegisterExport, re
   const syncedKeyRef = useRef<string>('');
   useEffect(() => {
     if (!model) return;
-    
-    // Resetear el ref si cambió el storageKey (nuevo proyecto)
-    if (syncedKeyRef.current !== storageKey) {
-      syncedKeyRef.current = storageKey;
-    } else {
-      // Si ya sincronizamos para este storageKey, solo verificar si necesita sincronización
-      // pero no ejecutar de nuevo para evitar loops
-      const currentRoles = model.roles && Array.isArray(model.roles) && model.roles.length > 0 
-        ? model.roles 
-        : ['Gaffer', 'Eléctrico'];
-      
-      const currentPrices = model.prices || {};
-      const allRolesHavePrices = currentRoles.every((role: string) => currentPrices[role] !== undefined);
-      
-      // Si todos los roles tienen precios, no hacer nada
-      if (allRolesHavePrices && currentRoles.length > 0) return;
-    }
-    
-    const currentRoles = model.roles && Array.isArray(model.roles) && model.roles.length > 0 
-      ? model.roles 
-      : ['Gaffer', 'Eléctrico'];
-    
-    const currentPrices = model.prices || {};
-    let needsSync = false;
-    const syncedPrices = { ...currentPrices };
-    
-    // Inicializar precios vacíos para todos los roles del equipo base
-    // Esto es crítico: asegurar que prices tenga entradas para Gaffer y Eléctrico
-    for (const role of currentRoles) {
-      if (!syncedPrices[role]) {
-        syncedPrices[role] = {};
-        needsSync = true;
-      }
-    }
-    
-    // Verificar si roles está vacío o mal formado
-    const needsRolesSync = !model.roles || !Array.isArray(model.roles) || model.roles.length === 0;
-    
-    // Si necesita sincronización, actualizar el modelo
-    if (needsSync || needsRolesSync) {
-      setModel((m: AnyRecord) => ({ 
-        ...m, 
-        roles: currentRoles,
-        prices: syncedPrices 
-      }));
-      syncedKeyRef.current = storageKey;
-    }
-  }, [model, storageKey, setModel]); // Ejecutar cuando cambie el modelo o el proyecto
+    if (syncedKeyRef.current !== storageKey) syncedKeyRef.current = storageKey;
+
+    const normalizedModel = normalizeConditionModel(project, model, PRICE_ROLES, true);
+    if (JSON.stringify(normalizedModel) === JSON.stringify(model)) return;
+    setModel(() => normalizedModel);
+  }, [model, project, storageKey, setModel]);
 
   const {
     getDefaultLegend,
@@ -121,7 +100,7 @@ function CondicionesMensual({ project, onChange = () => {}, onRegisterExport, re
     getDefaultConvenio,
   });
 
-  useMensualModel({ model, onChange });
+  useMensualModel({ model, onChange, enabled: syncReady });
 
   const [roleToDelete, setRoleToDelete] = useState<{ sectionKey: 'base' | 'prelight' | 'pickup'; role: string } | null>(null);
 
@@ -158,7 +137,7 @@ function CondicionesMensual({ project, onChange = () => {}, onRegisterExport, re
   const setParam = (key: string, value: string) =>
     setModel((m: AnyRecord) => ({ ...m, params: { ...(m.params || {}), [key]: value } }));
 
-  const { roles, addRole, removeRole, handleRoleChange } = useMensualRoles({ model, setModel });
+  const { roles, addRole, removeRole, handleRoleChange } = useMensualRoles({ project, model, setModel });
   
   const handleSetRoleToDelete = (sectionKey: 'base' | 'prelight' | 'pickup', role: string | null) => {
     if (role === null) {
@@ -199,6 +178,7 @@ function CondicionesMensual({ project, onChange = () => {}, onRegisterExport, re
       />
 
       <PricesTable
+        project={project}
         model={model}
         setModel={setModel}
         roles={roles}
@@ -234,7 +214,7 @@ function CondicionesMensual({ project, onChange = () => {}, onRegisterExport, re
 
       {roleToDelete && typeof document !== 'undefined' && createPortal(
         <DeleteRoleConfirmModal
-          roleName={roleToDelete.role}
+          roleName={translateRoleName(roleToDelete.role, roleToDelete.sectionKey)}
           onClose={() => setRoleToDelete(null)}
           onConfirm={() => {
             if (roleToDelete) {

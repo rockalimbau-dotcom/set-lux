@@ -15,9 +15,17 @@ export function usePersonScheduledChecker({
   findWeekAndDay,
 }: UsePersonScheduledCheckerProps) {
   return useMemo(
-    () => (iso: string, role: string, name: string, findFn: any, block?: 'base' | 'pre' | 'pick' | 'extra') => {
+    () => (
+      iso: string,
+      role: string,
+      name: string,
+      findFn: any,
+      block?: 'base' | 'pre' | 'pick' | 'extra',
+      options?: { roleId?: string }
+    ) => {
       const { day } = findFn(iso);
       if (!day || day.tipo === 'Descanso') return false;
+      const roleId = String(options?.roleId || '').trim();
       // Si el rol es REF o empieza con REF (REFG, REFBB, etc.), usar lógica de refuerzo
       const roleStr = String(role || '');
       if (roleStr === 'REF' || (roleStr.startsWith('REF') && roleStr.length > 3)) {
@@ -45,9 +53,15 @@ export function usePersonScheduledChecker({
       const baseRole = stripRoleSuffix(String(role || ''));
       const list = getDayBlockList(day, resolvedBlock);
       return list.some(
-        (m: AnyRecord) =>
-          norm(m?.name) === norm(name) &&
-          (!m?.role || norm(stripRoleSuffix(String(m?.role || ''))) === norm(baseRole) || !baseRole)
+        (m: AnyRecord) => {
+          if (norm(m?.name) !== norm(name)) return false;
+          const memberRoleId = String(m?.roleId || '').trim();
+          if (roleId) {
+            if (memberRoleId) return memberRoleId === roleId;
+            return false;
+          }
+          return !m?.role || norm(stripRoleSuffix(String(m?.role || ''))) === norm(baseRole) || !baseRole;
+        }
       );
     },
     [findWeekAndDay]

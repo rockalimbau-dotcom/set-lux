@@ -2,8 +2,10 @@ import { useState } from 'react';
 import { AnyRecord } from '@shared/types/common';
 import { PRICE_ROLES } from '../shared.constants';
 import { computeFromWeekly } from './semanalUtils';
+import { normalizeConditionRoleKey, sortConditionRoleKeys } from '../roleCatalog';
 
 interface UseSemanalHandlersProps {
+  project?: AnyRecord | null;
   model: AnyRecord;
   setModel: (updater: (m: AnyRecord) => AnyRecord) => void;
 }
@@ -11,7 +13,7 @@ interface UseSemanalHandlersProps {
 /**
  * Hook to manage semanal handlers (prices, roles, etc.)
  */
-export function useSemanalHandlers({ model: _model, setModel }: UseSemanalHandlersProps) {
+export function useSemanalHandlers({ project, model: _model, setModel }: UseSemanalHandlersProps) {
   const [roleToDelete, setRoleToDelete] = useState<{ sectionKey: 'base' | 'prelight' | 'pickup'; role: string } | null>(null);
 
   const setPrice = (sectionKey: 'base' | 'prelight' | 'pickup', role: string, header: string, value: string) =>
@@ -35,30 +37,15 @@ export function useSemanalHandlers({ model: _model, setModel }: UseSemanalHandle
     if (!newRole) return;
     
     setModel((m: AnyRecord) => {
-      const currentRoles = m.roles || PRICE_ROLES;
-      if (currentRoles.includes(newRole)) return m;
+      const normalizedRole = normalizeConditionRoleKey(project, newRole);
+      const currentRoles = Array.isArray(m.roles) && m.roles.length > 0 ? m.roles : PRICE_ROLES;
+      const normalizedRoles = currentRoles.map((role: string) => normalizeConditionRoleKey(project, role));
+      if (normalizedRoles.includes(normalizedRole)) return m;
+      const nextRoles = sortConditionRoleKeys(project, [...normalizedRoles, normalizedRole], PRICE_ROLES);
       
-      // Maintain PRICE_ROLES order
-      const nextRoles: string[] = [];
-      const currentSet = new Set(currentRoles);
-      
-      for (const role of PRICE_ROLES) {
-        if (role === newRole) {
-          nextRoles.push(newRole);
-        } else if (currentSet.has(role)) {
-          nextRoles.push(role);
-        }
-      }
-      
-      if (!PRICE_ROLES.includes(newRole)) {
-        nextRoles.push(newRole);
-      }
-      
-      // IMPORTANTE: Inicializar entrada vacía en prices para el nuevo rol
-      // Esto asegura que el rol aparezca inmediatamente en la tabla
       const nextPrices = { ...(m.prices || {}) };
-      if (!nextPrices[newRole]) {
-        nextPrices[newRole] = {};
+      if (!nextPrices[normalizedRole]) {
+        nextPrices[normalizedRole] = {};
       }
       
       return { ...m, roles: nextRoles, prices: nextPrices };
@@ -69,14 +56,17 @@ export function useSemanalHandlers({ model: _model, setModel }: UseSemanalHandle
     setModel((m: AnyRecord) => {
       if (sectionKey === 'base') {
         const roles = m.roles || PRICE_ROLES;
-        const nextRoles = roles.filter((r: string) => r !== role);
+        const normalizedRole = normalizeConditionRoleKey(project, role);
+        const nextRoles = roles
+          .map((r: string) => normalizeConditionRoleKey(project, r))
+          .filter((r: string) => r !== normalizedRole);
         const nextPrices = { ...m.prices };
-        delete nextPrices[role];
+        delete nextPrices[normalizedRole];
         return { ...m, roles: nextRoles, prices: nextPrices };
       } else {
         const priceKey = sectionKey === 'prelight' ? 'pricesPrelight' : 'pricesPickup';
         const next = { ...m, [priceKey]: { ...(m[priceKey] || {}) } };
-        delete next[priceKey][role];
+        delete next[priceKey][normalizeConditionRoleKey(project, role)];
         // Si no quedan roles en esta sección, eliminar la sección
         if (Object.keys(next[priceKey]).length === 0) {
           delete next[priceKey];

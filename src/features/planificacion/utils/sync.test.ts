@@ -117,8 +117,8 @@ describe('planificacion/utils/sync', () => {
 
       const result = indexRoster(members);
 
-      expect(result.get('G')).toEqual(['John', 'Bob']);
-      expect(result.get('E')).toEqual(['Jane', 'Alice']);
+      expect(result.get('G')?.map(m => m.name)).toEqual(['John', 'Bob']);
+      expect(result.get('E')?.map(m => m.name)).toEqual(['Jane', 'Alice']);
     });
 
     it('handles empty array', () => {
@@ -136,7 +136,7 @@ describe('planificacion/utils/sync', () => {
 
       const result = indexRoster(members);
 
-      expect(result.get('G')).toEqual(['John']);
+      expect(result.get('G')?.map(m => m.name)).toEqual(['John']);
       expect(result.size).toBe(1);
     });
 
@@ -150,10 +150,10 @@ describe('planificacion/utils/sync', () => {
 
       const result = indexRoster(members);
 
-      expect(result.get('G')).toEqual(['John']);
-      expect(result.get('E')).toEqual(['']);
-      expect(result.get('BB')).toEqual(['']);
-      expect(result.get('REF')).toEqual(['']);
+      expect(result.get('G')?.map(m => m.name)).toEqual(['John']);
+      expect(result.get('E')?.map(m => m.name)).toEqual(['']);
+      expect(result.get('BB')?.map(m => m.name)).toEqual(['']);
+      expect(result.get('REF')?.map(m => m.name)).toEqual(['']);
     });
   });
 
@@ -266,6 +266,45 @@ describe('planificacion/utils/sync', () => {
 
       expect(result).toHaveLength(1);
       expect(result[0].name).toBe('John');
+    });
+
+    it('preserves custom role metadata and does not merge different roleId values', () => {
+      const dayList = [
+        { role: 'E', roleId: 'electric_night', name: '' },
+        { role: 'E', roleId: 'electric_day', name: '' },
+      ];
+
+      const rosterList = [
+        { role: 'E', roleId: 'electric_night', roleLabel: 'Eléctrico noche', name: 'Ana' },
+        { role: 'E', roleId: 'electric_day', roleLabel: 'Eléctrico día', name: 'Berta' },
+      ];
+
+      const result = syncDayListWithRoster(dayList, rosterList);
+
+      expect(result[0]).toMatchObject({
+        roleId: 'electric_night',
+        roleLabel: 'Eléctrico noche',
+        name: 'Ana',
+      });
+      expect(result[1]).toMatchObject({
+        roleId: 'electric_day',
+        roleLabel: 'Eléctrico día',
+        name: 'Berta',
+      });
+    });
+
+    it('propagates personId when syncing roster members into planning', () => {
+      const dayList = [{ role: 'E', roleId: 'electric_night', name: '' }];
+      const rosterList = [{ role: 'E', roleId: 'electric_night', personId: 'person_pol', name: 'Pol Peitx' }];
+
+      const result = syncDayListWithRoster(dayList, rosterList);
+
+      expect(result[0]).toMatchObject({
+        role: 'E',
+        roleId: 'electric_night',
+        personId: 'person_pol',
+        name: 'Pol Peitx',
+      });
     });
   });
 
@@ -480,6 +519,25 @@ describe('planificacion/utils/sync', () => {
     it('handles undefined weeks', () => {
       const result = syncAllWeeks(null, [], [], [], []);
       expect(result).toEqual([]);
+    });
+
+    it('keeps roleId and roleLabel when seeding empty days from roster', () => {
+      const weeks = [
+        {
+          id: 'week1',
+          days: [{ tipo: 'Rodaje', team: [] }],
+        },
+      ];
+
+      const base = [{ role: 'E', roleId: 'electric_night', roleLabel: 'Eléctrico noche', name: 'Ana' }];
+      const result = syncAllWeeks(weeks, base, [], [], []);
+
+      expect(result[0].days[0].team[0]).toMatchObject({
+        role: 'E',
+        roleId: 'electric_night',
+        roleLabel: 'Eléctrico noche',
+        name: 'Ana',
+      });
     });
   });
 });

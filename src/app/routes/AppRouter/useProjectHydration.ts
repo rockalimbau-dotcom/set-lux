@@ -2,6 +2,12 @@ import { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { storage } from '../../../shared/services/localStorage.service';
 import type { Project as UIProject } from '../../../features/projects/types';
+import { normalizeProjectWithRoleCatalog } from '../../../shared/utils/projectRoles';
+
+export function normalizeHydratedProject(project: UIProject | null | undefined): UIProject | null {
+  if (!project) return null;
+  return normalizeProjectWithRoleCatalog(project);
+}
 
 /**
  * Hook to hydrate project from URL params if not already loaded
@@ -30,7 +36,6 @@ export function useProjectHydration(
         );
       } catch {}
     }
-    if (found) setActiveProject(found);
+    if (found) setActiveProject(normalizeHydratedProject(found));
   }, [activeProject, params.id, projects, setActiveProject]);
 }
-

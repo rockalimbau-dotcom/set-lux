@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { ProjectTab } from './ProjectDetailTypes';
+import { TeamNameValidationIssue } from './ProjectDetailUtils';
 
 interface UseProjectModalsReturn {
   showStatusModal: { isClosing: boolean } | null;
   setShowStatusModal: (modal: { isClosing: boolean } | null) => void;
-  showNameValidationModal: { targetTab: ProjectTab | null; roleWithoutName: { role: string; group: string } } | null;
-  setShowNameValidationModal: (modal: { targetTab: ProjectTab | null; roleWithoutName: { role: string; group: string } } | null) => void;
+  showNameValidationModal: { targetTab: ProjectTab | null; roleWithoutName: TeamNameValidationIssue } | null;
+  setShowNameValidationModal: (modal: { targetTab: ProjectTab | null; roleWithoutName: TeamNameValidationIssue } | null) => void;
 }
 
 /**
@@ -13,7 +14,7 @@ interface UseProjectModalsReturn {
  */
 export function useProjectModals(): UseProjectModalsReturn {
   const [showStatusModal, setShowStatusModal] = useState<{ isClosing: boolean } | null>(null);
-  const [showNameValidationModal, setShowNameValidationModal] = useState<{ targetTab: ProjectTab | null; roleWithoutName: { role: string; group: string } } | null>(null);
+  const [showNameValidationModal, setShowNameValidationModal] = useState<{ targetTab: ProjectTab | null; roleWithoutName: TeamNameValidationIssue } | null>(null);
 
   return {
     showStatusModal,
@@ -22,4 +23,3 @@ export function useProjectModals(): UseProjectModalsReturn {
     setShowNameValidationModal,
   };
 }
-

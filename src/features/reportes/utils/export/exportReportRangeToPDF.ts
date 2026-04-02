@@ -443,7 +443,7 @@ export async function exportReportRangeToPDF(params: ExportReportRangeParams) {
 
       // IMPORTANTE: Usar la misma lógica que exportReportWeekToPDF - paginación simple por personas
       // Agrupar personas por bloques solo para ordenar, pero paginar como en semana
-      const { finalPersonKeys } = groupAndSortPersonsByBlock(finalWeekData, false);
+      const { finalPersonKeys } = groupAndSortPersonsByBlock(finalWeekData, false, project);
       
       // Calcular paginación igual que en exportReportWeekToPDF
       const totalPersons = finalPersonKeys.length;

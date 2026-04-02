@@ -166,20 +166,20 @@ function WeekCard({
     false
   );
 
-  const pair = useCallback((m: AnyRecord) => `${m.role || ''}::${m.name || ''}`, []);
+  const pair = useCallback((m: AnyRecord) => `${m.roleId || m.role || ''}::${m.name || ''}`, []);
   const missingByPair = useCallback((dayList: AnyRecord[] = [], pool: AnyRecord[] = []) => {
     const present = new Set((dayList || []).map(pair));
     return (pool || []).filter(m => {
       const nm = (m?.name || '').trim();
       if (nm === '') return true;
-      return !present.has(`${m.role || ''}::${nm}`);
+      return !present.has(`${m.roleId || m.role || ''}::${nm}`);
     });
   }, [pair]);
   const uniqueByPair = useCallback((arr: AnyRecord[] = []) => {
     const seen = new Set<string>();
     const out: AnyRecord[] = [];
     for (const m of arr) {
-      const key = `${m?.role || ''}::${(m?.name || '').trim()}::${m?.source || ''}`;
+      const key = `${m?.roleId || m?.role || ''}::${(m?.name || '').trim()}::${m?.source || ''}`;
       if (!seen.has(key)) {
         seen.add(key);
         out.push(m);
@@ -189,7 +189,10 @@ function WeekCard({
   }, []);
   const poolRefs = useCallback((reinf: AnyRecord[] = []) => (reinf || []).map(r => ({
     role: 'REF',
+    roleId: r?.roleId,
+    roleLabel: r?.roleLabel,
     name: (r?.name || '').trim(),
+    gender: r?.gender,
     source: 'ref',
   })), []);
 

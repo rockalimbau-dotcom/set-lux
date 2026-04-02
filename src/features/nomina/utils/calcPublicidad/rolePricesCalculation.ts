@@ -3,6 +3,8 @@ import { num, getNumField, findPriceRow } from './rolePricesHelpers';
 interface RolePriceCalculationParams {
   normalized: string;
   baseNorm: string;
+  roleCandidates?: string[];
+  baseCandidates?: string[];
   priceRows: any;
   basePriceRows?: any; // Tabla base para buscar roles base de refuerzos
   p: any;
@@ -14,6 +16,8 @@ interface RolePriceCalculationParams {
 export function calculateRolePrices({
   normalized,
   baseNorm,
+  roleCandidates,
+  baseCandidates,
   priceRows,
   basePriceRows,
   p,
@@ -21,9 +25,11 @@ export function calculateRolePrices({
   // Para refuerzos, siempre usar la tabla base para buscar el rol base
   const rowsForRefuerzo = basePriceRows || priceRows;
   
-  const pickedRow = findPriceRow(priceRows, [normalized]);
+  const resolvedRoleCandidates = roleCandidates && roleCandidates.length > 0 ? roleCandidates : [normalized];
+  const resolvedBaseCandidates = baseCandidates && baseCandidates.length > 0 ? baseCandidates : [baseNorm];
+  const pickedRow = findPriceRow(priceRows, resolvedRoleCandidates);
   let row = pickedRow.row;
-  const pickedBase = findPriceRow(priceRows, [baseNorm]);
+  const pickedBase = findPriceRow(priceRows, resolvedBaseCandidates);
   const baseRow = pickedBase.row;
   const pickedElec = findPriceRow(rowsForRefuerzo, ['Eléctrico', 'Electrico', 'E']);
   const elecRow = pickedElec.row;
@@ -132,12 +138,13 @@ export function calculateRolePrices({
       const baseRole = normalized.substring(3);
       // Buscar directamente en rowsForRefuerzo (tabla base, no prelight/pickup)
       const baseRoleCandidates = createRoleCandidates(baseRole);
-      const baseRolePicked = findPriceRow(rowsForRefuerzo, baseRoleCandidates);
+      const mergedBaseCandidates = Array.from(new Set([...resolvedBaseCandidates, ...baseRoleCandidates]));
+      const baseRolePicked = findPriceRow(rowsForRefuerzo, mergedBaseCandidates);
       targetRow = baseRolePicked.row || {};
     } else if (normalized === 'REF' && baseNorm && baseNorm !== 'REF') {
       // Si es REF con baseNorm (ej: calculateRolePrices con normalized='REF', baseNorm='GAFFER'), usar la fila del rol base
       // Buscar directamente en rowsForRefuerzo (tabla base, no prelight/pickup)
-      const baseRoleCandidates = createRoleCandidates(baseNorm);
+      const baseRoleCandidates = Array.from(new Set([...resolvedBaseCandidates, ...createRoleCandidates(baseNorm)]));
       const baseRolePicked = findPriceRow(rowsForRefuerzo, baseRoleCandidates);
       targetRow = baseRolePicked.row || {};
     }

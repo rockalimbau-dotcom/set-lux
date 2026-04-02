@@ -1,5 +1,9 @@
 export type RolePrices = {
-  getForRole: (roleCode: string, baseRoleCode?: string | null) => {
+  getForRole: (
+    roleCode: string,
+    baseRoleCode?: string | null,
+    options?: { roleId?: string | null; roleLabel?: string | null }
+  ) => {
     jornada: number;
     halfJornada?: number;
     travelDay: number;
@@ -20,6 +24,9 @@ export type RolePrices = {
 export type RowIn = {
   role: string;
   name: string;
+  personId?: string;
+  roleId?: string;
+  roleLabel?: string;
   gender?: 'male' | 'female' | 'neutral';
   source?: string;
   _rowKey?: string;
@@ -72,7 +79,7 @@ export interface MonthSectionProps {
   calcWorkedBreakdown: (
     weeks: any[],
     filterISO: (iso: string) => boolean,
-    person: { role: string; name: string; source?: string }
+    person: { role: string; roleId?: string; personId?: string; name: string; source?: string }
   ) => { 
     workedDays: number; 
     travelDays: number; 

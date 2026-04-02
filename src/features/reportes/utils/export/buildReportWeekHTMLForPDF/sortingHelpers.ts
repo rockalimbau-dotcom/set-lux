@@ -1,5 +1,6 @@
 import { rolePriorityForReports } from '../dataHelpers';
 import { stripRoleSuffix, stripRefuerzoSuffix } from '@shared/constants/roles';
+import { resolveProjectRole } from '@shared/utils/projectRoles';
 
 /**
  * Get block type from person key (base, extra, pre, pick)
@@ -31,8 +32,11 @@ function sortExtraGroupKeys(keys: string[]): string[] {
  * Get base role (without P or R suffix)
  * IMPORTANTE: Los refuerzos (REFG, REFE, REFBB, etc.) NO tienen sufijos P o R, así que se mantienen tal cual
  */
-function getBaseRole(role: string): string {
+function getBaseRole(role: string, project?: any): string {
   const r = String(role).toUpperCase().trim();
+  const resolved = resolveProjectRole(project, { roleId: r, role: r });
+  if (resolved?.baseRole) return String(resolved.baseRole).toUpperCase();
+  if (resolved?.legacyCode) return String(resolved.legacyCode).toUpperCase();
   // Si es un refuerzo con código completo (REFG, REFE, etc.), mantenerlo tal cual
   if (r.startsWith('REF') && r.length > 3) return stripRefuerzoSuffix(r);
   if (r === 'REF') return 'REF';
@@ -44,8 +48,10 @@ function getBaseRole(role: string): string {
 /**
  * Get base role priority
  */
-function getBaseRolePriority(role: string): number {
-  const baseRole = getBaseRole(role);
+function getBaseRolePriority(role: string, project?: any): number {
+  const resolved = resolveProjectRole(project, { roleId: role, role });
+  if (typeof resolved?.sortOrder === 'number') return resolved.sortOrder;
+  const baseRole = getBaseRole(role, project);
   return rolePriorityForReports(baseRole);
 }
 
@@ -55,7 +61,8 @@ function getBaseRolePriority(role: string): number {
  */
 function sortByRoleHierarchy(
   keys: string[],
-  block: 'base' | 'extra' | 'pre' | 'pick'
+  block: 'base' | 'extra' | 'pre' | 'pick',
+  project?: any
 ): string[] {
   return keys.sort((a, b) => {
     // Parsear roles de las claves (pueden tener formato "role.pre__name" o "role__name")
@@ -119,8 +126,8 @@ function sortByRoleHierarchy(
     }
 
     // Ambos no son REF: ordenar por jerarquía de rol base
-    const priorityA = getBaseRolePriority(roleA);
-    const priorityB = getBaseRolePriority(roleB);
+    const priorityA = getBaseRolePriority(roleA, project);
+    const priorityB = getBaseRolePriority(roleB, project);
 
     if (priorityA !== priorityB) {
       return priorityA - priorityB;
@@ -159,7 +166,7 @@ function sortByRoleHierarchy(
  * IMPORTANTE: Para paginación, mantener el orden natural dentro de cada bloque
  * sin separar refuerzos, para que los bloques se paginen completos
  */
-export function groupAndSortPersonsByBlock(data: any, preserveOrder: boolean = false): {
+export function groupAndSortPersonsByBlock(data: any, preserveOrder: boolean = false, project?: any): {
   personsByBlock: { base: string[]; extra: string[]; pre: string[]; pick: string[] };
   extraGroups: Array<{ blockKey: string; people: string[] }>;
   finalPersonKeys: string[];
@@ -185,16 +192,16 @@ export function groupAndSortPersonsByBlock(data: any, preserveOrder: boolean = f
   if (preserveOrder) {
     // IMPORTANTE: Ordenar por jerarquía pero mantener refuerzos al final dentro de cada bloque
     // Esto asegura el orden correcto (G, BB, E, etc.) y evita que los refuerzos aparezcan primero
-    personsByBlock.base = sortByRoleHierarchy(personsByBlock.base, 'base');
-    personsByBlock.extra = sortByRoleHierarchy(personsByBlock.extra, 'extra');
-    personsByBlock.pre = sortByRoleHierarchy(personsByBlock.pre, 'pre');
-    personsByBlock.pick = sortByRoleHierarchy(personsByBlock.pick, 'pick');
+    personsByBlock.base = sortByRoleHierarchy(personsByBlock.base, 'base', project);
+    personsByBlock.extra = sortByRoleHierarchy(personsByBlock.extra, 'extra', project);
+    personsByBlock.pre = sortByRoleHierarchy(personsByBlock.pre, 'pre', project);
+    personsByBlock.pick = sortByRoleHierarchy(personsByBlock.pick, 'pick', project);
   } else {
     // Ordenar por jerarquía (comportamiento normal para visualización)
-    personsByBlock.base = sortByRoleHierarchy(personsByBlock.base, 'base');
-    personsByBlock.extra = sortByRoleHierarchy(personsByBlock.extra, 'extra');
-    personsByBlock.pre = sortByRoleHierarchy(personsByBlock.pre, 'pre');
-    personsByBlock.pick = sortByRoleHierarchy(personsByBlock.pick, 'pick');
+    personsByBlock.base = sortByRoleHierarchy(personsByBlock.base, 'base', project);
+    personsByBlock.extra = sortByRoleHierarchy(personsByBlock.extra, 'extra', project);
+    personsByBlock.pre = sortByRoleHierarchy(personsByBlock.pre, 'pre', project);
+    personsByBlock.pick = sortByRoleHierarchy(personsByBlock.pick, 'pick', project);
   }
 
   // Maintain order: base, extra, pre, pick

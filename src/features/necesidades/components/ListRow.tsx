@@ -179,7 +179,7 @@ export default function ListRow({ label, listKey, notesKey, weekId, weekObj, con
                 )}
                 {list.map((m, idx) => (
                   <Chip
-                    key={`${m.role}-${m.name}-${idx}`}
+                    key={`${m.roleId || m.role}-${m.name}-${idx}`}
                     role={(m as AnyRecord)?.role}
                     name={(m as AnyRecord)?.name}
                     gender={(m as AnyRecord)?.gender}
@@ -229,4 +229,3 @@ export default function ListRow({ label, listKey, notesKey, weekId, weekObj, con
     </>
   );
 }
-

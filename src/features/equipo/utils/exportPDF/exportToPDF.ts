@@ -3,7 +3,7 @@ import html2canvas from 'html2canvas';
 import i18n from '../../../../i18n/config';
 import { baseStyles } from '@features/condiciones/utils/exportPDF/htmlBuilders/styles';
 import { generateFooter, generateInfoPanel } from '@features/condiciones/utils/exportPDF/htmlBuilders/contentHelpers';
-import { translateRoleLabel } from '@features/equipo/pages/EquipoTab/EquipoTabUtils';
+import { getDisplayRoleLabel } from '@features/equipo/pages/EquipoTab/EquipoTabUtils';
 import { shareOrSavePDF } from '@shared/utils/pdfShare';
 
 type TeamGroupKey = 'base' | 'reinforcements' | 'prelight' | 'pickup';
@@ -47,13 +47,18 @@ const EXTRA_STYLES = `
   }
 `;
 
-const getRoleLabel = (role: string, gender?: 'male' | 'female' | 'neutral', groupKey?: TeamGroupKey) => {
-  return translateRoleLabel(role, i18n.t.bind(i18n), groupKey, gender || 'neutral') || role;
+const getRoleLabel = (
+  project: any,
+  row: { role?: string; roleId?: string; name?: string; gender?: 'male' | 'female' | 'neutral' },
+  groupKey?: TeamGroupKey
+) => {
+  return getDisplayRoleLabel(project, row, i18n.t.bind(i18n), groupKey, row?.gender || 'neutral') || row?.role || '';
 };
 
 const buildTeamSection = (
+  project: any,
   title: string,
-  rows: Array<{ role?: string; name?: string; gender?: 'male' | 'female' | 'neutral' }>,
+  rows: Array<{ role?: string; roleId?: string; name?: string; gender?: 'male' | 'female' | 'neutral' }>,
   groupKey?: TeamGroupKey
 ) => {
   if (!rows || rows.length === 0) return '';
@@ -61,9 +66,8 @@ const buildTeamSection = (
   const headerName = i18n.t('team.nameAndSurname');
   const body = rows
     .map(row => {
-      const role = row?.role || '';
       const name = row?.name || '—';
-      const label = getRoleLabel(role, row?.gender, groupKey);
+      const label = getRoleLabel(project, row, groupKey);
       return `<tr><td>${label}</td><td>${name}</td></tr>`;
     })
     .join('');
@@ -89,10 +93,10 @@ const buildEquipoHTMLForPDF = (project: any, team: any) => {
   const title = i18n.t('pdf.teamTitle');
   const projectName = project?.nombre || i18n.t('pdf.project');
   const sections = [
-    buildTeamSection(i18n.t('team.baseTeam'), team?.base || [], 'base'),
-    buildTeamSection(i18n.t('team.reinforcements'), team?.reinforcements || [], 'reinforcements'),
-    buildTeamSection(i18n.t('team.prelightTeam'), team?.prelight || [], 'prelight'),
-    buildTeamSection(i18n.t('team.pickupTeam'), team?.pickup || [], 'pickup'),
+    buildTeamSection(project, i18n.t('team.baseTeam'), team?.base || [], 'base'),
+    buildTeamSection(project, i18n.t('team.reinforcements'), team?.reinforcements || [], 'reinforcements'),
+    buildTeamSection(project, i18n.t('team.prelightTeam'), team?.prelight || [], 'prelight'),
+    buildTeamSection(project, i18n.t('team.pickupTeam'), team?.pickup || [], 'pickup'),
   ].filter(Boolean);
 
   return `<!DOCTYPE html>

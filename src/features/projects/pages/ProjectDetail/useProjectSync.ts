@@ -2,8 +2,12 @@ import { useEffect, useRef, useState } from 'react';
 import { storage } from '@shared/services/localStorage.service';
 import { useLocalStorage } from '@shared/hooks/useLocalStorage';
 import { syncDayListWithRosterBlankOnly } from '@shared/utils/rosterSync';
+import { resolveMemberProjectRole } from '@shared/utils/projectRoles';
 import { Project } from './ProjectDetailTypes';
 import { isEmptyTeam } from './ProjectDetailUtils';
+
+const getMemberIdentityKey = (member: any): string =>
+  `${String(member?.personId || member?.roleId || member?.role || '').trim().toUpperCase()}::${String(member?.name || '').trim()}`;
 
 export function useProjectSync(proj: Project | null) {
   const [loaded, setLoaded] = useState(false);
@@ -43,7 +47,7 @@ export function useProjectSync(proj: Project | null) {
       const reinforcements = effectiveTeam.reinforcements || [];
 
       const buildRenameMap = (prevList: any[] = [], nextList: any[] = []) => {
-        const map = new Map<string, { name: string; gender?: string }>();
+        const map = new Map<string, { name: string; gender?: string; roleId?: string; roleLabel?: string }>();
         const nextById = new Map(
           (nextList || [])
             .filter(item => item?.id)
@@ -53,16 +57,20 @@ export function useProjectSync(proj: Project | null) {
           if (!prevItem?.id) continue;
           const nextItem = nextById.get(prevItem.id);
           if (!nextItem) continue;
-          const prevRole = String(prevItem.role || '').trim().toUpperCase();
-          const nextRole = String(nextItem.role || '').trim().toUpperCase();
+          const prevRoleKey = String(prevItem.roleId || prevItem.role || '').trim().toUpperCase();
+          const nextRoleKey = String(nextItem.roleId || nextItem.role || '').trim().toUpperCase();
           const prevName = String(prevItem.name || '').trim();
           const nextName = String(nextItem.name || '').trim();
-          if (!prevRole || !prevName || !nextRole || !nextName) continue;
-          if (prevRole !== nextRole) continue;
+          if (!prevRoleKey || !prevName || !nextRoleKey || !nextName) continue;
+          if (prevRoleKey !== nextRoleKey) continue;
           if (prevName === nextName) continue;
-          map.set(`${prevRole}::${prevName}`, {
+          const resolvedNextRole = resolveMemberProjectRole(proj, nextItem);
+          map.set(getMemberIdentityKey(prevItem), {
             name: nextName,
             gender: nextItem.gender,
+            personId: nextItem.personId,
+            roleId: nextItem.roleId,
+            roleLabel: resolvedNextRole.label,
           });
         }
         return map;
@@ -76,15 +84,21 @@ export function useProjectSync(proj: Project | null) {
         ref: buildRenameMap(previousTeam.reinforcements, reinforcements),
       };
 
-      const applyRenameMap = (list: any[] = [], renameMap: Map<string, { name: string; gender?: string }>) =>
+      const applyRenameMap = (
+        list: any[] = [],
+        renameMap: Map<string, { name: string; gender?: string; personId?: string; roleId?: string; roleLabel?: string }>
+      ) =>
         (list || []).map(item => {
-          const key = `${String(item?.role || '').trim().toUpperCase()}::${String(item?.name || '').trim()}`;
+          const key = getMemberIdentityKey(item);
           const renamed = renameMap.get(key);
           if (!renamed) return item;
           return {
             ...item,
             name: renamed.name,
             gender: renamed.gender ?? item?.gender,
+            personId: renamed.personId ?? item?.personId,
+            roleId: renamed.roleId ?? item?.roleId,
+            roleLabel: renamed.roleLabel ?? item?.roleLabel,
             rosterManaged: true,
           };
         });
@@ -103,13 +117,19 @@ export function useProjectSync(proj: Project | null) {
         return [];
       };
 
-      const baseRoster = (baseTeam || []).map(m => ({
-        role: (m?.role || '').toUpperCase(),
-        name: (m?.name || '').trim(),
-        gender: (m as any)?.gender,
-        source: 'base',
-        rosterManaged: true,
-      }));
+      const baseRoster = (baseTeam || []).map(m => {
+        const resolvedRole = resolveMemberProjectRole(proj, m);
+        return {
+          role: (m?.role || '').toUpperCase(),
+          personId: m?.personId,
+          roleId: m?.roleId,
+          roleLabel: resolvedRole.label,
+          name: (m?.name || '').trim(),
+          gender: (m as any)?.gender,
+          source: 'base',
+          rosterManaged: true,
+        };
+      });
 
       const syncWeek = (w: any) => {
         const days = normalizeDays(w?.days);

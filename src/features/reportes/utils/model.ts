@@ -42,6 +42,22 @@ export function normalizePersonaKey(key: string): string {
     block = 'base';
   }
   
+  const looksLikeRoleId =
+    role.includes('_') ||
+    role.includes('-') ||
+    (role.length > 0 && role.toLowerCase() === role && /[a-z]/.test(role));
+
+  if (looksLikeRoleId) {
+    if (block === 'pre') {
+      return `${role}.pre__${name}`;
+    } else if (block === 'pick') {
+      return `${role}.pick__${name}`;
+    } else if (block.startsWith('extra')) {
+      return `${role}.extra__${name}`;
+    }
+    return `${role}__${name}`;
+  }
+
   // For refuerzos, clean all P/R suffixes
   if (role.startsWith('REF')) {
     role = stripRefuerzoSuffix(role);
@@ -72,8 +88,17 @@ export function personaName(p: any): string {
 }
 
 export function personaKey(p: any): string {
+  const explicitRoleId = String(p?.roleId || '').trim();
   const originalRole = personaRole(p) || '';
   const name = personaName(p) || '';
+
+  if (explicitRoleId) {
+    const block = (p && (p.__block || p.block)) || '';
+    if (block === 'pre') return `${explicitRoleId}.pre__${name}`;
+    if (block === 'pick') return `${explicitRoleId}.pick__${name}`;
+    if (String(block).startsWith('extra')) return `${explicitRoleId}.${block}__${name}`;
+    return `${explicitRoleId}__${name}`;
+  }
   
   // IMPORTANTE: Para refuerzos (REFG, REFE, REFBB, etc.), mantener código completo sin stripPR
   // Solo aplicar stripPR a roles normales (G, E, BB, etc.) para quitar sufijos P o R si existen

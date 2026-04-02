@@ -24,10 +24,13 @@ function ensureSlot(
   rowKey: string,
   role: string,
   name: string,
+  personId?: string,
   gender?: 'male' | 'female' | 'neutral',
   source?: string,
   matchRole?: string,
-  displayBlock?: 'base' | 'pre' | 'pick' | 'extra'
+  displayBlock?: 'base' | 'pre' | 'pick' | 'extra',
+  roleId?: string,
+  roleLabel?: string
 ) {
   const k = rowKey;
   if (!totals.has(k)) {
@@ -37,6 +40,9 @@ function ensureSlot(
       _displayBlock: displayBlock || 'base',
       role,
       name,
+      personId,
+      roleId,
+      roleLabel,
       gender,
       source,
       extras: 0,
@@ -55,8 +61,11 @@ function ensureSlot(
     });
   }
   if (source && !totals.get(k).source) totals.get(k).source = source;
+  if (personId && !totals.get(k).personId) totals.get(k).personId = personId;
   if (matchRole && !totals.get(k)._matchRole) totals.get(k)._matchRole = matchRole;
   if (displayBlock && !totals.get(k)._displayBlock) totals.get(k)._displayBlock = displayBlock;
+  if (roleId && !totals.get(k).roleId) totals.get(k).roleId = roleId;
+  if (roleLabel && !totals.get(k).roleLabel) totals.get(k).roleLabel = roleLabel;
   return totals.get(k);
 }
 
@@ -143,10 +152,13 @@ export function aggregateReports(
         info.rowKey,
         info.roleVisible,
         info.name,
+        info.personId,
         info.gender,
         info.source,
         info.matchRole,
-        info.displayBlock
+        info.displayBlock,
+        info.roleId,
+        info.roleLabel
       );
       let usedMaterialPropioWeek = false;
       for (const iso of days) {

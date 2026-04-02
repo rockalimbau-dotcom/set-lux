@@ -345,6 +345,25 @@ describe('plan utils', () => {
         );
       }).not.toThrow();
     });
+
+    it('should not count a different roleId with the same name as scheduled', () => {
+      const day = {
+        tipo: 'Trabajo',
+        team: [{ name: 'Pol Peitx', role: 'E', roleId: 'electric_default' }],
+      };
+      mockFindWeekAndDay.mockReturnValue({ day });
+
+      const result = isPersonScheduledOnBlock(
+        '2024-01-15',
+        'E',
+        'Pol Peitx',
+        mockFindWeekAndDay,
+        'base',
+        { roleId: 'electric_factura' }
+      );
+
+      expect(result).toBe(false);
+    });
   });
 
   describe('blockKeyForPerson', () => {
@@ -610,6 +629,24 @@ describe('plan utils', () => {
       );
 
       expect(result).toBe(true);
+    });
+
+    it('should not count a different roleId with the same name in personWorksOn', () => {
+      const day = {
+        tipo: 'Trabajo',
+        team: [{ name: 'Pol Peitx', role: 'E', roleId: 'electric_default' }],
+      };
+      mockFindWeekAndDay.mockReturnValue({ day });
+
+      const result = personWorksOn(
+        mockFindWeekAndDay,
+        '2024-01-15',
+        'E',
+        'Pol Peitx',
+        { roleId: 'electric_factura' }
+      );
+
+      expect(result).toBe(false);
     });
   });
 

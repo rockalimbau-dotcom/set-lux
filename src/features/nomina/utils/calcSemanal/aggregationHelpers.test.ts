@@ -55,4 +55,105 @@ describe('visibleRoleFor', () => {
     expect(entry.displayBlock).toBe('extra');
     expect(entry.matchRole).toBe('E');
   });
+
+  it('preserves roleId metadata for custom roles so payroll can resolve custom prices', () => {
+    const week = {
+      days: [
+        {
+          team: [
+            {
+              role: 'E',
+              roleId: 'electric_factura',
+              roleLabel: 'Eléctrico factura',
+              name: 'Pol Peitx',
+              gender: 'male',
+            },
+          ],
+        },
+      ],
+    };
+    const keys = buildUniqueStorageKeys(week, new Set());
+    const entry = Array.from(keys.values())[0];
+
+    expect(entry.roleId).toBe('electric_factura');
+    expect(entry.roleLabel).toBe('Eléctrico factura');
+  });
+
+  it('uses roleId in the storage key for custom roles so payroll can read report data', () => {
+    const week = {
+      days: [
+        {
+          team: [
+            {
+              role: 'E',
+              roleId: 'electric_factura',
+              roleLabel: 'Eléctrico factura',
+              name: 'Pol Peitx',
+            },
+          ],
+        },
+      ],
+    };
+
+    const keys = buildUniqueStorageKeys(week, new Set());
+    const [[storageKey]] = Array.from(keys.entries());
+
+    expect(storageKey).toBe('electric_factura__Pol Peitx');
+  });
+
+  it('preserves personId metadata for future payroll grouping by person', () => {
+    const week = {
+      days: [
+        {
+          team: [
+            {
+              role: 'E',
+              roleId: 'electric_factura',
+              roleLabel: 'Eléctrico factura',
+              personId: 'person_pol',
+              name: 'Pol Peitx',
+            },
+          ],
+        },
+      ],
+    };
+
+    const keys = buildUniqueStorageKeys(week, new Set());
+    const entry = Array.from(keys.values())[0];
+
+    expect(entry.personId).toBe('person_pol');
+  });
+
+  it('creates separate internal row keys for base and custom roles with the same visible role and name', () => {
+    const week = {
+      days: [
+        {
+          team: [
+            {
+              role: 'E',
+              roleId: 'electric_default',
+              roleLabel: 'Eléctrico/a',
+              personId: 'person_pol',
+              name: 'Pol Peitx',
+            },
+            {
+              role: 'E',
+              roleId: 'electric_factura',
+              roleLabel: 'Eléctrico factura',
+              personId: 'person_pol',
+              name: 'Pol Peitx',
+            },
+          ],
+        },
+      ],
+    };
+
+    const entries = Array.from(buildUniqueStorageKeys(week, new Set()).values());
+
+    expect(entries).toHaveLength(2);
+    expect(entries.map(entry => entry.rowKey)).toEqual([
+      'electric_default__Pol Peitx',
+      'electric_factura__Pol Peitx',
+    ]);
+  });
 });

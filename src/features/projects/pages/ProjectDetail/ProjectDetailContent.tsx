@@ -14,6 +14,7 @@ interface ProjectDetailContentProps {
   isActive: boolean;
   onTeamChange: (team: ProjectTeam) => void;
   onConditionsChange: (patch: any) => void;
+  onRoleCatalogChange: (roleCatalog: any) => void;
 }
 
 export function ProjectDetailContent({
@@ -24,6 +25,7 @@ export function ProjectDetailContent({
   isActive,
   onTeamChange,
   onConditionsChange,
+  onRoleCatalogChange,
 }: ProjectDetailContentProps) {
   return (
     <div
@@ -42,6 +44,7 @@ export function ProjectDetailContent({
           }}
           initialTeam={project?.team}
           onChange={onTeamChange}
+          onRoleCatalogChange={onRoleCatalogChange}
           allowEditOverride={isActive}
           readOnly={!isActive}
           storageKey={`team_${project?.id || project?.nombre}`}

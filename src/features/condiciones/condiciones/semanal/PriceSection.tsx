@@ -1,11 +1,13 @@
 import { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Th, Td } from '@shared/components';
-import { PRICE_HEADERS, PRICE_ROLES } from '../shared.constants';
+import { PRICE_HEADERS } from '../shared.constants';
 import MaterialPropioTypeDropdown from '../shared/MaterialPropioTypeDropdown';
 import { AnyRecord } from '@shared/types/common';
+import { getConditionRoleOptions, getDefaultConditionRoleKeys, sortConditionRoleKeys } from '../roleCatalog';
 
 interface PriceSectionProps {
+  project?: AnyRecord | null;
   title: string;
   sectionKey: 'base' | 'prelight' | 'pickup';
   model: AnyRecord;
@@ -20,6 +22,7 @@ interface PriceSectionProps {
 }
 
 export function PriceSection({
+  project,
   title,
   sectionKey,
   model,
@@ -84,7 +87,7 @@ export function PriceSection({
       }
       // FALLBACK ABSOLUTO: siempre devolver estos roles para base
       // Esto asegura que la tabla nunca esté vacía (como funcionaba antes con roles.map())
-      return ['Gaffer', 'Eléctrico'];
+      return getDefaultConditionRoleKeys(project);
     }
     // Para prelight/pickup, usar roles si están disponibles
     return (roles && Array.isArray(roles) && roles.length > 0) ? roles : [];
@@ -92,7 +95,7 @@ export function PriceSection({
   
   // Asegurar que baseRoles nunca esté vacío para la sección base (doble verificación)
   const finalBaseRoles = (sectionKey === 'base' && (!baseRoles || baseRoles.length === 0))
-    ? ['Gaffer', 'Eléctrico']
+    ? getDefaultConditionRoleKeys(project)
     : baseRoles;
 
   // IMPORTANTE: Antes del commit ab1a5e5, PricesTable usaba roles.map() directamente
@@ -102,37 +105,13 @@ export function PriceSection({
   const pricesKeys = Object.keys(prices || {});
   
   // Función para ordenar roles según el orden de PRICE_ROLES
-  const sortRolesByPriceRolesOrder = (rolesToSort: string[]): string[] => {
-    const sorted: string[] = [];
-    const rolesSet = new Set(rolesToSort);
-    
-    // Primero añadir roles en el orden de PRICE_ROLES
-    for (const role of PRICE_ROLES) {
-      if (rolesSet.has(role)) {
-        sorted.push(role);
-        rolesSet.delete(role);
-      }
-    }
-    
-    // Luego añadir cualquier rol que no esté en PRICE_ROLES
-    for (const role of rolesToSort) {
-      if (rolesSet.has(role)) {
-        sorted.push(role);
-      }
-    }
-    
-    return sorted;
-  };
-  
   // Para la sección base: usar finalBaseRoles directamente (como funcionaba antes con roles.map())
   // Para prelight/pickup: mostrar roles que están en prices, ordenados según PRICE_ROLES
   const rolesToDisplay = sectionKey === 'base' 
     ? finalBaseRoles
-    : sortRolesByPriceRolesOrder(pricesKeys);
+    : sortConditionRoleKeys(project, pricesKeys);
 
-  // Para prelight y pickup, mostrar todos los roles disponibles, no solo los del equipo base
-  // Para base, availableRoles son los roles que NO están en el equipo base (para el dropdown)
-  const availableRoles = sectionKey === 'base' ? PRICE_ROLES : PRICE_ROLES;
+  const availableRoles = getConditionRoleOptions(project);
 
   // Filtrar headers: quitar "Precio refuerzo" de prelight y pickup
   const visibleHeaders = sectionKey === 'base' 
@@ -184,32 +163,31 @@ export function PriceSection({
               style={{ position: 'absolute' }}
               tabIndex={-1}
             >
-              {availableRoles.filter((r: string) => {
+              {availableRoles.filter(roleOption => {
                 // Para base: mostrar roles que NO están en el equipo base
                 // Para prelight/pickup: mostrar roles que NO están en prices
                 if (sectionKey === 'base') {
-                  return !finalBaseRoles.includes(r);
+                  return !finalBaseRoles.includes(roleOption.key);
                 }
-                // Para prelight y pickup, usar Object.keys(prices)
-                return !Object.keys(prices).includes(r);
-              }).map((role: string) => (
+                return !Object.keys(prices).includes(roleOption.key);
+              }).map(roleOption => (
                 <button
-                  key={role}
+                  key={roleOption.key}
                   onMouseDown={(e) => {
                     e.preventDefault();
                     if (sectionKey === 'base') {
                       // Para la sección base, añadir el rol a model.roles y crear entrada en prices
-                      addRole(role);
-                      handlePriceChange(sectionKey, role, 'Precio semanal', '');
+                      addRole(roleOption.key);
+                      handlePriceChange(sectionKey, roleOption.key, 'Precio semanal', '');
                     } else {
                       // Para prelight y pickup, solo crear entrada en prices (no añadir a model.roles)
-                      handlePriceChange(sectionKey, role, 'Precio semanal', '');
+                      handlePriceChange(sectionKey, roleOption.key, 'Precio semanal', '');
                     }
                     setShowRoleSelect(false);
                   }}
                   className='w-full text-left px-1.5 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-2 text-[8px] sm:text-[9px] md:text-[10px] lg:text-sm text-gray-900 dark:text-white hover:bg-blue-100 dark:hover:bg-amber-600/40 transition-colors'
                 >
-                  {translateRoleName(role, sectionKey)}
+                  {roleOption.label}
                 </button>
               ))}
             </div>

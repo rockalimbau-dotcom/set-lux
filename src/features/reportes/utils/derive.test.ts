@@ -15,6 +15,15 @@ import {
 vi.mock('./model.ts', () => ({
   personaRole: vi.fn(p => p.role || ''),
   personaName: vi.fn(p => p.name || ''),
+  personaKey: vi.fn(p => {
+    const roleKey = String(p?.roleId || p?.role || '');
+    const name = String(p?.name || '');
+    const block = String(p?.__block || '');
+    if (block === 'pre') return `${roleKey}.pre__${name}`;
+    if (block === 'pick') return `${roleKey}.pick__${name}`;
+    if (block) return `${roleKey}.${block}__${name}`;
+    return `${roleKey}__${name}`;
+  }),
 }));
 
 vi.mock('./plan.ts', () => ({
@@ -69,8 +78,8 @@ describe('derive', () => {
       const result = collectFn('team', 'P');
 
       expect(result).toEqual([
-        { role: 'DIRECTOR', name: 'Juan', gender: undefined, source: undefined },
-        { role: 'PRODUCTOR', name: 'Carlos', gender: undefined, source: undefined },
+        { role: 'DIRECTOR', name: 'Juan', personId: undefined, gender: undefined, source: undefined, roleId: undefined, roleLabel: undefined },
+        { role: 'PRODUCTOR', name: 'Carlos', personId: undefined, gender: undefined, source: undefined, roleId: undefined, roleLabel: undefined },
       ]);
     });
 
@@ -87,7 +96,7 @@ describe('derive', () => {
       );
       const result = collectFn('refList', '');
 
-      expect(result).toEqual([{ role: 'REF', name: 'María' }]);
+      expect(result).toEqual([{ role: 'REF', name: 'María', personId: undefined, gender: undefined, source: undefined, roleId: undefined, roleLabel: undefined }]);
     });
 
     it('should handle empty team list', () => {
@@ -119,7 +128,7 @@ describe('derive', () => {
       const result = collectFn('team', 'P');
 
       expect(result).toHaveLength(1);
-      expect(result[0]).toEqual({ role: 'DIRECTOR', name: 'Juan', gender: undefined, source: undefined });
+      expect(result[0]).toEqual({ role: 'DIRECTOR', name: 'Juan', personId: undefined, gender: undefined, source: undefined, roleId: undefined, roleLabel: undefined });
     });
 
     it('should handle missing day data', () => {
@@ -132,6 +141,54 @@ describe('derive', () => {
       const result = collectFn('team', 'P');
 
       expect(result).toEqual([]);
+    });
+
+    it('should preserve personId metadata from planning members', () => {
+      const mockDay = {
+        team: [
+          { role: 'E', roleId: 'electric_factura', roleLabel: 'Eléctrico factura', personId: 'person_pol', name: 'Pol Peitx' },
+        ],
+      };
+      mockFindWeekAndDay.mockReturnValue({ day: mockDay });
+
+      const collectFn = collectWeekTeamWithSuffixFactory(
+        mockFindWeekAndDay,
+        mockSafeSemana
+      );
+      const result = collectFn('team', '');
+
+      expect(result[0]).toMatchObject({
+        role: 'E',
+        roleId: 'electric_factura',
+        roleLabel: 'Eléctrico factura',
+        personId: 'person_pol',
+        name: 'Pol Peitx',
+      });
+    });
+
+    it('keeps base and custom roles separated when name and personId are the same', () => {
+      const byDate: Record<string, any> = {
+        '2024-01-15': {
+          team: [
+            { role: 'E', roleId: 'electric_default', roleLabel: 'Eléctrico/a', personId: 'person_pol', name: 'Pol Peitx' },
+          ],
+        },
+        '2024-01-16': {
+          team: [
+            { role: 'E', roleId: 'electric_factura', roleLabel: 'Eléctrico factura', personId: 'person_pol', name: 'Pol Peitx' },
+          ],
+        },
+      };
+      mockFindWeekAndDay.mockImplementation((iso: string) => ({ day: byDate[iso] }));
+
+      const collectFn = collectWeekTeamWithSuffixFactory(
+        mockFindWeekAndDay,
+        mockSafeSemana
+      );
+      const result = collectFn('team', '');
+
+      expect(result).toHaveLength(2);
+      expect(result.map(p => p.roleId)).toEqual(['electric_default', 'electric_factura']);
     });
   });
 
@@ -223,6 +280,52 @@ describe('derive', () => {
       expect(result).toHaveLength(1);
       expect(result[0]).toEqual({ role: 'DIRECTOR', name: 'Juan' });
     });
+
+    it('keeps personId when merging block personas into the safe list', () => {
+      const result = buildSafePersonas(
+        [{ role: 'E', roleId: 'electric_default', personId: 'person_pol', name: 'Pol Peitx' }],
+        true,
+        [{ role: 'E', roleId: 'electric_factura', personId: 'person_pol', name: 'Pol Peitx' }],
+        false,
+        [],
+        false,
+        []
+      );
+
+      expect(result).toContainEqual({
+        role: 'E',
+        roleId: 'electric_factura',
+        personId: 'person_pol',
+        name: 'Pol Peitx',
+        __block: 'pre',
+      });
+    });
+
+    it('keeps base and block personas separated when only roleId changes', () => {
+      const result = buildSafePersonas(
+        [{ role: 'E', roleId: 'electric_default', personId: 'person_pol', name: 'Pol Peitx' }],
+        true,
+        [{ role: 'E', roleId: 'electric_factura', personId: 'person_pol', name: 'Pol Peitx' }],
+        false,
+        [],
+        false,
+        []
+      );
+
+      expect(result).toContainEqual({
+        role: 'E',
+        roleId: 'electric_default',
+        personId: 'person_pol',
+        name: 'Pol Peitx',
+      });
+      expect(result).toContainEqual({
+        role: 'E',
+        roleId: 'electric_factura',
+        personId: 'person_pol',
+        name: 'Pol Peitx',
+        __block: 'pre',
+      });
+    });
   });
 
   describe('buildPeopleBase', () => {
@@ -271,6 +374,18 @@ describe('derive', () => {
       // Check that duplicates are handled (this is the main test)
       const uniqueResults = new Set(result.map(p => `${p.role}__${p.name}`));
       expect(uniqueResults.size).toBe(result.length);
+    });
+
+    it('keeps custom base roles with the same legacy role separated by roleId', () => {
+      const providedPersonas = [
+        { role: 'E', roleId: 'electric_day', name: 'Juan' },
+        { role: 'E', roleId: 'electric_night', name: 'Juan' },
+      ];
+
+      const result = buildPeopleBase(providedPersonas, new Set());
+
+      expect(result).toHaveLength(2);
+      expect(result.map(p => p.roleId)).toEqual(['electric_day', 'electric_night']);
     });
 
     it('should sort base people by role hierarchy', () => {
@@ -337,6 +452,18 @@ describe('derive', () => {
       expect(result[3].role).toBe('TMP'); // EQUIPO PRELIGHT
       expect(result[4].role).toBe('REF'); // REFUERZOS
     });
+
+    it('keeps custom prelight roles with the same legacy role separated by roleId', () => {
+      const prelightPeople = [
+        { role: 'E', roleId: 'electric_day', roleLabel: 'Eléctrico día', name: 'Ana', source: 'pre' },
+        { role: 'E', roleId: 'electric_night', roleLabel: 'Eléctrico noche', name: 'Ana', source: 'pre' },
+      ];
+
+      const result = buildPeoplePre(true, prelightPeople, new Set());
+
+      expect(result).toHaveLength(2);
+      expect(result.map(p => p.roleId)).toEqual(['electric_day', 'electric_night']);
+    });
   });
 
   describe('buildPeoplePick', () => {
@@ -381,6 +508,18 @@ describe('derive', () => {
       expect(result[2].role).toBe('ER'); // EQUIPO RECOGIDA
       expect(result[3].role).toBe('TMR'); // EQUIPO RECOGIDA
       expect(result[4].role).toBe('REF'); // REFUERZOS
+    });
+
+    it('keeps custom pickup roles with the same legacy role separated by roleId', () => {
+      const pickupPeople = [
+        { role: 'E', roleId: 'electric_day', roleLabel: 'Eléctrico día', name: 'Ana', source: 'pick' },
+        { role: 'E', roleId: 'electric_night', roleLabel: 'Eléctrico noche', name: 'Ana', source: 'pick' },
+      ];
+
+      const result = buildPeoplePick(true, pickupPeople, new Set());
+
+      expect(result).toHaveLength(2);
+      expect(result.map(p => p.roleId)).toEqual(['electric_day', 'electric_night']);
     });
   });
 

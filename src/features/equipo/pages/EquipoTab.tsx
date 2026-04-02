@@ -1,10 +1,9 @@
 import React from 'react';
-import { ROLES } from '@shared/constants/roles';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AnyRecord } from '@shared/types/common';
 import { EquipoTabProps } from './EquipoTab/EquipoTabTypes';
-import { sortTeam } from './EquipoTab/EquipoTabUtils';
+import { buildAllowedRoles, sortTeam } from './EquipoTab/EquipoTabUtils';
 import { useEquipoData } from './EquipoTab/useEquipoData';
 import { useEquipoActions } from './EquipoTab/useEquipoActions';
 import { TeamGroup } from './EquipoTab/TeamGroup';
@@ -15,6 +14,7 @@ function EquipoTab({
   currentUser = { name: '', role: '' },
   initialTeam,
   onChange = () => {},
+  onRoleCatalogChange = () => {},
   readOnly: readOnlyProp,
   allowEditOverride = false,
   storageKey = 'setlux_equipo_global_v2',
@@ -30,12 +30,13 @@ function EquipoTab({
 
   // Filtrar roles según el modo del proyecto
   const allowedRoles = useMemo(() => {
-    if (projectMode === 'diario') {
-      // En diario, excluir Meritorio (M) y Refuerzo (REF)
-      return ROLES.filter(r => r.code !== 'M' && r.code !== 'REF');
-    }
-    return ROLES;
-  }, [projectMode]);
+    return {
+      base: buildAllowedRoles(project, projectMode, 'base'),
+      reinforcements: buildAllowedRoles(project, projectMode, 'reinforcements'),
+      prelight: buildAllowedRoles(project, projectMode, 'prelight'),
+      pickup: buildAllowedRoles(project, projectMode, 'pickup'),
+    };
+  }, [project, projectMode]);
 
   // Determinar si mostrar la sección de refuerzos
   const showReinforcements = useMemo(() => {
@@ -47,6 +48,7 @@ function EquipoTab({
     initialTeam,
     storageKey,
     currentUser,
+    project,
   });
 
   // Actions
@@ -107,13 +109,15 @@ function EquipoTab({
         setRows={(rows: AnyRecord[]) => {
           // Filtrar REF del equipo base
           const filteredRows = rows.filter((r: AnyRecord) => r.role !== 'REF');
-          setTeam(prev => ({ ...prev, base: sortTeam(filteredRows) }));
+          setTeam(prev => ({ ...prev, base: sortTeam(filteredRows, project) }));
         }}
-        canEdit={canEdit}
-        nextSeq={nextSeq}
-        allowedRoles={allowedRoles.filter(r => r.code !== 'REF')}
-        groupKey='base'
-      />
+          canEdit={canEdit}
+          nextSeq={nextSeq}
+          allowedRoles={allowedRoles.base}
+          groupKey='base'
+          project={project}
+          onRoleCatalogChange={onRoleCatalogChange}
+        />
       {showReinforcements && (
         <TeamGroup
           title={t('team.reinforcements')}
@@ -121,15 +125,14 @@ function EquipoTab({
           setRows={(rows: AnyRecord[]) => {
             // Filtrar REF de refuerzos - el rol 'REF' ya no se usa
             const filteredRows = rows.filter((r: AnyRecord) => r.role !== 'REF');
-            setTeam(prev => ({ ...prev, reinforcements: sortTeam(filteredRows) }));
+            setTeam(prev => ({ ...prev, reinforcements: sortTeam(filteredRows, project) }));
           }}
           canEdit={canEdit}
           nextSeq={nextSeq}
-          allowedRoles={ROLES.filter(r => r.code !== 'AUX' && r.code !== 'M' && r.code !== 'REF').map(r => ({
-            code: `REF${r.code}`,
-            label: r.label
-          }))}
+          allowedRoles={allowedRoles.reinforcements}
           groupKey='reinforcements'
+          project={project}
+          onRoleCatalogChange={onRoleCatalogChange}
         />
       )}
       {groupsEnabled.prelight && (
@@ -139,14 +142,16 @@ function EquipoTab({
           setRows={(rows: AnyRecord[]) => {
             // Filtrar REF de prelight - el rol 'REF' ya no se usa
             const filteredRows = rows.filter((r: AnyRecord) => r.role !== 'REF');
-            setTeam(prev => ({ ...prev, prelight: sortTeam(filteredRows) }));
+            setTeam(prev => ({ ...prev, prelight: sortTeam(filteredRows, project) }));
           }}
           canEdit={canEdit}
           nextSeq={nextSeq}
           removable
           onRemoveGroup={() => disableGroup('prelight')}
-          allowedRoles={allowedRoles.filter(r => r.code !== 'REF') as any}
+          allowedRoles={allowedRoles.prelight}
           groupKey='prelight'
+          project={project}
+          onRoleCatalogChange={onRoleCatalogChange}
         />
       )}
       {groupsEnabled.pickup && (
@@ -156,14 +161,16 @@ function EquipoTab({
           setRows={(rows: AnyRecord[]) => {
             // Filtrar REF de pickup - el rol 'REF' ya no se usa
             const filteredRows = rows.filter((r: AnyRecord) => r.role !== 'REF');
-            setTeam(prev => ({ ...prev, pickup: sortTeam(filteredRows) }));
+            setTeam(prev => ({ ...prev, pickup: sortTeam(filteredRows, project) }));
           }}
           canEdit={canEdit}
           nextSeq={nextSeq}
           removable
           onRemoveGroup={() => disableGroup('pickup')}
-          allowedRoles={allowedRoles.filter(r => r.code !== 'REF') as any}
+          allowedRoles={allowedRoles.pickup}
           groupKey='pickup'
+          project={project}
+          onRoleCatalogChange={onRoleCatalogChange}
         />
       )}
 

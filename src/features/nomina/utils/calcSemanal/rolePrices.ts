@@ -1,11 +1,18 @@
 import { loadCondModel } from '../cond';
-import { ROLE_CODES_WITH_PR_SUFFIX, stripRoleSuffix } from '@shared/constants/roles';
+import { ROLE_CODES_WITH_PR_SUFFIX, roleLabelFromCode, stripRoleSuffix } from '@shared/constants/roles';
+import {
+  buildProjectRoleId,
+  findProjectRoleById,
+  findProjectRoleByLegacyCode,
+  normalizeProjectRoleCatalog,
+} from '@shared/utils/projectRoles';
 
 /**
  * Create a role prices function for a project
  */
 export function makeRolePrices(project: any) {
   const model = loadCondModel(project);
+  const roleCatalog = normalizeProjectRoleCatalog(project);
   const basePriceRows = model?.prices || {};
   const prelightPriceRows = model?.pricesPrelight || {};
   const pickupPriceRows = model?.pricesPickup || {};
@@ -100,6 +107,11 @@ export function makeRolePrices(project: any) {
     return basePriceRows;
   };
 
+  const hasPriceRowMatch = (priceTable: Record<string, any>, candidates: string[]): boolean => {
+    const picked = findPriceRow(candidates.filter(Boolean), priceTable);
+    return !!(picked.row && Object.keys(picked.row).length > 0);
+  };
+
   const findPriceRow = (candidates: string[], priceTable: Record<string, any>) => {
     // 1) Exactos primero
     for (const cand of candidates) {
@@ -152,22 +164,87 @@ export function makeRolePrices(project: any) {
     return '';
   };
 
-  const getForRole = (roleCode: string, baseRoleCode: string | null = null) => {
+  const findRoleDefinition = (
+    roleCode: string,
+    options?: { roleId?: string | null; roleLabel?: string | null }
+  ) => {
+    const byId = findProjectRoleById(roleCatalog, options?.roleId);
+    if (byId) return byId;
+
+    const roleLabel = String(options?.roleLabel || '').trim();
+    if (roleLabel) {
+      const byLabel =
+        roleCatalog.roles.find(role => normalizeLabel(role.label) === normalizeLabel(roleLabel)) ||
+        null;
+      if (byLabel) return byLabel;
+    }
+
+    const byCode = findProjectRoleByLegacyCode(roleCatalog, roleCode);
+    if (byCode) return byCode;
+
+    return null;
+  };
+
+  const buildRoleCandidates = (
+    roleCode: string,
+    options?: { roleId?: string | null; roleLabel?: string | null }
+  ): string[] => {
+    const roleDef = findRoleDefinition(roleCode, options);
+    const normalizedRoleCode = stripRoleSuffix(String(roleCode || ''));
+    const candidates = [
+      options?.roleId,
+      roleDef?.id,
+      buildProjectRoleId(normalizedRoleCode),
+      options?.roleLabel,
+      roleDef?.label,
+      roleCode,
+      normalizedRoleCode,
+      roleDef?.legacyCode,
+      roleDef?.baseRole,
+      roleLabelFromCode(normalizedRoleCode),
+    ].filter(Boolean) as string[];
+
+    return Array.from(new Set(candidates));
+  };
+
+  const getForRole = (
+    roleCode: string,
+    baseRoleCode: string | null = null,
+    options?: { roleId?: string | null; roleLabel?: string | null }
+  ) => {
     const normalized = stripRoleSuffix(String(roleCode || ''));
     const baseNorm = stripRoleSuffix(String(baseRoleCode || '')) || normalized;
+    const roleCandidates = buildRoleCandidates(roleCode, options);
+    const baseCandidates = baseRoleCode
+      ? buildRoleCandidates(baseRoleCode, {
+          roleLabel: baseRoleCode,
+        })
+      : buildRoleCandidates(normalized);
 
     // Determinar qué tabla usar según el rol
-    const priceTable = getPriceTable(roleCode);
+    let priceTable = getPriceTable(roleCode);
+    const strictCustomCandidates = [
+      options?.roleId,
+      options?.roleLabel,
+    ].filter(Boolean) as string[];
+    if (
+      priceTable !== basePriceRows &&
+      strictCustomCandidates.length > 0 &&
+      !String(options?.roleId || '').trim().endsWith('_default') &&
+      !hasPriceRowMatch(priceTable, strictCustomCandidates)
+    ) {
+      priceTable = basePriceRows;
+    }
     // Para refuerzos, siempre usar basePriceRows, no prelight/pickup
     const basePriceTable = (normalized === 'REF' || (normalized.startsWith('REF') && normalized.length > 3))
       ? basePriceRows
       : (baseRoleCode ? getPriceTable(baseRoleCode) : priceTable);
     
     // Si no encontramos en la tabla específica, usar base como fallback
-    const pickedRow = findPriceRow([normalized], priceTable);
+    const pickedRow = findPriceRow(roleCandidates, priceTable);
     let row = pickedRow.row;
     if (!row || Object.keys(row).length === 0) {
-      const fallbackRow = findPriceRow([normalized], basePriceRows);
+      const fallbackRow = findPriceRow(roleCandidates, basePriceRows);
       row = fallbackRow.row;
     }
     
@@ -176,10 +253,10 @@ export function makeRolePrices(project: any) {
     const tableForBaseRow = (normalized === 'REF' || (normalized.startsWith('REF') && normalized.length > 3))
       ? basePriceRows
       : basePriceTable;
-    const pickedBase = findPriceRow([baseNorm], tableForBaseRow);
+    const pickedBase = findPriceRow(baseCandidates, tableForBaseRow);
     let baseRow = pickedBase.row;
     if (!baseRow || Object.keys(baseRow).length === 0) {
-      const fallbackBase = findPriceRow([baseNorm], basePriceRows);
+      const fallbackBase = findPriceRow(baseCandidates, basePriceRows);
       baseRow = fallbackBase.row;
     }
     
@@ -200,12 +277,12 @@ export function makeRolePrices(project: any) {
         // Extraer el rol base (G, BB, E, etc.)
         const baseRole = normalized.substring(3);
         // Buscar directamente en basePriceRows (tabla base, no prelight/pickup)
-        const baseRolePicked = findPriceRow([baseRole], basePriceRows);
+        const baseRolePicked = findPriceRow(buildRoleCandidates(baseRole), basePriceRows);
         targetRow = baseRolePicked.row || {};
       } else if (normalized === 'REF' && baseNorm && baseNorm !== 'REF') {
         // Si es REF con baseRoleCode (ej: getForRole('REF', 'GAFFER')), usar la fila del rol base
         // Buscar directamente en basePriceRows (tabla base, no prelight/pickup)
-        const baseRolePicked = findPriceRow([baseNorm], basePriceRows);
+        const baseRolePicked = findPriceRow(baseCandidates, basePriceRows);
         targetRow = baseRolePicked.row || {};
       }
       
@@ -215,12 +292,19 @@ export function makeRolePrices(project: any) {
       }
       
       const refFromTarget = getNumField(targetRow, ['Precio refuerzo', 'Precio Refuerzo', 'Refuerzo']);
-      jornada = refFromTarget || 0;
+      const jornadaBase =
+        getNumField(targetRow, ['Precio jornada', 'Precio Jornada', 'Jornada', 'Precio dia', 'Precio día']) ||
+        getNumField(baseRow, ['Precio jornada', 'Precio Jornada', 'Jornada', 'Precio dia', 'Precio día']) ||
+        0;
+      jornada = refFromTarget || jornadaBase;
       halfJornada =
         getNumField(targetRow, ['Precio 1/2 jornada', 'Precio medio día', 'Precio media jornada']) ||
+        getNumField(baseRow, ['Precio 1/2 jornada', 'Precio medio día', 'Precio media jornada']) ||
         getNumField(elecRow, ['Precio 1/2 jornada', 'Precio medio día', 'Precio media jornada']) ||
         0;
-      const travelBase = getNumField(targetRow, ['Travel day', 'Travel Day', 'Travel', 'Día de viaje', 'Dia de viaje', 'Día travel', 'Dia travel', 'TD']);
+      const travelBase =
+        getNumField(targetRow, ['Travel day', 'Travel Day', 'Travel', 'Día de viaje', 'Dia de viaje', 'Día travel', 'Dia travel', 'TD']) ||
+        getNumField(baseRow, ['Travel day', 'Travel Day', 'Travel', 'Día de viaje', 'Dia de viaje', 'Día travel', 'Dia travel', 'TD']);
       travelDay = travelBase || (jornada ? jornada / divTravel : 0);
       horaExtra =
         getNumField(elecRow, ['Horas extras', 'Horas Extras', 'Hora extra', 'Horas extra', 'HE', 'Hora Extra']) ||

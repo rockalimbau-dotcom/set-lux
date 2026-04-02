@@ -107,7 +107,7 @@ export default function ReportesSemana({
     const map = new Map<string, string>();
     const push = (m?: AnyRecord) => {
       if (!m) return;
-      const role = m.role || '';
+      const role = m.roleId || m.role || '';
       const name = m.name || '';
       if (!role || !name) return;
       map.set(`${role}__${name}`, m.gender || 'neutral');
@@ -120,9 +120,10 @@ export default function ReportesSemana({
 
     return providedPersonas.map(p => {
       const role = personaRole(p);
+      const roleId = String((p as AnyRecord)?.roleId || '').trim();
       const name = personaName(p);
       const baseRole = role.startsWith('REF') ? role : stripPR(role);
-      const key = `${baseRole}__${name}`;
+      const key = `${roleId || baseRole}__${name}`;
       const gender = (p as AnyRecord)?.gender || map.get(key);
       return gender ? { ...p, gender } : p;
     });
@@ -253,7 +254,36 @@ export default function ReportesSemana({
         .replace(/\s+/g, ' ')
         .trim();
 
-    const findRowForRole = (roleCode: string, block: 'base' | 'pre' | 'pick' | 'extra') => {
+    const findPersonMeta = (
+      roleCode: string,
+      name: string,
+      block: 'base' | 'pre' | 'pick' | 'extra',
+      roleId?: string
+    ) => {
+      const sourceList =
+        block === 'pre'
+          ? peoplePre
+          : block === 'pick'
+          ? peoplePick
+          : block === 'extra'
+          ? peopleExtra
+          : peopleBase;
+      return (
+        (sourceList || []).find(person =>
+          roleId
+            ? String(person?.roleId || '').trim() === String(roleId || '').trim()
+            : String(person?.role || '') === String(roleCode || '') &&
+              String(person?.name || '') === String(name || '')
+        ) || null
+      );
+    };
+
+    const findRowForRole = (
+      roleCode: string,
+      roleId: string | undefined,
+      explicitRoleLabel: string | undefined,
+      block: 'base' | 'pre' | 'pick' | 'extra'
+    ) => {
       const priceRows =
         block === 'pre' ? priceTables.pre : block === 'pick' ? priceTables.pick : priceTables.base;
       const rawRole = String(roleCode || '');
@@ -262,8 +292,8 @@ export default function ReportesSemana({
         const cleaned = stripRefuerzoSuffix(baseRole);
         baseRole = cleaned.startsWith('REF') ? cleaned.substring(3) : cleaned;
       }
-      const roleLabel = ROLE_CODE_TO_LABEL[baseRole as keyof typeof ROLE_CODE_TO_LABEL] || baseRole;
-      const candidates = [roleLabel, baseRole, rawRole].filter(Boolean);
+      const fallbackRoleLabel = ROLE_CODE_TO_LABEL[baseRole as keyof typeof ROLE_CODE_TO_LABEL] || baseRole;
+      const candidates = [roleId, explicitRoleLabel, fallbackRoleLabel, baseRole, rawRole].filter(Boolean);
       const candNorms = candidates.map(c => normalizeLabel(c));
       for (const key of Object.keys(priceRows || {})) {
         if (candNorms.includes(normalizeLabel(key))) {
@@ -273,8 +303,19 @@ export default function ReportesSemana({
       return null;
     };
 
-    const getConfig = (roleCode: string, block: 'base' | 'pre' | 'pick' | 'extra') => {
-      const row = findRowForRole(roleCode, block);
+    const getConfig = (
+      roleCode: string,
+      name: string,
+      block: 'base' | 'pre' | 'pick' | 'extra',
+      options?: { roleId?: string; roleLabel?: string }
+    ) => {
+      const personMeta = findPersonMeta(roleCode, name, block, options?.roleId);
+      const row = findRowForRole(
+        roleCode,
+        String(options?.roleId || personMeta?.roleId || '').trim() || undefined,
+        String(options?.roleLabel || personMeta?.roleLabel || '').trim() || undefined,
+        block
+      );
       if (!row) return null;
       const value = parseNum(row['Material propio']);
       if (!value) return null;
@@ -288,10 +329,15 @@ export default function ReportesSemana({
     };
 
     return { getConfig };
-  }, [project?.id, project?.nombre, mode]);
+  }, [project?.id, project?.nombre, mode, peopleBase, peoplePre, peoplePick, peopleExtra]);
 
   const getMaterialPropioConfig = useCallback(
-    (role: string, _name: string, block: 'base' | 'pre' | 'pick' | 'extra') => materialPropioConfig.getConfig(role, block),
+    (
+      role: string,
+      name: string,
+      block: 'base' | 'pre' | 'pick' | 'extra',
+      options?: { roleId?: string; roleLabel?: string }
+    ) => materialPropioConfig.getConfig(role, name, block, options),
     [materialPropioConfig]
   );
 
@@ -404,6 +450,7 @@ export default function ReportesSemana({
 
   const renderPersonRows = (list: AnyRecord[], block: 'base' | 'pre' | 'pick' | 'extra') => (
     <ReportPersonRows
+      project={project as AnyRecord}
       list={list}
       block={block}
       semana={[...filteredSemana]}

@@ -113,9 +113,13 @@ export function useNeedsSync({
               day.crewList = Array.isArray(planDay.team)
                 ? (planDay.team as AnyRecord[])
                     .map(m => ({
+                      personId: m?.personId,
                       role: (m?.role || '').toUpperCase(),
+                      roleId: m?.roleId,
+                      roleLabel: m?.roleLabel,
                       name: (m?.name || '').trim(),
                       gender: m?.gender,
+                      source: m?.source,
                     }))
                     .filter(m => m.role || m.name)
                 : [];
@@ -124,9 +128,13 @@ export function useNeedsSync({
               day.preList = Array.isArray(planDay.prelight)
                 ? (planDay.prelight as AnyRecord[])
                     .map(m => ({
+                      personId: m?.personId,
                       role: (m?.role || '').toUpperCase(),
+                      roleId: m?.roleId,
+                      roleLabel: m?.roleLabel,
                       name: (m?.name || '').trim(),
                       gender: m?.gender,
+                      source: m?.source,
                     }))
                     .filter(m => m.role || m.name)
                 : [];
@@ -135,9 +143,13 @@ export function useNeedsSync({
               day.pickList = Array.isArray(planDay.pickup)
                 ? (planDay.pickup as AnyRecord[])
                     .map(m => ({
+                      personId: m?.personId,
                       role: (m?.role || '').toUpperCase(),
+                      roleId: m?.roleId,
+                      roleLabel: m?.roleLabel,
                       name: (m?.name || '').trim(),
                       gender: m?.gender,
+                      source: m?.source,
                     }))
                     .filter(m => m.role || m.name)
                 : [];
@@ -274,16 +286,22 @@ export function useNeedsSync({
             days: Array.isArray(w.days) ? w.days.map((d: AnyRecord) => ({
               team: Array.isArray(d.team) ? d.team.map((m: AnyRecord) => ({
                 role: m?.role || '',
+                roleId: m?.roleId,
+                roleLabel: m?.roleLabel,
                 name: m?.name || '',
                 gender: m?.gender,
               })) : [],
               prelight: Array.isArray(d.prelight) ? d.prelight.map((m: AnyRecord) => ({
                 role: m?.role || '',
+                roleId: m?.roleId,
+                roleLabel: m?.roleLabel,
                 name: m?.name || '',
                 gender: m?.gender,
               })) : [],
               pickup: Array.isArray(d.pickup) ? d.pickup.map((m: AnyRecord) => ({
                 role: m?.role || '',
+                roleId: m?.roleId,
+                roleLabel: m?.roleLabel,
                 name: m?.name || '',
                 gender: m?.gender,
               })) : [],
@@ -297,14 +315,20 @@ export function useNeedsSync({
             days: Array.isArray(w.days) ? w.days.map((d: AnyRecord) => ({
               team: Array.isArray(d.team) ? d.team.map((m: AnyRecord) => ({
                 role: m?.role || '',
+                roleId: m?.roleId,
+                roleLabel: m?.roleLabel,
                 name: m?.name || '',
               })) : [],
               prelight: Array.isArray(d.prelight) ? d.prelight.map((m: AnyRecord) => ({
                 role: m?.role || '',
+                roleId: m?.roleId,
+                roleLabel: m?.roleLabel,
                 name: m?.name || '',
               })) : [],
               pickup: Array.isArray(d.pickup) ? d.pickup.map((m: AnyRecord) => ({
                 role: m?.role || '',
+                roleId: m?.roleId,
+                roleLabel: m?.roleLabel,
                 name: m?.name || '',
               })) : [],
               loc: d.loc || '',

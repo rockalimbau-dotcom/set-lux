@@ -53,7 +53,7 @@ describe('reportes/utils/export', () => {
       const result = buildReportWeekHTML(defaultParams);
 
       expect(result).toContain(
-        '<th style="border:1px solid #999;padding:6px;text-align:left;background:#1e40af;color:#fff;">Horario</th>'
+        '<th style="border:1px solid #999;padding:6px;text-align:left;background:#1e40af;color:#fff;">Horario Equipo base</th>'
       );
       expect(mockDayNameFromISO).toHaveBeenCalledWith('2023-01-01', 0);
       expect(mockDayNameFromISO).toHaveBeenCalledWith('2023-01-02', 1);
@@ -65,7 +65,7 @@ describe('reportes/utils/export', () => {
       const result = buildReportWeekHTML(defaultParams);
 
       expect(result).toContain(
-        '<th style="border:1px solid #999;padding:6px;text-align:left;background:#1e40af;color:#fff;">Horario</th>'
+        '<th style="border:1px solid #999;padding:6px;text-align:left;background:#1e40af;color:#fff;">Horario Equipo base</th>'
       );
       expect(mockHorarioTexto).toHaveBeenCalledWith('2023-01-01');
       expect(mockHorarioTexto).toHaveBeenCalledWith('2023-01-02');
@@ -169,6 +169,89 @@ describe('reportes/utils/export', () => {
       expect(result).toContain('E2 — Jane');
     });
 
+    it('resolves custom roleIds through roleCatalog for badge display', () => {
+      const params = {
+        ...defaultParams,
+        project: {
+          nombre: 'Test Project',
+          roleCatalog: {
+            version: 1,
+            roles: [
+              {
+                id: 'electric_noche',
+                label: 'Eléctrico noche',
+                legacyCode: 'E',
+                baseRole: 'E',
+                sortOrder: 2,
+                active: true,
+                supportsPrelight: true,
+                supportsPickup: true,
+                supportsRefuerzo: true,
+              },
+            ],
+          },
+        },
+        data: {
+          electric_noche__Jane: {
+            Dietas: { '2023-01-01': '20' },
+          },
+        },
+      };
+
+      const result = buildReportWeekHTML(params);
+
+      expect(result).toContain('E — Jane');
+      expect(result).not.toContain('ELECTRIC_NOCHE — Jane');
+    });
+
+    it('sorts custom roleIds using project roleCatalog order', () => {
+      const params = {
+        ...defaultParams,
+        project: {
+          nombre: 'Test Project',
+          roleCatalog: {
+            version: 1,
+            roles: [
+              {
+                id: 'gaffer_custom',
+                label: 'Gaffer custom',
+                legacyCode: 'G',
+                baseRole: 'G',
+                sortOrder: 0,
+                active: true,
+                supportsPrelight: true,
+                supportsPickup: true,
+                supportsRefuerzo: true,
+              },
+              {
+                id: 'electric_custom',
+                label: 'Eléctrico custom',
+                legacyCode: 'E',
+                baseRole: 'E',
+                sortOrder: 2,
+                active: true,
+                supportsPrelight: true,
+                supportsPickup: true,
+                supportsRefuerzo: true,
+              },
+            ],
+          },
+        },
+        data: {
+          electric_custom__Jane: {
+            Dietas: { '2023-01-01': '20' },
+          },
+          gaffer_custom__John: {
+            Dietas: { '2023-01-01': '10' },
+          },
+        },
+      };
+
+      const result = buildReportWeekHTML(params);
+
+      expect(result.indexOf('G — John')).toBeLessThan(result.indexOf('E — Jane'));
+    });
+
     it('handles person key without role part', () => {
       const params = {
         ...defaultParams,
@@ -186,7 +269,7 @@ describe('reportes/utils/export', () => {
     it('includes SetLux footer', () => {
       const result = buildReportWeekHTML(defaultParams);
 
-      expect(result).toContain('Generado automáticamente por');
+      expect(result).toContain('Generado por');
       expect(result).toContain('<div class="footer">');
     });
 

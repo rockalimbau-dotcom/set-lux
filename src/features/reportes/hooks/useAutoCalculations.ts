@@ -164,6 +164,7 @@ export default function useAutoCalculations({
         const pk = personaKey(p);
         const role = personaRole(p);
         const name = personaName(p);
+        const roleId = String((p as any)?.roleId || '').trim() || undefined;
 
         // Preservar la estructura completa incluyendo __manual__
         next[pk] = next[pk] ? { ...next[pk] } : {};
@@ -194,7 +195,8 @@ export default function useAutoCalculations({
             roleForCheck,
             name,
             findWeekAndDay as any,
-            rowBlock
+            rowBlock,
+            { roleId }
           );
 
 

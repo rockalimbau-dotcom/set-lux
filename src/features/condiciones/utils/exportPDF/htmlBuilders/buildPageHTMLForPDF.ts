@@ -20,27 +20,27 @@ export function buildCondicionesPageHTMLForPDF(
   const headerTitle = i18n.t('pdf.conditionsTitle');
   
   // Tabla base
-  const rolesConPreciosBase = filterRolesWithPrices(PRICE_ROLES, PRICE_HEADERS, model, 'base');
+  const rolesConPreciosBase = filterRolesWithPrices(project, PRICE_ROLES, PRICE_HEADERS, model, 'base');
   const tableBase = includeHeader && includeTables && rolesConPreciosBase.length > 0 
-    ? generatePriceTableHTML(rolesConPreciosBase, PRICE_HEADERS, model, 'base', i18n.t('conditions.baseTeam'))
+    ? generatePriceTableHTML(project, rolesConPreciosBase, PRICE_HEADERS, model, 'base', i18n.t('conditions.baseTeam'))
     : '';
   
   // Tabla prelight (si existe y tiene roles)
   const hasPrelight = model.pricesPrelight !== undefined;
   const rolesConPreciosPrelight = hasPrelight 
-    ? filterRolesWithPrices(PRICE_ROLES, PRICE_HEADERS, model, 'prelight')
+    ? filterRolesWithPrices(project, PRICE_ROLES, PRICE_HEADERS, model, 'prelight')
     : [];
   const tablePrelight = includeHeader && includeTables && rolesConPreciosPrelight.length > 0
-    ? generatePriceTableHTML(rolesConPreciosPrelight, PRICE_HEADERS, model, 'prelight', i18n.t('conditions.prelightTeam'))
+    ? generatePriceTableHTML(project, rolesConPreciosPrelight, PRICE_HEADERS, model, 'prelight', i18n.t('conditions.prelightTeam'))
     : '';
   
   // Tabla pickup (si existe y tiene roles)
   const hasPickup = model.pricesPickup !== undefined;
   const rolesConPreciosPickup = hasPickup
-    ? filterRolesWithPrices(PRICE_ROLES, PRICE_HEADERS, model, 'pickup')
+    ? filterRolesWithPrices(project, PRICE_ROLES, PRICE_HEADERS, model, 'pickup')
     : [];
   const tablePickup = includeHeader && includeTables && rolesConPreciosPickup.length > 0
-    ? generatePriceTableHTML(rolesConPreciosPickup, PRICE_HEADERS, model, 'pickup', i18n.t('conditions.pickupTeam'))
+    ? generatePriceTableHTML(project, rolesConPreciosPickup, PRICE_HEADERS, model, 'pickup', i18n.t('conditions.pickupTeam'))
     : '';
   
   // Combinar todas las tablas

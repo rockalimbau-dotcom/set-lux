@@ -4,6 +4,7 @@ import { useLocalStorage } from '@shared/hooks/useLocalStorage';
 import { AnyRecord } from '@shared/types/common';
 import { parseYYYYMMDD, addDays, toYYYYMMDD, formatDDMMYYYY } from '@shared/utils/date';
 import { hasRoleGroupSuffix, roleLabelFromCode, roleRank, stripRefuerzoSuffix, stripRoleSuffix } from '@shared/constants/roles';
+import { getMemberRoleSortOrder, resolveMemberProjectRole } from '@shared/utils/projectRoles';
 import { usePlanWeeks } from '@features/reportes/pages/ReportesTab/usePlanWeeks';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
@@ -17,8 +18,12 @@ type TimesheetTabProps = {
 type Worker = {
   key: string;
   stableKey: string;
+  personId?: string;
   name: string;
   role: string;
+  roleId?: string;
+  roleLabel?: string;
+  source?: string;
   gender?: 'male' | 'female' | 'neutral';
   order: number;
 };
@@ -41,6 +46,28 @@ type SelectOption = {
   label: string;
 };
 
+const normalizeSource = (value: unknown): 'base' | 'pre' | 'pick' | 'ref' | '' => {
+  const raw = String(value || '').trim().toLowerCase();
+  if (raw === 'base' || raw === 'pre' || raw === 'pick' || raw === 'ref') return raw;
+  return '';
+};
+
+const isDefaultResolvedRole = (resolved: ReturnType<typeof resolveMemberProjectRole>): boolean => {
+  const definition = resolved?.definition;
+  if (!definition) return false;
+  const baseCode = String(definition.baseRole || definition.legacyCode || '').trim().toUpperCase();
+  if (!baseCode) return false;
+  return String(definition.id || '').trim().toLowerCase() === `${baseCode.toLowerCase()}_default`;
+};
+
+const normalizeLabelIdentity = (value: unknown): string =>
+  String(value || '')
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s+/g, ' ');
+
 const DAY_KEYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] as const;
 
 const normalizeRole = (role: string): string => {
@@ -50,11 +77,75 @@ const normalizeRole = (role: string): string => {
   return stripRoleSuffix(raw);
 };
 
-const stableWorkerKey = (role: string, name: string): string => `${normalizeRole(role)}__${String(name || '').trim()}`;
+const normalizeNameIdentity = (name: string): string =>
+  String(name || '')
+    .trim()
+    .toLocaleLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s+/g, ' ');
+
+const stableWorkerKey = (name: string, personId?: string): string =>
+  String(personId || '').trim()
+    ? `person::${String(personId).trim()}`
+    : `name::${normalizeNameIdentity(name)}`;
+
 const stableWorkerIdentity = (member: AnyRecord): string => {
-  const id = String(member?.id || '').trim();
-  if (id) return `id::${id}`;
-  return stableWorkerKey(String(member?.role || ''), String(member?.name || ''));
+  const personId = String(member?.personId || '').trim();
+  if (personId) return stableWorkerKey(String(member?.name || ''), personId);
+  return stableWorkerKey(String(member?.name || ''));
+};
+
+const getRosterSourceFromProjectTeam = (
+  project: AnyRecord | undefined,
+  member: Pick<Worker, 'personId' | 'roleId' | 'name' | 'role'> | AnyRecord
+): 'base' | 'pre' | 'pick' | 'ref' | '' => {
+  const match = getRosterMemberFromProjectTeam(project, member);
+  return normalizeSource(match?.source);
+};
+
+const getRosterMemberFromProjectTeam = (
+  project: AnyRecord | undefined,
+  member: Pick<Worker, 'personId' | 'roleId' | 'name' | 'role'> | AnyRecord
+): AnyRecord | null => {
+  const team = project?.team;
+  if (!team) return null;
+
+  const memberPersonId = String(member?.personId || '').trim();
+  const memberRoleId = String(member?.roleId || '').trim();
+  const memberName = normalizeNameIdentity(String(member?.name || ''));
+  const memberRole = normalizeRole(String(member?.role || '').trim().toUpperCase());
+
+  const matchesMember = (candidate: AnyRecord): boolean => {
+    const candidatePersonId = String(candidate?.personId || '').trim();
+    const candidateRoleId = String(candidate?.roleId || '').trim();
+    const candidateName = normalizeNameIdentity(String(candidate?.name || ''));
+    const candidateRole = normalizeRole(String(candidate?.role || '').trim().toUpperCase());
+
+    if (memberPersonId && candidatePersonId && memberPersonId !== candidatePersonId) return false;
+    if (memberRoleId && candidateRoleId && memberRoleId !== candidateRoleId) return false;
+    if (memberName && candidateName && memberName !== candidateName) return false;
+
+    return Boolean(
+      (memberPersonId && candidatePersonId && memberPersonId === candidatePersonId) ||
+      (memberRoleId && candidateRoleId && memberRoleId === candidateRoleId) ||
+      (memberName && candidateName && memberName === candidateName && (!memberRole || !candidateRole || memberRole === candidateRole))
+    );
+  };
+
+  const sections: Array<{ source: 'base' | 'pre' | 'pick' | 'ref'; list: AnyRecord[] }> = [
+    { source: 'base', list: Array.isArray(team?.base) ? team.base : [] },
+    { source: 'pre', list: Array.isArray(team?.prelight) ? team.prelight : [] },
+    { source: 'pick', list: Array.isArray(team?.pickup) ? team.pickup : [] },
+    { source: 'ref', list: Array.isArray(team?.reinforcements) ? team.reinforcements : [] },
+  ];
+
+  for (const section of sections) {
+    const found = section.list.find(matchesMember);
+    if (found) return { ...found, source: section.source };
+  }
+
+  return null;
 };
 
 const personMatches = (member: AnyRecord, worker: Worker): boolean => {
@@ -62,9 +153,15 @@ const personMatches = (member: AnyRecord, worker: Worker): boolean => {
   const workerName = String(worker.name || '').trim().toLowerCase();
   if (!memberName || !workerName || memberName !== workerName) return false;
 
-  const memberRole = normalizeRole(String(member?.role || ''));
-  const workerRole = normalizeRole(worker.role);
-  return !memberRole || !workerRole || memberRole === workerRole;
+  const memberPersonId = String(member?.personId || '').trim();
+  const workerPersonId = String(worker.personId || '').trim();
+  if (memberPersonId && workerPersonId) return memberPersonId === workerPersonId;
+
+  const memberRoleId = String(member?.roleId || '').trim();
+  const workerRoleId = String(worker.roleId || '').trim();
+  if (memberRoleId && workerRoleId) return true;
+
+  return true;
 };
 
 const parseMinutes = (hhmm: string): number => {
@@ -100,39 +197,79 @@ const escapeHtml = (value: unknown): string =>
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
 
-const getTimesheetRoleLabel = (
+export const getTimesheetRoleLabel = (
+  project: AnyRecord | undefined,
   role: string,
   t: (key: string, options?: AnyRecord) => string,
-  gender: 'male' | 'female' | 'neutral' = 'neutral'
+  gender: 'male' | 'female' | 'neutral' = 'neutral',
+  options?: { roleId?: string; roleLabel?: string; source?: string }
 ): string => {
   const raw = String(role || '').toUpperCase().trim();
   if (!raw) return '';
 
+  const source = String(options?.source || '').trim();
   const hasGroup = hasRoleGroupSuffix(raw);
-  const groupSuffix = hasGroup ? raw.slice(-1) : '';
   const roleWithoutGroup = hasGroup ? raw.slice(0, -1) : raw;
   const normalized = normalizeRole(roleWithoutGroup);
   if (!normalized) return '';
 
-  const upper = normalized.toUpperCase();
+  const normalizedUpper = normalized.toUpperCase();
+  const isRefRole = normalizedUpper.startsWith('REF') && normalizedUpper.length > 3;
+  const effectiveUpper = !isRefRole || source === 'ref' ? normalizedUpper : normalizedUpper.substring(3);
+  const resolved = resolveMemberProjectRole(project, {
+    role,
+    roleId: options?.roleId,
+  });
+  const explicitLabel = String(options?.roleLabel || '').trim();
+  const catalogLabel = resolved?.label && resolved.label !== 'Sin rol' ? resolved.label : '';
+  const explicitMatchesCatalog =
+    explicitLabel && catalogLabel && normalizeLabelIdentity(explicitLabel) === normalizeLabelIdentity(catalogLabel);
+  const neutralTranslationKey = `team.roles.${effectiveUpper}`;
+  const neutralTranslated = t(neutralTranslationKey, { context: 'neutral' });
+  const fallbackNeutralBaseLabel =
+    neutralTranslated !== neutralTranslationKey
+      ? neutralTranslated
+      : roleLabelFromCode(effectiveUpper) || effectiveUpper;
+  const explicitMatchesNeutralBaseLabel =
+    explicitLabel &&
+    normalizeLabelIdentity(explicitLabel) === normalizeLabelIdentity(fallbackNeutralBaseLabel);
+  const shouldUseGenderedBaseLabel =
+    !isRefRole &&
+    ((isDefaultResolvedRole(resolved) && (!explicitLabel || explicitMatchesCatalog)) ||
+      (!options?.roleId && (!explicitLabel || explicitMatchesNeutralBaseLabel)));
   let label = '';
-  if (upper.startsWith('REF') && upper.length > 3) {
-    const baseCode = upper.substring(3);
+  if (source === 'ref' && isRefRole) {
+    const baseCode = normalizedUpper.substring(3);
     const baseTranslationKey = `team.roles.${baseCode}`;
     const baseTranslated = t(baseTranslationKey, { context: gender });
     const baseLabel =
-      baseTranslated !== baseTranslationKey
+      explicitLabel ||
+      catalogLabel ||
+      (baseTranslated !== baseTranslationKey
         ? baseTranslated
-        : roleLabelFromCode(baseCode) || baseCode;
+        : roleLabelFromCode(baseCode) || baseCode);
     label = `${t('team.reinforcementPrefix')} ${baseLabel}`.trim();
   } else {
-    const translationKey = `team.roles.${upper}`;
-    const translated = t(translationKey, { context: gender });
-    label = translated !== translationKey ? translated : roleLabelFromCode(upper) || upper;
+    if (shouldUseGenderedBaseLabel) {
+      const translationKey = `team.roles.${effectiveUpper}`;
+      const translated = t(translationKey, { context: gender });
+      label = translated !== translationKey ? translated : roleLabelFromCode(effectiveUpper) || effectiveUpper;
+    } else if (explicitLabel) {
+      label = explicitLabel;
+    } else if (catalogLabel) {
+      label = catalogLabel;
+    } else {
+      const translationKey = `team.roles.${effectiveUpper}`;
+      const translated = t(translationKey, { context: gender });
+      label = translated !== translationKey ? translated : roleLabelFromCode(effectiveUpper) || effectiveUpper;
+    }
   }
 
-  if (groupSuffix === 'P') return `${label} ${t('needs.prelight')}`.trim();
-  if (groupSuffix === 'R') return `${label} ${t('needs.pickup')}`.trim();
+  if (source === 'pre') return `${label} ${t('needs.prelight')}`.trim();
+  if (source === 'pick') return `${label} ${t('needs.pickup')}`.trim();
+  if (source === 'ref' && !isRefRole) {
+    return `${t('team.reinforcementPrefix')} ${label}`.trim();
+  }
   return label;
 };
 
@@ -263,7 +400,7 @@ function StyledDropdown({
   );
 }
 
-function extractWorkersFromWeek(week: AnyRecord): Worker[] {
+export function extractWorkersFromWeek(week: AnyRecord, project?: AnyRecord): Worker[] {
   const out = new Map<string, Worker>();
   let order = 0;
   const days = Array.isArray(week?.days) ? week.days : [];
@@ -277,19 +414,53 @@ function extractWorkersFromWeek(week: AnyRecord): Worker[] {
     for (const list of sources) {
       for (const m of list) {
         const role = String(m?.role || '').toUpperCase();
+        const roleId = String(m?.roleId || '').trim() || undefined;
+        const personId = String(m?.personId || '').trim() || undefined;
         const name = String(m?.name || '').trim();
         if (!role || !name) continue;
-        const key = `${role}__${name}`;
+        const resolved = resolveMemberProjectRole(project, {
+          role,
+          roleId,
+        });
+        const rosterMember = getRosterMemberFromProjectTeam(project, {
+          personId,
+          role,
+          roleId,
+          name,
+        });
+        const rosterSource = normalizeSource(rosterMember?.source);
+        const roleLabel =
+          String(rosterMember?.roleLabel || m?.roleLabel || resolved?.label || '').trim() || undefined;
+        const nextGender =
+          (rosterMember?.gender as 'male' | 'female' | 'neutral' | undefined) ||
+          (m?.gender as 'male' | 'female' | 'neutral' | undefined) ||
+          'neutral';
+        const nextRoleId = String(rosterMember?.roleId || roleId || '').trim() || undefined;
+        const nextPersonId = String(rosterMember?.personId || personId || '').trim() || undefined;
+        const key = stableWorkerKey(name, personId);
         const stableKey = stableWorkerIdentity(m);
         if (!out.has(key)) {
           out.set(key, {
             key,
             stableKey,
+            personId: nextPersonId,
             role,
+            roleId: nextRoleId,
+            roleLabel,
+            source: rosterSource || normalizeSource(m?.source) || undefined,
             name,
-            gender: (m?.gender as 'male' | 'female' | 'neutral' | undefined) || 'neutral',
+            gender: nextGender,
             order: order++,
           });
+        } else {
+          const current = out.get(key)!;
+          if (!current.roleId && nextRoleId) current.roleId = nextRoleId;
+          if (!current.roleLabel && roleLabel) current.roleLabel = roleLabel;
+          if (!current.personId && nextPersonId) current.personId = nextPersonId;
+          if (!current.source) current.source = rosterSource || normalizeSource(m?.source) || undefined;
+          if ((!current.gender || current.gender === 'neutral') && nextGender) {
+            current.gender = nextGender;
+          }
         }
       }
     }
@@ -306,8 +477,12 @@ function extractWorkersFromWeek(week: AnyRecord): Worker[] {
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '');
   return Array.from(out.values()).sort((a, b) => {
-    const rankA = roleRank(roleForRank(a.role));
-    const rankB = roleRank(roleForRank(b.role));
+    const rankA =
+      getMemberRoleSortOrder(project, { roleId: a.roleId, role: roleForRank(a.role) }) ??
+      roleRank(roleForRank(a.role));
+    const rankB =
+      getMemberRoleSortOrder(project, { roleId: b.roleId, role: roleForRank(b.role) }) ??
+      roleRank(roleForRank(b.role));
     if (rankA !== rankB) return rankA - rankB;
     const nameCompare = normalizeNameForSort(a.name).localeCompare(normalizeNameForSort(b.name));
     if (nameCompare !== 0) return nameCompare;
@@ -630,8 +805,8 @@ export default function TimesheetTab({ project, readOnly = false }: TimesheetTab
   const { pre, pro } = usePlanWeeks(project);
   const allWeeks = useMemo(() => [...pre, ...pro], [pre, pro]);
   const weeksWithPeople = useMemo(
-    () => allWeeks.filter((w: AnyRecord) => extractWorkersFromWeek(w).length > 0),
-    [allWeeks]
+    () => allWeeks.filter((w: AnyRecord) => extractWorkersFromWeek(w, project).length > 0),
+    [allWeeks, project]
   );
   const baseId = getProjectBase(project);
 
@@ -647,7 +822,7 @@ export default function TimesheetTab({ project, readOnly = false }: TimesheetTab
     }
   }, [selectedWeek, selectedWeekId, setSelectedWeekId]);
 
-  const workers = useMemo(() => (selectedWeek ? extractWorkersFromWeek(selectedWeek) : []), [selectedWeek]);
+  const workers = useMemo(() => (selectedWeek ? extractWorkersFromWeek(selectedWeek, project) : []), [selectedWeek, project]);
 
   const [selectedWorkerKey, setSelectedWorkerKey] = useLocalStorage<string>(`timesheet_${baseId}_selectedWorker`, '');
   const selectedWorker = useMemo(() => {
@@ -719,7 +894,13 @@ export default function TimesheetTab({ project, readOnly = false }: TimesheetTab
 
   const selectedProfile = selectedWorker ? (profiles[selectedWorker.stableKey] || {}) : {};
   const departmentValue = t('timesheet.lightingDepartmentShort').trim();
-  const roleLabel = selectedWorker ? getTimesheetRoleLabel(selectedWorker.role, t, selectedWorker.gender || 'neutral') : '';
+  const roleLabel = selectedWorker
+    ? getTimesheetRoleLabel(project, selectedWorker.role, t, selectedWorker.gender || 'neutral', {
+        roleId: selectedWorker.roleId,
+        roleLabel: selectedWorker.roleLabel,
+        source: selectedWorker.source,
+      })
+    : '';
   const weekLabel = weekIsoDays.length > 0 ? formatDDMMYYYY(parseYYYYMMDD(weekIsoDays[weekIsoDays.length - 1])) : '';
   const weekOptions = useMemo(
     () =>
@@ -733,9 +914,13 @@ export default function TimesheetTab({ project, readOnly = false }: TimesheetTab
     () =>
       workers.map(w => ({
         value: w.key,
-        label: `${w.name} - ${getTimesheetRoleLabel(w.role, t, w.gender || 'neutral')}`,
+        label: `${w.name} - ${getTimesheetRoleLabel(project, w.role, t, w.gender || 'neutral', {
+          roleId: w.roleId,
+          roleLabel: w.roleLabel,
+          source: w.source,
+        })}`,
       })),
-    [workers, t]
+    [workers, t, project]
   );
   const updateProfile = (field: keyof WorkerProfile, value: string) => {
     if (!selectedWorker || readOnly) return;
@@ -964,14 +1149,14 @@ export default function TimesheetTab({ project, readOnly = false }: TimesheetTab
         <table className='min-w-[980px] w-full border-collapse text-xs'>
           <thead>
             <tr>
-              <th className='border border-neutral-border bg-blue-100/60 px-2 py-2 text-left'>{t('timesheet.day')}</th>
-              <th className='border border-neutral-border bg-blue-100/60 px-2 py-2 text-left'>{t('timesheet.date')}</th>
-              <th className='border border-neutral-border bg-blue-100/60 px-2 py-2 text-left'>{t('timesheet.from')}</th>
-              <th className='border border-neutral-border bg-blue-100/60 px-2 py-2 text-left'>{t('timesheet.to')}</th>
-              <th className='border border-neutral-border bg-blue-100/60 px-2 py-2 text-left'>{t('timesheet.totalHours')}</th>
-              <th className='w-[140px] border border-neutral-border bg-blue-100/60 px-2 py-2 text-left'>{t('timesheet.catering')}</th>
-              <th className='w-[180px] border border-neutral-border bg-blue-100/60 px-2 py-2 text-left'>{t('timesheet.city')}</th>
-              <th className='border border-neutral-border bg-blue-100/60 px-2 py-2 text-left'>{t('timesheet.notes')}</th>
+              <th className='border border-neutral-border bg-white/5 px-2 py-2 text-left'>{t('timesheet.day')}</th>
+              <th className='border border-neutral-border bg-white/5 px-2 py-2 text-left'>{t('timesheet.date')}</th>
+              <th className='border border-neutral-border bg-white/5 px-2 py-2 text-left'>{t('timesheet.from')}</th>
+              <th className='border border-neutral-border bg-white/5 px-2 py-2 text-left'>{t('timesheet.to')}</th>
+              <th className='border border-neutral-border bg-white/5 px-2 py-2 text-left'>{t('timesheet.totalHours')}</th>
+              <th className='w-[140px] border border-neutral-border bg-white/5 px-2 py-2 text-left'>{t('timesheet.catering')}</th>
+              <th className='w-[180px] border border-neutral-border bg-white/5 px-2 py-2 text-left'>{t('timesheet.city')}</th>
+              <th className='border border-neutral-border bg-white/5 px-2 py-2 text-left'>{t('timesheet.notes')}</th>
             </tr>
           </thead>
           <tbody>

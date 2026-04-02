@@ -198,6 +198,38 @@ describe('planificacion/utils/export', () => {
       expect(html).toContain('TÉCNICOR Ana');
     });
 
+    it('should render roleLabel when available', () => {
+      const html = renderExportHTML(
+        'Test Project',
+        [
+          {
+            ...mockWeek,
+            days: [
+              {
+                ...mockWeek.days[0],
+                team: [{ role: 'E', roleLabel: 'Eléctrico noche', name: 'Ana', source: 'base' }],
+                prelight: [{ role: 'E', roleLabel: 'Eléctrico noche', name: 'Ana', source: 'pre' }],
+                pickup: [{ role: 'E', roleLabel: 'Eléctrico noche', name: 'Ana', source: 'pick' }],
+              },
+              {},
+              {},
+              {},
+              {},
+              {},
+              {},
+            ],
+          },
+        ],
+        mockDAYS,
+        mockParseYYYYMMDD,
+        mockAddDays
+      );
+
+      expect(html).toContain('Eléctrico noche Ana');
+      expect(html).toContain('Eléctrico nocheP Ana');
+      expect(html).toContain('Eléctrico nocheR Ana');
+    });
+
     it('should render prelight and pickup time ranges', () => {
       const html = renderExportHTML(
         'Test Project',

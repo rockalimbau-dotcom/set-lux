@@ -10,7 +10,8 @@ interface UseOffMapProps {
     visualRole: string,
     name: string,
     findWeekAndDay: (iso: string) => AnyRecord,
-    block?: 'base' | 'pre' | 'pick' | string
+    block?: 'base' | 'pre' | 'pick' | string,
+    options?: { roleId?: string }
   ) => boolean;
   findWeekAndDay: (iso: string) => AnyRecord;
 }
@@ -29,6 +30,8 @@ export function useOffMap({
     const map = new Map<string, boolean>();
     list.forEach(p => {
       const visualRole = (p as AnyRecord)?.role || '';
+      const roleId = String((p as AnyRecord)?.roleId || '').trim() || undefined;
+      const personId = String((p as AnyRecord)?.personId || '').trim() || undefined;
       const name = (p as AnyRecord)?.name || '';
       semana.forEach(fecha => {
         try {
@@ -46,13 +49,14 @@ export function useOffMap({
             visualRole,
             name,
             findWeekAndDay,
-            blockForCheck
+            blockForCheck,
+            { roleId }
           );
-          const key = `${visualRole}_${name}_${fecha}_${block}`;
+          const key = `${roleId || personId || visualRole}_${name}_${fecha}_${block}`;
           map.set(key, !workedThisBlock);
         } catch (e) {
           // Si hay un error, asumir que no trabaja
-          const key = `${visualRole}_${name}_${fecha}_${block}`;
+          const key = `${roleId || personId || visualRole}_${name}_${fecha}_${block}`;
           map.set(key, true);
         }
       });
@@ -63,10 +67,10 @@ export function useOffMap({
     // Serializar y ordenar list para comparación estable
     JSON.stringify(
       list
-        .map((p: AnyRecord) => ({ role: p?.role || '', name: p?.name || '' }))
+        .map((p: AnyRecord) => ({ personId: p?.personId || '', roleId: p?.roleId || '', role: p?.role || '', name: p?.name || '' }))
         .sort((a, b) => {
-          const aKey = `${a.role}_${a.name}`;
-          const bKey = `${b.role}_${b.name}`;
+          const aKey = `${a.roleId || a.personId || a.role}_${a.name}`;
+          const bKey = `${b.roleId || b.personId || b.role}_${b.name}`;
           return aKey.localeCompare(bKey);
         })
     ),

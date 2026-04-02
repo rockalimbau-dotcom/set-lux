@@ -6,6 +6,7 @@ import { useSemanalTranslations } from './semanal/semanalHelpers';
 import { loadOrSeed } from './semanal/semanalData';
 import { PRICE_ROLES } from './shared.constants';
 import { DeleteRoleConfirmModal } from './publicidad/DeleteRoleConfirmModal';
+import { normalizeConditionModel } from './roleCatalog';
 import { ParametersSection } from './semanal/ParametersSection';
 import { PricesTable } from './semanal/PricesTable';
 import { InfoSections } from './semanal/InfoSections';
@@ -26,18 +27,37 @@ interface CondicionesSemanalProps {
 
 function CondicionesSemanal({ project, onChange = () => {}, onRegisterExport, readOnly = false }: CondicionesSemanalProps) {
   const { t } = useTranslation();
-  const { translateHeader, translateRoleName } = useSemanalTranslations();
+  const { translateHeader, translateRoleName } = useSemanalTranslations(project);
   
   const storageKey = useMemo(() => {
     const base = project?.id || project?.nombre || 'tmp';
     return `cond_${base}_semanal`;
   }, [project?.id, project?.nombre]);
+  const projectModel = (project as AnyRecord)?.conditions?.semanal as AnyRecord | undefined;
+  const normalizedProjectModel = useMemo(
+    () => (projectModel ? normalizeConditionModel(project, projectModel, PRICE_ROLES) : null),
+    [project, projectModel]
+  );
 
   const [showParams, setShowParams] = useState(false);
   const [pendingScrollSectionId, setPendingScrollSectionId] = useState<string | null>(null);
+  const [syncReady, setSyncReady] = useState(() => !normalizedProjectModel);
   const [model, setModel] = useLocalStorage<AnyRecord>(storageKey, () =>
-    loadOrSeed(storageKey)
+    normalizeConditionModel(project, projectModel || loadOrSeed(storageKey), PRICE_ROLES)
   );
+
+  useEffect(() => {
+    if (!normalizedProjectModel) {
+      setSyncReady(true);
+      return;
+    }
+    if (JSON.stringify(normalizedProjectModel) === JSON.stringify(model)) {
+      setSyncReady(true);
+      return;
+    }
+    setSyncReady(false);
+    setModel(() => normalizedProjectModel);
+  }, [model, normalizedProjectModel, setModel]);
   
   // Sincronizar roles con prices inmediatamente después de cargar
   // IMPORTANTE: Esto debe ejecutarse siempre para asegurar que prices tenga entradas para todos los roles
@@ -45,58 +65,16 @@ function CondicionesSemanal({ project, onChange = () => {}, onRegisterExport, re
   const syncedKeyRef = useRef<string>('');
   useEffect(() => {
     if (!model) return;
-    
-    // Resetear el ref si cambió el storageKey (nuevo proyecto)
-    if (syncedKeyRef.current !== storageKey) {
-      syncedKeyRef.current = storageKey;
-    } else {
-      // Si ya sincronizamos para este storageKey, solo verificar si necesita sincronización
-      // pero no ejecutar de nuevo para evitar loops
-      const currentRoles = model.roles && Array.isArray(model.roles) && model.roles.length > 0 
-        ? model.roles 
-        : ['Gaffer', 'Eléctrico'];
-      
-      const currentPrices = model.prices || {};
-      const allRolesHavePrices = currentRoles.every((role: string) => currentPrices[role] !== undefined);
-      
-      // Si todos los roles tienen precios, no hacer nada
-      if (allRolesHavePrices && currentRoles.length > 0) return;
-    }
-    
-    const currentRoles = model.roles && Array.isArray(model.roles) && model.roles.length > 0 
-      ? model.roles 
-      : ['Gaffer', 'Eléctrico'];
-    
-    const currentPrices = model.prices || {};
-    let needsSync = false;
-    const syncedPrices = { ...currentPrices };
-    
-    // Inicializar precios vacíos para todos los roles del equipo base
-    // Esto es crítico: asegurar que prices tenga entradas para Gaffer y Eléctrico
-    for (const role of currentRoles) {
-      if (!syncedPrices[role]) {
-        syncedPrices[role] = {};
-        needsSync = true;
-      }
-    }
-    
-    // Verificar si roles está vacío o mal formado
-    const needsRolesSync = !model.roles || !Array.isArray(model.roles) || model.roles.length === 0;
-    
-    // Si necesita sincronización, actualizar el modelo
-    if (needsSync || needsRolesSync) {
-      setModel((m: AnyRecord) => ({ 
-        ...m, 
-        roles: currentRoles,
-        prices: syncedPrices 
-      }));
-      syncedKeyRef.current = storageKey;
-    }
-  }, [model, storageKey, setModel]); // Ejecutar cuando cambie el modelo o el proyecto
+    if (syncedKeyRef.current !== storageKey) syncedKeyRef.current = storageKey;
+
+    const normalizedModel = normalizeConditionModel(project, model, PRICE_ROLES);
+    if (JSON.stringify(normalizedModel) === JSON.stringify(model)) return;
+    setModel(() => normalizedModel);
+  }, [model, project, storageKey, setModel]);
 
   // Custom hooks
   useLanguageSync({ model, setModel });
-  useModelSync({ model, onChange });
+  useModelSync({ model, onChange, enabled: syncReady });
 
   const {
     setParam,
@@ -106,7 +84,7 @@ function CondicionesSemanal({ project, onChange = () => {}, onRegisterExport, re
     removeRole,
     roleToDelete,
     setRoleToDelete: setRoleToDeleteInternal,
-  } = useSemanalHandlers({ model, setModel });
+  } = useSemanalHandlers({ project, model, setModel });
 
   const customSections = (Array.isArray(model.customSections) ? model.customSections : []) as CustomConditionSection[];
   const createCustomSection = (): CustomConditionSection => ({
@@ -188,6 +166,7 @@ function CondicionesSemanal({ project, onChange = () => {}, onRegisterExport, re
       />
 
       <PricesTable
+        project={project}
         model={model}
         setModel={setModel}
         roles={roles}
@@ -223,7 +202,7 @@ function CondicionesSemanal({ project, onChange = () => {}, onRegisterExport, re
 
       {roleToDelete && typeof document !== 'undefined' && createPortal(
         <DeleteRoleConfirmModal
-          roleName={roleToDelete.role}
+          roleName={translateRoleName(roleToDelete.role, roleToDelete.sectionKey)}
           onClose={() => setRoleToDelete(roleToDelete.sectionKey, null)}
           onConfirm={() => {
             if (roleToDelete) {

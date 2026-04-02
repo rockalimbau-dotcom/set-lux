@@ -1,4 +1,4 @@
-import { personaRole, personaName } from './model';
+import { personaRole, personaName, personaKey } from './model';
 import { BLOCKS, getDayBlockList, isMemberRefuerzo } from './plan';
 import { norm } from './text';
 import { hasRoleGroupSuffix, stripRoleSuffix, stripRefuerzoSuffix } from '@shared/constants/roles';
@@ -82,8 +82,11 @@ interface WeekAndDay {
 }
 
 interface Persona {
+  personId?: string;
   role?: string;
   name?: string;
+  roleId?: string;
+  roleLabel?: string;
   [key: string]: any;
 }
 
@@ -155,10 +158,23 @@ export function collectWeekTeamWithSuffixFactory(
           }
         }
         const name = m.name || '';
-        const key = `${role}__${name}`;
+        const key = personaKey({
+          role,
+          roleId: (m as any)?.roleId,
+          name,
+          __block: block,
+        });
         if (!set.has(key)) {
           set.add(key);
-          out.push({ role, name, gender: (m as any)?.gender, source: (m as any)?.source });
+          out.push({
+            role,
+            name,
+            personId: (m as any)?.personId,
+            gender: (m as any)?.gender,
+            source: (m as any)?.source,
+            roleId: (m as any)?.roleId,
+            roleLabel: (m as any)?.roleLabel,
+          });
         }
       }
     }
@@ -178,10 +194,12 @@ export function buildSafePersonas(
   const base = Array.isArray(providedPersonas) ? [...providedPersonas] : [];
   const seen = new Set<string>();
   const keyOf = (p: Persona) => {
-    const r = String(personaRole(p) || '');
-    const n = String(personaName(p) || '');
-    const blk = (p as any)?.__block || '';
-    return `${r}__${n}__${blk}`;
+    return personaKey({
+      role: String(personaRole(p) || ''),
+      roleId: (p as any)?.roleId,
+      name: String(personaName(p) || ''),
+      __block: (p as any)?.__block || '',
+    });
   };
   for (const p of base) seen.add(keyOf(p));
 
@@ -203,7 +221,15 @@ export function buildSafePersonas(
         role = m.role || '';
       }
       
-      const item: Persona = { role, name: m.name || '', gender: (m as any)?.gender, __block: block };
+      const item: Persona = {
+        role,
+        name: m.name || '',
+        gender: (m as any)?.gender,
+        personId: (m as any)?.personId,
+        roleId: (m as any)?.roleId,
+        roleLabel: (m as any)?.roleLabel,
+        __block: block,
+      };
       const k = keyOf(item as any);
       if (!seen.has(k)) {
         seen.add(k);
@@ -226,12 +252,22 @@ export function buildSafePersonas(
   for (const p of base) {
     const blk = (p as any)?.__block;
     if (blk === 'pre' || blk === 'pick' || blk === 'extra') {
-      hasBlock.add(`${String(personaRole(p) || '')}__${String(personaName(p) || '')}`);
+      hasBlock.add(
+        personaKey({
+          role: String(personaRole(p) || ''),
+          roleId: (p as any)?.roleId,
+          name: String(personaName(p) || ''),
+        })
+      );
     }
   }
   const filtered = base.filter(p => {
     const blk = (p as any)?.__block;
-    const tag = `${String(personaRole(p) || '')}__${String(personaName(p) || '')}`;
+    const tag = personaKey({
+      role: String(personaRole(p) || ''),
+      roleId: (p as any)?.roleId,
+      name: String(personaName(p) || ''),
+    });
     // Para roles normales, si existe una fila de bloque, ocultamos la fila base duplicada.
     // Para REF, mantenemos la fila base aunque existan filas de bloque (pre/pick).
     if (!blk && hasBlock.has(tag) && String(personaRole(p) || '') !== 'REF') return false;
@@ -264,7 +300,7 @@ export function buildPeopleBase(
   
   // Procesar todos los miembros, agrupando refuerzos por nombre normalizado
   // para eliminar duplicados y preferir códigos completos sobre REF genérico
-  const refsMap = new Map<string, { role: string; name: string; gender?: 'male' | 'female' | 'neutral' }>(); // nombre normalizado -> { role, name }
+  const refsMap = new Map<string, { role: string; name: string; gender?: 'male' | 'female' | 'neutral'; roleId?: string; roleLabel?: string }>(); // nombre normalizado -> { role, name }
   
   for (const m of basePeople) {
     const isRefRole = m.role === 'REF' || (m.role && m.role.startsWith('REF'));
@@ -288,10 +324,24 @@ export function buildPeopleBase(
         const existing = refsMap.get(normalizedName);
         if (!existing) {
           // Primera vez que vemos este refuerzo
-          refsMap.set(normalizedName, { role: finalRole, name: m.name, gender: (m as any)?.gender });
+          refsMap.set(normalizedName, {
+            role: finalRole,
+            name: m.name,
+            personId: (m as any)?.personId,
+            gender: (m as any)?.gender,
+            roleId: (m as any)?.roleId,
+            roleLabel: (m as any)?.roleLabel,
+          });
         } else if (finalRole !== 'REF' && existing.role === 'REF') {
           // Reemplazar REF genérico con código completo
-          refsMap.set(normalizedName, { role: finalRole, name: m.name, gender: (m as any)?.gender });
+          refsMap.set(normalizedName, {
+            role: finalRole,
+            name: m.name,
+            personId: (m as any)?.personId,
+            gender: (m as any)?.gender,
+            roleId: (m as any)?.roleId,
+            roleLabel: (m as any)?.roleLabel,
+          });
         } else if (finalRole === 'REF' && existing.role !== 'REF') {
           // Ya hay código completo, mantener ese y saltar este genérico
           continue;
@@ -307,10 +357,21 @@ export function buildPeopleBase(
       // Roles normales: filtrar los que tienen sufijos P o R (solo base)
       finalRole = m.role || '';
       if (!/[PR]$/.test(finalRole)) {
-        const key = `${finalRole}__${m.name || ''}`;
+        const key = personaKey({
+          role: finalRole,
+          roleId: (m as any)?.roleId,
+          name: m.name || '',
+        });
         if (!seen.has(key)) {
           seen.add(key);
-          normals.push({ role: finalRole, name: m.name || '', gender: (m as any)?.gender });
+          normals.push({
+            role: finalRole,
+            name: m.name || '',
+            personId: (m as any)?.personId,
+            gender: (m as any)?.gender,
+            roleId: (m as any)?.roleId,
+            roleLabel: (m as any)?.roleLabel,
+          });
           if (m.name) {
             allNamesInBasePeople.add(norm(m.name));
           }
@@ -322,14 +383,14 @@ export function buildPeopleBase(
   // Añadir refuerzos procesados (sin duplicados)
   // IMPORTANTE: Solo añadir un refuerzo por nombre normalizado
   const addedRefs = new Set<string>(); // Para trackear nombres normalizados ya añadidos
-  for (const { role, name, gender } of refsMap.values()) {
+  for (const { role, name, personId, gender, roleId, roleLabel } of refsMap.values()) {
     const normalizedName = norm(name);
     // Verificar que no hayamos añadido ya un refuerzo para este nombre
     if (!addedRefs.has(normalizedName)) {
-      const key = `${role}__${name}`;
+      const key = personaKey({ role, roleId, name });
       if (!seen.has(key)) {
         seen.add(key);
-        refs.push({ role, name, gender });
+        refs.push({ role, name, personId, gender, roleId, roleLabel });
         allNamesInBasePeople.add(normalizedName);
         namesInBasePeople.add(normalizedName);
         refRolesInBasePeople.set(normalizedName, role);
@@ -355,7 +416,7 @@ export function buildPeopleBase(
       // 1. El nombre NO está en basePeople
       // 2. Y no hay un refuerzo con código completo para este nombre
       if (!nameAlreadyExists && !existingRefRole) {
-        const key = `REF__${n}`;
+        const key = personaKey({ role: 'REF', name: n });
         // Verificar también que no exista ya en seen (por si acaso)
         if (!seen.has(key)) {
           seen.add(key);
@@ -388,7 +449,7 @@ export function buildPeoplePre(
   if (weekPrelightActive) {
     // Procesar todos los miembros, agrupando refuerzos por nombre normalizado
     // para eliminar duplicados y preferir códigos completos sobre REF genérico
-    const refsMap = new Map<string, { role: string; name: string; gender?: 'male' | 'female' | 'neutral' }>(); // nombre normalizado -> { role, name }
+    const refsMap = new Map<string, { role: string; name: string; personId?: string; gender?: 'male' | 'female' | 'neutral'; roleId?: string; roleLabel?: string }>(); // nombre normalizado -> { role, name }
     
     for (const m of prelightPeople) {
       const isRefRole = m.role === 'REF' || (m.role && m.role.startsWith('REF'));
@@ -409,10 +470,24 @@ export function buildPeoplePre(
           const existing = refsMap.get(normalizedName);
           if (!existing) {
             // Primera vez que vemos este refuerzo
-            refsMap.set(normalizedName, { role: finalRole, name: m.name, gender: (m as any)?.gender });
+            refsMap.set(normalizedName, {
+              role: finalRole,
+              name: m.name,
+              personId: (m as any)?.personId,
+              gender: (m as any)?.gender,
+              roleId: (m as any)?.roleId,
+              roleLabel: (m as any)?.roleLabel,
+            });
           } else if (finalRole !== 'REF' && existing.role === 'REF') {
             // Reemplazar REF genérico con código completo
-            refsMap.set(normalizedName, { role: finalRole, name: m.name, gender: (m as any)?.gender });
+            refsMap.set(normalizedName, {
+              role: finalRole,
+              name: m.name,
+              personId: (m as any)?.personId,
+              gender: (m as any)?.gender,
+              roleId: (m as any)?.roleId,
+              roleLabel: (m as any)?.roleLabel,
+            });
           } else if (finalRole === 'REF' && existing.role !== 'REF') {
             // Ya hay código completo, mantener ese y saltar este genérico
             continue;
@@ -439,8 +514,16 @@ export function buildPeoplePre(
         } else {
           finalRole = hasRoleGroupSuffix(roleStr) ? roleStr : `${baseRole}${sourceSuffix}`;
         }
-        const item: PersonaWithBlock = { role: finalRole, name: m.name, gender: (m as any)?.gender, __block: 'pre' };
-        const key = `${item.role}__${item.name}__${item.__block || ''}`;
+        const item: PersonaWithBlock = {
+          role: finalRole,
+          name: m.name,
+          personId: (m as any)?.personId,
+          gender: (m as any)?.gender,
+          roleId: (m as any)?.roleId,
+          roleLabel: (m as any)?.roleLabel,
+          __block: 'pre',
+        };
+        const key = personaKey(item);
         if (!seen.has(key)) {
           seen.add(key);
           normals.push(item);
@@ -454,12 +537,12 @@ export function buildPeoplePre(
     // Añadir refuerzos procesados (sin duplicados)
     // IMPORTANTE: Solo añadir un refuerzo por nombre normalizado
     const addedRefs = new Set<string>(); // Para trackear nombres normalizados ya añadidos
-    for (const { role, name, gender } of refsMap.values()) {
+    for (const { role, name, personId, gender, roleId, roleLabel } of refsMap.values()) {
       const normalizedName = norm(name);
       // Verificar que no hayamos añadido ya un refuerzo para este nombre
       if (!addedRefs.has(normalizedName)) {
-        const item: PersonaWithBlock = { role, name, gender, __block: 'pre' };
-        const key = `${item.role}__${item.name}__${item.__block || ''}`;
+        const item: PersonaWithBlock = { role, name, personId, gender, roleId, roleLabel, __block: 'pre' };
+        const key = personaKey(item);
         if (!seen.has(key)) {
           seen.add(key);
           refs.push(item);
@@ -488,7 +571,7 @@ export function buildPeoplePre(
         // 1. El nombre NO está en prelightPeople
         // 2. Y no hay un refuerzo con código completo para este nombre
         if (!nameAlreadyExists && !existingRefRole) {
-          const key = `REF__${n}__pre`;
+          const key = personaKey({ role: 'REF', name: n, __block: 'pre' });
           // Verificar también que no exista ya en seen (por si acaso)
           if (!seen.has(key)) {
             seen.add(key);
@@ -522,7 +605,7 @@ export function buildPeoplePick(
   if (weekPickupActive) {
     // Procesar todos los miembros, agrupando refuerzos por nombre normalizado
     // para eliminar duplicados y preferir códigos completos sobre REF genérico
-    const refsMap = new Map<string, { role: string; name: string; gender?: 'male' | 'female' | 'neutral' }>(); // nombre normalizado -> { role, name }
+    const refsMap = new Map<string, { role: string; name: string; personId?: string; gender?: 'male' | 'female' | 'neutral'; roleId?: string; roleLabel?: string }>(); // nombre normalizado -> { role, name }
     
     for (const m of pickupPeople) {
       const isRefRole = m.role === 'REF' || (m.role && m.role.startsWith('REF'));
@@ -543,10 +626,24 @@ export function buildPeoplePick(
           const existing = refsMap.get(normalizedName);
           if (!existing) {
             // Primera vez que vemos este refuerzo
-            refsMap.set(normalizedName, { role: finalRole, name: m.name, gender: (m as any)?.gender });
+            refsMap.set(normalizedName, {
+              role: finalRole,
+              name: m.name,
+              personId: (m as any)?.personId,
+              gender: (m as any)?.gender,
+              roleId: (m as any)?.roleId,
+              roleLabel: (m as any)?.roleLabel,
+            });
           } else if (finalRole !== 'REF' && existing.role === 'REF') {
             // Reemplazar REF genérico con código completo
-            refsMap.set(normalizedName, { role: finalRole, name: m.name, gender: (m as any)?.gender });
+            refsMap.set(normalizedName, {
+              role: finalRole,
+              name: m.name,
+              personId: (m as any)?.personId,
+              gender: (m as any)?.gender,
+              roleId: (m as any)?.roleId,
+              roleLabel: (m as any)?.roleLabel,
+            });
           } else if (finalRole === 'REF' && existing.role !== 'REF') {
             // Ya hay código completo, mantener ese y saltar este genérico
             continue;
@@ -573,8 +670,16 @@ export function buildPeoplePick(
         } else {
           finalRole = hasRoleGroupSuffix(roleStr) ? roleStr : `${baseRole}${sourceSuffix}`;
         }
-        const item: PersonaWithBlock = { role: finalRole, name: m.name, gender: (m as any)?.gender, __block: 'pick' };
-        const key = `${item.role}__${item.name}__${item.__block || ''}`;
+        const item: PersonaWithBlock = {
+          role: finalRole,
+          name: m.name,
+          personId: (m as any)?.personId,
+          gender: (m as any)?.gender,
+          roleId: (m as any)?.roleId,
+          roleLabel: (m as any)?.roleLabel,
+          __block: 'pick',
+        };
+        const key = personaKey(item);
         if (!seen.has(key)) {
           seen.add(key);
           normals.push(item);
@@ -588,12 +693,12 @@ export function buildPeoplePick(
     // Añadir refuerzos procesados (sin duplicados)
     // IMPORTANTE: Solo añadir un refuerzo por nombre normalizado
     const addedRefs = new Set<string>(); // Para trackear nombres normalizados ya añadidos
-    for (const { role, name, gender } of refsMap.values()) {
+    for (const { role, name, personId, gender, roleId, roleLabel } of refsMap.values()) {
       const normalizedName = norm(name);
       // Verificar que no hayamos añadido ya un refuerzo para este nombre
       if (!addedRefs.has(normalizedName)) {
-        const item: PersonaWithBlock = { role, name, gender, __block: 'pick' };
-        const key = `${item.role}__${item.name}__${item.__block || ''}`;
+        const item: PersonaWithBlock = { role, name, personId, gender, roleId, roleLabel, __block: 'pick' };
+        const key = personaKey(item);
         if (!seen.has(key)) {
           seen.add(key);
           refs.push(item);
@@ -622,7 +727,7 @@ export function buildPeoplePick(
         // 1. El nombre NO está en pickupPeople
         // 2. Y no hay un refuerzo con código completo para este nombre
         if (!nameAlreadyExists && !existingRefRole) {
-          const key = `REF__${n}__pick`;
+          const key = personaKey({ role: 'REF', name: n, __block: 'pick' });
           // Verificar también que no exista ya en seen (por si acaso)
           if (!seen.has(key)) {
             seen.add(key);

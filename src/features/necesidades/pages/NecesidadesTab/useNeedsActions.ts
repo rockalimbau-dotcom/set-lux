@@ -18,6 +18,9 @@ interface UseNeedsActionsProps {
   holidayMD?: Set<string>;
 }
 
+const getMemberIdentityKey = (member: AnyRecord): string =>
+  `${String(member?.roleId || member?.role || '').trim().toUpperCase()}::${String(member?.name || '').trim()}`;
+
 /**
  * Hook for needs actions (setCell, removeFromList, setWeekOpen)
  */
@@ -307,16 +310,16 @@ export function useNeedsActions({
 
           if (wasOfficeOrLocation && needsFullTeam && Array.isArray(baseRoster)) {
             const currentTeam = Array.isArray(nextDay.crewList) ? nextDay.crewList : [];
-            const currentKeys = new Set(
-              currentTeam.map((m: AnyRecord) => `${m?.role || ''}::${m?.name || ''}`)
-            );
+            const currentKeys = new Set(currentTeam.map((m: AnyRecord) => getMemberIdentityKey(m)));
             const missingMembers = baseRoster
               .filter((m: AnyRecord) => {
-                const key = `${m?.role || ''}::${m?.name || ''}`;
+                const key = getMemberIdentityKey(m);
                 return !currentKeys.has(key);
               })
               .map((m: AnyRecord) => ({
                 role: m?.role,
+                roleId: m?.roleId,
+                roleLabel: m?.roleLabel,
                 name: m?.name,
                 gender: m?.gender,
                 source: 'base',
@@ -404,6 +407,8 @@ export function useNeedsActions({
         : toYYYYMMDD(nextStartForPro(preWeeks, proWeeks));
       const baseTeam = (baseRoster || []).map(m => ({
         role: (m?.role || '').toUpperCase(),
+        roleId: m?.roleId,
+        roleLabel: m?.roleLabel,
         name: (m?.name || '').trim(),
         gender: m?.gender,
         source: 'base',

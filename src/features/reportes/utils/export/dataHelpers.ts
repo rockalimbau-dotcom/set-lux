@@ -1,5 +1,6 @@
 import { parseDietas } from '../text';
 import { norm } from '../text';
+import { resolveProjectRole } from '@shared/utils/projectRoles';
 
 /**
  * Helper function to calculate total for a concept
@@ -145,6 +146,77 @@ export const rolePriorityForReports = (role: string = ''): number => {
   // Roles desconocidos al final
   return 1000;
 };
+
+type ProjectLike = {
+  roleCatalog?: {
+    version?: number;
+    roles?: any[];
+  } | null;
+  [key: string]: any;
+};
+
+export function parsePersonKey(pk: string): { role: string; name: string; block: string } {
+  let role = '';
+  let name = '';
+  let block = 'base';
+
+  const extraMatch = String(pk).match(/^(.*?)\.(extra(?::\d+)?)__(.*)$/);
+  if (extraMatch) {
+    role = extraMatch[1] || '';
+    name = extraMatch[3] || '';
+    block = extraMatch[2] || 'extra';
+  } else if (String(pk).includes('.pre__')) {
+    const [rolePart, ...nameParts] = String(pk).split('.pre__');
+    role = rolePart || '';
+    name = nameParts.join('.pre__');
+    block = 'pre';
+  } else if (String(pk).includes('.pick__')) {
+    const [rolePart, ...nameParts] = String(pk).split('.pick__');
+    role = rolePart || '';
+    name = nameParts.join('.pick__');
+    block = 'pick';
+  } else {
+    const [rolePart, ...nameParts] = String(pk).split('__');
+    role = rolePart || '';
+    name = nameParts.join('__');
+  }
+
+  return { role, name, block };
+}
+
+export function resolveExportRoleMeta(
+  project: ProjectLike | null | undefined,
+  rawRole: string
+): {
+  rawRole: string;
+  displayRole: string;
+  sortRole: string;
+  sortOrder: number | null;
+  label: string;
+} {
+  const role = String(rawRole || '').trim();
+  if (!role) {
+    return {
+      rawRole: role,
+      displayRole: role,
+      sortRole: role,
+      sortOrder: null,
+      label: '',
+    };
+  }
+
+  const resolved = resolveProjectRole(project, { roleId: role, role });
+  const displayRole = String(resolved?.legacyCode || resolved?.baseRole || role).trim();
+  const sortRole = String(resolved?.baseRole || resolved?.legacyCode || role).trim();
+
+  return {
+    rawRole: role,
+    displayRole,
+    sortRole,
+    sortOrder: typeof resolved?.sortOrder === 'number' ? resolved.sortOrder : null,
+    label: String(resolved?.label || role).trim(),
+  };
+}
 
 /**
  * Deduplicate data by role and name
@@ -373,6 +445,35 @@ export const sortPersonKeysByRole = (personKeys: string[]): string[] => {
     }
     
     return nameA.localeCompare(nameB);
+  });
+};
+
+export const sortPersonKeysByProjectRole = (
+  personKeys: string[],
+  project?: ProjectLike | null
+): string[] => {
+  return personKeys.sort((a, b) => {
+    const parsedA = parsePersonKey(a);
+    const parsedB = parsePersonKey(b);
+    const metaA = resolveExportRoleMeta(project, parsedA.role);
+    const metaB = resolveExportRoleMeta(project, parsedB.role);
+
+    const isRefA =
+      metaA.sortRole === 'REF' || (metaA.sortRole.startsWith('REF') && metaA.sortRole.length > 3);
+    const isRefB =
+      metaB.sortRole === 'REF' || (metaB.sortRole.startsWith('REF') && metaB.sortRole.length > 3);
+
+    if (isRefA && !isRefB) return 1;
+    if (!isRefA && isRefB) return -1;
+
+    const priorityA = metaA.sortOrder ?? rolePriorityForReports(metaA.sortRole);
+    const priorityB = metaB.sortOrder ?? rolePriorityForReports(metaB.sortRole);
+
+    if (priorityA !== priorityB) {
+      return priorityA - priorityB;
+    }
+
+    return parsedA.name.localeCompare(parsedB.name);
   });
 };
 

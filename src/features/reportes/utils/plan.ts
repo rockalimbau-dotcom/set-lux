@@ -75,10 +75,12 @@ export function isPersonScheduledOnBlock(
   roleLabel: string,
   name: string,
   findWeekAndDayFn: (iso: string) => WeekAndDay,
-  blockForRef?: string
+  blockForRef?: string,
+  options?: { roleId?: string }
 ): boolean {
   const { day } = findWeekAndDayFn(iso);
   if (!day || day.tipo === 'Descanso') return false;
+  const roleId = String(options?.roleId || '').trim();
 
   const block = blockForRef
     || (hasRoleGroupSuffix(String(roleLabel || '')) && /P$/i.test(String(roleLabel || ''))
@@ -96,12 +98,20 @@ export function isPersonScheduledOnBlock(
   const list: Array<{ name?: string; role?: string }> = getDayBlockList(day, block);
   return list.some(
     (m: { name?: string; role?: string }) => {
+      const memberRoleId = String((m as any)?.roleId || '').trim();
       const memberRole = String(m?.role || '');
       const normMemberBase = norm(stripRoleSuffix(memberRole));
       const normBase = norm(stripRoleSuffix(baseRole));
       return (
         norm(m?.name) === norm(name) &&
-        (!memberRole || normMemberBase === normBase || !baseRole)
+        (
+          (roleId
+            ? (memberRoleId ? memberRoleId === roleId : false)
+            :
+          !memberRole ||
+          normMemberBase === normBase ||
+          !baseRole)
+        )
       );
     }
   );
@@ -163,7 +173,8 @@ export function personWorksOn(
   findWeekAndDay: (iso: string) => WeekAndDay, 
   iso: string, 
   roleLabel: string, 
-  personName: string
+  personName: string,
+  options?: { roleId?: string }
 ): boolean {
   const { day } = findWeekAndDay(iso);
   if (!day || (day.tipo || '') === 'Descanso') return false;
@@ -187,12 +198,20 @@ export function personWorksOn(
       : getDayBlockList(day, BLOCKS.base);
   return (list || []).some(
     (m: { name?: string; role?: string }) => {
+      const memberRoleId = String((m as any)?.roleId || '').trim();
       const memberRole = String(m?.role || '');
       const normMemberBase = norm(stripRoleSuffix(memberRole));
       const normBase = norm(stripRoleSuffix(baseRole));
       return (
         norm(m?.name) === norm(personName) &&
-        (!memberRole || normMemberBase === normBase || !baseRole)
+        (
+          (options?.roleId
+            ? (memberRoleId ? memberRoleId === String(options.roleId).trim() : false)
+            :
+          !memberRole ||
+          normMemberBase === normBase ||
+          !baseRole)
+        )
       );
     }
   );
@@ -202,10 +221,11 @@ export function isOffForPerson(
   findWeekAndDay: (iso: string) => WeekAndDay, 
   iso: string, 
   roleLabel: string, 
-  personName: string
+  personName: string,
+  options?: { roleId?: string }
 ): boolean {
   const { day } = findWeekAndDay(iso);
   if (!day) return true;
   if ((day.tipo || '') === 'Descanso') return true;
-  return !personWorksOn(findWeekAndDay, iso, roleLabel, personName);
+  return !personWorksOn(findWeekAndDay, iso, roleLabel, personName, options);
 }

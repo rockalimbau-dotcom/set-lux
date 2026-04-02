@@ -116,13 +116,13 @@ describe('reportes/utils/model', () => {
     });
 
     it('handles REF roles specially', () => {
-      expect(personaKey({ role: 'REF1', name: 'John' })).toBe('REF__John');
-      expect(personaKey({ role: 'REF2P', name: 'John' })).toBe('REF__John');
+      expect(personaKey({ role: 'REF1', name: 'John' })).toBe('REF1__John');
+      expect(personaKey({ role: 'REF2P', name: 'John' })).toBe('REF2__John');
     });
 
     it('handles roles that start with REF', () => {
       expect(personaKey({ role: 'REFERENCIA', name: 'John' })).toBe(
-        'REF__John'
+        'REFERENCIA__John'
       );
     });
 
@@ -133,6 +133,13 @@ describe('reportes/utils/model', () => {
 
     it('handles string input', () => {
       expect(personaKey('John')).toBe('UNKNOWN__John');
+    });
+
+    it('prefers roleId when present to avoid collapsing custom roles', () => {
+      expect(personaKey({ role: 'E', roleId: 'electric_night', name: 'John' })).toBe('electric_night__John');
+      expect(personaKey({ role: 'E', roleId: 'electric_night', name: 'John', __block: 'pre' })).toBe(
+        'electric_night.pre__John'
+      );
     });
   });
 
@@ -194,8 +201,21 @@ describe('reportes/utils/model', () => {
 
       const result = seedWeekData(personas, semana);
 
-      expect(result['REF__John']).toBeDefined();
-      expect(result['REF__Jane']).toBeDefined();
+      expect(result['REF1__John']).toBeDefined();
+      expect(result['REF2__Jane']).toBeDefined();
+    });
+
+    it('keeps custom roles with the same legacy role separated by roleId', () => {
+      const personas = [
+        { role: 'E', roleId: 'electric_day', name: 'John' },
+        { role: 'E', roleId: 'electric_night', name: 'John' },
+      ];
+
+      const result = seedWeekData(personas, ['2023-01-01']);
+
+      expect(result['electric_day__John']).toBeDefined();
+      expect(result['electric_night__John']).toBeDefined();
+      expect(Object.keys(result)).toHaveLength(2);
     });
   });
 });

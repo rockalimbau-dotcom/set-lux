@@ -201,7 +201,7 @@ describe('plan.ts', () => {
         days: [{
           refBlocks: [
             {
-              list: [{ role: 'E', name: 'Oriol Monguilod', gender: 'male' }],
+              list: [{ role: 'E', name: 'Oriol Monguilod', gender: 'male', roleId: 'electric_factura', roleLabel: 'Eléctrico factura' }],
             },
           ],
         }],
@@ -211,9 +211,65 @@ describe('plan.ts', () => {
       expect(people).toContainEqual({
         role: 'E',
         name: 'Oriol Monguilod',
+        personId: undefined,
         gender: 'male',
         source: 'extra',
         block: 'extra:0',
+        roleId: 'electric_factura',
+        roleLabel: 'Eléctrico factura',
+      });
+    });
+
+    it('should keep roleId in dedupe so custom roles with same legacy code do not collapse', () => {
+      const week = {
+        days: [{
+          team: [
+            { role: 'E', roleId: 'electric_default', roleLabel: 'Eléctrico/a', name: 'Oriol Monguilod' },
+            { role: 'E', roleId: 'electric_factura', roleLabel: 'Eléctrico factura', name: 'Oriol Monguilod' },
+          ],
+        }],
+      };
+
+      const people = weekAllPeopleActive(week);
+      expect(people).toHaveLength(2);
+      expect(people).toContainEqual({
+        role: 'E',
+        personId: undefined,
+        roleId: 'electric_default',
+        roleLabel: 'Eléctrico/a',
+        name: 'Oriol Monguilod',
+      });
+      expect(people).toContainEqual({
+        role: 'E',
+        personId: undefined,
+        roleId: 'electric_factura',
+        roleLabel: 'Eléctrico factura',
+        name: 'Oriol Monguilod',
+      });
+    });
+
+    it('should keep personId so the same person can carry multiple tariffs later on', () => {
+      const week = {
+        days: [{
+          team: [
+            { role: 'E', roleId: 'electric_default', personId: 'person_pol', name: 'Pol Peitx' },
+            { role: 'E', roleId: 'electric_factura', personId: 'person_pol', name: 'Pol Peitx' },
+          ],
+        }],
+      };
+
+      const people = weekAllPeopleActive(week);
+      expect(people).toContainEqual({
+        role: 'E',
+        roleId: 'electric_default',
+        personId: 'person_pol',
+        name: 'Pol Peitx',
+      });
+      expect(people).toContainEqual({
+        role: 'E',
+        roleId: 'electric_factura',
+        personId: 'person_pol',
+        name: 'Pol Peitx',
       });
     });
 
@@ -229,6 +285,7 @@ describe('plan.ts', () => {
 
       const people = weekAllPeopleActive(week);
       expect(people.find(p => p.role === 'GAFFER')).toEqual({
+        personId: undefined,
         role: 'GAFFER',
         name: 'Persona_GAFFER'
       });

@@ -28,7 +28,7 @@ describe('ReportBlockScheduleRow (smoke)', () => {
       </table>
     );
 
-    expect(screen.getByText('Horario Prelight')).toBeInTheDocument();
+    expect(screen.getByText('Horario Equipo Prelight')).toBeInTheDocument();
     expect(screen.getAllByText('08:00–17:00').length).toBeGreaterThan(0);
   });
 });

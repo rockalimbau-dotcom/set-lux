@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { getMemberRoleSortOrder } from '@shared/utils/projectRoles';
 import { Project, TeamMember } from './ProjectDetailTypes';
 
 export function useTeamList(project: Project | null): TeamMember[] {
@@ -20,35 +21,25 @@ export function useTeamList(project: Project | null): TeamMember[] {
     const seen = new Set<string>();
     const unique: TeamMember[] = [];
     for (const m of all) {
-      const k = `${m.role}|${m.name}`;
+      const k = `${m.personId || `${m.roleId || m.role}|${m.name}`}`;
       if (!seen.has(k)) {
         seen.add(k);
-        unique.push({ role: m.role, name: m.name });
+        unique.push({
+          personId: m.personId,
+          role: m.role,
+          roleId: m.roleId,
+          roleLabel: m.roleLabel,
+          name: m.name,
+          source: m.source,
+          gender: m.gender,
+        });
       }
     }
-    const order: Record<string, number> = {
-      G: 0,
-      BB: 1,
-      E: 2,
-      TM: 3,
-      FB: 4,
-      AUX: 5,
-      M: 6,
-      RG: 7,
-      RBB: 8,
-      RE: 9,
-      TG: 10,
-      EPO: 11,
-      TP: 12,
-      REF: 13,
-      RIG: 14,
-    };
     unique.sort(
       (a, b) =>
-        (order[a.role] ?? 99) - (order[b.role] ?? 99) ||
+        getMemberRoleSortOrder(project, a) - getMemberRoleSortOrder(project, b) ||
         a.name.localeCompare(b.name, 'es')
     );
     return unique;
   }, [project?.team]);
 }
-

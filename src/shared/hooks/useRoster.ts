@@ -1,10 +1,16 @@
 import { useMemo } from 'react';
 import { storage } from '@shared/services/localStorage.service';
 import { AnyRecord } from '@shared/types/common';
+import { resolveMemberProjectRole } from '@shared/utils/projectRoles';
 
 interface TeamMember {
+  personId?: string;
   role?: string;
+  roleId?: string;
+  roleLabel?: string;
   name?: string;
+  source?: string;
+  gender?: 'male' | 'female' | 'neutral';
   [key: string]: any;
 }
 
@@ -16,11 +22,23 @@ export function useRoster(
   reinforcements: TeamMember[]
 ) {
   return useMemo(() => {
+    const enrichRoster = (items: TeamMember[] = []): TeamMember[] =>
+      (Array.isArray(items) ? items : []).map(member => {
+        const resolvedRole = resolveMemberProjectRole(project, member);
+        const roleLabel = String(member?.roleLabel || '').trim() || resolvedRole.label || undefined;
+        const roleId = member?.roleId || resolvedRole.roleId || undefined;
+        return {
+          ...member,
+          roleId,
+          roleLabel,
+        };
+      });
+
     const fromProps = {
-      base: Array.isArray(baseTeam) ? baseTeam : [],
-      prelight: Array.isArray(prelightTeam) ? prelightTeam : [],
-      pickup: Array.isArray(pickupTeam) ? pickupTeam : [],
-      reinforcements: Array.isArray(reinforcements) ? reinforcements : [],
+      base: enrichRoster(baseTeam),
+      prelight: enrichRoster(prelightTeam),
+      pickup: enrichRoster(pickupTeam),
+      reinforcements: enrichRoster(reinforcements),
     };
     const hasProps =
       fromProps.base.length ||
@@ -39,10 +57,10 @@ export function useRoster(
 
     const projectTeam = project?.team;
     const fromProject = {
-      base: Array.isArray(projectTeam?.base) ? projectTeam.base : [],
-      prelight: Array.isArray(projectTeam?.prelight) ? projectTeam.prelight : [],
-      pickup: Array.isArray(projectTeam?.pickup) ? projectTeam.pickup : [],
-      reinforcements: Array.isArray(projectTeam?.reinforcements) ? projectTeam.reinforcements : [],
+      base: enrichRoster(projectTeam?.base),
+      prelight: enrichRoster(projectTeam?.prelight),
+      pickup: enrichRoster(projectTeam?.pickup),
+      reinforcements: enrichRoster(projectTeam?.reinforcements),
     };
     const hasProjectTeam =
       fromProject.base.length ||
@@ -80,15 +98,16 @@ export function useRoster(
 
     const src: AnyRecord = saved || {};
     return {
-      baseRoster: Array.isArray(src.base) ? src.base : [],
-      preRoster: Array.isArray(src.prelight) ? src.prelight : [],
-      pickRoster: Array.isArray(src.pickup) ? src.pickup : [],
-      refsRoster: Array.isArray(src.reinforcements) ? src.reinforcements : [],
+      baseRoster: enrichRoster(src.base),
+      preRoster: enrichRoster(src.prelight),
+      pickRoster: enrichRoster(src.pickup),
+      refsRoster: enrichRoster(src.reinforcements),
     };
   }, [
     project?.id,
     project?.nombre,
     project?.team,
+    project?.roleCatalog,
     baseTeam,
     prelightTeam,
     pickupTeam,

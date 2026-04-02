@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { AnyRecord } from '@shared/types/common';
-import { sortTeam } from './EquipoTabUtils';
+import { harmonizeTeamPersonIds, sortTeam } from './EquipoTabUtils';
 
 interface UseEquipoActionsProps {
   team: {
@@ -56,7 +56,7 @@ export function useEquipoActions({
   }, [onChange]);
 
   const payloadMemo = useMemo(
-    () => ({
+    () => harmonizeTeamPersonIds({
       base: team.base,
       reinforcements: team.reinforcements,
       prelight: team.prelight,
@@ -98,4 +98,3 @@ export function useEquipoActions({
 
   return { nextSeq, enableGroup, disableGroup };
 }
-

@@ -3,6 +3,7 @@ import { AnyRecord } from '@shared/types/common';
 import { PriceSection } from './PriceSection';
 
 interface PricesTableProps {
+  project?: AnyRecord | null;
   model: AnyRecord;
   setModel: (updater: (m: AnyRecord) => AnyRecord) => void;
   roles: string[];
@@ -15,6 +16,7 @@ interface PricesTableProps {
 }
 
 export function PricesTable({
+  project,
   model,
   setModel,
   roles,
@@ -67,6 +69,7 @@ export function PricesTable({
     <div className='space-y-3 sm:space-y-4 md:space-y-5 lg:space-y-6' data-tutorial='conditions-prices'>
       {/* Sección Equipo Base */}
       <PriceSection
+        project={project}
         title={t('conditions.baseTeam')}
         sectionKey='base'
         model={model}
@@ -108,6 +111,7 @@ export function PricesTable({
       {/* Sección Equipo Prelight */}
       {hasPrelight && (
         <PriceSection
+          project={project}
           title={t('conditions.prelightTeam')}
           sectionKey='prelight'
           model={model}
@@ -125,6 +129,7 @@ export function PricesTable({
       {/* Sección Equipo Recogida */}
       {hasPickup && (
         <PriceSection
+          project={project}
           title={t('conditions.pickupTeam')}
           sectionKey='pickup'
           model={model}
@@ -141,4 +146,3 @@ export function PricesTable({
     </div>
   );
 }
-

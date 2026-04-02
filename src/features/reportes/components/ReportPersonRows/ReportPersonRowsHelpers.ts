@@ -43,9 +43,10 @@ export const translateDietItem = (item: string, t: (key: string) => string): str
 export const personaKeyFrom = (
   role: string,
   name: string,
-  block: 'base' | 'pre' | 'pick' | string
+  block: 'base' | 'pre' | 'pick' | string,
+  options?: { roleId?: string }
 ): string => {
-  const pLike: AnyRecord = { role, name };
+  const pLike: AnyRecord = { role, roleId: options?.roleId, name };
   // Si el rol es REF o empieza con REF (REFG, REFBB, etc.), usar lógica de refuerzo
   if (role === 'REF' || (role && role.startsWith('REF') && role.length > 3)) {
     if (block === 'pre') pLike.__block = 'pre';

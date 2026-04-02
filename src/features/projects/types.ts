@@ -1,8 +1,20 @@
+import type { ProjectRoleCatalog } from '@shared/utils/projectRoles';
+
 export type ProjectMode = 'semanal' | 'mensual' | 'diario';
 export type ProjectStatus = 'Activo' | 'Cerrado';
 
 export interface ProjectConditions {
   tipo: ProjectMode;
+}
+
+export interface ProjectTeamMember {
+  personId?: string;
+  role?: string;
+  roleId?: string;
+  roleLabel?: string;
+  name: string;
+  source?: string;
+  gender?: 'male' | 'female' | 'neutral';
 }
 
 export interface Project {
@@ -20,6 +32,7 @@ export interface Project {
   conditions?: ProjectConditions;
   country?: string;
   region?: string;
+  roleCatalog?: ProjectRoleCatalog;
 }
 
 export interface ProjectForm {

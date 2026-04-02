@@ -13,6 +13,63 @@ import TextAreaAuto from './TextAreaAuto';
 const normalizeMemberName = (value: unknown): string =>
   String(value || '').trim().toLowerCase();
 
+const getMemberRoleIdentity = (member: AnyRecord): string =>
+  String(member?.roleId || member?.role || '').trim().toUpperCase();
+
+const getMemberIdentityKey = (member: AnyRecord): string =>
+  `${getMemberRoleIdentity(member)}::${String(member?.name || '').trim()}`;
+
+const getMemberDropdownBadge = (
+  member: AnyRecord,
+  context: MemberDropdownProps['context'],
+  language: string
+): string => {
+  const rawRole = (member?.role || '').toString().trim().toUpperCase();
+  if (!rawRole) return '';
+
+  const gender = member?.gender as 'male' | 'female' | 'neutral' | undefined;
+  const isRefRole = rawRole === 'REF' || (rawRole.startsWith('REF') && rawRole.length > 3);
+
+  if (isRefRole || !context || rawRole.endsWith('P') || rawRole.endsWith('R')) {
+    return applyGenderToBadge(getRoleBadgeCode(rawRole, language), gender);
+  }
+
+  const source = member?.source || '';
+  const shouldSuffix =
+    (context === 'prelight' && source === 'pre') ||
+    (context === 'pickup' && source === 'pick') ||
+    (context === 'mixed' && (source === 'pre' || source === 'pick'));
+
+  if (!shouldSuffix) {
+    return applyGenderToBadge(getRoleBadgeCode(rawRole, language), gender);
+  }
+
+  const suffix = source === 'pre' ? 'P' : 'R';
+  return applyGenderToBadge(getRoleBadgeCode(`${rawRole}${suffix}`, language), gender);
+};
+
+export const formatMemberDropdownOptionLabel = (
+  member: AnyRecord,
+  context: MemberDropdownProps['context'],
+  language: string
+): string => {
+  const name = String(member?.name || '').trim();
+  const badge = getMemberDropdownBadge(member, context, language);
+  const explicitRoleLabel = String(member?.roleLabel || '').trim();
+  const rawRole = String(member?.role || '').trim().toUpperCase();
+  const roleId = String(member?.roleId || '').trim().toLowerCase();
+  const isBaseRole = roleId === '' || roleId.endsWith('_default');
+
+  const baseLabel = badge ? `${badge} · ${name}` : `· ${name}`;
+  const normalizedExplicitLabel = explicitRoleLabel.toUpperCase();
+
+  if (!explicitRoleLabel || normalizedExplicitLabel === rawRole || isBaseRole) {
+    return baseLabel;
+  }
+
+  return `${baseLabel} — ${explicitRoleLabel}`;
+};
+
 export const mergeMemberIntoList = (
   list: AnyRecord[],
   member: AnyRecord,
@@ -20,24 +77,31 @@ export const mergeMemberIntoList = (
 ): AnyRecord[] => {
   const current = Array.isArray(list) ? list : [];
   const nextMember = {
+    personId: member?.personId,
     role: (member?.role || '').toUpperCase(),
+    roleId: member?.roleId,
+    roleLabel: member?.roleLabel,
     name: (member?.name || '').trim(),
     gender: member?.gender,
     source: member?.source || 'base',
     rosterManaged: false,
   };
 
-  const nextKey = `${nextMember.role}::${nextMember.name}`;
+  const nextKey = getMemberIdentityKey(nextMember);
   const nextName = normalizeMemberName(nextMember.name);
   const existsExact = current.some(
-    m => `${(m?.role || '').toUpperCase()}::${(m?.name || '').trim()}` === nextKey
+    m => getMemberIdentityKey(m) === nextKey
   );
   if (existsExact) return current;
 
   const withoutSameName =
     nextName === ''
       ? current
-      : current.filter(m => normalizeMemberName(m?.name) !== nextName);
+      : current.filter(m => {
+          if (normalizeMemberName(m?.name) !== nextName) return true;
+          if (!nextMember.roleId) return false;
+          return getMemberIdentityKey(m) !== nextKey;
+        });
 
   return sortMemberList([...withoutSameName, nextMember]);
 };
@@ -205,16 +269,12 @@ export function MemberDropdown({
 
   const filteredOptions = useMemo(() => {
     const existingKeys = new Set(
-      (existingList || []).map(m => {
-        const role = (m?.role || '').toString().trim().toUpperCase();
-        const name = (m?.name || '').toString().trim();
-        return `${role}::${name}`;
-      })
+      (existingList || []).map(m => getMemberIdentityKey(m))
     );
     const base = (options || []).filter(opt => {
-      const role = (opt?.role || '').toString().trim().toUpperCase();
+      const role = getMemberRoleIdentity(opt);
       const name = (opt?.name || '').toString().trim();
-      const key = `${role}::${name}`;
+      const key = getMemberIdentityKey(opt);
       return role === '' || name === '' || !existingKeys.has(key);
     });
     if (!searchQuery.trim()) return base;
@@ -222,7 +282,8 @@ export function MemberDropdown({
     return base.filter(opt => {
       const name = (opt?.name || '').toLowerCase();
       const role = (opt?.role || '').toLowerCase();
-      return name.includes(query) || role.includes(query);
+      const roleLabel = (opt?.roleLabel || '').toLowerCase();
+      return name.includes(query) || role.includes(query) || roleLabel.includes(query);
     });
   }, [options, searchQuery, existingList]);
 
@@ -277,7 +338,7 @@ export function MemberDropdown({
             ) : (
               filteredOptions.map((opt: AnyRecord, idx: number) => (
                 <button
-                  key={`${opt?.role || 'role'}-${opt?.name || 'name'}-${idx}`}
+                  key={`${opt?.roleId || opt?.role || 'role'}-${opt?.name || 'name'}-${idx}`}
                   type='button'
                   onClick={() => {
                     onSelect(opt);
@@ -286,33 +347,7 @@ export function MemberDropdown({
                   }}
                   className='w-full text-left px-2 py-1 sm:px-2.5 sm:py-1.5 md:px-3 md:py-2 text-[9px] sm:text-[10px] md:text-xs transition-colors text-gray-900 dark:text-zinc-300 hover:bg-blue-100 dark:hover:bg-zinc-700'
                 >
-                  {(() => {
-                    const rawRole = (opt?.role || '').toString().trim().toUpperCase();
-                    const name = (opt?.name || '').trim();
-                    const isRefRole = rawRole === 'REF' || (rawRole.startsWith('REF') && rawRole.length > 3);
-                    if (!rawRole) return `· ${name}`;
-                    const gender = (opt as AnyRecord)?.gender as 'male' | 'female' | 'neutral' | undefined;
-                    if (isRefRole || !context) {
-                      const badge = applyGenderToBadge(getRoleBadgeCode(rawRole, i18n.language), gender);
-                      return `${badge} · ${name}`;
-                    }
-                    if (rawRole.endsWith('P') || rawRole.endsWith('R')) {
-                      const badge = applyGenderToBadge(getRoleBadgeCode(rawRole, i18n.language), gender);
-                      return `${badge} · ${name}`;
-                    }
-                    const source = (opt as AnyRecord)?.source || '';
-                    const shouldSuffix =
-                      (context === 'prelight' && source === 'pre') ||
-                      (context === 'pickup' && source === 'pick') ||
-                      (context === 'mixed' && (source === 'pre' || source === 'pick'));
-                    if (!shouldSuffix) {
-                      const badge = applyGenderToBadge(getRoleBadgeCode(rawRole, i18n.language), gender);
-                      return `${badge} · ${name}`;
-                    }
-                    const suffix = source === 'pre' ? 'P' : 'R';
-                    const badge = applyGenderToBadge(getRoleBadgeCode(`${rawRole}${suffix}`, i18n.language), gender);
-                    return `${badge} · ${name}`;
-                  })()}
+                  {formatMemberDropdownOptionLabel(opt, context, i18n.language)}
                 </button>
               ))
             )}
@@ -414,7 +449,7 @@ export function MembersRow({
   const rosterGenderMap = useMemo(() => {
     const map = new Map<string, string>();
     (options || []).forEach((m: AnyRecord) => {
-      const role = (m?.role || '').toString().trim().toUpperCase();
+      const role = getMemberRoleIdentity(m);
       const name = (m?.name || '').toString().trim();
       if (!role && !name) return;
       const key = `${role}::${name}`;
@@ -598,6 +633,8 @@ export function MembersRow({
                         const baseTeam = (options || [])
                           .map(m => ({
                             role: (m?.role || '').toUpperCase(),
+                            roleId: m?.roleId,
+                            roleLabel: m?.roleLabel,
                             name: (m?.name || '').trim(),
                             gender: m?.gender,
                             source: m?.source || 'base',
@@ -664,13 +701,13 @@ export function MembersRow({
                       <span className='text-[9px] sm:text-[10px] md:text-xs text-zinc-400'>—</span>
                     )}
                   {list.map((m, idx) => {
-                  const roleKey = (m?.role || '').toString().trim().toUpperCase();
+                  const roleKey = getMemberRoleIdentity(m);
                   const nameKey = (m?.name || '').toString().trim();
                   const mapKey = `${roleKey}::${nameKey}`;
                   const gender = m?.gender || rosterGenderMap.get(mapKey);
                   return (
                       <Chip
-                        key={`${m.role}-${m.name}-${idx}`}
+                        key={`${m.roleId || m.role}-${m.name}-${idx}`}
                         role={(m as AnyRecord)?.role}
                         name={(m as AnyRecord)?.name}
                     gender={gender}

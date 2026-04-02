@@ -2,6 +2,7 @@ import { Td } from '@shared/components';
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getRoleBadgeCode, applyGenderToBadge } from '@shared/constants/roles';
+import { stripRoleSuffix } from '@shared/constants/roles';
 import { displayValue, displayMoney } from '../../utils/displayHelpers';
 import WorkedDaysSummary from '../WorkedDaysSummary.tsx';
 import CargaDescargaSummary from '../CargaDescargaSummary.tsx';
@@ -13,6 +14,7 @@ type MonthSectionPersonRowProps = {
   personKey: string;
   roleForColor: string;
   col: { bg: string; fg: string };
+  roleLabelFromCode: (code: string) => string;
   received: Record<string, { ok?: boolean; note?: string }>;
   isSelected: boolean;
   toggleRowSelection: (key: string) => void;
@@ -41,6 +43,7 @@ export function MonthSectionPersonRow({
   personKey: pKey,
   roleForColor,
   col,
+  roleLabelFromCode,
   received,
   isSelected,
   toggleRowSelection,
@@ -122,6 +125,30 @@ export function MonthSectionPersonRow({
         : `${materialPropioCount} ${materialPropioType === 'semanal' ? 'semanas' : 'días'}`
       : '—';
 
+  const roleVariants = React.useMemo(() => {
+    const variants = Array.isArray((r as any)._roleVariants) ? (r as any)._roleVariants : [];
+    const seen = new Set<string>();
+    return variants
+      .map((variant: any) => {
+        const rawRole = String(variant?.originalRole || variant?.role || r.role || '').trim();
+        const roleCode = stripRoleSuffix(rawRole);
+        const label =
+          String(variant?.roleLabel || '').trim() ||
+          roleLabelFromCode(roleCode) ||
+          rawRole;
+        return {
+          key: `${variant?.roleId || rawRole}__${label}`,
+          label,
+          totalBruto: Number(variant?.totalBruto || 0),
+        };
+      })
+      .filter((variant: { key: string; label: string }) => {
+        if (!variant.label || seen.has(variant.key)) return false;
+        seen.add(variant.key);
+        return true;
+      });
+  }, [r, roleLabelFromCode]);
+
   return (
     <tr>
       {showRowSelection && (
@@ -139,7 +166,7 @@ export function MonthSectionPersonRow({
         </Td>
       )}
       <Td className='payroll-sticky-first-col whitespace-nowrap align-middle'>
-        <div className='flex items-center gap-1 sm:gap-1.5 md:gap-2'>
+        <div className='flex items-start gap-1 sm:gap-1.5 md:gap-2'>
           <span
             className='inline-flex items-center gap-1 sm:gap-1.5 md:gap-2 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded sm:rounded-md md:rounded-lg border border-neutral-border bg-black/40'
             title={`${r.role} - ${r.name}`}
@@ -157,6 +184,15 @@ export function MonthSectionPersonRow({
               </span>
             <span className='text-[9px] sm:text-[10px] md:text-xs text-zinc-200'>{r.name}</span>
           </span>
+          {roleVariants.length > 1 && (
+            <div className='flex flex-col items-start gap-0.5 text-[8px] sm:text-[9px] md:text-[10px] text-zinc-400'>
+              {roleVariants.map((variant: { key: string; label: string; totalBruto: number }) => (
+                <span key={variant.key} className='whitespace-normal leading-tight'>
+                  {variant.label}: {displayMoney(variant.totalBruto, 2)}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
       </Td>
 
@@ -170,6 +206,7 @@ export function MonthSectionPersonRow({
               carga={projectMode === 'diario' ? 0 : (r._carga || 0)}
               descarga={projectMode === 'diario' ? 0 : (r._descarga || 0)}
               localizar={r._localizar || 0}
+              showLocalizar={projectMode !== 'diario'}
               rodaje={r._rodaje || 0}
               pruebasCamara={r._pruebasCamara || 0}
               oficina={r._oficina || 0}

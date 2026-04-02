@@ -4,8 +4,10 @@ import { Td } from '@shared/components';
 import { AnyRecord } from '@shared/types/common';
 import { personaKeyFrom } from './ReportPersonRowsHelpers';
 import { getRoleBadgeCode, applyGenderToBadge } from '@shared/constants/roles';
+import { findProjectRoleByLegacyCode, normalizeProjectRoleCatalog, resolveMemberProjectRole } from '@shared/utils/projectRoles';
 
 interface PersonRowHeaderProps {
+  project?: AnyRecord;
   person: AnyRecord;
   block: 'base' | 'pre' | 'pick' | string;
   semana: readonly string[];
@@ -17,6 +19,7 @@ interface PersonRowHeaderProps {
 }
 
 export function PersonRowHeader({
+  project,
   person,
   block,
   semana,
@@ -29,9 +32,25 @@ export function PersonRowHeader({
   const { i18n } = useTranslation();
   const visualRole = person?.role || '';
   const name = person?.name || '';
+  const personId = person?.personId;
   const gender = person?.gender;
   const pKey = personaKeyFrom(visualRole, name, block);
-
+  const resolvedRole = resolveMemberProjectRole(project, person);
+  const defaultRole = findProjectRoleByLegacyCode(normalizeProjectRoleCatalog(project), visualRole);
+  const explicitRoleLabel = String(person?.roleLabel || resolvedRole.label || '').trim();
+  const normalizeLabel = (value: string) =>
+    String(value || '')
+      .trim()
+      .toLocaleLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/\s+/g, ' ');
+  const isCustomRole =
+    !!resolvedRole.roleId &&
+    !!defaultRole?.id &&
+    resolvedRole.roleId !== defaultRole.id &&
+    !!explicitRoleLabel &&
+    normalizeLabel(explicitRoleLabel) !== normalizeLabel(defaultRole.label || '');
   // Detectar el tema actual
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
     if (typeof document !== 'undefined') {
@@ -78,7 +97,7 @@ export function PersonRowHeader({
 
   return (
     <tr>
-      <Td className='whitespace-nowrap align-middle report-sticky-first-col' scope='row'>
+      <Td className='align-middle report-sticky-first-col' scope='row'>
         <div className='flex items-center gap-1 sm:gap-1.5 md:gap-2'>
           <button
             onClick={() => !readOnly && setCollapsed(c => ({ ...c, [pKey]: !c[pKey] }))}
@@ -92,7 +111,7 @@ export function PersonRowHeader({
             {collapsed[pKey] ? '+' : '−'}
           </button>
 
-          <span className='inline-flex items-center gap-1 sm:gap-1.5 md:gap-2 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded sm:rounded-md md:rounded-lg border border-neutral-border bg-black/40'>
+          <span className='inline-flex max-w-full items-start gap-1 sm:gap-1.5 md:gap-2 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded sm:rounded-md md:rounded-lg border border-neutral-border bg-black/40'>
             <span
               className={`inline-flex items-center justify-center h-3.5 sm:h-4 md:h-5 rounded sm:rounded-md md:rounded-lg font-bold text-[8px] sm:text-[9px] md:text-[10px] ${badgeWidthClass}`}
               style={{ 
@@ -104,7 +123,16 @@ export function PersonRowHeader({
             >
               {roleCode || '—'}
             </span>
-            <span className='text-[9px] sm:text-[10px] md:text-xs text-zinc-200'>{name}</span>
+            <span className='min-w-0 flex-1 leading-tight'>
+              <span className='block text-[9px] sm:text-[10px] md:text-xs text-zinc-200 break-words'>
+                {name}
+              </span>
+              {isCustomRole && (
+                <span className='block text-[8px] sm:text-[9px] md:text-[10px] text-zinc-400 break-words'>
+                  {explicitRoleLabel}
+                </span>
+              )}
+            </span>
             {(visualRole === 'REF' || (visualRole && visualRole.startsWith('REF') && visualRole.length > 3)) && block && (
               <span className='text-[8px] sm:text-[9px] md:text-[10px] text-zinc-400 uppercase'>
                 · {block}
@@ -115,7 +143,7 @@ export function PersonRowHeader({
       </Td>
 
       {semana.map(iso => {
-        const key = `${visualRole}_${name}_${iso}_${block}`;
+        const key = `${person?.roleId || personId || visualRole}_${name}_${iso}_${block}`;
         const offHeader = offMap.get(key) ?? false;
         const headerCellClasses = offHeader ? 'report-off-cell' : '';
         

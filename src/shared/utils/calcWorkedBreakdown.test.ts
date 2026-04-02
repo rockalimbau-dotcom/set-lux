@@ -137,6 +137,31 @@ describe('calcWorkedBreakdown', () => {
       expect(result.workedDays).toBe(0);
     });
 
+    it('prioritizes personId when the same name exists with different tariffs', () => {
+      const weeksWithDuplicatedName = [
+        {
+          days: [
+            {
+              tipo: 'Rodaje',
+              team: [
+                { role: 'E', roleId: 'electric_default', personId: 'person_pol', name: 'Pol Peitx' },
+                { role: 'E', roleId: 'electric_factura', personId: 'person_pol_alt', name: 'Pol Peitx' },
+              ],
+            },
+          ],
+        },
+      ];
+
+      const result = calcWorkedBreakdown(
+        weeksWithDuplicatedName,
+        () => true,
+        { role: 'E', roleId: 'electric_factura', personId: 'person_pol_alt', name: 'Pol Peitx' },
+        'semanal'
+      );
+
+      expect(result.workedDays).toBe(1);
+    });
+
     it('handles prelight team (suffix P)', () => {
       const weeksWithPrelight = [
         {
@@ -365,6 +390,98 @@ describe('calcWorkedBreakdown', () => {
 
       expect(baseRow.rodaje).toBe(0);
       expect(extraRow.rodaje).toBe(1);
+    });
+
+    it('matches by roleId before falling back to legacy role matching', () => {
+      const weeksWithCustomRoles = [
+        {
+          days: [
+            {
+              tipo: 'Rodaje',
+              team: [
+                { role: 'E', roleId: 'electric_day', name: 'Juan' },
+                { role: 'E', roleId: 'electric_night', name: 'Juan' },
+              ],
+            },
+          ],
+        },
+      ];
+
+      const result = calcWorkedBreakdown(
+        weeksWithCustomRoles,
+        () => true,
+        { role: 'E', roleId: 'electric_night', name: 'Juan' },
+        'semanal'
+      );
+
+      expect(result.workedDays).toBe(1);
+    });
+
+    it('does not let the same personId make two different roleIds count each other days', () => {
+      const weeksWithSamePersonTwoTariffs = [
+        {
+          days: [
+            {
+              tipo: 'Rodaje',
+              team: [
+                { role: 'E', roleId: 'electric_default', personId: 'person_pol', name: 'Pol Peitx' },
+              ],
+            },
+            {
+              tipo: 'Rodaje',
+              team: [
+                { role: 'E', roleId: 'electric_factura', personId: 'person_pol', name: 'Pol Peitx' },
+              ],
+            },
+          ],
+        },
+      ];
+
+      const baseRow = calcWorkedBreakdown(
+        weeksWithSamePersonTwoTariffs,
+        () => true,
+        { role: 'E', roleId: 'electric_default', personId: 'person_pol', name: 'Pol Peitx' },
+        'semanal'
+      );
+      const customRow = calcWorkedBreakdown(
+        weeksWithSamePersonTwoTariffs,
+        () => true,
+        { role: 'E', roleId: 'electric_factura', personId: 'person_pol', name: 'Pol Peitx' },
+        'semanal'
+      );
+
+      expect(baseRow.workedDays).toBe(1);
+      expect(customRow.workedDays).toBe(1);
+    });
+
+    it('does not let an ambiguous slot without roleId count for the custom tariff when the same person has multiple tariffs', () => {
+      const weeksWithAmbiguousBaseSlot = [
+        {
+          days: [
+            {
+              tipo: 'Rodaje',
+              team: [
+                { role: 'E', personId: 'person_pol', name: 'Pol Peitx' },
+              ],
+            },
+            {
+              tipo: 'Rodaje',
+              team: [
+                { role: 'E', roleId: 'electric_factura', personId: 'person_pol', name: 'Pol Peitx' },
+              ],
+            },
+          ],
+        },
+      ];
+
+      const customRow = calcWorkedBreakdown(
+        weeksWithAmbiguousBaseSlot,
+        () => true,
+        { role: 'E', roleId: 'electric_factura', personId: 'person_pol', name: 'Pol Peitx' },
+        'semanal'
+      );
+
+      expect(customRow.workedDays).toBe(1);
     });
   });
 });

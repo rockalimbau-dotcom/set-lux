@@ -5,12 +5,13 @@ import { AnyRecord } from '@shared/types/common';
 interface UseModelSyncProps {
   model: AnyRecord;
   onChange?: (p: AnyRecord) => void;
+  enabled?: boolean;
 }
 
 /**
  * Hook to sync model changes with onChange callback (semanal mode with festivosDates)
  */
-export function useModelSync({ model, onChange }: UseModelSyncProps) {
+export function useModelSync({ model, onChange, enabled = true }: UseModelSyncProps) {
   const onChangeRef = useRef(onChange);
   useEffect(() => {
     onChangeRef.current = onChange;
@@ -19,6 +20,7 @@ export function useModelSync({ model, onChange }: UseModelSyncProps) {
   const lastEmittedRef = useRef('');
 
   useEffect(() => {
+    if (!enabled) return;
     const festivosRendered = renderWithParams(
       model.festivosTemplate,
       model.params
@@ -31,6 +33,5 @@ export function useModelSync({ model, onChange }: UseModelSyncProps) {
       lastEmittedRef.current = signature;
       onChangeRef.current?.(payload);
     }
-  }, [model]);
+  }, [enabled, model]);
 }
-

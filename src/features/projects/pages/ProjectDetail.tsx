@@ -57,6 +57,7 @@ export default function ProjectDetail({
     handleNavigateToProject,
     handleTeamChange,
     handleConditionsChange,
+    handleRoleCatalogChange,
     handleStatusConfirm,
   } = useProjectHandlers({
     proj,
@@ -142,11 +143,12 @@ export default function ProjectDetail({
               project={proj}
               user={user}
               condTipo={condTipo}
-              isActive={isActive}
-              onTeamChange={handleTeamChange}
-              onConditionsChange={handleConditionsChange}
-            />
-          )}
+            isActive={isActive}
+            onTeamChange={handleTeamChange}
+            onConditionsChange={handleConditionsChange}
+            onRoleCatalogChange={handleRoleCatalogChange}
+          />
+        )}
         </div>
       </div>
 

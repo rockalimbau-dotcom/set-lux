@@ -31,6 +31,7 @@ export interface SiNoCellProps {
 }
 
 export interface ReportPersonRowsProps {
+  project?: AnyRecord;
   list: AnyRecord[];
   block: 'base' | 'pre' | 'pick' | string;
   semana: readonly string[];
@@ -44,7 +45,8 @@ export interface ReportPersonRowsProps {
     visualRole: string,
     name: string,
     findWeekAndDay: (iso: string) => AnyRecord,
-    block?: 'base' | 'pre' | 'pick' | string
+    block?: 'base' | 'pre' | 'pick' | string,
+    options?: { roleId?: string }
   ) => boolean;
   CONCEPTS: readonly string[];
   DIETAS_OPCIONES: readonly (string | null)[];
@@ -56,8 +58,8 @@ export interface ReportPersonRowsProps {
   getMaterialPropioConfig?: (
     role: string,
     name: string,
-    block: 'base' | 'pre' | 'pick' | 'extra'
+    block: 'base' | 'pre' | 'pick' | 'extra',
+    options?: { roleId?: string; roleLabel?: string }
   ) => { value: number; type: 'semanal' | 'diario' } | null;
   onAttachmentClick?: () => void;
 }
-

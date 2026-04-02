@@ -17,7 +17,7 @@ interface UseEnrichedRowsProps {
   calcWorkedBreakdown: (
     weeks: any[],
     filterISO: (iso: string) => boolean,
-    person: { role: string; name: string; source?: string }
+    person: { role: string; roleId?: string; personId?: string; name: string; source?: string }
   ) => {
     workedDays: number;
     travelDays: number;
@@ -64,9 +64,15 @@ export function useEnrichedRows({
   isFirstProjectMonth,
 }: UseEnrichedRowsProps) {
   const enriched = useMemo(() => {
+    const mergeKeyFor = (row: any) => {
+      const personId = String((row as any).personId || '').trim();
+      if (personId) return `person:${personId}`;
+      return `${row.role}__${row.name}`;
+    };
+
     const visibleBlocksByKey = new Map<string, Set<string>>();
     for (const row of rows) {
-      const visibleKey = `${row.role}__${row.name}`;
+      const visibleKey = mergeKeyFor(row);
       const block = (row as any)._displayBlock || 'base';
       if (!visibleBlocksByKey.has(visibleKey)) {
         visibleBlocksByKey.set(visibleKey, new Set<string>());
@@ -76,7 +82,7 @@ export function useEnrichedRows({
 
     const enrichedRows = rows.map(r => {
       const roleForBreakdown = (r as any)._matchRole || r.role;
-      const visibleKey = `${r.role}__${r.name}`;
+      const visibleKey = mergeKeyFor(r);
       const siblingBlocks = visibleBlocksByKey.get(visibleKey) || new Set<string>();
       const rowDisplayBlock = (r as any)._displayBlock || 'base';
       const sourceForBreakdown =
@@ -86,7 +92,13 @@ export function useEnrichedRows({
             (siblingBlocks.has('pre') || siblingBlocks.has('pick') || siblingBlocks.has('extra'))
             ? 'base-strict'
           : r.source;
-      const person = { role: roleForBreakdown, name: r.name, source: sourceForBreakdown };
+      const person = {
+        role: roleForBreakdown,
+        roleId: (r as any).roleId,
+        personId: (r as any).personId,
+        name: r.name,
+        source: sourceForBreakdown,
+      };
       const breakdown = calcWorkedBreakdown(weeksForMonth, filterISO, person);
       const {
         workedDays,
@@ -139,22 +151,27 @@ export function useEnrichedRows({
       
       // Construir el rol completo con sufijo para getForRole si es prelight o pickup
       // getForRole normaliza el rol y busca en las tablas, así que podemos pasar el nombre con sufijo
-      let roleForPriceLookup = baseRoleLabel;
+      let roleForPriceLookup = baseRoleCode;
       if (!isRefuerzo) {
         if (hasP || needsPrelightPrice) {
-          // Añadir sufijo P al nombre del rol (ej: "GafferP")
-          roleForPriceLookup = `${baseRoleLabel}P`;
+          // Consultar precios por código mantiene el vínculo con el roleId default.
+          roleForPriceLookup = `${baseRoleCode}P`;
         } else if (hasR || needsPickupPrice) {
-          // Añadir sufijo R al nombre del rol (ej: "GafferR")
-          roleForPriceLookup = `${baseRoleLabel}R`;
+          roleForPriceLookup = `${baseRoleCode}R`;
         }
       }
       
       // Para refuerzos, pasar tanto el código como el label para que findPriceRow pueda buscar ambos
       // Las tablas de precios pueden estar indexadas por nombre completo (Gaffer) o código (G)
       const pr = isRefuerzo
-        ? rolePrices.getForRole('REF', baseRoleLabel || baseRoleCode)
-        : rolePrices.getForRole(roleForPriceLookup);
+        ? rolePrices.getForRole('REF', baseRoleCode || baseRoleLabel, {
+            roleId: (r as any).roleId || null,
+            roleLabel: (r as any).roleLabel || baseRoleLabel || null,
+          })
+        : rolePrices.getForRole(roleForPriceLookup, null, {
+            roleId: (r as any).roleId || null,
+            roleLabel: (r as any).roleLabel || baseRoleLabel || null,
+          });
 
       // Obtener precios efectivos (maneja caso especial de diario)
       const effectivePr = getEffectiveRolePrices(pr, projectMode, refuerzoSet, keyNoPR, rolePrices, baseRoleLabel);
@@ -326,7 +343,7 @@ export function useEnrichedRows({
 
       return {
         ...r,
-        _rowKey: (r as any)._rowKey || `${r.role}__${r.name}`,
+        _rowKey: (r as any)._rowKey || mergeKeyFor(r),
         role: roleDisplay,
         _originalRole: roleForBadge, // Mostrar sufijo P/R cuando aplique
         _displayBlock: displayBlock,
@@ -381,6 +398,16 @@ export function useEnrichedRows({
         _dietasLabel: dietasLabel,
         _pr: effectivePr,
         _missingPrices: missingPrices,
+        _roleVariants: [
+          {
+            role: roleDisplay,
+            originalRole: roleForBadge,
+            roleId: (r as any).roleId || null,
+            roleLabel: (r as any).roleLabel || null,
+            totalBruto: totals.totalBruto,
+            totalDias: totals.totalDias,
+          },
+        ],
       };
     });
 
@@ -404,7 +431,7 @@ export function useEnrichedRows({
     const mergedByVisibleRow = new Map<string, any>();
 
     for (const row of enrichedRows) {
-      const mergeKey = `${row.role}__${row.name}`;
+      const mergeKey = mergeKeyFor(row);
       const existing = mergedByVisibleRow.get(mergeKey);
       if (!existing) {
         mergedByVisibleRow.set(mergeKey, {
@@ -465,6 +492,7 @@ export function useEnrichedRows({
       existing.dietasCount = mergeDietasMaps(existing.dietasCount, row.dietasCount);
       existing._dietasLabel = buildDietasLabel(existing.dietasCount, existing.ticketTotal, existing.otherTotal);
       existing._missingPrices = mergeMissingPrices(existing._missingPrices, row._missingPrices);
+      existing._roleVariants = [...(existing._roleVariants || []), ...(row._roleVariants || [])];
 
       if (existing._displayBlock !== 'base' && row._displayBlock === 'base') {
         existing._displayBlock = 'base';

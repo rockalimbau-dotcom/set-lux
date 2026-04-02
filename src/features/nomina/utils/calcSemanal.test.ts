@@ -111,5 +111,101 @@ describe('calcSemanal - makeRolePrices with holidayDay', () => {
     expect(gafferPrices).toHaveProperty('holidayDay');
     expect(gafferPrices.holidayDay).toBe(0);
   });
-});
 
+  it('should resolve custom role prices by roleId', () => {
+    const mockProject = {
+      id: 'test-project',
+      conditions: { tipo: 'semanal' },
+      roleCatalog: {
+        version: 1 as const,
+        roles: [
+          {
+            id: 'electric_night',
+            label: 'Eléctrico noche',
+            legacyCode: 'E',
+            baseRole: 'E',
+            sortOrder: 20,
+            active: true,
+            supportsPrelight: true,
+            supportsPickup: true,
+            supportsRefuerzo: true,
+          },
+        ],
+      },
+    };
+
+    storage.getJSON = vi.fn().mockReturnValue({
+      roles: ['electric_night'],
+      prices: {
+        electric_night: {
+          'Precio jornada': '220',
+          'Travel day': '110',
+          'Horas extras': '30',
+          'Precio Día extra/Festivo': '385',
+        },
+      },
+      params: {},
+    });
+
+    const rolePrices = makeRolePrices(mockProject);
+    const prices = rolePrices.getForRole('Eléctrico noche', null, {
+      roleId: 'electric_night',
+      roleLabel: 'Eléctrico noche',
+    });
+
+    expect(prices.jornada).toBe(220);
+    expect(prices.travelDay).toBe(110);
+    expect(prices.horaExtra).toBe(30);
+    expect(prices.holidayDay).toBe(385);
+  });
+
+  it('should keep base role prices for legacy E even when custom electric roles exist', () => {
+    const mockProject = {
+      id: 'test-project',
+      conditions: {
+        tipo: 'semanal',
+        semanal: {
+          roles: ['e_default', 'electric_factura'],
+          prices: {
+            e_default: { 'Precio jornada': '350', 'Horas extras': '45' },
+            electric_factura: { 'Precio jornada': '300', 'Horas extras': '30' },
+          },
+          params: {},
+        },
+      },
+      roleCatalog: {
+        version: 1 as const,
+        roles: [
+          {
+            id: 'e_default',
+            label: 'Eléctrico/a',
+            legacyCode: 'E',
+            baseRole: 'E',
+            sortOrder: 2,
+            active: true,
+            supportsPrelight: true,
+            supportsPickup: true,
+            supportsRefuerzo: true,
+          },
+          {
+            id: 'electric_factura',
+            label: 'Eléctrico factura',
+            legacyCode: 'E',
+            baseRole: 'E',
+            sortOrder: 20,
+            active: true,
+            supportsPrelight: true,
+            supportsPickup: true,
+            supportsRefuerzo: true,
+          },
+        ],
+      },
+    };
+
+    const rolePrices = makeRolePrices(mockProject);
+    const basePrices = rolePrices.getForRole('E');
+
+    expect(basePrices.jornada).toBe(350);
+    expect(basePrices.horaExtra).toBe(45);
+  });
+});

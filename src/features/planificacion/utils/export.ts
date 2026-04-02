@@ -28,9 +28,9 @@ interface Day {
   end?: string;
   cut?: string;
   loc?: string;
-  team?: Array<{ role?: string; name?: string; source?: string }>;
-  prelight?: Array<{ role?: string; name?: string; source?: string }>;
-  pickup?: Array<{ role?: string; name?: string; source?: string }>;
+  team?: Array<{ role?: string; roleLabel?: string; name?: string; source?: string }>;
+  prelight?: Array<{ role?: string; roleLabel?: string; name?: string; source?: string }>;
+  pickup?: Array<{ role?: string; roleLabel?: string; name?: string; source?: string }>;
   prelightStart?: string;
   prelightEnd?: string;
   pickupStart?: string;
@@ -45,6 +45,12 @@ interface Week {
   days?: Day[];
   [key: string]: any;
 }
+
+const formatMemberRole = (member: { role?: string; roleLabel?: string; source?: string }): string => {
+  const roleLabel = String(member?.roleLabel || member?.role || '').trim();
+  const suffix = member?.source === 'pre' ? 'P' : member?.source === 'pick' ? 'R' : '';
+  return `${roleLabel}${suffix}`.trim();
+};
 
 export function renderExportHTML(
   projectName: string,
@@ -73,7 +79,7 @@ export function renderExportHTML(
         const team = (w.days?.[i]?.team || [])
           .map(m =>
             esc(
-              `${m.role}${m.source === 'pre' ? 'P' : m.source === 'pick' ? 'R' : ''} ${m.name || ''}`.trim()
+              `${formatMemberRole(m)} ${m.name || ''}`.trim()
             )
           )
           .join(' · ');
@@ -83,7 +89,7 @@ export function renderExportHTML(
         const lst = (w.days?.[i]?.prelight || [])
           .map(m =>
             esc(
-              `${m.role}${m.source === 'pre' ? 'P' : ''} ${m.name || ''}`.trim()
+              `${formatMemberRole(m)} ${m.name || ''}`.trim()
             )
           )
           .join(' · ');
@@ -96,7 +102,7 @@ export function renderExportHTML(
         const lst = (w.days?.[i]?.pickup || [])
           .map(m =>
             esc(
-              `${m.role}${m.source === 'pick' ? 'R' : ''} ${m.name || ''}`.trim()
+              `${formatMemberRole(m)} ${m.name || ''}`.trim()
             )
           )
           .join(' · ');

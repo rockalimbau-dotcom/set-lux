@@ -10,6 +10,7 @@ import { PersonRowHeader } from './PersonRowHeader';
 import { ConceptRow } from './ConceptRow';
 
 function ReportPersonRows({
+  project,
   list,
   block,
   semana,
@@ -48,12 +49,18 @@ function ReportPersonRows({
   return (
     <>
       {list.map(p => {
-        const pKey = personaKeyFrom((p as AnyRecord)?.role || '', (p as AnyRecord)?.name || '', block);
+        const pKey = personaKeyFrom((p as AnyRecord)?.role || '', (p as AnyRecord)?.name || '', block, {
+          roleId: (p as AnyRecord)?.roleId,
+        });
         const materialPropioConfig = getMaterialPropioConfig
           ? getMaterialPropioConfig(
               (p as AnyRecord)?.role || '',
               (p as AnyRecord)?.name || '',
-              block as 'base' | 'pre' | 'pick' | 'extra'
+              block as 'base' | 'pre' | 'pick' | 'extra',
+              {
+                roleId: (p as AnyRecord)?.roleId,
+                roleLabel: (p as AnyRecord)?.roleLabel,
+              }
             )
           : null;
         const conceptsToRender = materialPropioConfig
@@ -63,6 +70,7 @@ function ReportPersonRows({
         return (
           <React.Fragment key={`${pKey}__${block || 'base'}`}>
             <PersonRowHeader
+              project={project}
               person={p}
               block={block}
               semana={semana}

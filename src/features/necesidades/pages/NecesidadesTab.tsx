@@ -68,6 +68,7 @@ export default function NecesidadesTab({ project, readOnly = false }: Necesidade
 
   // Manage needs data
   const { isLoaded, preEntries, proEntries } = useNeedsData({
+    project,
     needs,
     storageKey,
     setNeeds,
@@ -156,6 +157,9 @@ export default function NecesidadesTab({ project, readOnly = false }: Necesidade
             const synced = current.length === 0
               ? (baseRoster || []).map((m: AnyRecord) => ({
                   role: m?.role,
+                  roleId: m?.roleId,
+                  roleLabel: m?.roleLabel,
+                  personId: m?.personId,
                   name: m?.name || '',
                   gender: m?.gender,
                   source: 'base',
@@ -166,6 +170,9 @@ export default function NecesidadesTab({ project, readOnly = false }: Necesidade
             const sameMembers = sameLength && current.every((m: AnyRecord, idx: number) => {
               const s = synced[idx];
               return (m?.role || '') === (s?.role || '') &&
+                (m?.roleId || '') === (s?.roleId || '') &&
+                (m?.roleLabel || '') === (s?.roleLabel || '') &&
+                (m?.personId || '') === (s?.personId || '') &&
                 (m?.name || '') === (s?.name || '') &&
                 (m?.gender || '') === (s?.gender || '');
             });
@@ -179,6 +186,9 @@ export default function NecesidadesTab({ project, readOnly = false }: Necesidade
               currentPre.every((m: AnyRecord, idx: number) => {
                 const s = syncedPre[idx];
                 return (m?.role || '') === (s?.role || '') &&
+                  (m?.roleId || '') === (s?.roleId || '') &&
+                  (m?.roleLabel || '') === (s?.roleLabel || '') &&
+                  (m?.personId || '') === (s?.personId || '') &&
                   (m?.name || '') === (s?.name || '') &&
                   (m?.gender || '') === (s?.gender || '');
               });
@@ -193,6 +203,9 @@ export default function NecesidadesTab({ project, readOnly = false }: Necesidade
               currentPick.every((m: AnyRecord, idx: number) => {
                 const s = syncedPick[idx];
                 return (m?.role || '') === (s?.role || '') &&
+                  (m?.roleId || '') === (s?.roleId || '') &&
+                  (m?.roleLabel || '') === (s?.roleLabel || '') &&
+                  (m?.personId || '') === (s?.personId || '') &&
                   (m?.name || '') === (s?.name || '') &&
                   (m?.gender || '') === (s?.gender || '');
               });

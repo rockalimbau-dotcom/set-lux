@@ -4,6 +4,7 @@ import { AnyRecord } from '@shared/types/common';
 import { safeId, displayRolesForGroup } from './EquipoTabUtils';
 import { TeamRow } from './TeamRow';
 import { ConfirmModal } from './ConfirmModal';
+import { TeamRoleOption } from './EquipoTabTypes';
 
 interface TeamGroupProps {
   title: string;
@@ -12,9 +13,11 @@ interface TeamGroupProps {
   canEdit: boolean;
   removable?: boolean;
   onRemoveGroup?: () => void;
-  allowedRoles: AnyRecord[];
+  allowedRoles: TeamRoleOption[];
   nextSeq: () => number;
   groupKey?: string;
+  project?: AnyRecord;
+  onRoleCatalogChange?: (roleCatalog: AnyRecord) => void;
 }
 
 export function TeamGroup({
@@ -27,6 +30,8 @@ export function TeamGroup({
   allowedRoles,
   nextSeq,
   groupKey = 'base',
+  project,
+  onRoleCatalogChange = () => {},
 }: TeamGroupProps) {
   const { t } = useTranslation();
   const [showConfirmRemove, setShowConfirmRemove] = useState(false);
@@ -34,9 +39,10 @@ export function TeamGroup({
   const addRow = () => {
     if (!canEdit) return;
     const seq = nextSeq();
+    const defaultRole = allowedRoles[0];
     setRows([
       ...rows,
-      { id: safeId(), role: allowedRoles[0]?.code || 'E', name: '', gender: 'neutral', seq },
+      { id: safeId(), personId: safeId(), role: defaultRole?.code || 'E', roleId: defaultRole?.roleId, name: '', gender: 'neutral', seq },
     ]);
     if (groupKey === 'base') {
       try {
@@ -124,6 +130,8 @@ export function TeamGroup({
                 canEdit={canEdit}
                 allowedRoles={shownRoles}
                 groupKey={groupKey}
+                project={project}
+                onRoleCatalogChange={onRoleCatalogChange}
                 tutorialId={groupKey === 'base' && index === rows.length - 1 ? 'team-row-base' : undefined}
               />
             ))}
@@ -144,4 +152,3 @@ export function TeamGroup({
     </>
   );
 }
-

@@ -4,8 +4,10 @@ import { AnyRecord } from '@shared/types/common';
 import { parseYYYYMMDD } from './NecesidadesTabUtils';
 import { relabelNeedsWeekByCalendar, relabelNeedsWeekByCalendarDynamic } from '../../utils/calendar';
 import { NeedsState, NeedsWeek } from './NecesidadesTabTypes';
+import { resolveMemberProjectRole } from '@shared/utils/projectRoles';
 
 interface UseNeedsDataProps {
+  project: AnyRecord | null | undefined;
   needs: AnyRecord;
   storageKey: string;
   setNeeds: (updater: (prev: AnyRecord) => AnyRecord) => void;
@@ -19,6 +21,7 @@ interface UseNeedsDataProps {
  * Hook for managing needs data and migration
  */
 export function useNeedsData({
+  project,
   needs,
   storageKey,
   setNeeds,
@@ -29,12 +32,51 @@ export function useNeedsData({
 }: UseNeedsDataProps) {
   const { t } = useTranslation();
   const [isLoaded, setIsLoaded] = useState(false);
+  const roleCatalogKey = useMemo(() => {
+    try {
+      return JSON.stringify((project as AnyRecord)?.roleCatalog || null);
+    } catch {
+      return 'no_role_catalog';
+    }
+  }, [project]);
+  const migrationScopeKey = `${storageKey}::${roleCatalogKey}`;
   const stateRef = useRef<{ migrationKey: string | null; needs: AnyRecord } | null>(null);
   if (!stateRef.current) {
     stateRef.current = { migrationKey: null, needs: needs as AnyRecord };
   } else {
     stateRef.current.needs = needs as AnyRecord;
   }
+
+  const enrichMemberRoleMeta = (member: AnyRecord): [AnyRecord, boolean] => {
+    if (!member || typeof member !== 'object') return [member, false];
+    const resolvedRole = resolveMemberProjectRole(project, member);
+    const nextRoleId = String(member?.roleId || resolvedRole.roleId || '').trim();
+    const nextRoleLabel = String(member?.roleLabel || resolvedRole.label || '').trim();
+    const nextRole = String(member?.role || resolvedRole.legacyCode || resolvedRole.baseRole || '').trim().toUpperCase();
+    const nextMember = {
+      ...member,
+      role: nextRole || member?.role || '',
+      roleId: nextRoleId || undefined,
+      roleLabel: nextRoleLabel || undefined,
+    };
+    const changed =
+      String(member?.role || '') !== String(nextMember.role || '') ||
+      String(member?.roleId || '') !== String(nextMember.roleId || '') ||
+      String(member?.roleLabel || '') !== String(nextMember.roleLabel || '');
+
+    return [nextMember, changed];
+  };
+
+  const enrichMembers = (members: unknown): [AnyRecord[], boolean] => {
+    if (!Array.isArray(members)) return [[], false];
+    let changed = false;
+    const nextMembers = members.map(member => {
+      const [nextMember, memberChanged] = enrichMemberRoleMeta(member as AnyRecord);
+      changed ||= memberChanged;
+      return nextMember;
+    });
+    return [nextMembers, changed];
+  };
 
   const normalizeNeeds = (raw: AnyRecord): NeedsState => {
     if (raw && Array.isArray(raw.pre) && Array.isArray(raw.pro)) {
@@ -75,7 +117,7 @@ export function useNeedsData({
   // Data migration - only run once per storageKey
   useEffect(() => {
     // Skip if migration already done for this storageKey
-    if (stateRef.current?.migrationKey === storageKey) {
+    if (stateRef.current?.migrationKey === migrationScopeKey) {
       setIsLoaded(true);
       return;
     }
@@ -119,6 +161,30 @@ export function useNeedsData({
               (d as AnyRecord).crewList = migrateList((d as AnyRecord).crewNames, 'crewNames') || (d as AnyRecord).crewList || [];
               (d as AnyRecord).preList = migrateList((d as AnyRecord).preNames, 'preNames') || (d as AnyRecord).preList || [];
               (d as AnyRecord).pickList = migrateList((d as AnyRecord).pickNames, 'pickNames') || (d as AnyRecord).pickList || [];
+              const [nextCrewList, crewChanged] = enrichMembers((d as AnyRecord).crewList);
+              const [nextPreList, preChanged] = enrichMembers((d as AnyRecord).preList);
+              const [nextPickList, pickChanged] = enrichMembers((d as AnyRecord).pickList);
+              (d as AnyRecord).crewList = nextCrewList;
+              (d as AnyRecord).preList = nextPreList;
+              (d as AnyRecord).pickList = nextPickList;
+              needsMigration ||= crewChanged || preChanged || pickChanged;
+              if (Array.isArray((d as AnyRecord).refList)) {
+                const [nextRefList, refChanged] = enrichMembers((d as AnyRecord).refList);
+                (d as AnyRecord).refList = nextRefList;
+                needsMigration ||= refChanged;
+              }
+              if (Array.isArray((d as AnyRecord).refBlocks)) {
+                let blocksChanged = false;
+                (d as AnyRecord).refBlocks = (d as AnyRecord).refBlocks.map((block: AnyRecord) => {
+                  const [nextList, listChanged] = enrichMembers(block?.list);
+                  blocksChanged ||= listChanged;
+                  return {
+                    ...block,
+                    list: nextList,
+                  };
+                });
+                needsMigration ||= blocksChanged;
+              }
               if ((d as AnyRecord).preTipo && !(d as AnyRecord).prelightTipo) {
                 (d as AnyRecord).prelightTipo = (d as AnyRecord).preTipo;
                 delete (d as AnyRecord).preTipo;
@@ -139,7 +205,7 @@ export function useNeedsData({
           }
         }
         if (stateRef.current) {
-          stateRef.current.migrationKey = storageKey;
+          stateRef.current.migrationKey = migrationScopeKey;
         }
         setIsLoaded(true);
       } catch (error) {
@@ -157,7 +223,7 @@ export function useNeedsData({
       setTimeout(performMigration, 0);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [storageKey]);
+  }, [migrationScopeKey, storageKey]);
 
   // Sort week entries by date
   const { preEntries, proEntries } = useMemo(() => {
@@ -238,4 +304,3 @@ export function useNeedsData({
 
   return { isLoaded, preEntries, proEntries };
 }
-

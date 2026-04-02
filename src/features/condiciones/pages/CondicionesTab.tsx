@@ -17,7 +17,12 @@ type CondicionesTabProps = {
   readOnly?: boolean;
 };
 
-export default function CondicionesTab({ project, mode, onChange = () => {}, readOnly = false }: CondicionesTabProps) {
+export default function CondicionesTab({
+  project,
+  mode,
+  onChange = () => {},
+  readOnly = false,
+}: CondicionesTabProps) {
   const { t } = useTranslation();
   const effectiveMode = useMemo(() => {
     const v = (mode || (project as AnyRecord)?.conditions?.tipo || 'semanal')

@@ -7,42 +7,16 @@ import { getTranslation, translateConcept, translateDietItem, translateDayName }
 import {
   calculateTotalForExport,
   deduplicateData,
-  sortPersonKeysByRole,
+  parsePersonKey,
+  resolveExportRoleMeta,
   isMeaningfulValue,
 } from './dataHelpers';
 import { groupAndSortPersonsByBlock } from './buildReportWeekHTMLForPDF/sortingHelpers';
 
 function parsePersonKeyForDisplay(pk: string): { role: string; name: string } {
-  let role = '';
-  let name = '';
-  const extraMatch = pk.match(/^(.*?)\.(extra(?::\d+)?)__(.*)$/);
-  if (extraMatch) {
-    role = extraMatch[1] || '';
-    name = extraMatch[3] || '';
-    if (role.startsWith('REF')) {
-      role = stripRefuerzoSuffix(role);
-    }
-  } else if (pk.includes('.pre__')) {
-    const [rolePart, ...nameParts] = pk.split('.pre__');
-    role = rolePart || '';
-    name = nameParts.join('.pre__');
-    if (role.startsWith('REF')) {
-      role = stripRefuerzoSuffix(role);
-    }
-  } else if (pk.includes('.pick__')) {
-    const [rolePart, ...nameParts] = pk.split('.pick__');
-    role = rolePart || '';
-    name = nameParts.join('.pick__');
-    if (role.startsWith('REF')) {
-      role = stripRefuerzoSuffix(role);
-    }
-  } else {
-    const [rolePart, ...nameParts] = pk.split('__');
-    role = rolePart || '';
-    name = nameParts.join('__');
-    if (role.startsWith('REF')) {
-      role = stripRefuerzoSuffix(role);
-    }
+  let { role, name } = parsePersonKey(pk);
+  if (role.startsWith('REF')) {
+    role = stripRefuerzoSuffix(role);
   }
   return { role, name };
 }
@@ -67,7 +41,6 @@ export function buildReportWeekHTML({
 
   // Deduplicate data
   const finalData = deduplicateData(data);
-  const sortedPersonKeys = sortPersonKeysByRole(Object.keys(finalData || {}));
 
 
   const restLabel = getTranslation('reports.rest', 'DESCANSO');
@@ -95,7 +68,7 @@ export function buildReportWeekHTML({
           ...(groupedPersonKeys.pick || []),
         ],
       }
-    : groupAndSortPersonsByBlock(finalData);
+    : groupAndSortPersonsByBlock(finalData, false, project);
 
   // Generate table headers
   const headDays = `
@@ -138,7 +111,14 @@ export function buildReportWeekHTML({
   const renderPersonBlock = (keys: string[]) =>
     keys
       .map(pk => {
-      const { role, name } = parsePersonKeyForDisplay(String(pk));
+      const { role: rawRole, name } = parsePersonKeyForDisplay(String(pk));
+      let role = rawRole;
+      const exportRole = resolveExportRoleMeta(project, rawRole);
+      if (exportRole.displayRole.startsWith('REF')) {
+        role = stripRefuerzoSuffix(exportRole.displayRole);
+      } else {
+        role = exportRole.displayRole;
+      }
 
       // Skip entries with empty or invalid roles/names
       if (!role && !name) {

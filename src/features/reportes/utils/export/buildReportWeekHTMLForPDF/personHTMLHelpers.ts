@@ -6,6 +6,8 @@ import { translateConcept, translateDietItem } from '../translationHelpers';
 import {
   calculateTotalForExport,
   isMeaningfulValue,
+  parsePersonKey,
+  resolveExportRoleMeta,
 } from '../dataHelpers';
 
 /**
@@ -15,47 +17,18 @@ import {
 function generatePersonHeader(
   pk: string,
   safeSemanaWithData: string[],
-  genderMap?: Record<string, string>
+  genderMap?: Record<string, string>,
+  project?: any
 ): string {
   // El formato del pk es: "role.block__name" donde block puede ser "pre" o "pick"
   // Ejemplos: "G.pre__Nombre", "REFE.pre__Nombre", "G.pick__Nombre", "G__Nombre" (base)
-  let role = '';
-  let name = '';
-  
-  const extraMatch = pk.match(/^(.*?)\.(extra(?::\d+)?)__(.*)$/);
-
-  if (extraMatch) {
-    role = extraMatch[1] || '';
-    name = extraMatch[3] || '';
-    if (role.startsWith('REF')) {
-      role = stripRefuerzoSuffix(role);
-    }
-  } else if (pk.includes('.pre__')) {
-    // Prelight: formato "role.pre__name"
-    const [rolePart, ...nameParts] = pk.split('.pre__');
-    role = rolePart || '';
-    name = nameParts.join('.pre__');
-    if (role.startsWith('REF')) {
-      role = stripRefuerzoSuffix(role);
-    }
-  } else if (pk.includes('.pick__')) {
-    // Pickup: formato "role.pick__name"
-    const [rolePart, ...nameParts] = pk.split('.pick__');
-    role = rolePart || '';
-    name = nameParts.join('.pick__');
-    if (role.startsWith('REF')) {
-      role = stripRefuerzoSuffix(role);
-    }
-  } else {
-    // Base: formato "role__name"
-    const [rolePart, ...nameParts] = pk.split('__');
-    role = rolePart || '';
-    name = nameParts.join('__');
-    // IMPORTANTE: Para refuerzos, eliminar TODOS los sufijos P o R (REFEP -> REFE, REFERP -> REFER -> REFE)
-    if (role.startsWith('REF')) {
-      role = stripRefuerzoSuffix(role);
-    }
-    // Mantener el rol tal cual (G, E, REFE, REFG, etc.) sin sufijos para refuerzos
+  const parsed = parsePersonKey(pk);
+  let role = parsed.role;
+  const name = parsed.name;
+  const exportRole = resolveExportRoleMeta(project, parsed.role);
+  role = exportRole.displayRole;
+  if (role.startsWith('REF')) {
+    role = stripRefuerzoSuffix(role);
   }
 
   // Skip entries with empty or invalid roles/names
@@ -185,9 +158,10 @@ export function generatePersonHTML(
   conceptosConDatos: string[],
   safeSemanaWithData: string[],
   finalData: any,
-  genderMap?: Record<string, string>
+  genderMap?: Record<string, string>,
+  project?: any
 ): string {
-  const header = generatePersonHeader(pk, safeSemanaWithData, genderMap);
+  const header = generatePersonHeader(pk, safeSemanaWithData, genderMap, project);
   if (!header) return ''; // Skip invalid entries
 
   const rows = generatePersonConceptRows(pk, conceptosConDatos, safeSemanaWithData, finalData);

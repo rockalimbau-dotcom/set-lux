@@ -50,7 +50,7 @@ export function buildReportWeekHTMLForPDF({
       pre: rawBlocks.pre || [],
       pick: rawBlocks.pick || [],
     };
-    const grouped = groupAndSortPersonsByBlock(finalData, true);
+    const grouped = groupAndSortPersonsByBlock(finalData, true, project);
     extraGroups = grouped.extraGroups.filter(group =>
       group.people.some(pk => personsByBlock.extra.includes(pk))
     );
@@ -58,7 +58,7 @@ export function buildReportWeekHTMLForPDF({
     delete finalData.__blocks;
   } else {
     // Agrupar normalmente
-    const grouped = groupAndSortPersonsByBlock(finalData);
+    const grouped = groupAndSortPersonsByBlock(finalData, false, project);
     personsByBlock = grouped.personsByBlock;
     extraGroups = grouped.extraGroups;
   }
@@ -87,6 +87,7 @@ export function buildReportWeekHTMLForPDF({
     conceptosConDatos,
     finalData,
     genderMap,
+    project,
     horarioPrelight,
     horarioPickup,
     horarioExtraByBlock

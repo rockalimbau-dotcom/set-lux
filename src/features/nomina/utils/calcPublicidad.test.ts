@@ -87,7 +87,7 @@ describe('calcPublicidad - makeRolePrices with holidayDay', () => {
     const refPrices = rolePrices.getForRole('REF', 'GAFFER');
 
     expect(refPrices).toHaveProperty('holidayDay');
-    expect(refPrices.holidayDay).toBe(245); // Takes from GAFFER row as it's checked first in publicidad
+    expect(refPrices.holidayDay).toBe(192.5); // Fallback to Eléctrico row, igual que semanal/mensual
   });
 
   it('should return 0 for holidayDay when not defined in diario', () => {
@@ -115,5 +115,159 @@ describe('calcPublicidad - makeRolePrices with holidayDay', () => {
     expect(gafferPrices).toHaveProperty('holidayDay');
     expect(gafferPrices.holidayDay).toBe(0);
   });
-});
 
+  it('should resolve custom diario role prices by roleId', () => {
+    const mockProject = {
+      id: 'test-project',
+      conditions: { tipo: 'diario' },
+      roleCatalog: {
+        version: 1 as const,
+        roles: [
+          {
+            id: 'electric_night',
+            label: 'Eléctrico noche',
+            legacyCode: 'E',
+            baseRole: 'E',
+            sortOrder: 20,
+            active: true,
+            supportsPrelight: true,
+            supportsPickup: true,
+            supportsRefuerzo: true,
+          },
+        ],
+      },
+    };
+
+    storage.getJSON = vi.fn().mockReturnValue({
+      roles: ['electric_night'],
+      prices: {
+        electric_night: {
+          'Precio jornada': '320',
+          'Travel day': '160',
+          'Horas extras': '40',
+          'Precio Día extra/Festivo': '560',
+          'Carga/descarga': '150',
+        },
+      },
+      params: {},
+    });
+
+    const rolePrices = makeRolePrices(mockProject);
+    const prices = rolePrices.getForRole('Eléctrico noche', null, {
+      roleId: 'electric_night',
+      roleLabel: 'Eléctrico noche',
+    });
+
+    expect(prices.jornada).toBe(320);
+    expect(prices.travelDay).toBe(160);
+    expect(prices.horaExtra).toBe(40);
+    expect(prices.holidayDay).toBe(560);
+    expect(prices.cargaDescarga).toBe(150);
+  });
+
+  it('falls back to the custom base price when pickup/prelight only has the base role row', () => {
+    const mockProject = {
+      id: 'test-project',
+      conditions: {
+        tipo: 'diario',
+        diario: {
+          roles: ['e_default', 'electric_factura'],
+          prices: {
+            e_default: { 'Precio jornada': '350' },
+            electric_factura: { 'Precio jornada': '300' },
+          },
+          pricesPickup: {
+            e_default: { 'Precio jornada': '350' },
+          },
+          params: {},
+        },
+      },
+      roleCatalog: {
+        version: 1 as const,
+        roles: [
+          {
+            id: 'e_default',
+            label: 'Eléctrico/a',
+            legacyCode: 'E',
+            baseRole: 'E',
+            sortOrder: 2,
+            active: true,
+            supportsPrelight: true,
+            supportsPickup: true,
+            supportsRefuerzo: true,
+          },
+          {
+            id: 'electric_factura',
+            label: 'Eléctrico factura',
+            legacyCode: 'E',
+            baseRole: 'E',
+            sortOrder: 2,
+            active: true,
+            supportsPrelight: true,
+            supportsPickup: true,
+            supportsRefuerzo: true,
+          },
+        ],
+      },
+    };
+
+    const rolePrices = makeRolePrices(mockProject);
+    const prices = rolePrices.getForRole('ER', null, {
+      roleId: 'electric_factura',
+      roleLabel: 'Eléctrico factura',
+    });
+
+    expect(prices.jornada).toBe(300);
+  });
+
+  it('resolves the custom diario role by roleLabel when roleId is missing', () => {
+    const mockProject = {
+      id: 'test-project',
+      conditions: {
+        tipo: 'diario',
+        diario: {
+          roles: ['e_default', 'electric_factura'],
+          prices: {
+            e_default: { 'Precio jornada': '350' },
+            electric_factura: { 'Precio jornada': '300' },
+          },
+          params: {},
+        },
+      },
+      roleCatalog: {
+        version: 1 as const,
+        roles: [
+          {
+            id: 'e_default',
+            label: 'Eléctrico/a',
+            legacyCode: 'E',
+            baseRole: 'E',
+            sortOrder: 2,
+            active: true,
+            supportsPrelight: true,
+            supportsPickup: true,
+            supportsRefuerzo: true,
+          },
+          {
+            id: 'electric_factura',
+            label: 'Eléctrico factura',
+            legacyCode: 'E',
+            baseRole: 'E',
+            sortOrder: 20,
+            active: true,
+            supportsPrelight: true,
+            supportsPickup: true,
+            supportsRefuerzo: true,
+          },
+        ],
+      },
+    };
+
+    const rolePrices = makeRolePrices(mockProject);
+    const prices = rolePrices.getForRole('E', null, {
+      roleLabel: 'Eléctrico factura',
+    });
+
+    expect(prices.jornada).toBe(300);
+  });
+});

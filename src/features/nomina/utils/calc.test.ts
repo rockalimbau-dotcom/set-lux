@@ -87,18 +87,18 @@ describe('nomina/utils/calc', () => {
       const { getForRole } = makeRolePrices(mockProject);
 
       const prices = getForRole('G');
-      expect(prices).toEqual({
+      expect(prices).toMatchObject({
         jornada: 100,
         travelDay: 50,
         horaExtra: 15,
-        holidayDay: 0, // Added holidayDay
+        holidayDay: 0,
         transporte: 20,
         km: 0.5,
         dietas: {
           Comida: 15,
           Cena: 25,
           'Dieta sin pernoctar': 30,
-          'Dieta completa + desayuno': 50,
+          'Dieta con pernocta': 50,
           'Gastos de bolsillo': 10,
         },
       });

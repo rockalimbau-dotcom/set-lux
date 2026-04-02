@@ -10,13 +10,27 @@ interface WorkedDaysSummaryProps {
   oficina: number;
   prelight?: number;
   recogida?: number;
+  showLocalizar?: boolean;
 }
 
-export default function WorkedDaysSummary({ carga, descarga, localizar, rodaje, pruebasCamara = 0, oficina, prelight = 0, recogida = 0 }: WorkedDaysSummaryProps) {
+export default function WorkedDaysSummary({
+  carga,
+  descarga,
+  localizar,
+  rodaje,
+  pruebasCamara = 0,
+  oficina,
+  prelight = 0,
+  recogida = 0,
+  showLocalizar = false,
+}: WorkedDaysSummaryProps) {
   const { t } = useTranslation();
   const parts: string[] = [];
   
-  // Localizar no se repite aquí porque ya tiene su propia columna.
+  if (showLocalizar && localizar > 0) {
+    parts.push(`${t('payroll.dayTypes.localizar', 'Localització tècnica')} x${localizar}`);
+  }
+
   if (oficina > 0) {
     parts.push(`${t('payroll.dayTypes.office')} x${oficina}`);
   }

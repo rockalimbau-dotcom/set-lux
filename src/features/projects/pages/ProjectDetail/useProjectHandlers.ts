@@ -1,5 +1,6 @@
 import { Project, ProjectTab, ProjectTeam, ProjectStatus, ProjectMode } from './ProjectDetailTypes';
-import { validateTeamNames } from './ProjectDetailUtils';
+import { TeamNameValidationIssue, validateTeamNames } from './ProjectDetailUtils';
+import { harmonizeTeamPersonIds, normalizeTeamMember, sortTeam } from '@features/equipo/pages/EquipoTab/EquipoTabUtils';
 
 interface UseProjectHandlersProps {
   proj: Project;
@@ -7,7 +8,7 @@ interface UseProjectHandlersProps {
   activeTab: ProjectTab | null;
   setProj: React.Dispatch<React.SetStateAction<Project>>;
   setActiveTab: (tab: ProjectTab | null) => void;
-  setShowNameValidationModal: (modal: { targetTab: ProjectTab | null; roleWithoutName: { role: string; group: string } } | null) => void;
+  setShowNameValidationModal: (modal: { targetTab: ProjectTab | null; roleWithoutName: TeamNameValidationIssue } | null) => void;
   onUpdateProject?: (project: Project) => void;
   navigate: (path: string, options?: { replace?: boolean }) => void;
   pid: string;
@@ -20,6 +21,7 @@ interface UseProjectHandlersReturn {
   handleNavigateToProject: () => void;
   handleTeamChange: (model: ProjectTeam) => void;
   handleConditionsChange: (patch: any) => void;
+  handleRoleCatalogChange: (roleCatalog: any) => void;
   handleStatusConfirm: () => void;
 }
 
@@ -82,8 +84,18 @@ export function useProjectHandlers({
     // Si el proyecto está cerrado, no permitir cambios
     if (!isActive) return;
     // Actualiza proyecto + persiste (en ambas claves)
+    const normalizedModel: ProjectTeam = harmonizeTeamPersonIds({
+      base: sortTeam((model.base || []).map(member => normalizeTeamMember(proj, member)), proj),
+      reinforcements: sortTeam((model.reinforcements || []).map(member => normalizeTeamMember(proj, member)), proj),
+      prelight: sortTeam((model.prelight || []).map(member => normalizeTeamMember(proj, member)), proj),
+      pickup: sortTeam((model.pickup || []).map(member => normalizeTeamMember(proj, member)), proj),
+      enabledGroups: {
+        prelight: model.enabledGroups?.prelight ?? false,
+        pickup: model.enabledGroups?.pickup ?? false,
+      },
+    });
     setProj(p => {
-      const next = { ...p, team: model };
+      const next = { ...p, team: normalizedModel };
       return next;
     });
   };
@@ -98,7 +110,7 @@ export function useProjectHandlers({
       // Si desde Condiciones cambian el tipo, respétalo; si no, conserva el actual
       const prevTipo = p?.conditions?.tipo || 'semanal';
       const nextTipo = (patch?.tipo || prevTipo).toLowerCase() as ProjectMode;
-      const next = {
+      const updated = {
         ...p,
         conditions: {
           ...(p.conditions || {}),
@@ -106,7 +118,10 @@ export function useProjectHandlers({
           tipo: nextTipo,
         },
       };
-      return next;
+      try {
+        onUpdateProject?.(updated);
+      } catch {}
+      return updated;
     });
   };
 
@@ -121,13 +136,27 @@ export function useProjectHandlers({
     });
   };
 
+  const handleRoleCatalogChange = (roleCatalog: any) => {
+    if (!isActive || !roleCatalog) return;
+    setProj(p => {
+      const updated = {
+        ...p,
+        roleCatalog,
+      };
+      try {
+        onUpdateProject?.(updated);
+      } catch {}
+      return updated;
+    });
+  };
+
   return {
     handleTabChange,
     handleNavigateAway,
     handleNavigateToProject,
     handleTeamChange,
     handleConditionsChange,
+    handleRoleCatalogChange,
     handleStatusConfirm,
   };
 }
-

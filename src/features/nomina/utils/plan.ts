@@ -64,33 +64,36 @@ export function weekISOdays(week: { startDate: string }): string[] {
   return Array.from({ length: 7 }, (_, i) => toYYYYMMDD(addDays(start, i)));
 }
 
-export function weekAllPeopleActive(week: any): { role: string; name: string; gender?: 'male' | 'female' | 'neutral'; source?: string; block?: string }[] {
+export function weekAllPeopleActive(week: any): { personId?: string; role: string; name: string; gender?: 'male' | 'female' | 'neutral'; source?: string; block?: string; roleId?: string; roleLabel?: string }[] {
   const seen = new Set<string>();
-  const out: { role: string; name: string; gender?: 'male' | 'female' | 'neutral'; source?: string; block?: string }[] = [];
+  const out: { personId?: string; role: string; name: string; gender?: 'male' | 'female' | 'neutral'; source?: string; block?: string; roleId?: string; roleLabel?: string }[] = [];
   const push = (
+    personId?: string,
     role?: string,
     name?: string,
     gender?: 'male' | 'female' | 'neutral',
     source?: string,
-    block?: string
+    block?: string,
+    roleId?: string,
+    roleLabel?: string
   ) => {
     if (!role && !name) return;
     // Generar nombre por defecto si no hay nombre
     const finalName = name || `Persona_${role || 'UNKNOWN'}`;
-    const id = `${role || ''}__${finalName}__${source || ''}__${block || ''}`;
+    const id = `${personId || ''}__${roleId || role || ''}__${finalName}__${source || ''}__${block || ''}`;
     if (seen.has(id)) return;
     seen.add(id);
-    out.push({ role: role || '', name: finalName, gender, source, block });
+    out.push({ personId, role: role || '', name: finalName, gender, source, block, roleId, roleLabel });
   };
 
   for (const d of week?.days || []) {
-    for (const m of d?.team || []) push(m.role || '', m.name || '', m.gender, m.source);
-    for (const m of d?.prelight || []) push(m.role || '', m.name || '', m.gender, m.source);
-    for (const m of d?.pickup || []) push(m.role || '', m.name || '', m.gender, m.source);
+    for (const m of d?.team || []) push(m.personId, m.role || '', m.name || '', m.gender, m.source, undefined, m.roleId, m.roleLabel);
+    for (const m of d?.prelight || []) push(m.personId, m.role || '', m.name || '', m.gender, m.source, undefined, m.roleId, m.roleLabel);
+    for (const m of d?.pickup || []) push(m.personId, m.role || '', m.name || '', m.gender, m.source, undefined, m.roleId, m.roleLabel);
     normalizeExtraBlocks(d).forEach((block, index) => {
       const blockKey = `extra:${index}`;
       (block?.list || []).forEach((m: any) =>
-        push(m.role || '', m.name || '', m.gender, 'extra', blockKey)
+        push(m.personId, m.role || '', m.name || '', m.gender, 'extra', blockKey, m.roleId, m.roleLabel)
       );
     });
   }

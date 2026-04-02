@@ -1,6 +1,9 @@
 // Carga el modelo de condiciones (prices/params) desde localStorage
 // priorizando el modo del proyecto y con retrocompatibilidad.
 import { storage } from '@shared/services/localStorage.service';
+import { normalizeConditionModel } from '@features/condiciones/condiciones/roleCatalog';
+import { PRICE_ROLES } from '@features/condiciones/condiciones/shared.constants';
+import { PRICE_ROLES_DIARIO } from '@features/condiciones/condiciones/publicidad/publicidadConstants';
 
 export function loadCondModel(project: { id?: string; nombre?: string; conditionsMode?: string; conditions?: { tipo?: string; mode?: string } } | null, modeOverride?: string) {
   const base = project?.id || project?.nombre || 'tmp';
@@ -21,6 +24,38 @@ export function loadCondModel(project: { id?: string; nombre?: string; condition
     `cond_${base}_diario`,
     `cond_${base}_publicidad`, // Compatibilidad hacia atrás
   ];
+
+  const fallbackOrder = mode === 'diario' ? PRICE_ROLES_DIARIO : PRICE_ROLES;
+  const targetKey = `cond_${base}_${mode}`;
+
+  const normalizeLoadedModel = (obj: any) =>
+    normalizeConditionModel(project as any, obj, fallbackOrder, true);
+
+  const projectConditionsModel =
+    mode === 'diario'
+      ? (project as any)?.conditions?.diario || (project as any)?.conditions?.publicidad
+      : (project as any)?.conditions?.[mode];
+
+  const hasConditionData = (obj: any): boolean =>
+    !!(
+      obj &&
+      typeof obj === 'object' &&
+      (
+        (Array.isArray(obj.roles) && obj.roles.length > 0) ||
+        (obj.prices && typeof obj.prices === 'object' && Object.keys(obj.prices).length > 0) ||
+        (obj.pricesPrelight && typeof obj.pricesPrelight === 'object' && Object.keys(obj.pricesPrelight).length > 0) ||
+        (obj.pricesPickup && typeof obj.pricesPickup === 'object' && Object.keys(obj.pricesPickup).length > 0) ||
+        (obj.params && typeof obj.params === 'object' && Object.keys(obj.params).length > 0)
+      )
+    );
+
+  if (hasConditionData(projectConditionsModel)) {
+    const normalizedProjectModel = normalizeLoadedModel(projectConditionsModel);
+    try {
+      storage.setJSON(targetKey, normalizedProjectModel);
+    } catch {}
+    return normalizedProjectModel;
+  }
   
   const migrateCondiciones = (obj: any) => {
     if (!obj || typeof obj !== 'object') return { obj, changed: false };
@@ -133,8 +168,9 @@ export function loadCondModel(project: { id?: string; nombre?: string; condition
               transporteDia: '15',
             },
           } as any;
-          storage.setJSON(k, seed);
-          return seed;
+          const normalizedSeed = normalizeLoadedModel(seed);
+          storage.setJSON(k, normalizedSeed);
+          return normalizedSeed;
         }
       }
       
@@ -152,25 +188,25 @@ export function loadCondModel(project: { id?: string; nombre?: string; condition
         // pero solo si no hay roles definidos explícitamente
         if (Object.keys(filteredPrices).length === 0 && Object.keys(obj.prices).length > 0) {
           // Si no hay roles definidos pero sí hay prices, usar todos los prices
-          return obj;
+          return normalizeLoadedModel(obj);
         }
-        return { ...obj, prices: filteredPrices };
+        return normalizeLoadedModel({ ...obj, prices: filteredPrices });
       }
       
       const migrated = migrateCondiciones(obj);
+      const normalized = normalizeLoadedModel(migrated.obj);
       if (migrated.changed) {
         try {
-          storage.setJSON(k, migrated.obj);
+          storage.setJSON(k, normalized);
         } catch {}
       }
-      return migrated.obj; // { prices:{...}, params:{...} }
+      return normalized; // { prices:{...}, params:{...} }
     } catch {}
   }
 
   // Si no existe nada en localStorage aún (p.ej. proyecto nuevo y no se ha abierto Condiciones),
   // sembramos valores por defecto para que Nómina funcione desde el inicio.
   try {
-    const targetKey = `cond_${base}_${mode}`;
     if (mode === 'diario') {
       const seed = {
         roles: ['Gaffer', 'Eléctrico'],
@@ -241,12 +277,11 @@ export function loadCondModel(project: { id?: string; nombre?: string; condition
           transporteDia: '15',
         },
       } as any;
-      storage.setJSON(targetKey, seed);
-      return seed;
+      const normalizedSeed = normalizeLoadedModel(seed);
+      storage.setJSON(targetKey, normalizedSeed);
+      return normalizedSeed;
     }
   } catch {}
 
   return {} as any;
 }
-
-

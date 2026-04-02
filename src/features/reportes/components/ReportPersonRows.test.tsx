@@ -140,7 +140,71 @@ describe('ReportPersonRows (smoke)', () => {
       'E',
       'Ricard Durany',
       findWeekAndDay,
-      'pre'
+      'pre',
+      { roleId: undefined }
     );
+  });
+
+  it('shows the custom role label in the header when the same name has a custom role', () => {
+    const semana = ['2025-01-06'];
+    const list = [{ role: 'E', roleId: 'electric_factura', roleLabel: 'Eléctrico factura', name: 'Pol Peitx' }];
+    const collapsed = {};
+    const setCollapsed = fn => fn(collapsed);
+    const project = {
+      roleCatalog: {
+        version: 1,
+        roles: [
+          {
+            id: 'e_default',
+            label: 'Eléctrico/a',
+            legacyCode: 'E',
+            baseRole: 'E',
+            sortOrder: 10,
+            active: true,
+            supportsPrelight: true,
+            supportsPickup: true,
+            supportsRefuerzo: true,
+          },
+          {
+            id: 'electric_factura',
+            label: 'Eléctrico factura',
+            legacyCode: 'E',
+            baseRole: 'E',
+            sortOrder: 10,
+            active: true,
+            supportsPrelight: true,
+            supportsPickup: true,
+            supportsRefuerzo: true,
+          },
+        ],
+      },
+    };
+
+    render(
+      <table>
+        <tbody>
+          <ReportPersonRows
+            project={project}
+            list={list}
+            block='base'
+            semana={semana}
+            collapsed={collapsed}
+            setCollapsed={setCollapsed}
+            data={{}}
+            setCell={noop}
+            findWeekAndDay={findWeekAndDay}
+            isPersonScheduledOnBlock={isPersonScheduledOnBlock}
+            CONCEPTS={CONCEPTS}
+            DIETAS_OPCIONES={DIETAS_OPCIONES}
+            SI_NO={SI_NO}
+            parseDietas={parseDietas}
+            formatDietas={formatDietas}
+          />
+        </tbody>
+      </table>
+    );
+
+    expect(screen.getByText('Pol Peitx')).toBeInTheDocument();
+    expect(screen.getByText('Eléctrico factura')).toBeInTheDocument();
   });
 });

@@ -24,4 +24,27 @@ describe('buildNecesidadesHTMLForPDF', () => {
     expect(html).toContain('<br/>05/03');
     expect(html).toContain('<br/>06/03');
   });
+
+  it('renders custom roleLabel in crew rows when available', () => {
+    const html = buildNecesidadesHTMLForPDF(
+      { nombre: 'Proyecto Test' },
+      'Semana 1',
+      '2026-03-02',
+      [
+        {
+          crewTipo: 'Rodaje',
+          crewList: [{ role: 'E', roleId: 'electric_night', roleLabel: 'Eléctrico noche', name: 'Ana' }],
+        },
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+      ]
+    );
+
+    expect(html).toContain('Eléctrico noche');
+    expect(html).toContain('Ana');
+  });
 });
