@@ -85,7 +85,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   // <React.StrictMode>
   <RootErrorBoundary>
     <App />
-    <Analytics />
+    {import.meta.env.PROD ? <Analytics /> : null}
   </RootErrorBoundary>
   // </React.StrictMode>
 );

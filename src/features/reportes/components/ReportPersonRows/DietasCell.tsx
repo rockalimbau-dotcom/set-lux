@@ -57,9 +57,14 @@ const DietasCell: React.FC<DietasCellProps> = ({
   );
 
   const showTicketButton = parsed.items.has('Ticket') || parsed.ticket !== null;
+  const hasValue = parsed.items.size > 0 || parsed.ticket !== null || parsed.other !== null;
 
   return (
-    <Td key={`${pKey}_${concepto}_${fecha}`} className={`text-center ${cellClasses}`} align='center'>
+    <Td
+      key={`${pKey}_${concepto}_${fecha}`}
+      className={`text-center ${cellClasses} ${hasValue ? 'report-filled-cell' : ''}`}
+      align='center'
+    >
       <div className='flex flex-col gap-1 sm:gap-1.5 md:gap-2 items-center justify-center'>
         <div className='w-full relative' ref={dropdownRef}>
           <button

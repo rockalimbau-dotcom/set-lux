@@ -60,6 +60,7 @@ export default function ReportesSemana({
   const theme = useTheme();
   const isDark = theme === 'dark';
   const [attachmentInfoOpen, setAttachmentInfoOpen] = useState(false);
+  const [autoCalculationsReady, setAutoCalculationsReady] = useState(false);
   const headerRowRef = useRef<HTMLTableRowElement | null>(null);
   const dateRowRef = useRef<HTMLTableRowElement | null>(null);
   const [stickyOffsets, setStickyOffsets] = useState({
@@ -375,7 +376,32 @@ export default function ReportesSemana({
     toYYYYMMDD
   );
 
+  useEffect(() => {
+    setAutoCalculationsReady(false);
+
+    let timeoutId: number | null = null;
+    let idleId: number | null = null;
+
+    const enable = () => setAutoCalculationsReady(true);
+
+    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+      idleId = (window as any).requestIdleCallback(enable, { timeout: 250 });
+    } else {
+      timeoutId = window.setTimeout(enable, 32);
+    }
+
+    return () => {
+      if (idleId !== null && typeof window !== 'undefined' && 'cancelIdleCallback' in window) {
+        (window as any).cancelIdleCallback(idleId);
+      }
+      if (timeoutId !== null) {
+        window.clearTimeout(timeoutId);
+      }
+    };
+  }, [storageKey, horasExtraTipo, mode]);
+
   useAutoCalculations({
+    enabled: autoCalculationsReady,
     safeSemana: [...safeSemana],
     findWeekAndDay: findWeekAndDay as any,
     getBlockWindow: getBlockWindow as any,

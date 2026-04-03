@@ -25,7 +25,11 @@ const SiNoCell: React.FC<SiNoCellProps> = ({
   };
 
   return (
-    <Td key={`${pKey}_${concepto}_${fecha}`} className={`text-center ${cellClasses}`} align='center'>
+    <Td
+      key={`${pKey}_${concepto}_${fecha}`}
+      className={`text-center ${cellClasses} ${!off && isChecked ? 'report-filled-cell' : ''}`}
+      align='center'
+    >
       <div className='w-full flex justify-center items-center'>
         <input
           type='checkbox'

@@ -125,27 +125,29 @@ export default function useReportData(
   // asegurar estructura si cambian semana/personas
   useEffect(() => {
     setData((prev: ReportData) => {
-      const next = { ...(prev || {}) };
-      const allowedKeys = new Set(
-        (safePersonas || []).map(p => personaKey(p))
-      );
+      const current = prev || {};
+      const next = { ...current };
+      let changed = false;
       for (const p of safePersonas) {
         const key = personaKey(p);
-        next[key] = next[key] || {};
+        if (!next[key]) {
+          next[key] = {};
+          changed = true;
+        }
         for (const c of CONCEPTS) {
-          next[key][c] = next[key][c] || {};
+          if (!next[key][c]) {
+            next[key][c] = {};
+            changed = true;
+          }
           for (const f of safeSemana) {
-            if (!(f in next[key][c])) next[key][c][f] = '';
+            if (!(f in next[key][c])) {
+              next[key][c][f] = '';
+              changed = true;
+            }
           }
         }
       }
-      // Remove data for people no longer in the team/planning
-      for (const key of Object.keys(next)) {
-        if (!allowedKeys.has(key)) {
-          delete next[key];
-        }
-      }
-      return next;
+      return changed ? next : prev;
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(safePersonas), JSON.stringify(safeSemana)]);

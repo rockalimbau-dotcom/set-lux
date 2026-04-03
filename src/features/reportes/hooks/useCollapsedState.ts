@@ -50,20 +50,28 @@ export default function useCollapsedState(
 
   useEffect(() => {
     setCollapsed((prev: CollapsedState) => {
+      let changed = false;
       const next: CollapsedState = {};
       for (const [k, v] of Object.entries(prev || {})) {
         const nk = normalizeKey(k);
+        if (nk !== k) changed = true;
         next[nk] = v as boolean;
       }
       for (const p of safePersonas) {
         const k = personaKey(p);
-        if (!(k in next)) next[k] = false;
+        if (!(k in next)) {
+          next[k] = false;
+          changed = true;
+        }
       }
       for (const k of Object.keys(next)) {
         const still = safePersonas.some(p => personaKey(p) === k);
-        if (!still) delete next[k];
+        if (!still) {
+          delete next[k];
+          changed = true;
+        }
       }
-      return next;
+      return changed ? next : prev;
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(safePersonas), persistBase]);

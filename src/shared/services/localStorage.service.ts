@@ -8,6 +8,15 @@ type StorageChangeDetail = {
   oldValue: string | null;
 };
 
+const isStorageDebugEnabled = (): boolean => {
+  try {
+    if (typeof window === 'undefined') return false;
+    return window.localStorage.getItem('debug-storage') === '1';
+  } catch {
+    return false;
+  }
+};
+
 const dispatchStorageChange = (detail: StorageChangeDetail): void => {
   try {
     if (typeof window === 'undefined' || typeof window.dispatchEvent !== 'function') return;
@@ -39,19 +48,20 @@ export const storage = {
   setString: (key: string, value: string): void => {
     try {
       const oldValue = window.localStorage.getItem(key);
-      // Solo loggear en desarrollo y con datos pequeños para evitar spam
-      if (import.meta.env.DEV && value.length < 200) {
+      if (isStorageDebugEnabled() && value.length < 200) {
         console.log('[STORAGE.DEBUG] setString called:', key, value);
-      } else if (import.meta.env.DEV) {
+      } else if (isStorageDebugEnabled()) {
         console.log('[STORAGE.DEBUG] setString called:', key, 'size:', value.length, 'chars');
       }
       window.localStorage.setItem(key, value);
       dispatchStorageChange({ key, newValue: value, oldValue });
-      if (import.meta.env.DEV && value.length < 200) {
+      if (isStorageDebugEnabled() && value.length < 200) {
         console.log('[STORAGE.DEBUG] setString success');
       }
     } catch (e) {
-      console.error('[STORAGE.DEBUG] setString error:', e);
+      if (isStorageDebugEnabled()) {
+        console.error('[STORAGE.DEBUG] setString error:', e);
+      }
     }
   },
 
@@ -84,5 +94,4 @@ export const storage = {
     }
   },
 };
-
 

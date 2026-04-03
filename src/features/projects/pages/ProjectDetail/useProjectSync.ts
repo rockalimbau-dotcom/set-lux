@@ -190,7 +190,19 @@ export function useProjectSync(proj: Project | null) {
       const syncedPre = (needsData.pre || []).map(syncWeek);
       const syncedPro = (needsData.pro || []).map(syncWeek);
 
-      // Guardar las semanas sincronizadas
+      const hasPreChanges =
+        syncedPre.length !== (needsData.pre || []).length ||
+        syncedPre.some((week, index) => week !== (needsData.pre || [])[index]);
+      const hasProChanges =
+        syncedPro.length !== (needsData.pro || []).length ||
+        syncedPro.some((week, index) => week !== (needsData.pro || [])[index]);
+
+      if (!hasPreChanges && !hasProChanges) {
+        previousTeamRef.current = effectiveTeam;
+        return;
+      }
+
+      // Guardar las semanas sincronizadas solo si algo ha cambiado de verdad
       storage.setJSON(needsKey, {
         pre: syncedPre,
         pro: syncedPro,

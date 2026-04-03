@@ -27,6 +27,7 @@ import {
 } from './useAutoCalculations/dataPreservation';
 
 export default function useAutoCalculations({
+  enabled = true,
   safeSemana,
   findWeekAndDay,
   getBlockWindow,
@@ -65,6 +66,7 @@ export default function useAutoCalculations({
   }, [horasExtraTipo]);
 
   useEffect(() => {
+    if (!enabled) return;
     const debugEnabled = isDebugEnabled();
     const { baseHours, cortes, taD, taF } = normalizeParams(params);
     const autoByDate: AutoByDate = {};
@@ -159,6 +161,55 @@ export default function useAutoCalculations({
     setData((prev: any) => {
       const sourceState = prev;
       const next = { ...(sourceState || {}) };
+      let changed = false;
+
+      const ensurePersona = (pk: string) => {
+        if (!next[pk]) {
+          next[pk] = {};
+          changed = true;
+        }
+      };
+
+      const ensureManualMap = (pk: string) => {
+        ensurePersona(pk);
+        if (!next[pk].__manual__) {
+          next[pk].__manual__ = {};
+          changed = true;
+        }
+      };
+
+      const ensureConcept = (pk: string, concept: string) => {
+        ensurePersona(pk);
+        if (!next[pk][concept]) {
+          next[pk][concept] = {};
+          changed = true;
+        }
+      };
+
+      const setConceptValue = (pk: string, concept: string, iso: string, value: string) => {
+        ensureConcept(pk, concept);
+        if (next[pk][concept][iso] !== value) {
+          next[pk][concept][iso] = value;
+          changed = true;
+        }
+      };
+
+      const setManualFlag = (pk: string, concept: string, iso: string, value: boolean) => {
+        ensureManualMap(pk);
+        if (!next[pk].__manual__[concept]) {
+          next[pk].__manual__[concept] = {};
+          changed = true;
+        }
+        if (value) {
+          if (next[pk].__manual__[concept][iso] !== true) {
+            next[pk].__manual__[concept][iso] = true;
+            changed = true;
+          }
+        } else if (next[pk].__manual__[concept]?.[iso]) {
+          delete next[pk].__manual__[concept][iso];
+          changed = true;
+        }
+      };
 
       for (const p of safePersonas as Persona[]) {
         const pk = personaKey(p);
@@ -168,6 +219,7 @@ export default function useAutoCalculations({
 
         // Preservar la estructura completa incluyendo __manual__
         next[pk] = next[pk] ? { ...next[pk] } : {};
+        if (!sourceState?.[pk]) changed = true;
         if (sourceState?.[pk]?.__manual__) {
           next[pk].__manual__ = { ...sourceState[pk].__manual__ };
         } else {
@@ -220,57 +272,43 @@ export default function useAutoCalculations({
             off,
           });
 
-          next[pk]['Horas extra'][iso] = horasExtraResult.value;
+          setConceptValue(pk, 'Horas extra', iso, horasExtraResult.value);
           if (off) {
             // Limpiar el flag manual si no está trabajando
-            if (next[pk].__manual__?.['Horas extra']?.[iso]) {
-              next[pk].__manual__ = next[pk].__manual__ || {};
-              next[pk].__manual__['Horas extra'] = next[pk].__manual__['Horas extra'] || {};
-              delete next[pk].__manual__['Horas extra'][iso];
-            }
+            setManualFlag(pk, 'Horas extra', iso, false);
           } else {
             // Actualizar el flag manual
-            next[pk].__manual__ = next[pk].__manual__ || {};
-            next[pk].__manual__['Horas extra'] = next[pk].__manual__['Horas extra'] || {};
             if (horasExtraResult.isManual) {
-              next[pk].__manual__['Horas extra'][iso] = true;
+              setManualFlag(pk, 'Horas extra', iso, true);
             } else {
-              if (next[pk].__manual__['Horas extra'][iso]) {
-                delete next[pk].__manual__['Horas extra'][iso];
-              }
+              setManualFlag(pk, 'Horas extra', iso, false);
             }
           }
 
           // Procesar Turn Around
-          next[pk]['Turn Around'] = next[pk]['Turn Around'] || {};
-          const currTA = next[pk]['Turn Around'][iso];
+          const currTA = next[pk]?.['Turn Around']?.[iso];
           const autoTA = auto.ta ?? '';
           const manualTA = !!next[pk]?.__manual__?.['Turn Around']?.[iso];
-          next[pk]['Turn Around'][iso] = preserveOrUseAuto({
+          setConceptValue(pk, 'Turn Around', iso, preserveOrUseAuto({
             currValue: currTA,
             autoValue: autoTA,
             manual: manualTA,
             off,
-          });
+          }));
 
           // Procesar Nocturnidad
-          next[pk]['Nocturnidad'] = next[pk]['Nocturnidad'] || {};
-          const currNoct = next[pk]['Nocturnidad'][iso];
+          const currNoct = next[pk]?.['Nocturnidad']?.[iso];
           const autoNoct = auto.noct ?? '';
           const manualNoct = !!next[pk]?.__manual__?.['Nocturnidad']?.[iso];
-          next[pk]['Nocturnidad'][iso] = preserveOrUseAuto({
+          setConceptValue(pk, 'Nocturnidad', iso, preserveOrUseAuto({
             currValue: currNoct,
             autoValue: autoNoct,
             manual: manualNoct,
             off,
-          });
+          }));
           if (!off && autoNoct === '' && !manualNoct) {
-            next[pk]['Nocturnidad'][iso] = '';
-            if (next[pk].__manual__?.['Nocturnidad']?.[iso]) {
-              next[pk].__manual__ = next[pk].__manual__ || {};
-              next[pk].__manual__['Nocturnidad'] = next[pk].__manual__['Nocturnidad'] || {};
-              delete next[pk].__manual__['Nocturnidad'][iso];
-            }
+            setConceptValue(pk, 'Nocturnidad', iso, '');
+            setManualFlag(pk, 'Nocturnidad', iso, false);
           }
 
           // Procesar Material propio (solo si aplica por rol)
@@ -278,33 +316,23 @@ export default function useAutoCalculations({
             ? getMaterialPropioConfig(role, name, rowBlock as 'base' | 'pre' | 'pick' | 'extra')
             : null;
           if (materialConfig) {
-            next[pk]['Material propio'] = next[pk]['Material propio'] || {};
-            const currMaterial = next[pk]['Material propio'][iso];
+            const currMaterial = next[pk]?.['Material propio']?.[iso];
             const manualMaterial = !!next[pk]?.__manual__?.['Material propio']?.[iso];
             const autoMaterial = materialConfig.type === 'semanal' ? 'Sí' : '';
-            next[pk]['Material propio'][iso] = preserveOrUseAuto({
+            setConceptValue(pk, 'Material propio', iso, preserveOrUseAuto({
               currValue: currMaterial,
               autoValue: autoMaterial,
               manual: manualMaterial,
               off,
-            });
-            if (off && next[pk].__manual__?.['Material propio']?.[iso]) {
-              next[pk].__manual__ = next[pk].__manual__ || {};
-              next[pk].__manual__['Material propio'] = next[pk].__manual__['Material propio'] || {};
-              delete next[pk].__manual__['Material propio'][iso];
-            }
+            }));
+            if (off) setManualFlag(pk, 'Material propio', iso, false);
           }
 
           // Si no trabaja, limpiar valores manuales que no son auto-calculados
           if (off) {
             const clearConcept = (concepto: string) => {
-              next[pk][concepto] = next[pk][concepto] || {};
-              next[pk][concepto][iso] = '';
-              if (next[pk].__manual__?.[concepto]?.[iso]) {
-                next[pk].__manual__ = next[pk].__manual__ || {};
-                next[pk].__manual__[concepto] = next[pk].__manual__[concepto] || {};
-                delete next[pk].__manual__[concepto][iso];
-              }
+              setConceptValue(pk, concepto, iso, '');
+              setManualFlag(pk, concepto, iso, false);
             };
 
             clearConcept('Kilometraje');
@@ -329,9 +357,10 @@ export default function useAutoCalculations({
         horasExtraTipoChangedRef.current = false;
       }
 
-      return next;
+      return changed ? next : prev;
     });
   }, [
+    enabled,
     JSON.stringify(safeSemana),
     JSON.stringify(params),
     JSON.stringify(safePersonas),

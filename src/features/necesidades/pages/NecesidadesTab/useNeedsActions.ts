@@ -1,6 +1,5 @@
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { storage } from '@shared/services/localStorage.service';
 import { AnyRecord } from '@shared/types/common';
 import i18n from '../../../../i18n/config';
 import { parseYYYYMMDD, addDays, pad2 } from '@shared/utils/date';
@@ -38,22 +37,31 @@ export function useNeedsActions({
   const updateNeeds = useCallback((updater: (prev: AnyRecord) => AnyRecord) => {
     setNeeds((prev: AnyRecord) => {
       const next = updater(prev);
-      storage.setJSON(storageKey, next);
+      if (next === prev) return prev;
       return next;
     });
-  }, [setNeeds, storageKey]);
+  }, [setNeeds]);
 
   const updateWeekById = useCallback((
     prev: AnyRecord,
     weekId: string,
     updater: (week: AnyRecord) => AnyRecord
   ) => {
+    let changed = false;
     const updateList = (list: AnyRecord[] = []) =>
-      list.map(week => (week?.id === weekId ? updater(week) : week));
+      list.map(week => {
+        if (week?.id !== weekId) return week;
+        const nextWeek = updater(week);
+        if (nextWeek !== week) changed = true;
+        return nextWeek;
+      });
+    const nextPre = updateList(prev.pre || []);
+    const nextPro = updateList(prev.pro || []);
+    if (!changed) return prev;
     return {
       ...prev,
-      pre: updateList(prev.pre || []),
-      pro: updateList(prev.pro || []),
+      pre: nextPre,
+      pro: nextPro,
     };
   }, []);
 
@@ -262,7 +270,7 @@ export function useNeedsActions({
 
   const setCell = useCallback((weekId: string, dayIdx: number, fieldKey: string, value: unknown) => {
     if (readOnly) return;
-    
+
     updateNeeds((prev: AnyRecord) =>
       updateWeekById(prev, weekId, (w: AnyRecord) => {
         const day: AnyRecord = (w.days && (w.days as AnyRecord[])[dayIdx]) || {};

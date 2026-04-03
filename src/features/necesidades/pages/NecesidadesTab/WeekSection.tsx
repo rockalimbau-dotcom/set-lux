@@ -255,35 +255,58 @@ export function WeekSection({
   const allColumnsSelected = columnKeys.length > 0 && columnKeys.every(idx => isColumnSelected(idx));
 
   useEffect(() => {
-    const updateStickyOffsets = () => {
-      const headerHeight = headerRowRef.current?.getBoundingClientRect().height ?? 0;
-      const dateHeight = dateRowRef.current?.getBoundingClientRect().height ?? 0;
-      const locationHeight = locationRowRef.current?.getBoundingClientRect().height ?? 0;
+    let frameId: number | null = null;
 
-      setStickyOffsets({
+    const updateStickyOffsets = () => {
+      const headerHeight = Math.round(headerRowRef.current?.getBoundingClientRect().height ?? 0);
+      const dateHeight = Math.round(dateRowRef.current?.getBoundingClientRect().height ?? 0);
+      const locationHeight = Math.round(locationRowRef.current?.getBoundingClientRect().height ?? 0);
+
+      const nextOffsets = {
         header: 0,
         date: headerHeight,
         location: headerHeight + dateHeight,
         shootingDay: headerHeight + dateHeight + locationHeight,
+      };
+
+      setStickyOffsets(prev =>
+        prev.header === nextOffsets.header &&
+        prev.date === nextOffsets.date &&
+        prev.location === nextOffsets.location &&
+        prev.shootingDay === nextOffsets.shootingDay
+          ? prev
+          : nextOffsets
+      );
+    };
+
+    const scheduleUpdateStickyOffsets = () => {
+      if (frameId !== null) cancelAnimationFrame(frameId);
+      frameId = requestAnimationFrame(() => {
+        frameId = null;
+        updateStickyOffsets();
       });
     };
 
-    updateStickyOffsets();
+    scheduleUpdateStickyOffsets();
 
     if (typeof ResizeObserver === 'undefined') {
-      window.addEventListener('resize', updateStickyOffsets);
-      return () => window.removeEventListener('resize', updateStickyOffsets);
+      window.addEventListener('resize', scheduleUpdateStickyOffsets);
+      return () => {
+        if (frameId !== null) cancelAnimationFrame(frameId);
+        window.removeEventListener('resize', scheduleUpdateStickyOffsets);
+      };
     }
 
-    const observer = new ResizeObserver(() => updateStickyOffsets());
-    [headerRowRef.current, dateRowRef.current, locationRowRef.current, shootingDayRowRef.current].forEach(node => {
+    const observer = new ResizeObserver(() => scheduleUpdateStickyOffsets());
+    [headerRowRef.current, dateRowRef.current, locationRowRef.current].forEach(node => {
       if (node) observer.observe(node);
     });
-    window.addEventListener('resize', updateStickyOffsets);
+    window.addEventListener('resize', scheduleUpdateStickyOffsets);
 
     return () => {
+      if (frameId !== null) cancelAnimationFrame(frameId);
       observer.disconnect();
-      window.removeEventListener('resize', updateStickyOffsets);
+      window.removeEventListener('resize', scheduleUpdateStickyOffsets);
     };
   }, [DAYS.length, wk?.startDate, wk?.days, hideEmptyRows, showExportControls]);
   const allRowsSelected = rowKeys.length > 0 && rowKeys.every(key => isRowSelected(key));

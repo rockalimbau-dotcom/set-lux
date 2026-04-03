@@ -74,7 +74,13 @@ export function ConceptRow({
         const val = data?.[pKey]?.[concepto]?.[fecha] ?? '';
         const key = `${roleId || personId || visualRole}_${name}_${fecha}_${block}`;
         const off = offMap.get(key) ?? false;
-        const cellClasses = off && concepto !== 'Dietas' ? 'report-off-cell' : '';
+        const hasValue = String(val ?? '').trim() !== '';
+        const cellClasses = [
+          off && concepto !== 'Dietas' ? 'report-off-cell' : '',
+          !off && hasValue ? 'report-filled-cell' : '',
+        ]
+          .filter(Boolean)
+          .join(' ');
 
         if (concepto === 'Dietas') {
           const dietasDropdownKey = `dietas_${pKey}_${concepto}_${fecha}`;

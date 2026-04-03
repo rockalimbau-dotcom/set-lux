@@ -31,6 +31,7 @@ export interface Persona {
 import React from 'react';
 
 export interface AutoCalculationsProps {
+  enabled?: boolean;
   safeSemana: readonly string[];
   findWeekAndDay: (iso: string) => WeekAndDay | any;
   getBlockWindow: (day: any, block: string) => BlockWindow;

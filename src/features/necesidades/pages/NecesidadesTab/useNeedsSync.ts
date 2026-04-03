@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { storage } from '@shared/services/localStorage.service';
+import { storage, STORAGE_CHANGE_EVENT } from '@shared/services/localStorage.service';
 import { AnyRecord } from '@shared/types/common';
 import { applyExtraBlocksToDay, normalizeExtraBlocks } from '@shared/utils/extraBlocks';
 
@@ -262,91 +262,24 @@ export function useNeedsSync({
         }
       }
     };
-    window.addEventListener('storage', onStorage);
-    return () => window.removeEventListener('storage', onStorage);
-  }, [planKey, syncFromPlanRaw]);
-
-  // Polling for changes
-  useEffect(() => {
-    const tick = () => {
+    const onLocalStorageChange = (e: Event) => {
+      const detail = (e as CustomEvent<{ key?: string; newValue?: string | null }>).detail;
+      if (!detail || detail.key !== planKey) return;
       try {
         const obj = storage.getJSON<any>(planKey);
-        if (!obj) {
-          const raw = '';
-          if (lastPlanRawRef.current !== raw) {
-            lastPlanRawRef.current = raw;
-            syncFromPlanRaw(raw);
-          }
-          return;
-        }
-        // Crear una versión normalizada del objeto para comparación
-        const normalized = {
-          pre: Array.isArray(obj.pre) ? obj.pre.map((w: AnyRecord) => ({
-            id: w.id,
-            label: w.label,
-            startDate: w.startDate,
-            days: Array.isArray(w.days) ? w.days.map((d: AnyRecord) => ({
-              team: Array.isArray(d.team) ? d.team.map((m: AnyRecord) => ({
-                role: m?.role || '',
-                roleId: m?.roleId,
-                roleLabel: m?.roleLabel,
-                name: m?.name || '',
-                gender: m?.gender,
-              })) : [],
-              prelight: Array.isArray(d.prelight) ? d.prelight.map((m: AnyRecord) => ({
-                role: m?.role || '',
-                roleId: m?.roleId,
-                roleLabel: m?.roleLabel,
-                name: m?.name || '',
-                gender: m?.gender,
-              })) : [],
-              pickup: Array.isArray(d.pickup) ? d.pickup.map((m: AnyRecord) => ({
-                role: m?.role || '',
-                roleId: m?.roleId,
-                roleLabel: m?.roleLabel,
-                name: m?.name || '',
-                gender: m?.gender,
-              })) : [],
-              loc: d.loc || '',
-            })) : [],
-          })) : [],
-          pro: Array.isArray(obj.pro) ? obj.pro.map((w: AnyRecord) => ({
-            id: w.id,
-            label: w.label,
-            startDate: w.startDate,
-            days: Array.isArray(w.days) ? w.days.map((d: AnyRecord) => ({
-              team: Array.isArray(d.team) ? d.team.map((m: AnyRecord) => ({
-                role: m?.role || '',
-                roleId: m?.roleId,
-                roleLabel: m?.roleLabel,
-                name: m?.name || '',
-              })) : [],
-              prelight: Array.isArray(d.prelight) ? d.prelight.map((m: AnyRecord) => ({
-                role: m?.role || '',
-                roleId: m?.roleId,
-                roleLabel: m?.roleLabel,
-                name: m?.name || '',
-              })) : [],
-              pickup: Array.isArray(d.pickup) ? d.pickup.map((m: AnyRecord) => ({
-                role: m?.role || '',
-                roleId: m?.roleId,
-                roleLabel: m?.roleLabel,
-                name: m?.name || '',
-              })) : [],
-              loc: d.loc || '',
-            })) : [],
-          })) : [],
-        };
-        const raw = JSON.stringify(normalized);
-        if (lastPlanRawRef.current !== raw) {
-          lastPlanRawRef.current = raw;
-          syncFromPlanRaw(JSON.stringify(obj));
-        }
-      } catch {}
+        const raw = obj ? JSON.stringify(obj, Object.keys(obj).sort()) : '';
+        lastPlanRawRef.current = raw;
+        syncFromPlanRaw(raw);
+      } catch (error) {
+        console.error('Error handling local storage change event:', error);
+      }
     };
-    tick();
-    const id = setInterval(tick, 300);
-    return () => clearInterval(id);
+    window.addEventListener('storage', onStorage);
+    window.addEventListener(STORAGE_CHANGE_EVENT, onLocalStorageChange as EventListener);
+    return () => {
+      window.removeEventListener('storage', onStorage);
+      window.removeEventListener(STORAGE_CHANGE_EVENT, onLocalStorageChange as EventListener);
+    };
   }, [planKey, syncFromPlanRaw]);
 
   return { syncFromPlanRaw };

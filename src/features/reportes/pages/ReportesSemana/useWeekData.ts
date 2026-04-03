@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { mondayOf, toYYYYMMDD, defaultWeek } from '@shared/utils/date';
 import { storage } from '@shared/services/localStorage.service';
 import {
@@ -30,7 +30,7 @@ export function useWeekData(
     [project?.id, project?.nombre]
   );
 
-  const getPlanAllWeeks = () => {
+  const planAllWeeks = useMemo(() => {
     try {
       const obj = storage.getJSON<any>(needsKey);
       if (!obj) return { pre: [], pro: [] };
@@ -38,7 +38,11 @@ export function useWeekData(
     } catch {
       return { pre: [], pro: [] };
     }
-  };
+  }, [needsKey]);
+
+  const getPlanAllWeeks = useCallback(() => planAllWeeks, [planAllWeeks]);
+
+  const safeSemanaKey = useMemo(() => JSON.stringify(safeSemana), [safeSemana]);
 
   const findWeekAndDay = findWeekAndDayFactory(
     getPlanAllWeeks,
@@ -57,7 +61,7 @@ export function useWeekData(
           day.prelightEnd)
       );
     });
-  }, [needsKey, JSON.stringify(safeSemana)]);
+  }, [findWeekAndDay, safeSemanaKey]);
 
   const weekPickupActive = useMemo(() => {
     return safeSemana.some(iso => {
@@ -68,7 +72,7 @@ export function useWeekData(
         (getDayBlockList(day, BLOCKS.pick).length > 0 || day.pickupStart || day.pickupEnd)
       );
     });
-  }, [needsKey, JSON.stringify(safeSemana)]);
+  }, [findWeekAndDay, safeSemanaKey]);
 
   const weekExtraActive = useMemo(() => {
     return safeSemana.some(iso => {
@@ -79,7 +83,7 @@ export function useWeekData(
         (getDayBlockList(day, BLOCKS.extra).length > 0 || hasExtraBlockContent(day) || day.refStart || day.refEnd)
       );
     });
-  }, [needsKey, JSON.stringify(safeSemana)]);
+  }, [findWeekAndDay, safeSemanaKey]);
 
   const collectWeekTeamWithSuffix = collectWeekTeamWithSuffixFactory(
     findWeekAndDay,
@@ -89,17 +93,17 @@ export function useWeekData(
   const prelightPeople = useMemo(
     () =>
       weekPrelightActive ? collectWeekTeamWithSuffix('prelight', 'P') : [],
-    [weekPrelightActive, needsKey, JSON.stringify(safeSemana)]
+    [collectWeekTeamWithSuffix, weekPrelightActive]
   );
 
   const pickupPeople = useMemo(
     () => (weekPickupActive ? collectWeekTeamWithSuffix('pickup', 'R') : []),
-    [weekPickupActive, needsKey, JSON.stringify(safeSemana)]
+    [collectWeekTeamWithSuffix, weekPickupActive]
   );
 
   const extraPeople = useMemo(
     () => (weekExtraActive ? collectWeekTeamWithSuffix('refList', '') : []),
-    [weekExtraActive, needsKey, JSON.stringify(safeSemana)]
+    [collectWeekTeamWithSuffix, weekExtraActive]
   );
 
   const extraGroups = useMemo(() => {
@@ -142,12 +146,12 @@ export function useWeekData(
         people,
       };
     }).filter(group => group.people.length > 0);
-  }, [safeSemana, needsKey]);
+  }, [findWeekAndDay, safeSemana]);
 
   // IMPORTANTE: Obtener basePeople directamente del plan, igual que prelight y pickup
   const basePeople = useMemo(
     () => collectWeekTeamWithSuffix('team', ''),
-    [needsKey, JSON.stringify(safeSemana)]
+    [collectWeekTeamWithSuffix]
   );
 
   const safePersonas = useMemo(() => {
