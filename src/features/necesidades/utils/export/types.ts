@@ -58,11 +58,14 @@ export interface CustomRow {
   fieldKey: string;
 }
 
+export type RowLabelOverrides = Record<string, string>;
+
 export interface WeekEntry {
   id: string;
   label?: string;
   startDate?: string;
   customRows?: CustomRow[];
+  rowLabels?: RowLabelOverrides;
   [key: string]: any;
 }
 

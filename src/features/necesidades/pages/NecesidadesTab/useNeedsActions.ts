@@ -8,6 +8,7 @@ import { mdKey } from '@shared/utils/dateKey';
 import { relabelNeedsWeekByCalendar } from '../../utils/calendar';
 import { sortTeam } from '@features/equipo/pages/EquipoTab/EquipoTabUtils';
 import { applyExtraBlocksToDay } from '@shared/utils/extraBlocks';
+import { normalizeJornadaType } from '@shared/utils/jornadaTranslations';
 
 interface UseNeedsActionsProps {
   storageKey: string;
@@ -224,6 +225,19 @@ export function useNeedsActions({
     );
   }, [readOnly, updateNeeds, updateWeekById]);
 
+  const updateRowLabel = useCallback((weekId: string, rowKey: string, label: string) => {
+    if (readOnly) return;
+    updateNeeds((prev: AnyRecord) =>
+      updateWeekById(prev, weekId, (w: AnyRecord) => ({
+        ...w,
+        rowLabels: {
+          ...((w.rowLabels as AnyRecord) || {}),
+          [rowKey]: label,
+        },
+      }))
+    );
+  }, [readOnly, updateNeeds, updateWeekById]);
+
   const removeCustomRow = useCallback((weekId: string, rowId: string) => {
     if (readOnly) return;
     updateNeeds((prev: AnyRecord) =>
@@ -260,9 +274,9 @@ export function useNeedsActions({
           };
         }
         if (fieldKey === 'crewTipo') {
-          const nextTipo = String(value || '').trim();
+          const nextTipo = normalizeJornadaType(String(value || '').trim());
           const normalized = nextTipo.toLowerCase();
-          const prevTipo = String(day?.crewTipo || '').trim();
+          const prevTipo = normalizeJornadaType(String(day?.crewTipo || '').trim());
           if (prevTipo === nextTipo) {
             return w;
           }
@@ -280,7 +294,7 @@ export function useNeedsActions({
 
           const nextDay: AnyRecord = {
             ...day,
-            [fieldKey]: value,
+            [fieldKey]: nextTipo,
           };
 
           if (normalized === 'descanso' || normalized === 'fin') {
@@ -434,6 +448,7 @@ export function useNeedsActions({
         startDate,
         days,
         customRows: [],
+        rowLabels: {},
         open: true,
       };
       return {
@@ -512,6 +527,7 @@ export function useNeedsActions({
     swapDays,
     addCustomRow,
     updateCustomRowLabel,
+    updateRowLabel,
     removeCustomRow,
     addWeek,
     duplicateWeek,

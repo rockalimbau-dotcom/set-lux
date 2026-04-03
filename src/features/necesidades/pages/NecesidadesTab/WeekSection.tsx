@@ -10,6 +10,7 @@ import { JornadaRow } from '../../components/JornadaRow';
 import { ScheduleRow } from '../../components/ScheduleRow';
 import { MembersRow } from '../../components/MembersRow';
 import { ExtraBlocksRow } from '../../components/ExtraBlocksRow';
+import EditableRowLabel from '../../components/EditableRowLabel';
 import TextAreaAuto from '../../components/TextAreaAuto';
 import { DayInfo } from './NecesidadesTabTypes';
 import { parseYYYYMMDD, addDays, formatDDMMYYYY, translateWeekLabel } from './NecesidadesTabUtils';
@@ -17,6 +18,8 @@ import { useRowSelection } from '../../hooks/useRowSelection';
 import { useColumnSelection } from '../../hooks/useColumnSelection';
 import { ConfirmModal } from '../../components/ConfirmModal';
 import { dayHasExtraBlocks } from '@shared/utils/extraBlocks';
+import { getNeedsRowLabel } from '../../utils/rowLabels';
+import { normalizeJornadaType } from '@shared/utils/jornadaTranslations';
 
 interface SelectedDayForSwap {
   weekId: string;
@@ -54,6 +57,7 @@ interface WeekSectionProps {
   weekEntries: AnyRecord[]; // Para obtener etiquetas de semanas
   addCustomRow: (weekId: string) => string | null;
   updateCustomRowLabel: (weekId: string, rowId: string, label: string) => void;
+  updateRowLabel: (weekId: string, rowKey: string, label: string) => void;
   removeCustomRow: (weekId: string, rowId: string) => void;
   tutorialId?: string;
 }
@@ -84,6 +88,7 @@ export function WeekSection({
   weekEntries,
   addCustomRow,
   updateCustomRowLabel,
+  updateRowLabel,
   removeCustomRow,
   tutorialId,
 }: WeekSectionProps) {
@@ -203,6 +208,12 @@ export function WeekSection({
     () => (Array.isArray(wk?.customRows) ? wk.customRows : []),
     [wk?.customRows]
   );
+  const rowLabels = useMemo(
+    () => (((wk as AnyRecord)?.rowLabels || {}) as Record<string, string>),
+    [wk]
+  );
+  const getRowLabel = (key: string, fallbackLabel: string) =>
+    getNeedsRowLabel(rowLabels, key, fallbackLabel);
   const rowKeys = useMemo(() => {
     const base = [
       `${wid}_loc`, // Location + Sequences (merged)
@@ -323,7 +334,7 @@ export function WeekSection({
     if (!Array.isArray(currentDays)) return;
     currentDays.forEach((day: AnyRecord, idx: number) => {
       if (!day?.crewTipo) {
-        const fallbackTipo = day?.tipo;
+        const fallbackTipo = normalizeJornadaType(day?.tipo);
         setCell(wid, idx, 'crewTipo', fallbackTipo || (idx >= 5 ? 'Descanso' : 'Rodaje'));
       }
     });
@@ -334,7 +345,7 @@ export function WeekSection({
     const currentDays = (wk as AnyRecord).days;
     if (!Array.isArray(currentDays)) return;
     currentDays.forEach((day: AnyRecord, idx: number) => {
-      const crewTipo = String(day?.crewTipo || '').toLowerCase();
+      const crewTipo = normalizeJornadaType(day?.crewTipo).toLowerCase();
       if (crewTipo === 'descanso' && day?.loc !== 'Descanso') {
         setCell(wid, idx, 'loc', 'Descanso');
         setCell(wid, idx, 'seq', '');
@@ -676,10 +687,15 @@ export function WeekSection({
                       <span className='text-[9px] sm:text-[10px] md:text-xs text-zinc-400'>—</span>
                     </div>
                   </Td>
-                )}
-                <Td className='needs-sticky-corner-label needs-sticky-label-cell border border-neutral-border px-1 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-1 font-semibold bg-white/5 whitespace-normal break-words text-[9px] sm:text-[10px] md:text-xs lg:text-sm align-middle'>
-                  {t('needs.date')}
-                </Td>
+	                )}
+	                <Td className='needs-sticky-corner-label needs-sticky-label-cell border border-neutral-border px-1 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-1 font-semibold bg-white/5 whitespace-normal break-words text-[9px] sm:text-[10px] md:text-xs lg:text-sm align-middle'>
+	                  <EditableRowLabel
+	                    value={getRowLabel('date', t('needs.date'))}
+	                    onChange={label => updateRowLabel(wid, 'date', label)}
+	                    readOnly={readOnly}
+	                    placeholder={t('needs.customRowPlaceholder')}
+	                  />
+	                </Td>
                 {DAYS.map((d, i) => (
                   <Td key={d.key} align='middle' className='text-center'>
                     <div className='flex items-center justify-center min-h-[20px] sm:min-h-[24px] md:min-h-[28px]'>
@@ -722,10 +738,15 @@ export function WeekSection({
                         />
                       </div>
                     </Td>
-                  )}
-                  <Td className='needs-sticky-corner-label needs-sticky-label-cell border border-neutral-border px-1 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-1 font-semibold bg-white/5 whitespace-normal break-words text-[9px] sm:text-[10px] md:text-xs lg:text-sm align-middle'>
-                    {t('needs.locationSequences')}
-                  </Td>
+	                  )}
+	                  <Td className='needs-sticky-corner-label needs-sticky-label-cell border border-neutral-border px-1 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-1 font-semibold bg-white/5 whitespace-normal break-words text-[9px] sm:text-[10px] md:text-xs lg:text-sm align-middle'>
+	                    <EditableRowLabel
+	                      value={getRowLabel('loc', t('needs.locationSequences'))}
+	                      onChange={label => updateRowLabel(wid, 'loc', label)}
+	                      readOnly={readOnly}
+	                      placeholder={t('needs.customRowPlaceholder')}
+	                    />
+	                  </Td>
                   {DAYS.map((d, i) => {
                     const locValue = (wk?.days?.[i]?.loc as string) || '';
                     const seqValue = (wk?.days?.[i]?.seq as string) || '';
@@ -777,10 +798,15 @@ export function WeekSection({
                         />
                       </div>
                     </Td>
-                  )}
-                  <Td className='needs-sticky-corner-label needs-sticky-label-cell border border-neutral-border px-1 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-1 font-semibold bg-white/5 whitespace-normal break-words text-[9px] sm:text-[10px] md:text-xs lg:text-sm align-middle'>
-                    {t('needs.shootingDay')}
-                  </Td>
+	                  )}
+	                  <Td className='needs-sticky-corner-label needs-sticky-label-cell border border-neutral-border px-1 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-1 font-semibold bg-white/5 whitespace-normal break-words text-[9px] sm:text-[10px] md:text-xs lg:text-sm align-middle'>
+	                    <EditableRowLabel
+	                      value={getRowLabel('shootDay', t('needs.shootingDay'))}
+	                      onChange={label => updateRowLabel(wid, 'shootDay', label)}
+	                      readOnly={readOnly}
+	                      placeholder={t('needs.customRowPlaceholder')}
+	                    />
+	                  </Td>
                   {DAYS.map((d, i) => (
                     <Td key={d.key} align='middle' className='text-center'>
                       <div className='flex items-center justify-center min-h-[20px] sm:min-h-[24px] md:min-h-[28px]'>
@@ -790,29 +816,54 @@ export function WeekSection({
                   ))}
                 </tr>
               )}
-              <tr>
-                <Td
-                  colSpan={totalColumns}
+	              <tr>
+	                <Td
+	                  colSpan={totalColumns}
                   align='middle'
-                  className='phase-block border border-neutral-border/70 py-0.5 sm:py-1 md:py-1 bg-white/5 text-[9px] sm:text-[10px] md:text-xs lg:text-sm'
-                >
-                  <div className='phase-block-sticky'>
-                    <button
-                      type='button'
-                      onClick={() => toggleBlock('team')}
-                      className='phase-block-button w-full flex items-center gap-2 font-medium'
-                      style={{ color: 'var(--text)' }}
-                    >
-                      <span className={`transition-transform opacity-80 text-[8px] sm:text-[9px] md:text-[10px] ${isBlockCollapsed('team') ? '-rotate-90' : ''}`}>⌄</span>
-                      <span>Equipo</span>
-                    </button>
-                  </div>
-                </Td>
-              </tr>
-              {!isBlockCollapsed('team') && (!hideEmptyRows || hasAnyList('crewList')) && (
-                <MembersRow
-                  label={t('needs.technicalTeam')}
-                  listKey='crewList'
+                  className='phase-block border border-neutral-border/70 py-0.5 sm:py-1 md:py-1 bg-white/5 text-[9px] sm:text-[10px] md:text-xs lg:text-sm cursor-pointer'
+	                  onClick={() => toggleBlock('team')}
+	                >
+	                  <div className='phase-block-sticky'>
+	                    <div
+	                      className='phase-block-button w-full flex items-center gap-2 font-medium cursor-pointer'
+	                      style={{ color: 'var(--text)' }}
+	                      onClick={() => toggleBlock('team')}
+	                      onKeyDown={event => {
+	                        if (event.key === 'Enter' || event.key === ' ') {
+	                          event.preventDefault();
+	                          toggleBlock('team');
+	                        }
+	                      }}
+	                      role='button'
+	                      tabIndex={readOnly ? -1 : 0}
+	                      aria-expanded={!isBlockCollapsed('team')}
+	                    >
+	                      <button
+	                        type='button'
+	                        onClick={event => {
+	                          event.stopPropagation();
+	                          toggleBlock('team');
+	                        }}
+	                        className='shrink-0'
+	                        title={isBlockCollapsed('team') ? t('needs.open') : t('needs.close')}
+	                      >
+	                        <span className={`transition-transform opacity-80 text-[8px] sm:text-[9px] md:text-[10px] ${isBlockCollapsed('team') ? '-rotate-90' : ''}`}>⌄</span>
+	                      </button>
+	                      <EditableRowLabel
+	                        value={getRowLabel('sectionTeam', 'Equipo')}
+	                        onChange={label => updateRowLabel(wid, 'sectionTeam', label)}
+	                        readOnly={readOnly}
+	                        placeholder={t('needs.customRowPlaceholder')}
+	                        variant='inline'
+	                      />
+	                    </div>
+	                  </div>
+	                </Td>
+	              </tr>
+	              {!isBlockCollapsed('team') && (!hideEmptyRows || hasAnyList('crewList')) && (
+	                <MembersRow
+	                  label={getRowLabel('crewList', t('needs.technicalTeam'))}
+	                  listKey='crewList'
                   weekId={wid}
                   weekObj={wk}
                   options={baseRoster}
@@ -823,16 +874,17 @@ export function WeekSection({
                   isSelected={isRowSelected(`${wid}_crewList`)}
                   toggleRowSelection={toggleRowSelection}
                   showSelection={showExportControls}
-                  showSchedule
-                  jornadaKey='crewTipo'
-                  startKey='crewStart'
-                  endKey='crewEnd'
-                />
-              )}
-              {!isBlockCollapsed('team') && (!hideEmptyRows || hasAnyExtraBlocks() || hasAnyList('refList') || hasAnyValue(['refStart', 'refEnd', 'refTipo'])) && (
-                <ExtraBlocksRow
-                  label={t('needs.reinforcements')}
-                  weekId={wid}
+	                  showSchedule
+	                  jornadaKey='crewTipo'
+	                  startKey='crewStart'
+	                  endKey='crewEnd'
+	                  onLabelChange={label => updateRowLabel(wid, 'crewList', label)}
+	                />
+	              )}
+	              {!isBlockCollapsed('team') && (!hideEmptyRows || hasAnyExtraBlocks() || hasAnyList('refList') || hasAnyValue(['refStart', 'refEnd', 'refTipo'])) && (
+	                <ExtraBlocksRow
+	                  label={getRowLabel('refList', t('needs.reinforcements'))}
+	                  weekId={wid}
                   weekObj={wk}
                   options={allTeamOptions}
                   setCell={setCell}
@@ -840,146 +892,203 @@ export function WeekSection({
                   rowKey={`${wid}_refList`}
                   isSelected={isRowSelected(`${wid}_refList`)}
                   toggleRowSelection={toggleRowSelection}
-                  showSelection={showExportControls}
-                  collapsible
-                  defaultCollapsed
-                />
-              )}
-              <tr>
-                <Td
-                  colSpan={totalColumns}
+	                  showSelection={showExportControls}
+	                  collapsible
+	                  defaultCollapsed
+	                  onLabelChange={label => updateRowLabel(wid, 'refList', label)}
+	                />
+	              )}
+	              <tr>
+	                <Td
+	                  colSpan={totalColumns}
                   align='middle'
-                  className='phase-block border border-neutral-border/70 py-0.5 sm:py-1 md:py-1 bg-white/5 text-[9px] sm:text-[10px] md:text-xs lg:text-sm'
-                >
-                  <div className='phase-block-sticky'>
-                    <button
-                      type='button'
-                      onClick={() => toggleBlock('logistics')}
-                      className='phase-block-button w-full flex items-center gap-2 font-medium'
-                      style={{ color: 'var(--text)' }}
-                    >
-                      <span className={`transition-transform opacity-80 text-[8px] sm:text-[9px] md:text-[10px] ${isBlockCollapsed('logistics') ? '-rotate-90' : ''}`}>⌄</span>
-                      <span>Logística</span>
-                    </button>
-                  </div>
-                </Td>
-              </tr>
-              {!isBlockCollapsed('logistics') && (!hideEmptyRows || hasAnyValue(['needTransport'])) && (
-                <FieldRow
+                  className='phase-block border border-neutral-border/70 py-0.5 sm:py-1 md:py-1 bg-white/5 text-[9px] sm:text-[10px] md:text-xs lg:text-sm cursor-pointer'
+	                  onClick={() => toggleBlock('logistics')}
+	                >
+	                  <div className='phase-block-sticky'>
+	                    <div
+	                      className='phase-block-button w-full flex items-center gap-2 font-medium cursor-pointer'
+	                      style={{ color: 'var(--text)' }}
+	                      onClick={() => toggleBlock('logistics')}
+	                      onKeyDown={event => {
+	                        if (event.key === 'Enter' || event.key === ' ') {
+	                          event.preventDefault();
+	                          toggleBlock('logistics');
+	                        }
+	                      }}
+	                      role='button'
+	                      tabIndex={readOnly ? -1 : 0}
+	                      aria-expanded={!isBlockCollapsed('logistics')}
+	                    >
+	                      <button
+	                        type='button'
+	                        onClick={event => {
+	                          event.stopPropagation();
+	                          toggleBlock('logistics');
+	                        }}
+	                        className='shrink-0'
+	                        title={isBlockCollapsed('logistics') ? t('needs.open') : t('needs.close')}
+	                      >
+	                        <span className={`transition-transform opacity-80 text-[8px] sm:text-[9px] md:text-[10px] ${isBlockCollapsed('logistics') ? '-rotate-90' : ''}`}>⌄</span>
+	                      </button>
+	                      <EditableRowLabel
+	                        value={getRowLabel('sectionLogistics', 'Logística')}
+	                        onChange={label => updateRowLabel(wid, 'sectionLogistics', label)}
+	                        readOnly={readOnly}
+	                        placeholder={t('needs.customRowPlaceholder')}
+	                        variant='inline'
+	                      />
+	                    </div>
+	                  </div>
+	                </Td>
+	              </tr>
+	              {!isBlockCollapsed('logistics') && (!hideEmptyRows || hasAnyValue(['needTransport'])) && (
+	                <FieldRow
                   weekId={wid}
                   weekObj={wk}
                   fieldKey='needTransport'
-                  label={t('needs.transport')}
+	                  label={getRowLabel('needTransport', t('needs.transport'))}
                   setCell={setCell}
                   readOnly={readOnly}
                   rowKey={`${wid}_needTransport`}
                   isSelected={isRowSelected(`${wid}_needTransport`)}
                   toggleRowSelection={toggleRowSelection}
-                  showSelection={showExportControls}
-                  showAttachment
-                  onAttachmentClick={() => setAttachmentInfoOpen(true)}
-                />
-              )}
-              {!isBlockCollapsed('logistics') && (!hideEmptyRows || hasAnyValue(['transportExtra'])) && (
-                <FieldRow
+	                  showSelection={showExportControls}
+	                  showAttachment
+	                  onAttachmentClick={() => setAttachmentInfoOpen(true)}
+	                  onLabelChange={label => updateRowLabel(wid, 'needTransport', label)}
+	                />
+	              )}
+	              {!isBlockCollapsed('logistics') && (!hideEmptyRows || hasAnyValue(['transportExtra'])) && (
+	                <FieldRow
                   weekId={wid}
                   weekObj={wk}
                   fieldKey='transportExtra'
-                  label={t('needs.transportExtra')}
+	                  label={getRowLabel('transportExtra', t('needs.transportExtra'))}
                   setCell={setCell}
                   readOnly={readOnly}
                   rowKey={`${wid}_transportExtra`}
                   isSelected={isRowSelected(`${wid}_transportExtra`)}
                   toggleRowSelection={toggleRowSelection}
-                  showSelection={showExportControls}
-                  showAttachment
-                  onAttachmentClick={() => setAttachmentInfoOpen(true)}
-                />
-              )}
-              {!isBlockCollapsed('logistics') && (!hideEmptyRows || hasAnyValue(['needGroups'])) && (
-                <FieldRow
+	                  showSelection={showExportControls}
+	                  showAttachment
+	                  onAttachmentClick={() => setAttachmentInfoOpen(true)}
+	                  onLabelChange={label => updateRowLabel(wid, 'transportExtra', label)}
+	                />
+	              )}
+	              {!isBlockCollapsed('logistics') && (!hideEmptyRows || hasAnyValue(['needGroups'])) && (
+	                <FieldRow
                   weekId={wid}
                   weekObj={wk}
                   fieldKey='needGroups'
-                  label={t('needs.groups')}
+	                  label={getRowLabel('needGroups', t('needs.groups'))}
                   setCell={setCell}
                   readOnly={readOnly}
                   rowKey={`${wid}_needGroups`}
                   isSelected={isRowSelected(`${wid}_needGroups`)}
                   toggleRowSelection={toggleRowSelection}
-                  showSelection={showExportControls}
-                  showAttachment
-                  onAttachmentClick={() => setAttachmentInfoOpen(true)}
-                />
-              )}
-              {!isBlockCollapsed('logistics') && (!hideEmptyRows || hasAnyValue(['needCranes'])) && (
-                <FieldRow
+	                  showSelection={showExportControls}
+	                  showAttachment
+	                  onAttachmentClick={() => setAttachmentInfoOpen(true)}
+	                  onLabelChange={label => updateRowLabel(wid, 'needGroups', label)}
+	                />
+	              )}
+	              {!isBlockCollapsed('logistics') && (!hideEmptyRows || hasAnyValue(['needCranes'])) && (
+	                <FieldRow
                   weekId={wid}
                   weekObj={wk}
                   fieldKey='needCranes'
-                  label={t('needs.cranes')}
+	                  label={getRowLabel('needCranes', t('needs.cranes'))}
                   setCell={setCell}
                   readOnly={readOnly}
                   rowKey={`${wid}_needCranes`}
                   isSelected={isRowSelected(`${wid}_needCranes`)}
                   toggleRowSelection={toggleRowSelection}
-                  showSelection={showExportControls}
-                  showAttachment
-                  onAttachmentClick={() => setAttachmentInfoOpen(true)}
-                />
-              )}
-              {!isBlockCollapsed('logistics') && (!hideEmptyRows || hasAnyValue(['extraMat'])) && (
-                <FieldRow
+	                  showSelection={showExportControls}
+	                  showAttachment
+	                  onAttachmentClick={() => setAttachmentInfoOpen(true)}
+	                  onLabelChange={label => updateRowLabel(wid, 'needCranes', label)}
+	                />
+	              )}
+	              {!isBlockCollapsed('logistics') && (!hideEmptyRows || hasAnyValue(['extraMat'])) && (
+	                <FieldRow
                   weekId={wid}
                   weekObj={wk}
                   fieldKey='extraMat'
-                  label={t('needs.extraMaterial')}
+	                  label={getRowLabel('extraMat', t('needs.extraMaterial'))}
                   setCell={setCell}
                   readOnly={readOnly}
                   rowKey={`${wid}_extraMat`}
                   isSelected={isRowSelected(`${wid}_extraMat`)}
                   toggleRowSelection={toggleRowSelection}
-                  showSelection={showExportControls}
-                  showAttachment
-                  onAttachmentClick={() => setAttachmentInfoOpen(true)}
-                />
-              )}
-              <tr>
-                <Td
-                  colSpan={totalColumns}
+	                  showSelection={showExportControls}
+	                  showAttachment
+	                  onAttachmentClick={() => setAttachmentInfoOpen(true)}
+	                  onLabelChange={label => updateRowLabel(wid, 'extraMat', label)}
+	                />
+	              )}
+	              <tr>
+	                <Td
+	                  colSpan={totalColumns}
                   align='middle'
-                  className='phase-block border border-neutral-border/70 py-0.5 sm:py-1 md:py-1 bg-white/5 text-[9px] sm:text-[10px] md:text-xs lg:text-sm'
-                >
-                  <div className='phase-block-sticky'>
-                    <button
-                      type='button'
-                      onClick={() => toggleBlock('extraCrew')}
-                      className='phase-block-button w-full flex items-center gap-2 font-medium whitespace-nowrap'
-                      style={{ color: 'var(--text)' }}
-                    >
-                      <span className={`transition-transform opacity-80 text-[8px] sm:text-[9px] md:text-[10px] ${isBlockCollapsed('extraCrew') ? '-rotate-90' : ''}`}>⌄</span>
-                      <span>{t('needs.advance')}</span>
-                    </button>
-                  </div>
-                </Td>
-              </tr>
-              {!isBlockCollapsed('extraCrew') && (!hideEmptyRows || hasAnyValue(['precall'])) && (
-                <FieldRow
+                  className='phase-block border border-neutral-border/70 py-0.5 sm:py-1 md:py-1 bg-white/5 text-[9px] sm:text-[10px] md:text-xs lg:text-sm cursor-pointer'
+	                  onClick={() => toggleBlock('extraCrew')}
+	                >
+	                  <div className='phase-block-sticky'>
+	                    <div
+	                      className='phase-block-button w-full flex items-center gap-2 font-medium whitespace-nowrap cursor-pointer'
+	                      style={{ color: 'var(--text)' }}
+	                      onClick={() => toggleBlock('extraCrew')}
+	                      onKeyDown={event => {
+	                        if (event.key === 'Enter' || event.key === ' ') {
+	                          event.preventDefault();
+	                          toggleBlock('extraCrew');
+	                        }
+	                      }}
+	                      role='button'
+	                      tabIndex={readOnly ? -1 : 0}
+	                      aria-expanded={!isBlockCollapsed('extraCrew')}
+	                    >
+	                      <button
+	                        type='button'
+	                        onClick={event => {
+	                          event.stopPropagation();
+	                          toggleBlock('extraCrew');
+	                        }}
+	                        className='shrink-0'
+	                        title={isBlockCollapsed('extraCrew') ? t('needs.open') : t('needs.close')}
+	                      >
+	                        <span className={`transition-transform opacity-80 text-[8px] sm:text-[9px] md:text-[10px] ${isBlockCollapsed('extraCrew') ? '-rotate-90' : ''}`}>⌄</span>
+	                      </button>
+	                      <EditableRowLabel
+	                        value={getRowLabel('sectionExtraCrew', t('needs.advance'))}
+	                        onChange={label => updateRowLabel(wid, 'sectionExtraCrew', label)}
+	                        readOnly={readOnly}
+	                        placeholder={t('needs.customRowPlaceholder')}
+	                        variant='inline'
+	                      />
+	                    </div>
+	                  </div>
+	                </Td>
+	              </tr>
+	              {!isBlockCollapsed('extraCrew') && (!hideEmptyRows || hasAnyValue(['precall'])) && (
+	                <FieldRow
                   weekId={wid}
                   weekObj={wk}
                   fieldKey='precall'
-                  label={t('needs.precall')}
+	                  label={getRowLabel('precall', t('needs.precall'))}
                   setCell={setCell}
                   readOnly={readOnly}
-                  rowKey={`${wid}_precall`}
-                  isSelected={isRowSelected(`${wid}_precall`)}
-                  toggleRowSelection={toggleRowSelection}
-                  showSelection={showExportControls}
-                />
-              )}
-              {!isBlockCollapsed('extraCrew') && (!hideEmptyRows || hasAnyList('preList') || hasAnyValue(['preStart', 'preEnd', 'prelightTipo'])) && (
-                <MembersRow
-                  label={t('needs.prelight')}
+	                  rowKey={`${wid}_precall`}
+	                  isSelected={isRowSelected(`${wid}_precall`)}
+	                  toggleRowSelection={toggleRowSelection}
+	                  showSelection={showExportControls}
+	                  onLabelChange={label => updateRowLabel(wid, 'precall', label)}
+	                />
+	              )}
+	              {!isBlockCollapsed('extraCrew') && (!hideEmptyRows || hasAnyList('preList') || hasAnyValue(['preStart', 'preEnd', 'prelightTipo'])) && (
+	                <MembersRow
+	                  label={getRowLabel('preList', t('needs.prelight'))}
                   listKey='preList'
                   weekId={wid}
                   weekObj={wk}
@@ -994,14 +1103,15 @@ export function WeekSection({
                   showSchedule
                   jornadaKey='prelightTipo'
                   startKey='preStart'
-                  endKey='preEnd'
-                  collapsible
-                  defaultCollapsed
-                />
-              )}
-              {!isBlockCollapsed('extraCrew') && (!hideEmptyRows || hasAnyList('pickList') || hasAnyValue(['pickStart', 'pickEnd', 'pickupTipo'])) && (
-                <MembersRow
-                  label={t('needs.pickup')}
+	                  endKey='preEnd'
+	                  collapsible
+	                  defaultCollapsed
+	                  onLabelChange={label => updateRowLabel(wid, 'preList', label)}
+	                />
+	              )}
+	              {!isBlockCollapsed('extraCrew') && (!hideEmptyRows || hasAnyList('pickList') || hasAnyValue(['pickStart', 'pickEnd', 'pickupTipo'])) && (
+	                <MembersRow
+	                  label={getRowLabel('pickList', t('needs.pickup'))}
                   listKey='pickList'
                   weekId={wid}
                   weekObj={wk}
@@ -1016,62 +1126,90 @@ export function WeekSection({
                   showSchedule
                   jornadaKey='pickupTipo'
                   startKey='pickStart'
-                  endKey='pickEnd'
-                  collapsible
-                  defaultCollapsed
-                />
-              )}
-              <tr>
-                <Td
-                  colSpan={totalColumns}
+	                  endKey='pickEnd'
+	                  collapsible
+	                  defaultCollapsed
+	                  onLabelChange={label => updateRowLabel(wid, 'pickList', label)}
+	                />
+	              )}
+	              <tr>
+	                <Td
+	                  colSpan={totalColumns}
                   align='middle'
-                  className='phase-block border border-neutral-border/70 py-0.5 sm:py-1 md:py-1 bg-white/5 text-[9px] sm:text-[10px] md:text-xs lg:text-sm'
-                >
-                  <div className='phase-block-sticky'>
-                    <button
-                      type='button'
-                      onClick={() => toggleBlock('notes')}
-                      className='phase-block-button w-full flex items-center gap-2 font-medium'
-                      style={{ color: 'var(--text)' }}
-                    >
-                      <span className={`transition-transform opacity-80 text-[8px] sm:text-[9px] md:text-[10px] ${isBlockCollapsed('notes') ? '-rotate-90' : ''}`}>⌄</span>
-                      <span>{t('needs.observations')}</span>
-                    </button>
-                  </div>
-                </Td>
-              </tr>
-              {!isBlockCollapsed('notes') && (!hideEmptyRows || hasAnyValue(['needLight'])) && (
-                <FieldRow
+                  className='phase-block border border-neutral-border/70 py-0.5 sm:py-1 md:py-1 bg-white/5 text-[9px] sm:text-[10px] md:text-xs lg:text-sm cursor-pointer'
+	                  onClick={() => toggleBlock('notes')}
+	                >
+	                  <div className='phase-block-sticky'>
+	                    <div
+	                      className='phase-block-button w-full flex items-center gap-2 font-medium cursor-pointer'
+	                      style={{ color: 'var(--text)' }}
+	                      onClick={() => toggleBlock('notes')}
+	                      onKeyDown={event => {
+	                        if (event.key === 'Enter' || event.key === ' ') {
+	                          event.preventDefault();
+	                          toggleBlock('notes');
+	                        }
+	                      }}
+	                      role='button'
+	                      tabIndex={readOnly ? -1 : 0}
+	                      aria-expanded={!isBlockCollapsed('notes')}
+	                    >
+	                      <button
+	                        type='button'
+	                        onClick={event => {
+	                          event.stopPropagation();
+	                          toggleBlock('notes');
+	                        }}
+	                        className='shrink-0'
+	                        title={isBlockCollapsed('notes') ? t('needs.open') : t('needs.close')}
+	                      >
+	                        <span className={`transition-transform opacity-80 text-[8px] sm:text-[9px] md:text-[10px] ${isBlockCollapsed('notes') ? '-rotate-90' : ''}`}>⌄</span>
+	                      </button>
+	                      <EditableRowLabel
+	                        value={getRowLabel('sectionNotes', t('needs.observations'))}
+	                        onChange={label => updateRowLabel(wid, 'sectionNotes', label)}
+	                        readOnly={readOnly}
+	                        placeholder={t('needs.customRowPlaceholder')}
+	                        variant='inline'
+	                      />
+	                    </div>
+	                  </div>
+	                </Td>
+	              </tr>
+	              {!isBlockCollapsed('notes') && (!hideEmptyRows || hasAnyValue(['needLight'])) && (
+	                <FieldRow
                   weekId={wid}
                   weekObj={wk}
                   fieldKey='needLight'
-                  label={t('needs.lightNeeds')}
+	                  label={getRowLabel('needLight', t('needs.lightNeeds'))}
                   setCell={setCell}
                   readOnly={readOnly}
                   rowKey={`${wid}_needLight`}
                   isSelected={isRowSelected(`${wid}_needLight`)}
                   toggleRowSelection={toggleRowSelection}
-                  showSelection={showExportControls}
-                  showAttachment
-                  onAttachmentClick={() => setAttachmentInfoOpen(true)}
-                />
-              )}
-              {!isBlockCollapsed('notes') && (!hideEmptyRows || hasAnyValue(['obs'])) && (
-                <FieldRow
+	                  showSelection={showExportControls}
+	                  showAttachment
+	                  onAttachmentClick={() => setAttachmentInfoOpen(true)}
+	                  onLabelChange={label => updateRowLabel(wid, 'needLight', label)}
+	                />
+	              )}
+	              {!isBlockCollapsed('notes') && (!hideEmptyRows || hasAnyValue(['obs'])) && (
+	                <FieldRow
                   weekId={wid}
                   weekObj={wk}
                   fieldKey='obs'
-                  label={t('needs.observations')}
+	                  label={getRowLabel('obs', t('needs.observations'))}
                   setCell={setCell}
                   readOnly={readOnly}
                   rowKey={`${wid}_obs`}
                   isSelected={isRowSelected(`${wid}_obs`)}
                   toggleRowSelection={toggleRowSelection}
-                  showSelection={showExportControls}
-                  showAttachment
-                  onAttachmentClick={() => setAttachmentInfoOpen(true)}
-                />
-              )}
+	                  showSelection={showExportControls}
+	                  showAttachment
+	                  onAttachmentClick={() => setAttachmentInfoOpen(true)}
+	                  onLabelChange={label => updateRowLabel(wid, 'obs', label)}
+	                />
+	              )}
               {customRows.map(row => {
                 const rowKey = `${wid}_custom_${row.id}`;
                 return (

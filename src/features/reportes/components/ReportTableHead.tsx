@@ -8,6 +8,7 @@ type Props = {
   DAY_NAMES: readonly string[];
   toDisplayDate: (iso: string) => string;
   horarioTexto: (iso: string) => string;
+  scheduleLabel?: string;
   headerRowRef?: React.RefObject<HTMLTableRowElement | null>;
   dateRowRef?: React.RefObject<HTMLTableRowElement | null>;
   headerTop?: number;
@@ -20,6 +21,7 @@ function ReportTableHead({
   DAY_NAMES,
   toDisplayDate,
   horarioTexto,
+  scheduleLabel,
   headerRowRef,
   dateRowRef,
   headerTop = 0,
@@ -61,7 +63,7 @@ function ReportTableHead({
       </tr>
 
       <tr>
-        <Th scope='col' align='left' className='report-sticky-first-col'>{t('reports.scheduleBase')}</Th>
+        <Th scope='col' align='left' className='report-sticky-first-col'>{scheduleLabel || t('reports.scheduleBase')}</Th>
         {semana.map((iso, i) => (
           <Th key={`hor_${iso}`} scope='col' align='center'>
             {horarios[i]}

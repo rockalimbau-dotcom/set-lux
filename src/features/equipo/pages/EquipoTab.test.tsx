@@ -60,7 +60,7 @@ describe('EquipoTab (smoke)', () => {
       screen.getByRole('heading', { name: 'Equipo base' })
     ).toBeInTheDocument();
     expect(
-      screen.getByRole('heading', { name: 'Equipo extra / Dif horarios' })
+      screen.getByRole('heading', { name: 'Equipo extra' })
     ).toBeInTheDocument();
     expect(screen.getByText(/Tip:/i)).toBeInTheDocument();
 

@@ -12,6 +12,13 @@ type GroupedPersonKeys = {
   extraGroups: Array<{ blockKey: string; people: string[] }>;
 };
 
+type ReportLabels = {
+  base: string;
+  extra: string;
+  pre: string;
+  pick: string;
+};
+
 export const defaultExportWeek = (
   project: Project | undefined,
   title: string,
@@ -21,6 +28,7 @@ export const defaultExportWeek = (
   horarioPrelight: (iso: string) => string,
   horarioPickup: (iso: string) => string,
   horarioExtraByBlock: (blockKey: string, iso: string) => string,
+  reportLabels: ReportLabels,
   groupedPersonKeys: GroupedPersonKeys,
   data: any
 ) => {
@@ -35,6 +43,7 @@ export const defaultExportWeek = (
     horarioPrelight,
     horarioPickup,
     horarioExtraByBlock,
+    reportLabels,
     groupedPersonKeys,
     CONCEPTS: [...CONCEPTS],
     data,
@@ -59,6 +68,7 @@ export const handleExportPDF = async (
   horarioPrelight: (iso: string) => string,
   horarioPickup: (iso: string) => string,
   horarioExtraByBlock: (blockKey: string, iso: string) => string,
+  reportLabels: ReportLabels,
   groupedPersonKeys: GroupedPersonKeys,
   data: any,
   onExportWeekPDF?: () => void,
@@ -75,6 +85,7 @@ export const handleExportPDF = async (
     horarioPrelight,
     horarioPickup,
     horarioExtraByBlock,
+    reportLabels,
     groupedPersonKeys,
     CONCEPTS: [...CONCEPTS],
     data,

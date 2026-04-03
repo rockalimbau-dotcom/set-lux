@@ -1,5 +1,5 @@
 import i18n from '../../../../../i18n/config';
-import { DayValues } from '../types';
+import { DayValues, RowLabelOverrides } from '../types';
 import { esc, parseYYYYMMDD, getDays, translateWeekLabel } from '../helpers';
 import { generateHeaderRow, generateTableBody } from './tableHelpers';
 import { baseStyles, containerStyles } from './styles';
@@ -11,13 +11,14 @@ export function buildNecesidadesHTML(
   project: any,
   weekLabel: string,
   weekStart: string,
-  valuesByDay: DayValues[]
+  valuesByDay: DayValues[],
+  rowLabels?: RowLabelOverrides
 ): string {
   const monday = parseYYYYMMDD(weekStart);
   const DAYS = getDays();
   const translatedWeekLabel = translateWeekLabel(weekLabel);
   const headerRow = generateHeaderRow(DAYS, monday);
-  const body = generateTableBody(DAYS, valuesByDay);
+  const body = generateTableBody(DAYS, valuesByDay, undefined, false, [], rowLabels, 0);
 
   const titleSuffix = weekLabel.includes('-')
     ? i18n.t('needs.preproduction')
@@ -82,4 +83,3 @@ export function buildNecesidadesHTML(
     </html>
   `;
 }
-

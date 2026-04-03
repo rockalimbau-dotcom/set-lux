@@ -3,6 +3,7 @@ import { AnyRecord } from '@shared/types/common';
 import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import EditableRowLabel from './EditableRowLabel';
 import TextAreaAuto from './TextAreaAuto';
 
 type FieldRowProps = {
@@ -18,6 +19,7 @@ type FieldRowProps = {
   showSelection?: boolean;
   showAttachment?: boolean;
   onAttachmentClick?: (dayIdx: number) => void;
+  onLabelChange?: (label: string) => void;
 };
 
 export default function FieldRow({
@@ -33,6 +35,7 @@ export default function FieldRow({
   showSelection = true,
   showAttachment = false,
   onAttachmentClick,
+  onLabelChange,
 }: FieldRowProps) {
   const { t } = useTranslation();
   
@@ -81,7 +84,12 @@ export default function FieldRow({
       )}
       {/* Etiqueta de la fila */}
       <Td className='border border-neutral-border px-1 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-1 font-semibold bg-white/5 whitespace-normal break-words text-[9px] sm:text-[10px] md:text-xs lg:text-sm align-middle'>
-        {label}
+        <EditableRowLabel
+          value={label}
+          onChange={onLabelChange}
+          readOnly={readOnly}
+          placeholder={t('needs.customRowPlaceholder')}
+        />
       </Td>
       {DAYS.map((d, i) => {
         const rawValue = (weekObj?.days?.[i]?.[fieldKey] as string) || '';
@@ -131,5 +139,4 @@ export default function FieldRow({
     </tr>
   );
 }
-
 

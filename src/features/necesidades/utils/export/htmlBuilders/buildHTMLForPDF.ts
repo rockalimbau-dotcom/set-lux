@@ -1,8 +1,9 @@
 import i18n from '../../../../../i18n/config';
-import { CustomRow, DayValues } from '../types';
+import { CustomRow, DayValues, RowLabelOverrides } from '../types';
 import { esc, parseYYYYMMDD, getDays, translateWeekLabel } from '../helpers';
 import { generateHeaderRow, generateTableBody } from './tableHelpers';
 import { baseStyles, containerPDFStyles } from './styles';
+import { normalizeJornadaType } from '@shared/utils/jornadaTranslations';
 
 /**
  * Build HTML for necesidades PDF
@@ -16,14 +17,14 @@ export function buildNecesidadesHTMLForPDF(
   selectedDayIdxs?: number[], // Columnas seleccionadas (días)
   includeEmptyRows?: boolean, // Incluir filas vacías
   customRows?: CustomRow[],
+  rowLabels?: RowLabelOverrides,
   shootingDayOffset: number = 0,
   planFileName?: string
 ): string {
   const monday = parseYYYYMMDD(weekStart);
   const DAYS = getDays();
   const isRestDay = (day: DayValues | undefined): boolean => {
-    const raw = day?.crewTipo ?? day?.tipo ?? '';
-    const normalized = String(raw).trim().toLowerCase();
+    const normalized = normalizeJornadaType(day?.crewTipo ?? day?.tipo ?? '').toLowerCase();
     return normalized === 'descanso';
   };
 
@@ -73,6 +74,7 @@ export function buildNecesidadesHTMLForPDF(
     selectedRowKeys,
     includeEmptyRows,
     customRows,
+    rowLabels,
     shootingDayOffset
   );
 

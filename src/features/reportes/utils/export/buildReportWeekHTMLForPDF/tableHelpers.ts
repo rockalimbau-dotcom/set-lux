@@ -29,11 +29,12 @@ export function generateDaysHeader(
  */
 export function generateScheduleHeader(
   safeSemanaWithData: string[],
-  horarioTexto: (iso: string) => string
+  horarioTexto: (iso: string) => string,
+  scheduleLabel: string = getTranslation('reports.scheduleBase', 'Horario equipo base')
 ): string {
   return `
       <tr>
-        <th style="border:1px solid #999;padding:6px;text-align:left;background:#1e40af;color:#fff;">${esc(getTranslation('reports.scheduleBase', 'Horario equipo base'))}</th>
+        <th style="border:1px solid #999;padding:6px;text-align:left;background:#1e40af;color:#fff;">${esc(scheduleLabel)}</th>
         ${safeSemanaWithData
           .map(
             iso =>
@@ -62,4 +63,3 @@ export function generateTeamBlockTitle(
         </td>
       </tr>`;
 }
-

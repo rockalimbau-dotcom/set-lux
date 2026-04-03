@@ -12,6 +12,12 @@ interface UseReportExportProps {
   horarioPrelight: (iso: string) => string;
   horarioPickup: (iso: string) => string;
   horarioExtraByBlock: (blockKey: string, iso: string) => string;
+  reportLabels: {
+    base: string;
+    extra: string;
+    pre: string;
+    pick: string;
+  };
   groupedPersonKeys: {
     base: string[];
     pre: string[];
@@ -39,6 +45,7 @@ export function useReportExport({
   horarioPrelight,
   horarioPickup,
   horarioExtraByBlock,
+  reportLabels,
   groupedPersonKeys,
   data,
   onExportWeekHTML,
@@ -60,6 +67,7 @@ export function useReportExport({
       horarioPrelight,
       horarioPickup,
       horarioExtraByBlock,
+      reportLabels,
       groupedPersonKeys,
       data
     );
@@ -75,6 +83,7 @@ export function useReportExport({
       horarioPrelight,
       horarioPickup,
       horarioExtraByBlock,
+      reportLabels,
       groupedPersonKeys,
       data,
       onExportWeekPDF,
@@ -87,6 +96,7 @@ export function useReportExport({
         horarioPrelight,
         horarioPickup,
         horarioExtraByBlock,
+        reportLabels,
         groupedPersonKeys,
         data
       )

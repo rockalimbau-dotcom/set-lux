@@ -8,6 +8,7 @@ import { sortTeam } from '@features/equipo/pages/EquipoTab/EquipoTabUtils';
 import { ExtraBlock, applyExtraBlocksToDay, normalizeExtraBlocks } from '@shared/utils/extraBlocks';
 import Chip from './Chip';
 import { ConfirmModal } from './ConfirmModal';
+import EditableRowLabel from './EditableRowLabel';
 import TextAreaAuto from './TextAreaAuto';
 import { JornadaDropdownCell, MemberDropdown } from './MembersRow';
 
@@ -24,6 +25,7 @@ type ExtraBlocksRowProps = {
   showSelection?: boolean;
   collapsible?: boolean;
   defaultCollapsed?: boolean;
+  onLabelChange?: (label: string) => void;
 };
 
 const createBlockId = () =>
@@ -53,6 +55,7 @@ export function ExtraBlocksRow({
   showSelection = true,
   collapsible = false,
   defaultCollapsed = false,
+  onLabelChange,
 }: ExtraBlocksRowProps) {
   const { t } = useTranslation();
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
@@ -187,21 +190,26 @@ export function ExtraBlocksRow({
             </div>
           </Td>
         )}
-        <Td className='border border-neutral-border px-1 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-1 font-semibold bg-white/5 whitespace-nowrap text-[9px] sm:text-[10px] md:text-xs lg:text-sm align-middle'>
-          <div className='flex items-center gap-2'>
-            {collapsible && (
-              <button
-                type='button'
-                onClick={() => setCollapsed(v => !v)}
-                className='text-[8px] sm:text-[9px] md:text-[10px] font-semibold'
-                style={{ color: 'var(--text)' }}
-                title={collapsed ? t('needs.open') : t('needs.close')}
-              >
-                {collapsed ? '+' : '−'}
-              </button>
-            )}
-            <span>{label}</span>
-          </div>
+        <Td className='border border-neutral-border px-1 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-1 font-semibold bg-white/5 whitespace-normal break-words text-[9px] sm:text-[10px] md:text-xs lg:text-sm align-middle'>
+          <EditableRowLabel
+            value={label}
+            onChange={onLabelChange}
+            readOnly={readOnly}
+            placeholder={t('needs.customRowPlaceholder')}
+            leading={
+              collapsible ? (
+                <button
+                  type='button'
+                  onClick={() => setCollapsed(v => !v)}
+                  className='text-[8px] sm:text-[9px] md:text-[10px] font-semibold shrink-0'
+                  style={{ color: 'var(--text)' }}
+                  title={collapsed ? t('needs.open') : t('needs.close')}
+                >
+                  {collapsed ? '+' : '−'}
+                </button>
+              ) : null
+            }
+          />
         </Td>
         {DAYS.map((d, dayIdx) => {
           const day = ((weekObj as AnyRecord).days?.[dayIdx] || {}) as AnyRecord;

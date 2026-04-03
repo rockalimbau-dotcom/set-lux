@@ -64,8 +64,11 @@ function EquipoTab({
 
   return (
     <div className='space-y-2 sm:space-y-3 md:space-y-4 lg:space-y-6'>
-      <div className='flex items-center justify-between'>
-        <div />
+      <div className='no-pdf flex items-start justify-between gap-2 sm:gap-3 md:gap-4'>
+        <span className='text-[9px] sm:text-[10px] md:text-xs text-zinc-400 dark:text-white'>
+          <strong>Tip:</strong>{' '}
+          <span dangerouslySetInnerHTML={{ __html: t('team.tipMessage') }} />
+        </span>
         <div className='flex items-center gap-1 sm:gap-1.5 md:gap-2'>
           {!groupsEnabled.prelight && (
             <button
@@ -173,11 +176,6 @@ function EquipoTab({
           onRoleCatalogChange={onRoleCatalogChange}
         />
       )}
-
-      <p className='text-[9px] sm:text-[10px] md:text-xs text-zinc-500'>
-        <span className='text-brand font-semibold'>{t('team.tip')}</span>{' '}
-        <span dangerouslySetInnerHTML={{ __html: t('team.tipMessage') }} />
-      </p>
     </div>
   );
 }

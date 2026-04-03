@@ -47,4 +47,28 @@ describe('buildNecesidadesHTMLForPDF', () => {
     expect(html).toContain('Eléctrico noche');
     expect(html).toContain('Ana');
   });
+
+  it('translates stored jornada aliases in schedule headers', () => {
+    const html = buildNecesidadesHTMLForPDF(
+      { nombre: 'Proyecto Test' },
+      'Semana 1',
+      '2026-03-02',
+      [
+        {
+          prelightTipo: 'Pickup',
+          preStart: '08:00',
+          preEnd: '10:00',
+          preList: [{ role: 'E', name: 'Ana' }],
+        },
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+      ]
+    );
+
+    expect(html).toContain('Recogida | 08:00 - 10:00');
+  });
 });

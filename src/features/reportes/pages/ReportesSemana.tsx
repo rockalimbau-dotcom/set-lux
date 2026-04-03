@@ -29,6 +29,8 @@ import { mondayOf, toYYYYMMDD } from '@shared/utils/date';
 import { loadCondModel } from '@features/nomina/utils/cond';
 import { ROLE_CODE_TO_LABEL, stripRoleSuffix, stripRefuerzoSuffix } from '@shared/constants/roles';
 import { useTheme } from '../components/ReportPersonRows/useTheme';
+import { getNeedsRowLabel } from '@features/necesidades/utils/rowLabels';
+import { buildReportScheduleLabel } from '../utils/reportLabels';
 
 import { ReportesSemanaProps } from './ReportesSemana/ReportesSemanaTypes';
 import { useDietasOpciones } from './ReportesSemana/useDietasOpciones';
@@ -147,6 +149,32 @@ export default function ReportesSemana({
   const dietasOpciones = useDietasOpciones(mode);
 
   const { horarioTexto, horarioPrelight, horarioPickup, horarioExtra, horarioExtraByIndex } = createHorarioHelpers(findWeekAndDay, t);
+  const reportLabels = useMemo(() => {
+    const schedulePrefix = t('reports.schedulePrefix', 'Horario');
+    const weekWithLabels = safeSemana
+      .map(iso => findWeekAndDay(iso).week as AnyRecord | null)
+      .find(week => !!week);
+    const rowLabels = (weekWithLabels?.rowLabels || {}) as Record<string, string>;
+
+    return {
+      base: buildReportScheduleLabel(
+        schedulePrefix,
+        getNeedsRowLabel(rowLabels, 'crewList', t('needs.technicalTeam'))
+      ),
+      extra: buildReportScheduleLabel(
+        schedulePrefix,
+        getNeedsRowLabel(rowLabels, 'refList', t('needs.reinforcements'))
+      ),
+      pre: buildReportScheduleLabel(
+        schedulePrefix,
+        getNeedsRowLabel(rowLabels, 'preList', t('needs.prelight'))
+      ),
+      pick: buildReportScheduleLabel(
+        schedulePrefix,
+        getNeedsRowLabel(rowLabels, 'pickList', t('needs.pickup'))
+      ),
+    };
+  }, [findWeekAndDay, safeSemana, t]);
   const horarioExtraByBlock = useCallback(
     (blockKey: string, iso: string) => {
       const match = String(blockKey).match(/^extra:(\d+)$/);
@@ -384,6 +412,7 @@ export default function ReportesSemana({
     horarioPrelight,
     horarioPickup,
     horarioExtraByBlock,
+    reportLabels,
     groupedPersonKeys,
     data: exportData,
     onExportWeekHTML,
@@ -513,6 +542,7 @@ export default function ReportesSemana({
                 DAY_NAMES={[...DAY_NAMES] as any}
                 toDisplayDate={toDisplayDate}
                 horarioTexto={horarioTexto}
+                scheduleLabel={reportLabels.base}
                 headerRowRef={headerRowRef}
                 dateRowRef={dateRowRef}
                 headerTop={stickyOffsets.header}
@@ -525,7 +555,7 @@ export default function ReportesSemana({
                 {extraGroups.map(group => (
                   <React.Fragment key={group.blockKey}>
                     <ReportBlockScheduleRow
-                      label={t('reports.extraSchedule')}
+                      label={reportLabels.extra}
                       semana={[...filteredSemana]}
                       valueForISO={horarioExtraByIndex(group.index)}
                     />
@@ -535,7 +565,7 @@ export default function ReportesSemana({
 
                 {peoplePre.length > 0 && (
                   <ReportBlockScheduleRow
-                    label={t('reports.prelightSchedule')}
+                    label={reportLabels.pre}
                     semana={[...filteredSemana]}
                     valueForISO={horarioPrelight}
                   />
@@ -544,7 +574,7 @@ export default function ReportesSemana({
 
                 {peoplePick.length > 0 && (
                   <ReportBlockScheduleRow
-                    label={t('reports.pickupSchedule')}
+                    label={reportLabels.pick}
                     semana={[...filteredSemana]}
                     valueForISO={horarioPickup}
                   />

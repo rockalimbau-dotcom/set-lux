@@ -35,7 +35,8 @@ export function generateBodyByBlocks(
   project?: any,
   horarioPrelight?: (iso: string) => string,
   horarioPickup?: (iso: string) => string,
-  horarioExtraByBlock?: (blockKey: string, iso: string) => string
+  horarioExtraByBlock?: (blockKey: string, iso: string) => string,
+  reportLabels?: { extra: string; pre: string; pick: string }
 ): string {
   const bodyParts: string[] = [];
 
@@ -49,7 +50,7 @@ export function generateBodyByBlocks(
     if (typeof horarioExtraByBlock === 'function') {
       bodyParts.push(
         generateScheduleRow(
-          getTranslation('reports.extraSchedule', 'Equipo extra / Dif horarios'),
+          reportLabels?.extra || getTranslation('reports.extraSchedule', 'Equipo extra / Dif horarios'),
           safeSemanaWithData,
           iso => horarioExtraByBlock(group.blockKey, iso)
         )
@@ -65,7 +66,7 @@ export function generateBodyByBlocks(
   if (personsByBlock.pre.length > 0 && typeof horarioPrelight === 'function') {
     bodyParts.push(
       generateScheduleRow(
-        getTranslation('reports.prelightSchedule', 'Horario Equipo Prelight'),
+        reportLabels?.pre || getTranslation('reports.prelightSchedule', 'Horario Equipo Prelight'),
         safeSemanaWithData,
         horarioPrelight
       )
@@ -80,7 +81,7 @@ export function generateBodyByBlocks(
   if (personsByBlock.pick.length > 0 && typeof horarioPickup === 'function') {
     bodyParts.push(
       generateScheduleRow(
-        getTranslation('reports.pickupSchedule', 'Horario Equipo Recogida'),
+        reportLabels?.pick || getTranslation('reports.pickupSchedule', 'Horario Equipo Recogida'),
         safeSemanaWithData,
         horarioPickup
       )

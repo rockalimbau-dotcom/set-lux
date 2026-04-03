@@ -15,6 +15,12 @@ export interface BuildReportWeekHTMLParams {
   horarioPrelight?: (iso: string) => string;
   horarioPickup?: (iso: string) => string;
   horarioExtraByBlock?: (blockKey: string, iso: string) => string;
+  reportLabels?: {
+    base: string;
+    extra: string;
+    pre: string;
+    pick: string;
+  };
   groupedPersonKeys?: {
     base: string[];
     pre: string[];

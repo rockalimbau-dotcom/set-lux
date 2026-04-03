@@ -92,6 +92,7 @@ export function useNeedsSync({
                   open: true,
                   days: {},
                   customRows: storedWeek?.customRows || [],
+                  rowLabels: storedWeek?.rowLabels || {},
                 };
               }
             } else {
@@ -102,6 +103,7 @@ export function useNeedsSync({
                 startDate: w.startDate,
                 days: (next[w.id as string] as AnyRecord).days || {},
                 customRows: (next[w.id as string] as AnyRecord).customRows || storedWeek?.customRows || [],
+                rowLabels: (next[w.id as string] as AnyRecord).rowLabels || storedWeek?.rowLabels || [],
               } as AnyRecord;
             }
 

@@ -3,11 +3,13 @@ import { AnyRecord } from '@shared/types/common';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { translateJornadaType as translateJornadaTypeUtil } from '@shared/utils/jornadaTranslations';
+import { normalizeJornadaType } from '@shared/utils/jornadaTranslations';
 import { applyGenderToBadge, getRoleBadgeCode } from '@shared/constants/roles';
 import { useLocalStorage } from '@shared/hooks/useLocalStorage';
 import { sortTeam } from '@features/equipo/pages/EquipoTab/EquipoTabUtils';
 import Chip from './Chip';
 import { ConfirmModal } from './ConfirmModal';
+import EditableRowLabel from './EditableRowLabel';
 import TextAreaAuto from './TextAreaAuto';
 
 const normalizeMemberName = (value: unknown): string =>
@@ -377,6 +379,7 @@ type MembersRowProps = {
   endKey?: string;
   collapsible?: boolean;
   defaultCollapsed?: boolean;
+  onLabelChange?: (label: string) => void;
 };
 
 export const JORNADA_OPTIONS = [
@@ -414,6 +417,7 @@ export function MembersRow({
   endKey,
   collapsible = false,
   defaultCollapsed = false,
+  onLabelChange,
 }: MembersRowProps) {
   const { t } = useTranslation();
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
@@ -524,26 +528,31 @@ export function MembersRow({
             </div>
           </Td>
         )}
-      <Td className='border border-neutral-border px-1 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-1 font-semibold bg-white/5 whitespace-nowrap text-[9px] sm:text-[10px] md:text-xs lg:text-sm align-middle'>
-          <div className='flex items-center gap-2'>
-            {collapsible && (
-              <button
-                type='button'
-                onClick={() => setCollapsed(v => !v)}
-                className='text-[8px] sm:text-[9px] md:text-[10px] font-semibold'
-                style={{ color: 'var(--text)' }}
-                title={collapsed ? t('needs.open') : t('needs.close')}
-              >
-                {collapsed ? '+' : '−'}
-              </button>
-            )}
-            <span>{label}</span>
-          </div>
+      <Td className='border border-neutral-border px-1 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-1 font-semibold bg-white/5 whitespace-normal break-words text-[9px] sm:text-[10px] md:text-xs lg:text-sm align-middle'>
+          <EditableRowLabel
+            value={label}
+            onChange={onLabelChange}
+            readOnly={readOnly}
+            placeholder={t('needs.customRowPlaceholder')}
+            leading={
+              collapsible ? (
+                <button
+                  type='button'
+                  onClick={() => setCollapsed(v => !v)}
+                  className='text-[8px] sm:text-[9px] md:text-[10px] font-semibold shrink-0'
+                  style={{ color: 'var(--text)' }}
+                  title={collapsed ? t('needs.open') : t('needs.close')}
+                >
+                  {collapsed ? '+' : '−'}
+                </button>
+              ) : null
+            }
+          />
         </Td>
         {DAYS.map((d, i) => {
           const day: AnyRecord = (weekObj as AnyRecord).days?.[i] || {};
           const list = Array.isArray(day[listKey]) ? (day[listKey] as AnyRecord[]) : [];
-          const jornadaValue = jornadaKey ? (day as AnyRecord)[jornadaKey] || '' : '';
+          const jornadaValue = jornadaKey ? normalizeJornadaType((day as AnyRecord)[jornadaKey] || '') : '';
           const jornadaNormalized = String(jornadaValue).trim().toLowerCase();
           const isCrewRestOrEnd =
             listKey === 'crewList' && (jornadaNormalized === 'descanso' || jornadaNormalized === 'fin');

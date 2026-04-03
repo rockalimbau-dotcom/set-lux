@@ -1,6 +1,6 @@
 import i18n from '../../../../i18n/config';
 import { AnyRecord } from '@shared/types/common';
-import { DayValues, WeekEntry, NeedsData } from './types';
+import { DayValues, WeekEntry, NeedsData, RowLabelOverrides } from './types';
 import { buildNecesidadesHTML } from './htmlBuilders';
 import { esc } from './helpers';
 
@@ -11,9 +11,10 @@ export function renderExportHTML(
   projectName: string,
   weekLabel: string,
   weekStart: string,
-  valuesByDay: DayValues[]
+  valuesByDay: DayValues[],
+  rowLabels?: RowLabelOverrides
 ): string {
-  return buildNecesidadesHTML({ nombre: projectName }, weekLabel, weekStart, valuesByDay);
+  return buildNecesidadesHTML({ nombre: projectName }, weekLabel, weekStart, valuesByDay, rowLabels);
 }
 
 /**
@@ -32,10 +33,10 @@ export function renderExportAllHTML(
       { nombre: projectName },
       wk.label || i18n.t('needs.week'),
       wk.startDate || '',
-      valuesByDay
+      valuesByDay,
+      wk.rowLabels
     );
   });
   
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${esc(projectName)} – ${i18n.t('needs.title')} (${i18n.t('needs.all')})</title></head><body style="font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif;color:#111;">${parts.join('<hr style="page-break-after:always;border:none;border-top:1px solid #ddd;margin:24px 0;" />')}<footer style="margin-top:30px;font-size:10px;color:#888;">${i18n.t('footer.generatedBy')} SetLux</footer></body></html>`;
 }
-

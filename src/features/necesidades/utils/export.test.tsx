@@ -123,12 +123,24 @@ describe('necesidades/utils/export', () => {
         mockWeekStart,
         mockValuesByDay
       );
-      expect(html).toContain(
-        '<tr><td style="border:1px solid #999;padding:6px;font-weight:600;background:#f8fafc;">Localización y secuencias</td>'
+      expect(html).toContain('Localización y secuencias');
+      expect(html).toContain('Precall');
+    });
+
+    it('should render edited built-in row labels in export', () => {
+      const html = renderExportHTML(
+        mockProjectName,
+        mockWeekLabel,
+        mockWeekStart,
+        mockValuesByDay,
+        {
+          loc: 'Localització',
+          crewList: 'Equip Base',
+        }
       );
-      expect(html).toContain(
-        '<tr><td style="border:1px solid #999;padding:6px;font-weight:600;background:#f8fafc;">Transporte</td>'
-      );
+
+      expect(html).toContain('>Localització</td>');
+      expect(html).toContain('>Equip Base</td>');
     });
 
     it('should render team lists', () => {
@@ -138,18 +150,9 @@ describe('necesidades/utils/export', () => {
         mockWeekStart,
         mockValuesByDay
       );
-      expect(html).toContain(
-        '<tr><td style="border:1px solid #999;padding:6px;font-weight:600;background:#f8fafc;">Equipo base</td>'
-      );
-      expect(html).toContain(
-        '<tr><td style="border:1px solid #999;padding:6px;font-weight:600;background:#f8fafc;">Equipo extra</td>'
-      );
-      expect(html).toContain(
-        '<tr><td style="border:1px solid #999;padding:6px;font-weight:600;background:#f8fafc;">Prelight</td>'
-      );
-      expect(html).toContain(
-        '<tr><td style="border:1px solid #999;padding:6px;font-weight:600;background:#f8fafc;">Recogida</td>'
-      );
+      expect(html).toContain('Equipo base');
+      expect(html).toContain('Prelight');
+      expect(html).toContain('Recogida');
     });
 
     it('should escape HTML characters in content', () => {

@@ -31,6 +31,7 @@ export function buildReportWeekHTML({
   horarioPrelight,
   horarioPickup,
   horarioExtraByBlock,
+  reportLabels,
   groupedPersonKeys,
   CONCEPTS,
   data,
@@ -87,7 +88,9 @@ export function buildReportWeekHTML({
 
   const headHorario = `
       <tr>
-        <th style="border:1px solid #999;padding:6px;text-align:left;background:#1e40af;color:#fff;">${esc(getTranslation('reports.scheduleBase', 'Horario equipo base'))}</th>
+        <th style="border:1px solid #999;padding:6px;text-align:left;background:#1e40af;color:#fff;">${esc(
+          reportLabels?.base || getTranslation('reports.scheduleBase', 'Horario equipo base')
+        )}</th>
         ${safeSemanaWithData
           .map(
             iso =>
@@ -215,7 +218,7 @@ export function buildReportWeekHTML({
     if (typeof horarioExtraByBlock === 'function') {
       bodyParts.push(
         generateScheduleRow(
-          getTranslation('reports.extraSchedule', 'Equipo extra / Dif horarios'),
+          reportLabels?.extra || getTranslation('reports.extraSchedule', 'Equipo extra / Dif horarios'),
           iso => horarioExtraByBlock(group.blockKey, iso)
         )
       );
@@ -225,7 +228,7 @@ export function buildReportWeekHTML({
   if (grouped.personsByBlock.pre.length > 0 && typeof horarioPrelight === 'function') {
     bodyParts.push(
       generateScheduleRow(
-        getTranslation('reports.prelightSchedule', 'Horario Equipo Prelight'),
+        reportLabels?.pre || getTranslation('reports.prelightSchedule', 'Horario Equipo Prelight'),
         horarioPrelight
       )
     );
@@ -234,7 +237,7 @@ export function buildReportWeekHTML({
   if (grouped.personsByBlock.pick.length > 0 && typeof horarioPickup === 'function') {
     bodyParts.push(
       generateScheduleRow(
-        getTranslation('reports.pickupSchedule', 'Horario Equipo Recogida'),
+        reportLabels?.pick || getTranslation('reports.pickupSchedule', 'Horario Equipo Recogida'),
         horarioPickup
       )
     );

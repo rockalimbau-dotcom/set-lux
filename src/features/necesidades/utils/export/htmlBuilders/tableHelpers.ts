@@ -1,6 +1,7 @@
 import i18n from '../../../../../i18n/config';
 import { getRoleBadgeCode, applyGenderToBadge } from '@shared/constants/roles';
-import { CustomRow, DayValues } from '../types';
+import { normalizeJornadaType, translateJornadaType } from '@shared/utils/jornadaTranslations';
+import { CustomRow, DayValues, RowLabelOverrides } from '../types';
 import {
   esc,
   formatDDMM,
@@ -29,6 +30,13 @@ function formatMemberDisplay(
   }
   const badge = getRoleBadgeCode(role, i18n.language);
   return applyGenderToBadge(`${badge}${suffix}`, member?.gender);
+}
+
+function translateScheduleType(tipo: string): string {
+  return translateJornadaType(tipo, (key: string, defaultValue?: string) => {
+    const translated = i18n.t(key);
+    return translated === key && defaultValue ? defaultValue : translated;
+  });
 }
 
 /**
@@ -116,7 +124,7 @@ function listRowWithSchedule(
   const tds = DAYS.map((_, i) => {
     const list = Array.isArray(valuesByDay[i]?.[listKey]) ? valuesByDay[i][listKey] : [];
     const notes = valuesByDay[i]?.[notesKey] || '';
-    const tipo = valuesByDay[i]?.[tipoKey] || '';
+    const tipo = translateScheduleType(valuesByDay[i]?.[tipoKey] || '');
     const start = valuesByDay[i]?.[startKey] || '';
     const end = valuesByDay[i]?.[endKey] || '';
     const scheduleLine = [tipo, start || end ? `${start}${start && end ? ' - ' : ''}${end}` : '']
@@ -148,7 +156,7 @@ function extraBlocksRow(
     const blocks = normalizeExtraBlocks(valuesByDay[i] || {});
     const content = blocks
       .map(block => {
-        const scheduleLine = [block.tipo, block.start || block.end ? `${block.start}${block.start && block.end ? ' - ' : ''}${block.end}` : '']
+        const scheduleLine = [translateScheduleType(block.tipo || ''), block.start || block.end ? `${block.start}${block.start && block.end ? ' - ' : ''}${block.end}` : '']
           .filter(Boolean)
           .join(' | ');
         const header = scheduleLine
@@ -223,29 +231,35 @@ export function generateTableBody(
   selectedRowKeys?: string[], // Filas seleccionadas para filtrar qué mostrar
   includeEmptyRows: boolean = false,
   customRows: CustomRow[] = [],
+  rowLabels: RowLabelOverrides = {},
   shootingDayOffset: number = 0
 ): string {
+  const resolveLabel = (key: string, fallbackLabel: string): string =>
+    Object.prototype.hasOwnProperty.call(rowLabels, key)
+      ? String(rowLabels[key] ?? '')
+      : fallbackLabel;
+
   // Mapeo de fieldKey/listKey a función de generación
   const rowGenerators: Array<{ key: string; generate: () => string; isEmpty: () => boolean }> = [
     {
       key: 'loc',
-      generate: () => mergedLocSeqRow(i18n.t('needs.locationSequences'), DAYS, valuesByDay),
+      generate: () => mergedLocSeqRow(resolveLabel('loc', i18n.t('needs.locationSequences')), DAYS, valuesByDay),
       isEmpty: () => isFieldRowEmpty('loc', valuesByDay) && isFieldRowEmpty('seq', valuesByDay),
     },
     { key: 'shootDay', generate: () => {
       let count = shootingDayOffset;
       const labels = valuesByDay.map(day => {
-        const jornada = String(day?.crewTipo ?? day?.tipo ?? '').trim().toLowerCase();
+        const jornada = normalizeJornadaType(day?.crewTipo ?? day?.tipo ?? '').toLowerCase();
         if (jornada === 'rodaje' || jornada === 'rodaje festivo') {
           count += 1;
           return `DÍA ${count}`;
         }
         return '';
       });
-      return simpleRow(i18n.t('needs.shootingDay'), DAYS, labels);
+	      return simpleRow(resolveLabel('shootDay', i18n.t('needs.shootingDay')), DAYS, labels);
     }, isEmpty: () => {
       return valuesByDay.every(day => {
-        const jornada = String(day?.crewTipo ?? day?.tipo ?? '').trim().toLowerCase();
+        const jornada = normalizeJornadaType(day?.crewTipo ?? day?.tipo ?? '').toLowerCase();
         return jornada !== 'rodaje' && jornada !== 'rodaje festivo';
       });
     } },
@@ -253,7 +267,7 @@ export function generateTableBody(
       key: 'crewList',
       generate: () =>
         listRowWithSchedule(
-          i18n.t('needs.technicalTeam'),
+          resolveLabel('crewList', i18n.t('needs.technicalTeam')),
           'crewList',
           'crewTxt',
           'crewTipo',
@@ -267,20 +281,20 @@ export function generateTableBody(
     {
       key: 'refList',
       generate: () =>
-        extraBlocksRow(i18n.t('needs.reinforcements'), DAYS, valuesByDay),
+        extraBlocksRow(resolveLabel('refList', i18n.t('needs.reinforcements')), DAYS, valuesByDay),
       isEmpty: () => isListRowEmpty('refList', 'refTxt', valuesByDay),
     },
-    { key: 'needTransport', generate: () => fieldRow('needTransport', i18n.t('needs.transport'), DAYS, valuesByDay), isEmpty: () => isFieldRowEmpty('needTransport', valuesByDay) },
-    { key: 'transportExtra', generate: () => fieldRow('transportExtra', i18n.t('needs.transportExtra'), DAYS, valuesByDay), isEmpty: () => isFieldRowEmpty('transportExtra', valuesByDay) },
-    { key: 'needGroups', generate: () => fieldRow('needGroups', i18n.t('needs.groups'), DAYS, valuesByDay), isEmpty: () => isFieldRowEmpty('needGroups', valuesByDay) },
-    { key: 'needCranes', generate: () => fieldRow('needCranes', i18n.t('needs.cranes'), DAYS, valuesByDay), isEmpty: () => isFieldRowEmpty('needCranes', valuesByDay) },
-    { key: 'extraMat', generate: () => fieldRowWithTime('extraMat', 'extraMatTime', i18n.t('needs.extraMaterial'), DAYS, valuesByDay), isEmpty: () => isFieldRowEmpty('extraMat', valuesByDay) },
-    { key: 'precall', generate: () => fieldRow('precall', i18n.t('needs.precall'), DAYS, valuesByDay), isEmpty: () => isFieldRowEmpty('precall', valuesByDay) },
+    { key: 'needTransport', generate: () => fieldRow('needTransport', resolveLabel('needTransport', i18n.t('needs.transport')), DAYS, valuesByDay), isEmpty: () => isFieldRowEmpty('needTransport', valuesByDay) },
+    { key: 'transportExtra', generate: () => fieldRow('transportExtra', resolveLabel('transportExtra', i18n.t('needs.transportExtra')), DAYS, valuesByDay), isEmpty: () => isFieldRowEmpty('transportExtra', valuesByDay) },
+    { key: 'needGroups', generate: () => fieldRow('needGroups', resolveLabel('needGroups', i18n.t('needs.groups')), DAYS, valuesByDay), isEmpty: () => isFieldRowEmpty('needGroups', valuesByDay) },
+    { key: 'needCranes', generate: () => fieldRow('needCranes', resolveLabel('needCranes', i18n.t('needs.cranes')), DAYS, valuesByDay), isEmpty: () => isFieldRowEmpty('needCranes', valuesByDay) },
+    { key: 'extraMat', generate: () => fieldRowWithTime('extraMat', 'extraMatTime', resolveLabel('extraMat', i18n.t('needs.extraMaterial')), DAYS, valuesByDay), isEmpty: () => isFieldRowEmpty('extraMat', valuesByDay) },
+    { key: 'precall', generate: () => fieldRow('precall', resolveLabel('precall', i18n.t('needs.precall')), DAYS, valuesByDay), isEmpty: () => isFieldRowEmpty('precall', valuesByDay) },
     {
       key: 'preList',
       generate: () =>
         listRowWithSchedule(
-          i18n.t('needs.prelight'),
+          resolveLabel('preList', i18n.t('needs.prelight')),
           'preList',
           'preNote',
           'prelightTipo',
@@ -295,7 +309,7 @@ export function generateTableBody(
       key: 'pickList',
       generate: () =>
         listRowWithSchedule(
-          i18n.t('needs.pickup'),
+          resolveLabel('pickList', i18n.t('needs.pickup')),
           'pickList',
           'pickNote',
           'pickupTipo',
@@ -306,8 +320,8 @@ export function generateTableBody(
         ),
       isEmpty: () => isListRowEmpty('pickList', 'pickNote', valuesByDay),
     },
-    { key: 'needLight', generate: () => fieldRow('needLight', i18n.t('needs.lightNeeds'), DAYS, valuesByDay), isEmpty: () => isFieldRowEmpty('needLight', valuesByDay) },
-    { key: 'obs', generate: () => fieldRow('obs', i18n.t('needs.observations'), DAYS, valuesByDay), isEmpty: () => isFieldRowEmpty('obs', valuesByDay) },
+    { key: 'needLight', generate: () => fieldRow('needLight', resolveLabel('needLight', i18n.t('needs.lightNeeds')), DAYS, valuesByDay), isEmpty: () => isFieldRowEmpty('needLight', valuesByDay) },
+    { key: 'obs', generate: () => fieldRow('obs', resolveLabel('obs', i18n.t('needs.observations')), DAYS, valuesByDay), isEmpty: () => isFieldRowEmpty('obs', valuesByDay) },
   ];
   if (customRows.length > 0) {
     customRows.forEach(row => {

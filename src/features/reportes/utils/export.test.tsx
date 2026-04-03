@@ -71,6 +71,37 @@ describe('reportes/utils/export', () => {
       expect(mockHorarioTexto).toHaveBeenCalledWith('2023-01-02');
     });
 
+    it('uses custom report labels when provided', () => {
+      const result = buildReportWeekHTML({
+        ...defaultParams,
+        reportLabels: {
+          base: 'Horario Equipo cámara',
+          extra: 'Horario Refuerzos cámara',
+          pre: 'Horario Montaje previo',
+          pick: 'Horario Desmontaje',
+        },
+        groupedPersonKeys: {
+          base: [],
+          pre: ['G1__John'],
+          pick: ['E2__Jane'],
+          extraGroups: [{ blockKey: 'extra:0', people: ['R1__Pepe'] }],
+        },
+        horarioPrelight: () => '09:00-18:00',
+        horarioPickup: () => '10:00-19:00',
+        horarioExtraByBlock: () => '11:00-20:00',
+        data: {
+          G1__John: { Dietas: { '2023-01-01': '1' } },
+          E2__Jane: { Dietas: { '2023-01-01': '1' } },
+          R1__Pepe: { Dietas: { '2023-01-01': '1' } },
+        },
+      });
+
+      expect(result).toContain('Horario Equipo cámara');
+      expect(result).toContain('Horario Refuerzos cámara');
+      expect(result).toContain('Horario Montaje previo');
+      expect(result).toContain('Horario Desmontaje');
+    });
+
     it('generates person rows with role and name', () => {
       const result = buildReportWeekHTML(defaultParams);
 

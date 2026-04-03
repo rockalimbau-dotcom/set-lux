@@ -504,7 +504,7 @@ html input[style*="borderWidth"] {
 .needs-week-table {
   --needs-sticky-checkbox-width: 24px;
   --needs-sticky-top: 0px;
-  --needs-sticky-label-width: 95px;
+  --needs-sticky-label-width: 190px;
   --needs-sticky-label-left: 0px;
 }
 
@@ -644,19 +644,115 @@ html input[style*="borderWidth"] {
 }
 
 [data-theme='light'] .needs-week-table td.phase-block .phase-block-sticky {
-  background-color: #f8f6ef;
+  background-color: inherit;
 }
 
 [data-theme='dark'] .needs-week-table td.phase-block .phase-block-sticky {
-  background-color: var(--panel);
+  background-color: inherit;
 }
 
 .needs-week-table td.phase-block .phase-block-button {
   position: relative;
   z-index: 1;
+  background: transparent !important;
+  background-color: transparent !important;
+  white-space: nowrap;
+  min-height: 100%;
+}
+
+.needs-week-table td.phase-block .editable-row-label {
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  min-height: 100%;
+  padding: 0.35rem 0.5rem;
+  border-radius: 0;
+  border: 1px solid transparent;
+  cursor: text !important;
+  transition: box-shadow 160ms ease, background-color 160ms ease, border-color 160ms ease;
+}
+
+.needs-week-table td.phase-block:hover .editable-row-label,
+.needs-week-table td.phase-block .editable-row-label:hover,
+.needs-week-table td.phase-block .editable-row-label:focus-within {
+  border-color: color-mix(in srgb, var(--phase-accent) 70%, transparent) !important;
+  box-shadow: 0 0 0 0.5px color-mix(in srgb, var(--phase-accent) 85%, transparent) inset !important;
+}
+
+[data-theme='light'] .needs-week-table td.phase-block:hover .editable-row-label,
+[data-theme='light'] .needs-week-table td.phase-block .editable-row-label:hover,
+[data-theme='light'] .needs-week-table td.phase-block .editable-row-label:focus-within {
+  background-color: #f8f6ef !important;
+}
+
+[data-theme='dark'] .needs-week-table td.phase-block:hover .editable-row-label,
+[data-theme='dark'] .needs-week-table td.phase-block .editable-row-label:hover,
+[data-theme='dark'] .needs-week-table td.phase-block .editable-row-label:focus-within {
+  background-color: var(--panel) !important;
+}
+
+.needs-week-table td.phase-block .editable-row-label__input {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+.needs-week-table td.phase-block .editable-row-label__input:hover,
+.needs-week-table td.phase-block .editable-row-label__input:focus,
+.needs-week-table td.phase-block .editable-row-label__input:focus-visible,
+.needs-week-table td.phase-block .editable-row-label__input:active {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  border: 0 !important;
+  outline: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  --tw-ring-color: transparent !important;
+}
+
+.needs-week-table td.phase-block .editable-row-label__input:-webkit-autofill,
+.needs-week-table td.phase-block .editable-row-label__input:-webkit-autofill:hover,
+.needs-week-table td.phase-block .editable-row-label__input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px transparent inset !important;
+  -webkit-text-fill-color: inherit !important;
+  caret-color: inherit !important;
+}
+
+.needs-week-table td.phase-block .editable-row-label__input {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.needs-week-table td.phase-block .editable-row-label__inline {
+  padding: 0 !important;
+  margin: 0 !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  border: 0 !important;
+  outline: none !important;
+  box-shadow: none !important;
+  white-space: nowrap !important;
+  word-break: normal !important;
+  overflow-wrap: normal !important;
+  hyphens: manual !important;
+  cursor: text !important;
+}
+
+.needs-week-table td.phase-block .editable-row-label__inline:empty::before {
+  content: attr(data-placeholder);
+  color: color-mix(in srgb, var(--text) 45%, transparent);
 }
 
 @media (min-width: 640px) {
+  .needs-week-table {
+    --needs-sticky-label-width: 210px;
+  }
+
   .needs-week-table td.phase-block .phase-block-sticky {
     padding-left: 0.5rem;
     padding-right: 0.5rem;
@@ -664,6 +760,10 @@ html input[style*="borderWidth"] {
 }
 
 @media (min-width: 768px) {
+  .needs-week-table {
+    --needs-sticky-label-width: 230px;
+  }
+
   .needs-week-table td.phase-block .phase-block-sticky {
     padding-left: 0.75rem;
     padding-right: 0.75rem;
@@ -1294,6 +1394,43 @@ textarea[readonly]:focus {
   background-color: white !important;
   background: white !important;
   background-image: none !important;
+}
+
+/* Separadores editables del calendario: el texto debe ser limpio, pero el contenedor puede resaltar en hover/focus */
+[data-theme='light'] .phase-content .needs-week-table td.phase-block .editable-row-label__input,
+[data-theme='light'] .phase-content .needs-week-table td.phase-block .editable-row-label__inline,
+[data-theme='light'] .phase-content .needs-week-table td.phase-block .editable-row-label__input:hover,
+[data-theme='light'] .phase-content .needs-week-table td.phase-block .editable-row-label__input:focus,
+[data-theme='light'] .phase-content .needs-week-table td.phase-block .editable-row-label__input:focus-visible,
+[data-theme='light'] .phase-content .needs-week-table td.phase-block .editable-row-label__input:active,
+[data-theme='dark'] .phase-content .needs-week-table td.phase-block .editable-row-label__input,
+[data-theme='dark'] .phase-content .needs-week-table td.phase-block .editable-row-label__inline,
+[data-theme='dark'] .phase-content .needs-week-table td.phase-block .editable-row-label__input:hover,
+[data-theme='dark'] .phase-content .needs-week-table td.phase-block .editable-row-label__input:focus,
+[data-theme='dark'] .phase-content .needs-week-table td.phase-block .editable-row-label__input:focus-visible,
+[data-theme='dark'] .phase-content .needs-week-table td.phase-block .editable-row-label__input:active {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  border: 0 !important;
+  border-color: transparent !important;
+  outline: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  --tw-ring-color: transparent !important;
+}
+
+[data-theme='light'] .phase-content .needs-week-table td.phase-block .editable-row-label__input:-webkit-autofill,
+[data-theme='light'] .phase-content .needs-week-table td.phase-block .editable-row-label__input:-webkit-autofill:hover,
+[data-theme='light'] .phase-content .needs-week-table td.phase-block .editable-row-label__input:-webkit-autofill:focus,
+[data-theme='dark'] .phase-content .needs-week-table td.phase-block .editable-row-label__input:-webkit-autofill,
+[data-theme='dark'] .phase-content .needs-week-table td.phase-block .editable-row-label__input:-webkit-autofill:hover,
+[data-theme='dark'] .phase-content .needs-week-table td.phase-block .editable-row-label__input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px transparent inset !important;
+  -webkit-text-fill-color: inherit !important;
+  caret-color: inherit !important;
 }
 
 /* Profile page - Reduce spacing in horizontal orientation only */

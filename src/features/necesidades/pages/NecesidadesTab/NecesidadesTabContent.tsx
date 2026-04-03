@@ -37,6 +37,7 @@ interface NecesidadesTabContentProps {
   deleteWeek: (scope: 'pre' | 'pro', weekId: string) => void;
   addCustomRow: (weekId: string) => string | null;
   updateCustomRowLabel: (weekId: string, rowId: string, label: string) => void;
+  updateRowLabel: (weekId: string, rowKey: string, label: string) => void;
   removeCustomRow: (weekId: string, rowId: string) => void;
   exportAllNeedsPDF: () => void;
   exportScopePDF: (scope: 'pre' | 'pro') => void;
@@ -81,6 +82,7 @@ export function NecesidadesTabContent({
   swapDays,
   addCustomRow,
   updateCustomRowLabel,
+  updateRowLabel,
   removeCustomRow,
   onImportPlanFile,
   importFileName,
@@ -161,6 +163,7 @@ export function NecesidadesTabContent({
                 weekEntries={allEntries}
                 addCustomRow={addCustomRow}
                 updateCustomRowLabel={updateCustomRowLabel}
+                updateRowLabel={updateRowLabel}
                 removeCustomRow={removeCustomRow}
                 tutorialId={scope === 'pro' && index === 0 ? 'planning-week' : undefined}
               />
@@ -224,4 +227,3 @@ export function NecesidadesTabContent({
     </>
   );
 }
-

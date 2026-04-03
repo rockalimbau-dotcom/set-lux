@@ -52,6 +52,7 @@ export async function exportAllToPDF(
         [`${wid}_obs`]: 'obs',
       };
       const customRows = Array.isArray(wk?.customRows) ? wk.customRows : [];
+      const rowLabels = (wk?.rowLabels || {}) as Record<string, string>;
       customRows.forEach((row: any) => {
         if (row?.id && row?.fieldKey) {
           rowKeyToFieldKey[`${wid}_custom_${row.id}`] = row.fieldKey;
@@ -124,6 +125,7 @@ export async function exportAllToPDF(
         undefined,
         false,
         customRows,
+        rowLabels,
         shootingDayOffset,
         planFileName
       );

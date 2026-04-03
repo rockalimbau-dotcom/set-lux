@@ -17,6 +17,7 @@ export function buildReportWeekHTMLForPDF({
   horarioPrelight,
   horarioPickup,
   horarioExtraByBlock,
+  reportLabels,
   groupedPersonKeys,
   CONCEPTS,
   data,
@@ -77,7 +78,11 @@ export function buildReportWeekHTMLForPDF({
 
   // Generate table headers
   const headDays = generateDaysHeader(safeSemanaWithData, dayNameFromISO, toDisplayDate);
-  const headHorario = generateScheduleHeader(safeSemanaWithData, horarioTexto);
+  const headHorario = generateScheduleHeader(
+    safeSemanaWithData,
+    horarioTexto,
+    reportLabels?.base
+  );
 
   // Generate body grouped by blocks
   const body = generateBodyByBlocks(
@@ -90,7 +95,8 @@ export function buildReportWeekHTMLForPDF({
     project,
     horarioPrelight,
     horarioPickup,
-    horarioExtraByBlock
+    horarioExtraByBlock,
+    reportLabels
   );
 
   // Generate HTML

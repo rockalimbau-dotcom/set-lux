@@ -1,7 +1,7 @@
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import i18n from '../../../../i18n/config';
-import { CustomRow, DayValues } from './types';
+import { CustomRow, DayValues, RowLabelOverrides } from './types';
 import { buildNecesidadesHTMLForPDF } from './htmlBuilders';
 import { translateWeekLabel, getNeedsLabel } from './helpers';
 import { shareOrSavePDF } from '@shared/utils/pdfShare';
@@ -18,6 +18,7 @@ export async function exportToPDF(
   selectedDayIdxs?: number[], // Columnas seleccionadas (días)
   includeEmptyRows?: boolean, // Incluir filas vacías
   customRows?: CustomRow[],
+  rowLabels?: RowLabelOverrides,
   shootingDayOffset: number = 0,
   planFileName?: string
 ): Promise<void> {
@@ -31,6 +32,7 @@ export async function exportToPDF(
       selectedDayIdxs,
       includeEmptyRows,
       customRows,
+      rowLabels,
       shootingDayOffset,
       planFileName
     );

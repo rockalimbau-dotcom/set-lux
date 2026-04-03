@@ -1,4 +1,5 @@
 import { AnyRecord } from '@shared/types/common';
+import { NeedsRowLabels } from '../../utils/rowLabels';
 
 export interface NecesidadesTabProps {
   project?: AnyRecord;
@@ -17,6 +18,7 @@ export interface NeedsWeek extends AnyRecord {
   startDate?: string;
   days?: AnyRecord[];
   customRows?: AnyRecord[];
+  rowLabels?: NeedsRowLabels;
   open?: boolean;
 }
 
@@ -24,4 +26,3 @@ export interface NeedsState {
   pre: NeedsWeek[];
   pro: NeedsWeek[];
 }
-

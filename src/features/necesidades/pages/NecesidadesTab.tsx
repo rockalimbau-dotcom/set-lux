@@ -240,7 +240,7 @@ export default function NecesidadesTab({ project, readOnly = false }: Necesidade
   }, [isLoaded, rosterKey, baseRoster, extraRoster, setNeeds]);
 
   // Actions
-  const { setCell, setWeekStart, removeFromList, setWeekOpen, swapDays, addCustomRow, updateCustomRowLabel, removeCustomRow, addWeek, duplicateWeek, deleteWeek } = useNeedsActions({
+  const { setCell, setWeekStart, removeFromList, setWeekOpen, swapDays, addCustomRow, updateCustomRowLabel, updateRowLabel, removeCustomRow, addWeek, duplicateWeek, deleteWeek } = useNeedsActions({
     storageKey,
     readOnly,
     setNeeds,
@@ -286,6 +286,7 @@ export default function NecesidadesTab({ project, readOnly = false }: Necesidade
         [`${weekId}_obs`]: 'obs',
       };
       const customRows = Array.isArray(w?.customRows) ? w.customRows : [];
+      const rowLabels = (w?.rowLabels || {}) as Record<string, string>;
       customRows.forEach((row: AnyRecord) => {
         if (row?.id && row?.fieldKey) {
           rowKeyToFieldKey[`${weekId}_custom_${row.id}`] = row.fieldKey;
@@ -354,6 +355,7 @@ export default function NecesidadesTab({ project, readOnly = false }: Necesidade
         selectedDayIdxs, // Pasar columnas seleccionadas (días)
         includeEmptyRows, // Incluir filas vacías cuando todo está activo
         customRows,
+        rowLabels,
         shootingDayOffset,
         planFileName
       );
@@ -503,6 +505,7 @@ export default function NecesidadesTab({ project, readOnly = false }: Necesidade
         swapDays={swapDays}
         addCustomRow={addCustomRow}
         updateCustomRowLabel={updateCustomRowLabel}
+        updateRowLabel={updateRowLabel}
         removeCustomRow={removeCustomRow}
         onImportPlanFile={handleImportFile}
         importFileName={planFileName}
