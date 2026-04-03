@@ -15,10 +15,11 @@ type MonthSectionPersonRowProps = {
   roleForColor: string;
   col: { bg: string; fg: string };
   roleLabelFromCode: (code: string) => string;
-  received: Record<string, { ok?: boolean; note?: string }>;
+  received: Record<string, { ok?: boolean; note?: string; irpf?: number; estado?: number; extraHoursPercent?: number }>;
+  irpfByPerson: Record<string, number>;
   isSelected: boolean;
   toggleRowSelection: (key: string) => void;
-  setRcv: (key: string, patch: { ok?: boolean; note?: string }) => void;
+  setRcv: (key: string, patch: { ok?: boolean; note?: string; irpf?: number; estado?: number; extraHoursPercent?: number }) => void;
   projectMode?: 'semanal' | 'mensual' | 'diario';
   hasWorkedDaysData: boolean;
   hasHalfDaysData: boolean;
@@ -35,6 +36,8 @@ type MonthSectionPersonRowProps = {
     materialPropio: boolean;
   };
   showRowSelection: boolean;
+  showNetColumns: boolean;
+  showExtraHoursPercentColumn: boolean;
   readOnly?: boolean;
 };
 
@@ -45,6 +48,7 @@ export function MonthSectionPersonRow({
   col,
   roleLabelFromCode,
   received,
+  irpfByPerson,
   isSelected,
   toggleRowSelection,
   setRcv,
@@ -55,10 +59,31 @@ export function MonthSectionPersonRow({
   hasCargaDescargaData,
   columnVisibility,
   showRowSelection,
+  showNetColumns,
+  showExtraHoursPercentColumn,
   readOnly = false,
 }: MonthSectionPersonRowProps) {
   const { t, i18n } = useTranslation();
   const rc = (received as any)[pKey] || { ok: false, note: '' };
+  const irpfPercent =
+    rc.irpf === undefined || rc.irpf === null || rc.irpf === ''
+      ? Number(irpfByPerson[pKey] || 0)
+      : Number(rc.irpf);
+  const estadoPercent =
+    rc.estado === undefined || rc.estado === null || rc.estado === ''
+      ? 6.6
+      : Number(rc.estado);
+  const extraHoursPercent =
+    rc.extraHoursPercent === undefined || rc.extraHoursPercent === null || rc.extraHoursPercent === ''
+      ? 4.7
+      : Number(rc.extraHoursPercent);
+  const totalBruto = Number(r._totalBruto || 0);
+  const totalExtras = Number(r._totalExtras || 0);
+  const totalNeto =
+    totalBruto -
+    totalBruto * irpfPercent / 100 -
+    totalBruto * estadoPercent / 100 -
+    totalExtras * extraHoursPercent / 100;
 
   // Detectar el tema actual
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
@@ -387,6 +412,72 @@ export function MonthSectionPersonRow({
       <Td align='middle' className='text-center font-semibold'>
         <span className='text-[9px] sm:text-[10px] md:text-xs'>{displayMoney(r._totalBruto, 2)}</span>
       </Td>
+
+      {showNetColumns && (
+        <Td align='middle' className='text-center payroll-extra-col'>
+          <div className='flex items-center justify-center gap-1'>
+            <input
+              type='number'
+              min='0'
+              max='100'
+              step='0.1'
+              value={rc.irpf ?? irpfByPerson[pKey] ?? ''}
+              onChange={e => !readOnly && setRcv(pKey, { irpf: e.target.value === '' ? 0 : Number(e.target.value) })}
+              disabled={readOnly}
+              readOnly={readOnly}
+              className={`w-14 sm:w-16 md:w-20 px-1 py-0.5 sm:px-1.5 sm:py-1 md:px-2 md:py-1 rounded sm:rounded-md md:rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-[9px] sm:text-[10px] md:text-xs text-right ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+              title={readOnly ? t('conditions.projectClosed') : t('payroll.irpfPercent')}
+            />
+            <span className='text-[9px] sm:text-[10px] md:text-xs text-zinc-400'>%</span>
+          </div>
+        </Td>
+      )}
+
+      {showNetColumns && (
+        <Td align='middle' className='text-center payroll-extra-col'>
+          <div className='flex items-center justify-center gap-1'>
+            <input
+              type='number'
+              min='0'
+              max='100'
+              step='0.1'
+              value={rc.estado ?? 6.6}
+              onChange={e => !readOnly && setRcv(pKey, { estado: e.target.value === '' ? 0 : Number(e.target.value) })}
+              disabled={readOnly}
+              readOnly={readOnly}
+              className={`w-14 sm:w-16 md:w-20 px-1 py-0.5 sm:px-1.5 sm:py-1 md:px-2 md:py-1 rounded sm:rounded-md md:rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-[9px] sm:text-[10px] md:text-xs text-right ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+              title={readOnly ? t('conditions.projectClosed') : t('payroll.statePercent')}
+            />
+            <span className='text-[9px] sm:text-[10px] md:text-xs text-zinc-400'>%</span>
+          </div>
+        </Td>
+      )}
+
+      {showExtraHoursPercentColumn && (
+        <Td align='middle' className='text-center payroll-extra-col'>
+          <div className='flex items-center justify-center gap-1'>
+            <input
+              type='number'
+              min='0'
+              max='100'
+              step='0.1'
+              value={rc.extraHoursPercent ?? 4.7}
+              onChange={e => !readOnly && setRcv(pKey, { extraHoursPercent: e.target.value === '' ? 0 : Number(e.target.value) })}
+              disabled={readOnly}
+              readOnly={readOnly}
+              className={`w-14 sm:w-16 md:w-20 px-1 py-0.5 sm:px-1.5 sm:py-1 md:px-2 md:py-1 rounded sm:rounded-md md:rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-[9px] sm:text-[10px] md:text-xs text-right ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+              title={readOnly ? t('conditions.projectClosed') : t('payroll.extraHoursPercentTitle')}
+            />
+            <span className='text-[9px] sm:text-[10px] md:text-xs text-zinc-400'>%</span>
+          </div>
+        </Td>
+      )}
+
+      {showNetColumns && (
+        <Td align='middle' className='text-center font-semibold'>
+          <span className='text-[9px] sm:text-[10px] md:text-xs'>{displayMoney(totalNeto, 2)}</span>
+        </Td>
+      )}
 
       <Td align='middle' className='text-center'>
         <div className='flex items-center justify-center gap-1 sm:gap-1.5 md:gap-2'>

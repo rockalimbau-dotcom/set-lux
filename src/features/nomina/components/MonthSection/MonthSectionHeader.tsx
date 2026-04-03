@@ -19,6 +19,8 @@ type MonthSectionHeaderProps = {
   onExportPDF: () => void | Promise<void>;
   showRowSelection: boolean;
   setShowRowSelection: (value: boolean | ((prev: boolean) => boolean)) => void;
+  showNetColumns: boolean;
+  setShowNetColumns: (value: boolean | ((prev: boolean) => boolean)) => void;
   readOnly?: boolean;
 };
 
@@ -37,6 +39,8 @@ export function MonthSectionHeader({
   onExportPDF,
   showRowSelection,
   setShowRowSelection,
+  showNetColumns,
+  setShowNetColumns,
   readOnly = false,
 }: MonthSectionHeaderProps) {
   const { t } = useTranslation();
@@ -49,6 +53,23 @@ export function MonthSectionHeader({
     color: '#FFFFFF',
     border: '1px solid rgba(255,255,255,0.08)',
   };
+  const netColumnsButtonStyle: React.CSSProperties = showNetColumns
+    ? theme === 'light'
+      ? {
+          borderColor: '#2563eb',
+          background: '#eff6ff',
+          color: '#1d4ed8',
+          boxShadow: '0 0 0 1px rgba(37,99,235,0.22) inset',
+        }
+      : {
+          borderColor: '#f59e0b',
+          background: 'rgba(245,158,11,0.14)',
+          color: '#fbbf24',
+          boxShadow: '0 0 0 1px rgba(245,158,11,0.28) inset',
+        }
+    : {
+        borderColor: 'var(--border)',
+      };
 
   return (
     <div className='flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 md:gap-4 px-3 py-2 sm:px-4 sm:py-3 md:px-5 md:py-4'>
@@ -166,6 +187,29 @@ export function MonthSectionHeader({
           {showRowSelection ? '☑' : '☐'}
         </button>
         <button
+          className={`px-2 sm:px-2.5 md:px-3 py-1 sm:py-1.5 md:py-2 rounded sm:rounded-md md:rounded-lg border text-[10px] sm:text-xs md:text-sm font-semibold whitespace-nowrap text-left transition-all ${
+            showNetColumns ? 'ring-1 ring-offset-0' : ''
+          } bg-neutral-panel/95 text-gray-900 dark:text-zinc-300 ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+          onClick={() => {
+            if (!readOnly) {
+              setShowNetColumns(v => !v);
+            }
+          }}
+          disabled={readOnly}
+          title={
+            readOnly
+              ? t('conditions.projectClosed')
+              : showNetColumns
+              ? t('payroll.hideNetColumns')
+              : t('payroll.showNetColumns')
+          }
+          aria-label={showNetColumns ? t('payroll.hideNetColumns') : t('payroll.showNetColumns')}
+          type='button'
+          style={netColumnsButtonStyle}
+        >
+          %
+        </button>
+        <button
           className='ml-auto lg:ml-0 px-1.5 py-1 sm:px-2 sm:py-1.5 md:px-2.5 md:py-2 rounded sm:rounded-md md:rounded-lg text-[10px] sm:text-xs md:text-sm font-semibold btn-pdf'
           style={{ background: '#f59e0b', color: '#FFFFFF', border: '1px solid rgba(255,255,255,0.08)' }}
           onClick={() => {
@@ -237,4 +281,3 @@ export function MonthSectionHeader({
     </div>
   );
 }
-

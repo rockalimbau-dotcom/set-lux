@@ -31,6 +31,7 @@ function ReportTableHead({
   const dayNames = useMemo(() => semana.map((iso, i) => dayNameFromISO(iso, i, DAY_NAMES)), [semana, DAY_NAMES, dayNameFromISO]);
   const dates = useMemo(() => semana.map(iso => toDisplayDate(iso)), [semana, toDisplayDate]);
   const horarios = useMemo(() => semana.map(iso => horarioTexto(iso)), [semana, horarioTexto]);
+  const restLabel = t('reports.rest');
 
   return (
     <thead>
@@ -65,7 +66,12 @@ function ReportTableHead({
       <tr>
         <Th scope='col' align='left' className='report-sticky-first-col'>{scheduleLabel || t('reports.scheduleBase')}</Th>
         {semana.map((iso, i) => (
-          <Th key={`hor_${iso}`} scope='col' align='center'>
+          <Th
+            key={`hor_${iso}`}
+            scope='col'
+            align='center'
+            className={horarios[i] === restLabel ? 'report-rest-cell' : ''}
+          >
             {horarios[i]}
           </Th>
         ))}

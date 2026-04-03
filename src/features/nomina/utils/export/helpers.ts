@@ -194,6 +194,8 @@ export const getColumnVisibility = (enrichedRows: any[]) => {
     km: enrichedRows.some(r => (r.km || 0) > 0),
     gasolina: enrichedRows.some(r => (r.gasolina || 0) > 0 || (r._totalGasolina || 0) > 0),
     dietas: enrichedRows.some(r => (r._totalDietas || 0) > 0),
+    netColumns: enrichedRows.some(r => !!r._showNetColumns),
+    extraHoursPercent: enrichedRows.some(r => !!r._showExtraHoursPercent),
   };
 };
 

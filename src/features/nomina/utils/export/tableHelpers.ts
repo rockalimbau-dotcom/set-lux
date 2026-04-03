@@ -94,6 +94,14 @@ export const generateHeaderCells = (
   }
 
   headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.totalBruto')}</th>`);
+  if (columnVisibility.netColumns) {
+    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.irpf')}</th>`);
+    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.stateTax')}</th>`);
+    if (columnVisibility.extraHoursPercent) {
+      headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.extraHoursPercentColumn')}</th>`);
+    }
+    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.totalNet')}</th>`);
+  }
 
   return headerCells;
 };
@@ -178,6 +186,14 @@ export const generateRowDataCells = (
   }
 
   dataCells.push(`<td class="total-cell" style="text-align:center !important;vertical-align:middle !important;">${esc(displayMoney(r._totalBruto, 2))}</td>`);
+  if (columnVisibility.netColumns) {
+    dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;">${esc(displayValue(r._irpfPercent, 1))}${r._irpfPercent ? '%' : ''}</td>`);
+    dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;">${esc(displayValue(r._estadoPercent, 1))}${r._estadoPercent ? '%' : ''}</td>`);
+    if (columnVisibility.extraHoursPercent) {
+      dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;">${esc(displayValue(r._extraHoursPercent, 1))}${r._extraHoursPercent ? '%' : ''}</td>`);
+    }
+    dataCells.push(`<td class="total-cell" style="text-align:center !important;vertical-align:middle !important;">${esc(displayMoney(r._totalNeto, 2))}</td>`);
+  }
 
   return dataCells;
 };

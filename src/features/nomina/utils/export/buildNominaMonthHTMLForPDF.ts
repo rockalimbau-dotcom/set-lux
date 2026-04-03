@@ -13,7 +13,12 @@ export function buildNominaMonthHTMLForPDF({
   showHelp = false,
   hideSecondaryInfo,
 }: BuildNominaMonthHTMLParams & { _currentPage?: number; _totalPages?: number }): string {
-  const columnVisibility = getColumnVisibility(enrichedRows);
+  const isIndividualExport = enrichedRows.length === 1;
+  const columnVisibility = {
+    ...getColumnVisibility(enrichedRows),
+    netColumns: isIndividualExport && enrichedRows.some(r => !!r._showNetColumns),
+    extraHoursPercent: isIndividualExport && enrichedRows.some(r => !!r._showExtraHoursPercent),
+  };
   const projectMode = project?.conditions?.tipo === 'mensual' ? 'mensual' : project?.conditions?.tipo === 'diario' ? 'diario' : 'semanal';
   const headerCells = generateHeaderCells(columnVisibility, projectMode, { forPDF: true });
   const head = `<tr>${headerCells.join('')}</tr>`;

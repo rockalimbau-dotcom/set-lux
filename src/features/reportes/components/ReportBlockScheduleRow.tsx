@@ -12,6 +12,7 @@ function ReportBlockScheduleRow({ label, semana, valueForISO }: Props) {
   const { t } = useTranslation();
   if (!Array.isArray(semana) || semana.length === 0) return null;
   const values = useMemo(() => semana.map(iso => valueForISO(iso)), [semana, valueForISO]);
+  const restLabel = t('reports.rest');
   
   // Translate label if it matches known patterns
   const translatedLabel = label === 'Horario Prelight' || label === 'Horario Equipo Prelight'
@@ -30,10 +31,16 @@ function ReportBlockScheduleRow({ label, semana, valueForISO }: Props) {
       {semana.map((iso, i) => (
         <Td
           key={`sched_${label}_${iso}`}
-          className='text-[9px] sm:text-[10px] md:text-xs lg:text-sm font-semibold text-center align-middle bg-white/5'
+          className={`text-[9px] sm:text-[10px] md:text-xs lg:text-sm font-semibold text-center align-middle bg-white/5 ${
+            values[i] === restLabel ? 'report-rest-cell' : ''
+          }`}
           align='middle'
         >
-          <div className='flex items-center justify-center whitespace-normal break-words leading-tight text-center min-h-[1.5rem]'>
+          <div
+            className={`flex items-center justify-center whitespace-normal break-words leading-tight text-center min-h-[1.5rem] ${
+              values[i] === restLabel ? 'report-rest-cell__content' : ''
+            }`}
+          >
             {values[i]}
           </div>
         </Td>

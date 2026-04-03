@@ -100,11 +100,13 @@ function MonthSection({
   const [priceDays, setPriceDays] = useLocalStorage<number>(daysInMonthKey, daysInMonth);
 
   const persistKey = `${persistKeyBase}_${monthKey}_rcvd`;
-  const [received, setReceived] = useLocalStorage<Record<string, { ok?: boolean; note?: string }>>(
+  const [received, setReceived] = useLocalStorage<Record<string, { ok?: boolean; note?: string; irpf?: number; estado?: number; extraHoursPercent?: number }>>(
     persistKey,
     {}
   );
-  const setRcv = (personKey: string, patch: { ok?: boolean; note?: string }) => {
+  const irpfByPersonKey = `${persistKeyBase}_irpfByPerson`;
+  const [irpfByPerson, setIrpfByPerson] = useLocalStorage<Record<string, number>>(irpfByPersonKey, {});
+  const setRcv = (personKey: string, patch: { ok?: boolean; note?: string; irpf?: number; estado?: number; extraHoursPercent?: number }) => {
     setReceived(prev => {
       const next = {
         ...prev,
@@ -112,10 +114,18 @@ function MonthSection({
       };
       return next;
     });
+    if (Object.prototype.hasOwnProperty.call(patch, 'irpf') && patch.irpf !== undefined) {
+      setIrpfByPerson(prev => ({
+        ...prev,
+        [personKey]: Number(patch.irpf || 0),
+      }));
+    }
   };
 
   const rowSelectionKey = `${persistKeyBase}_${monthKey}_showSelection`;
   const [showRowSelection, setShowRowSelection] = useLocalStorage<boolean>(rowSelectionKey, false);
+  const netColumnsKey = `${persistKeyBase}_${monthKey}_showNetColumns`;
+  const [showNetColumns, setShowNetColumns] = useLocalStorage<boolean>(netColumnsKey, true);
 
   const refuerzoSet = useMemo(
     () => buildRefuerzoIndex(weeksForMonth),
@@ -197,6 +207,46 @@ function MonthSection({
     enriched: visibleEnriched,
   });
 
+  const attachNetColumnsData = React.useCallback(
+    (rowsToAnnotate: any[]) =>
+      rowsToAnnotate.map(r => {
+        const pKey = r._rowKey || `${r.role}__${r.name}`;
+        const rc = received[pKey] || {};
+        const totalBruto = Number(r._totalBruto || 0);
+        const totalExtras = Number(r._totalExtras || 0);
+        const irpfPercent =
+          rc.irpf === undefined || rc.irpf === null || rc.irpf === ''
+            ? Number(irpfByPerson[pKey] || 0)
+            : Number(rc.irpf);
+        const estadoPercent =
+          rc.estado === undefined || rc.estado === null || rc.estado === ''
+            ? 6.6
+            : Number(rc.estado);
+        const extraHoursPercent =
+          rc.extraHoursPercent === undefined || rc.extraHoursPercent === null || rc.extraHoursPercent === ''
+            ? 4.7
+            : Number(rc.extraHoursPercent);
+        const irpfAmount = totalBruto * irpfPercent / 100;
+        const estadoAmount = totalBruto * estadoPercent / 100;
+        const extraHoursAmount = totalExtras * extraHoursPercent / 100;
+        const totalNeto = totalBruto - irpfAmount - estadoAmount - extraHoursAmount;
+
+        return {
+          ...r,
+          _showNetColumns: showNetColumns,
+          _showExtraHoursPercent: showNetColumns && (r.extras || 0) > 0,
+          _irpfPercent: irpfPercent,
+          _estadoPercent: estadoPercent,
+          _extraHoursPercent: extraHoursPercent,
+          _irpfAmount: irpfAmount,
+          _estadoAmount: estadoAmount,
+          _extraHoursAmount: extraHoursAmount,
+          _totalNeto: totalNeto,
+        };
+      }),
+    [irpfByPerson, received, showNetColumns]
+  );
+
   const doExport = () => {
     const rowsToExport = showRowSelection
       ? visibleEnriched.filter(r => {
@@ -204,7 +254,7 @@ function MonthSection({
           return isRowSelected(pKey);
         })
       : visibleEnriched;
-    onExport?.(monthKey, rowsToExport);
+    onExport?.(monthKey, attachNetColumnsData(rowsToExport));
   };
   
   const doExportPDF = async () => {
@@ -229,7 +279,7 @@ function MonthSection({
     }
     
     try {
-      await onExportPDF(monthKey, rowsToExport);
+      await onExportPDF(monthKey, attachNetColumnsData(rowsToExport));
     } catch (error) {
       console.error('Error al exportar PDF:', error);
     }
@@ -252,6 +302,8 @@ function MonthSection({
         onExportPDF={doExportPDF}
         showRowSelection={showRowSelection}
         setShowRowSelection={setShowRowSelection}
+        showNetColumns={showNetColumns}
+        setShowNetColumns={setShowNetColumns}
         readOnly={readOnly}
       />
 
@@ -268,7 +320,9 @@ function MonthSection({
           isRowSelected={isRowSelected}
           toggleRowSelection={toggleRowSelection}
           received={received}
+          irpfByPerson={irpfByPerson}
           setRcv={setRcv}
+          showNetColumns={showNetColumns}
           ROLE_COLORS={ROLE_COLORS}
           roleLabelFromCode={roleLabelFromCode}
           readOnly={readOnly}

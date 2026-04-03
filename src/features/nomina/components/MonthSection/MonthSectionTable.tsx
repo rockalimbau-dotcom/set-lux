@@ -22,10 +22,12 @@ type MonthSectionTableProps = {
     materialPropio: boolean;
   };
   showRowSelection: boolean;
+  showNetColumns: boolean;
   isRowSelected: (key: string) => boolean;
   toggleRowSelection: (key: string) => void;
-  received: Record<string, { ok?: boolean; note?: string }>;
-  setRcv: (key: string, patch: { ok?: boolean; note?: string }) => void;
+  received: Record<string, { ok?: boolean; note?: string; irpf?: number; estado?: number; extraHoursPercent?: number }>;
+  irpfByPerson: Record<string, number>;
+  setRcv: (key: string, patch: { ok?: boolean; note?: string; irpf?: number; estado?: number; extraHoursPercent?: number }) => void;
   ROLE_COLORS: Record<string, { bg: string; fg: string }>;
   roleLabelFromCode: (code: string) => string;
   readOnly?: boolean;
@@ -40,9 +42,11 @@ export function MonthSectionTable({
   hasCargaDescargaData,
   columnVisibility,
   showRowSelection,
+  showNetColumns,
   isRowSelected,
   toggleRowSelection,
   received,
+  irpfByPerson,
   setRcv,
   ROLE_COLORS,
   roleLabelFromCode,
@@ -62,6 +66,7 @@ export function MonthSectionTable({
   const totalWorkedHeaderClass = useJornadasLabels ? 'min-w-[150px] whitespace-normal break-words' : '';
   const localizacionHeaderClass = projectMode === 'diario' ? 'min-w-[210px] whitespace-normal break-words' : '';
   const totalLocalizacionHeaderClass = projectMode === 'diario' ? 'min-w-[230px] whitespace-normal break-words' : '';
+  const showExtraHoursPercentColumn = showNetColumns && columnVisibility.extras;
 
   // Calcular número de columnas para colSpan
   const colSpanCount =
@@ -78,7 +83,10 @@ export function MonthSectionTable({
     (columnVisibility.transporte ? 2 : 0) + // Transportes, Total
     (columnVisibility.km ? 2 : 0) + // Kilometraje, Total
     (columnVisibility.gasolina ? 1 : 0) + // Total gasolina
-    2; // TOTAL BRUTO, Nómina recibida
+    1 + // TOTAL BRUTO
+    (showNetColumns ? 3 : 0) + // IRPF, Estado, Total neto
+    (showExtraHoursPercentColumn ? 1 : 0) + // Horas extras %
+    1; // Nómina recibida
 
   // Función para determinar el tipo de equipo de una fila
   const getTeamType = (r: any): 'base' | 'refuerzos' | 'prelight' | 'recogida' => {
@@ -166,6 +174,10 @@ export function MonthSectionTable({
           {columnVisibility.km && <col className='payroll-month-col-standard' />}
           {columnVisibility.gasolina && <col className='payroll-month-col-standard' />}
           <col className='payroll-month-col-total' />
+          {showNetColumns && <col className='payroll-month-col-standard' />}
+          {showNetColumns && <col className='payroll-month-col-standard' />}
+          {showExtraHoursPercentColumn && <col className='payroll-month-col-standard' />}
+          {showNetColumns && <col className='payroll-month-col-total' />}
           <col className='payroll-month-col-received' />
         </colgroup>
         <thead>
@@ -239,6 +251,10 @@ export function MonthSectionTable({
             {columnVisibility.km && <Th align='center'>{t('payroll.totalKilometraje')}</Th>}
             {columnVisibility.gasolina && <Th align='center'>{t('payroll.totalGasoline')}</Th>}
             <Th align='center'>{t('payroll.totalBruto')}</Th>
+            {showNetColumns && <Th align='center' className='payroll-extra-col payroll-extra-col--header'>{t('payroll.irpf')}</Th>}
+            {showNetColumns && <Th align='center' className='payroll-extra-col payroll-extra-col--header'>{t('payroll.stateTax')}</Th>}
+            {showExtraHoursPercentColumn && <Th align='center' className='payroll-extra-col payroll-extra-col--header'>{t('payroll.extraHoursPercentColumn')}</Th>}
+            {showNetColumns && <Th align='center'>{t('payroll.totalNet')}</Th>}
             <Th align='center'>{t('payroll.received')}</Th>
           </tr>
         </thead>
@@ -268,6 +284,7 @@ export function MonthSectionTable({
                     col={col}
                     roleLabelFromCode={roleLabelFromCode}
                     received={received}
+                    irpfByPerson={irpfByPerson}
                     isSelected={isRowSelected(pKey)}
                     toggleRowSelection={toggleRowSelection}
                     setRcv={setRcv}
@@ -278,6 +295,8 @@ export function MonthSectionTable({
                     hasCargaDescargaData={hasCargaDescargaData}
                     columnVisibility={columnVisibility}
                     showRowSelection={showRowSelection}
+                    showNetColumns={showNetColumns}
+                    showExtraHoursPercentColumn={showExtraHoursPercentColumn}
                     readOnly={readOnly}
                   />
                 );
@@ -297,6 +316,8 @@ export function MonthSectionTable({
                 (columnVisibility.transporte ? 2 : 0) + // Transportes + Total transportes
                 (columnVisibility.km ? 2 : 0) + // Kilometraje + Total kilometraje
                 (columnVisibility.gasolina ? 1 : 0) + // Total gasolina
+                (showNetColumns ? 3 : 0) + // IRPF + Estado + Total neto
+                (showExtraHoursPercentColumn ? 1 : 0) + // Horas extras %
                 (hasLocalizacionData ? 2 : 0) + // Localización técnica + Total
                 (hasCargaDescargaData ? 2 : 0) // Carga/Descarga + Total
               } align='center' className='text-center'>
