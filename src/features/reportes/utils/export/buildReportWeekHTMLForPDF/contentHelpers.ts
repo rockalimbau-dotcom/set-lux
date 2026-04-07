@@ -120,16 +120,17 @@ export function generateInfoPanel(project: any): string {
     renderInfoRow(`${getTranslation('pdf.project', 'Proyecto')}:`, project?.nombre || getTranslation('pdf.project', 'Proyecto'), 'info-row-left'),
     renderInfoRow(`${getTranslation('pdf.gaffer', 'Gaffer')}:`, (project as any)?.gaffer, 'info-row-right'),
     renderInfoRow(`${getTranslation('pdf.warehouse', 'Almacén')}:`, project?.almacen, 'info-row-left'),
+    renderInfoRow(`${getTranslation('pdf.bestBoy', 'Best boy')}:`, (project as any)?.bestBoy, 'info-row-right'),
   ].filter(Boolean);
   if (topRows.length % 2 === 1) {
     topRows.push(renderEmptyInfoRow('info-row-right'));
   }
   const secondaryLeftRows = [
     renderInfoRow(`${getTranslation('pdf.productionManager', 'Jefe de producción')}:`, (project as any)?.jefeProduccion, 'info-row'),
-    renderInfoRow(`${getTranslation('pdf.transport', 'Transportes')}:`, (project as any)?.transportes, 'info-row'),
+    renderInfoRow(`${getTranslation('pdf.transport', 'Jefe transportes')}:`, (project as any)?.transportes, 'info-row'),
   ].filter(Boolean);
   const secondaryRightRows = [
-    renderInfoRow(`${getTranslation('pdf.locations', 'Localizaciones')}:`, (project as any)?.localizaciones, 'info-row-right'),
+    renderInfoRow(`${getTranslation('pdf.locations', 'Jefe localizaciones')}:`, (project as any)?.localizaciones, 'info-row-right'),
     renderInfoRow(`${getTranslation('pdf.productionCoordinator', 'Coordinadora de producción')}:`, (project as any)?.coordinadoraProduccion, 'info-row-right'),
   ].filter(Boolean);
   const hasSecondaryRows = secondaryLeftRows.length > 0 || secondaryRightRows.length > 0;

@@ -36,6 +36,7 @@ export interface Project {
   almacen?: string;
   productora?: string;
   gaffer?: string;
+  bestBoy?: string;
   jefeProduccion?: string;
   transportes?: string;
   localizaciones?: string;

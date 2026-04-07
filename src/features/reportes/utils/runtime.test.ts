@@ -88,7 +88,7 @@ describe('runtime utils', () => {
         cortesiaMin: 15,
         taDiario: 10,
         taFinde: 48,
-        nocturnoIni: '02:00',
+        nocturnoIni: '22:00',
         nocturnoFin: '06:00',
       });
     });
@@ -353,7 +353,7 @@ describe('runtime utils', () => {
     });
 
     it('should detect nocturnidad for overnight shift with diario window', () => {
-      const result = hasNocturnidad('23:00', '07:00', '02:00', '06:00');
+      const result = hasNocturnidad('23:00', '05:00', '22:00', '06:00');
 
       expect(result).toBe(true);
     });

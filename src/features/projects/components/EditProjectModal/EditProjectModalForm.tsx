@@ -89,15 +89,15 @@ export function EditProjectModalForm({
       />
 
       <FormInput
-        label={t('common.productionManager')}
-        value={form.jefeProduccion}
-        onChange={value => setForm({ ...form, jefeProduccion: value })}
+        label={t('common.bestBoy')}
+        value={form.bestBoy}
+        onChange={value => setForm({ ...form, bestBoy: value })}
         theme={theme}
-        isHovered={inputHovered.jefeProduccion}
-        onMouseEnter={() => setInputHovered(prev => ({ ...prev, jefeProduccion: true }))}
-        onMouseLeave={() => setInputHovered(prev => ({ ...prev, jefeProduccion: false }))}
-        onBlur={() => setInputHovered(prev => ({ ...prev, jefeProduccion: false }))}
-        fieldKey='jefeProduccion'
+        isHovered={inputHovered.bestBoy}
+        onMouseEnter={() => setInputHovered(prev => ({ ...prev, bestBoy: true }))}
+        onMouseLeave={() => setInputHovered(prev => ({ ...prev, bestBoy: false }))}
+        onBlur={() => setInputHovered(prev => ({ ...prev, bestBoy: false }))}
+        fieldKey='bestBoy'
       />
 
       <FormInput
@@ -110,6 +110,18 @@ export function EditProjectModalForm({
         onMouseLeave={() => setInputHovered(prev => ({ ...prev, dop: false }))}
         onBlur={() => setInputHovered(prev => ({ ...prev, dop: false }))}
         fieldKey='dop'
+      />
+
+      <FormInput
+        label={t('common.productionManager')}
+        value={form.jefeProduccion}
+        onChange={value => setForm({ ...form, jefeProduccion: value })}
+        theme={theme}
+        isHovered={inputHovered.jefeProduccion}
+        onMouseEnter={() => setInputHovered(prev => ({ ...prev, jefeProduccion: true }))}
+        onMouseLeave={() => setInputHovered(prev => ({ ...prev, jefeProduccion: false }))}
+        onBlur={() => setInputHovered(prev => ({ ...prev, jefeProduccion: false }))}
+        fieldKey='jefeProduccion'
       />
 
       <FormInput

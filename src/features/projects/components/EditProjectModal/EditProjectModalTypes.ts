@@ -16,6 +16,7 @@ export interface InputHoverState {
   proyecto: boolean;
   dop: boolean;
   gaffer: boolean;
+  bestBoy: boolean;
   almacen: boolean;
   productora: boolean;
   jefeProduccion: boolean;

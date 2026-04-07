@@ -33,9 +33,11 @@ export function TextAreaAuto({
   const displayRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
+    if (isEditing) return;
     const normalized = normalizeValue(value);
+    if (normalized === v) return;
     setV(normalized);
-  }, [value]);
+  }, [isEditing, v, value]);
 
   useEffect(() => {
     if (!textareaRef.current || !isEditing) return;
@@ -63,7 +65,9 @@ export function TextAreaAuto({
           onChange && onChange(normalizedValue);
         }}
         onBlur={() => {
-          if (!readOnly) setIsEditing(false);
+          if (readOnly) return;
+          setIsEditing(false);
+          setV(normalizeValue(value));
         }}
         onFocus={() => {
           if (!readOnly) setIsEditing(true);
@@ -115,4 +119,3 @@ export function TextAreaAuto({
     />
   );
 }
-

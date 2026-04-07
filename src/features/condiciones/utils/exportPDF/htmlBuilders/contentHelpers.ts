@@ -52,6 +52,7 @@ export function generateInfoPanel(project: any, hideSecondaryInfo: boolean = tru
     renderInfoRow(`${esc(i18n.t('pdf.project'))}:`, project?.nombre || i18n.t('pdf.project'), 'info-row-left'),
     renderInfoRow(`${esc(i18n.t('pdf.gaffer'))}:`, (project as any)?.gaffer, 'info-row-right'),
     renderInfoRow(`${esc(i18n.t('pdf.warehouse'))}:`, project?.almacen, 'info-row-left'),
+    renderInfoRow(`${esc(i18n.t('pdf.bestBoy'))}:`, (project as any)?.bestBoy, 'info-row-right'),
   ].filter(Boolean);
   if (topRows.length % 2 === 1) {
     topRows.push(renderEmptyInfoRow('info-row-right'));

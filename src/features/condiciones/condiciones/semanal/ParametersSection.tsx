@@ -178,6 +178,7 @@ export function ParametersSection({
               />
               <ParamInput
                 label={t('conditions.nightShift')}
+                type='time'
                 duo={[
                   {
                     value: p.nocturnoIni ?? '22:00',
@@ -259,4 +260,3 @@ export function ParametersSection({
     </section>
   );
 }
-

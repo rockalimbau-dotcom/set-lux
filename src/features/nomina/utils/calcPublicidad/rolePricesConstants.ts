@@ -60,7 +60,7 @@ export const DEFAULT_PARAMS = {
   taDiario: '10',
   taFinde: '12',
   nocturnidadComplemento: '50',
-  nocturnoIni: '02:00',
+  nocturnoIni: '22:00',
   nocturnoFin: '06:00',
   dietaDesayuno: '10',
   dietaComida: '20',
@@ -71,4 +71,3 @@ export const DEFAULT_PARAMS = {
   kilometrajeKm: '0.40',
   transporteDia: '15',
 } as any;
-

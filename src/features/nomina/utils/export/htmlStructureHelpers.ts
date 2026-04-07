@@ -54,6 +54,7 @@ export function generateHTMLStructure({
     renderInfoRow(`${i18n.t('pdf.project')}:`, project?.nombre || (isPDF ? i18n.t('common.project') : ''), 'info-row-left'),
     renderInfoRow(`${i18n.t('pdf.gaffer')}:`, (project as any)?.gaffer, 'info-row-right'),
     renderInfoRow(`${i18n.t('pdf.warehouse')}:`, project?.almacen, 'info-row-left'),
+    renderInfoRow(`${i18n.t('pdf.bestBoy')}:`, (project as any)?.bestBoy, 'info-row-right'),
   ].filter(Boolean);
   if (topRows.length % 2 === 1) {
     topRows.push(renderEmptyInfoRow('info-row-right'));

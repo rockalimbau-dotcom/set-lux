@@ -16,6 +16,7 @@ export function shouldSyncProjectMetadata(project: Project | null | undefined, p
     project?.almacen !== proj?.almacen ||
     project?.productora !== proj?.productora ||
     project?.gaffer !== proj?.gaffer ||
+    project?.bestBoy !== proj?.bestBoy ||
     project?.jefeProduccion !== proj?.jefeProduccion ||
     project?.transportes !== proj?.transportes ||
     project?.localizaciones !== proj?.localizaciones ||
@@ -94,6 +95,7 @@ export function useProjectStorage({ project }: UseProjectStorageProps): UseProje
         almacen: normalizedIncoming.almacen,
         productora: normalizedIncoming.productora,
         gaffer: normalizedIncoming.gaffer,
+        bestBoy: normalizedIncoming.bestBoy,
         jefeProduccion: normalizedIncoming.jefeProduccion,
         transportes: normalizedIncoming.transportes,
         localizaciones: normalizedIncoming.localizaciones,
@@ -119,6 +121,7 @@ export function useProjectStorage({ project }: UseProjectStorageProps): UseProje
     proj?.almacen,
     proj?.productora,
     proj?.gaffer,
+    proj?.bestBoy,
     proj?.jefeProduccion,
     proj?.transportes,
     proj?.localizaciones,

@@ -43,7 +43,7 @@ const DEFAULTS_BY_MODE: Record<'semanal' | 'mensual' | 'diario', CondParams> = {
     cortesiaMin: 15,
     taDiario: 10,
     taFinde: 48,
-    nocturnoIni: '02:00',
+    nocturnoIni: '22:00',
     nocturnoFin: '06:00',
   },
 };
