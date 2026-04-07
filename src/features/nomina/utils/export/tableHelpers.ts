@@ -8,9 +8,21 @@ import { esc, displayValue, displayMoney, generateWorkedDaysText, generateExtras
 export const generateHeaderCells = (
   columnVisibility: ReturnType<typeof getColumnVisibility>,
   projectMode: 'semanal' | 'mensual' | 'diario' = 'semanal',
-  options: { forPDF?: boolean } = {}
+  options: {
+    forPDF?: boolean;
+    useNetAmounts?: boolean;
+    showIrpfColumn?: boolean;
+    showEstadoColumn?: boolean;
+    showExtraHoursNetColumn?: boolean;
+  } = {}
 ): string[] => {
-  const { forPDF = false } = options;
+  const {
+    forPDF = false,
+    useNetAmounts = false,
+    showIrpfColumn = true,
+    showEstadoColumn = true,
+    showExtraHoursNetColumn = true,
+  } = options;
   const useJornadasLabels = projectMode === 'semanal' || projectMode === 'diario';
   const workedLabel = useJornadasLabels ? i18n.t('payroll.workedShifts') : i18n.t('payroll.workedDays');
   const totalWorkedLabel = useJornadasLabels ? i18n.t('payroll.totalShifts') : i18n.t('payroll.totalDays');
@@ -95,10 +107,14 @@ export const generateHeaderCells = (
 
   headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;"><div class="th-label">${i18n.t('payroll.totalBruto')}</div></th>`);
   if (columnVisibility.netColumns) {
-    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;"><div class="th-label">${i18n.t('payroll.irpf')}</div></th>`);
-    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;"><div class="th-label">${i18n.t('payroll.stateTax')}</div></th>`);
-    if (columnVisibility.extraHoursPercent) {
-      headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;"><div class="th-label">${i18n.t('payroll.extraHoursPercentColumn')}</div></th>`);
+    if (showIrpfColumn) {
+      headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;"><div class="th-label">${i18n.t('payroll.irpf')}</div></th>`);
+    }
+    if (showEstadoColumn) {
+      headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;"><div class="th-label">${i18n.t('payroll.stateTax')}</div></th>`);
+    }
+    if (columnVisibility.extraHoursPercent && showExtraHoursNetColumn) {
+      headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;"><div class="th-label">${useNetAmounts ? i18n.t('payroll.extraHours') : i18n.t('payroll.extraHoursPercentColumn')}</div></th>`);
     }
     headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;"><div class="th-label">${i18n.t('payroll.totalNet')}</div></th>`);
   }
@@ -111,8 +127,20 @@ export const generateHeaderCells = (
  */
 export const generateRowDataCells = (
   r: any,
-  columnVisibility: ReturnType<typeof getColumnVisibility>
+  columnVisibility: ReturnType<typeof getColumnVisibility>,
+  options: {
+    useNetAmounts?: boolean;
+    showIrpfColumn?: boolean;
+    showEstadoColumn?: boolean;
+    showExtraHoursNetColumn?: boolean;
+  } = {}
 ): string[] => {
+  const {
+    useNetAmounts = false,
+    showIrpfColumn = true,
+    showEstadoColumn = true,
+    showExtraHoursNetColumn = true,
+  } = options;
   const roleForDisplay = (r as any)._originalRole || r.role || '';
   const roleDisplay = applyGenderToBadge(getRoleBadgeCode(String(roleForDisplay), i18n.language), (r as any).gender);
   const dataCells = [
@@ -186,10 +214,32 @@ export const generateRowDataCells = (
 
   dataCells.push(`<td class="total-cell" style="text-align:center !important;vertical-align:middle !important;"><div class="td-label td-label-center">${esc(displayMoney(r._totalBruto, 2))}</div></td>`);
   if (columnVisibility.netColumns) {
-    dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;"><div class="td-label td-label-center">${esc(displayValue(r._irpfPercent, 1))}${r._irpfPercent ? '%' : ''}</div></td>`);
-    dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;"><div class="td-label td-label-center">${esc(displayValue(r._estadoPercent, 1))}${r._estadoPercent ? '%' : ''}</div></td>`);
-    if (columnVisibility.extraHoursPercent) {
-      dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;"><div class="td-label td-label-center">${esc(displayValue(r._extraHoursPercent, 1))}${r._extraHoursPercent ? '%' : ''}</div></td>`);
+    if (showIrpfColumn) {
+      dataCells.push(
+        `<td style="text-align:center !important;vertical-align:middle !important;"><div class="td-label td-label-center">${
+          useNetAmounts
+            ? esc(displayMoney(r._irpfAmount, 2))
+            : `${esc(displayValue(r._irpfPercent, 1))}${r._irpfPercent ? '%' : ''}`
+        }</div></td>`
+      );
+    }
+    if (showEstadoColumn) {
+      dataCells.push(
+        `<td style="text-align:center !important;vertical-align:middle !important;"><div class="td-label td-label-center">${
+          useNetAmounts
+            ? esc(displayMoney(r._estadoAmount, 2))
+            : `${esc(displayValue(r._estadoPercent, 1))}${r._estadoPercent ? '%' : ''}`
+        }</div></td>`
+      );
+    }
+    if (columnVisibility.extraHoursPercent && showExtraHoursNetColumn) {
+      dataCells.push(
+        `<td style="text-align:center !important;vertical-align:middle !important;"><div class="td-label td-label-center">${
+          useNetAmounts
+            ? esc(displayMoney(r._extraHoursAmount, 2))
+            : `${esc(displayValue(r._extraHoursPercent, 1))}${r._extraHoursPercent ? '%' : ''}`
+        }</div></td>`
+      );
     }
     dataCells.push(`<td class="total-cell" style="text-align:center !important;vertical-align:middle !important;"><div class="td-label td-label-center">${esc(displayMoney(r._totalNeto, 2))}</div></td>`);
   }

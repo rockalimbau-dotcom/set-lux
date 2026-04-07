@@ -54,8 +54,20 @@ function groupRowsByBlock(enrichedRows: any[]) {
  */
 export function generateTableBody({ enrichedRows, columnVisibility, numColumns }: GenerateTableBodyParams): string {
   const rowsByBlock = groupRowsByBlock(enrichedRows);
+  const useNetAmounts = enrichedRows.length === 1;
+  const showIrpfColumn = !useNetAmounts || enrichedRows.some(r => Number(r?._irpfAmount || 0) !== 0);
+  const showEstadoColumn = !useNetAmounts || enrichedRows.some(r => Number(r?._estadoAmount || 0) !== 0);
+  const showExtraHoursNetColumn =
+    !useNetAmounts ||
+    !columnVisibility.extraHoursPercent ||
+    enrichedRows.some(r => Number(r?._extraHoursAmount || 0) !== 0);
   const generateRowHTML = (r: any) => {
-    const dataCells = generateRowDataCells(r, columnVisibility);
+    const dataCells = generateRowDataCells(r, columnVisibility, {
+      useNetAmounts,
+      showIrpfColumn,
+      showEstadoColumn,
+      showExtraHoursNetColumn,
+    });
     return `<tr>${dataCells.join('')}</tr>`;
   };
 

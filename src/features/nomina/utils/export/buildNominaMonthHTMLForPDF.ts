@@ -19,8 +19,20 @@ export function buildNominaMonthHTMLForPDF({
     netColumns: isIndividualExport && enrichedRows.some(r => !!r._showNetColumns),
     extraHoursPercent: isIndividualExport && enrichedRows.some(r => !!r._showExtraHoursPercent),
   };
+  const showIrpfColumn = !isIndividualExport || enrichedRows.some(r => Number(r?._irpfAmount || 0) !== 0);
+  const showEstadoColumn = !isIndividualExport || enrichedRows.some(r => Number(r?._estadoAmount || 0) !== 0);
+  const showExtraHoursNetColumn =
+    !isIndividualExport ||
+    !columnVisibility.extraHoursPercent ||
+    enrichedRows.some(r => Number(r?._extraHoursAmount || 0) !== 0);
   const projectMode = project?.conditions?.tipo === 'mensual' ? 'mensual' : project?.conditions?.tipo === 'diario' ? 'diario' : 'semanal';
-  const headerCells = generateHeaderCells(columnVisibility, projectMode, { forPDF: true });
+  const headerCells = generateHeaderCells(columnVisibility, projectMode, {
+    forPDF: true,
+    useNetAmounts: isIndividualExport,
+    showIrpfColumn,
+    showEstadoColumn,
+    showExtraHoursNetColumn,
+  });
   const head = `<tr>${headerCells.join('')}</tr>`;
   const numColumns = headerCells.length;
 
