@@ -637,23 +637,43 @@ function renderPrintHTML(params: {
         overflow: hidden;
         box-shadow: 0 1px 3px rgba(0,0,0,0.1);
       }
-      table { width: 100%; border-collapse: collapse; font-size: 10px; border: 2px solid #1e3a8a; }
+      table { width: 100%; border-collapse: collapse; font-size: 10px; border: 2px solid #7dbfe8; }
       th {
-        background: #1e3a8a;
-        color: white;
+        background: #bfe4f8;
+        color: #0f172a;
         padding: 6px 6px;
-        text-align: left;
-        font-weight: 600;
+        text-align: center;
+        font-weight: 700;
         font-size: 9px;
         text-transform: uppercase;
-        border: 1px solid white;
+        border: 1px solid #7dbfe8;
+        vertical-align: middle;
       }
       td {
         padding: 6px 6px;
         border: 1px solid #e2e8f0;
         background: white;
-        vertical-align: top;
+        vertical-align: middle;
         color: #1e293b;
+      }
+      th .th-label {
+        display: flex;
+        min-height: 24px;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        transform: translateY(-2px);
+      }
+      td .td-label {
+        display: block;
+        width: 100%;
+        min-height: 20px;
+      }
+      td:first-child .td-label {
+        font-weight: 600;
+      }
+      td:not(:first-child) .td-label {
+        text-align: center;
       }
       .total-row td { font-weight: 700; background: #f8fafc; }
       .signatures-row {
@@ -746,21 +766,21 @@ function renderPrintHTML(params: {
           <table>
             <thead>
               <tr>
-                <th>${e(t('timesheet.day'))}</th>
-                <th>${e(t('timesheet.date'))}</th>
-                <th>${e(t('timesheet.from'))}</th>
-                <th>${e(t('timesheet.to'))}</th>
-                <th>${e(t('timesheet.totalHours'))}</th>
-                <th>${e(t('timesheet.catering'))}</th>
-                <th>${e(t('timesheet.city'))}</th>
-                <th>${e(t('timesheet.notes'))}</th>
+                <th><div class="th-label">${e(t('timesheet.day'))}</div></th>
+                <th><div class="th-label">${e(t('timesheet.date'))}</div></th>
+                <th><div class="th-label">${e(t('timesheet.from'))}</div></th>
+                <th><div class="th-label">${e(t('timesheet.to'))}</div></th>
+                <th><div class="th-label">${e(t('timesheet.totalHours'))}</div></th>
+                <th><div class="th-label">${e(t('timesheet.catering'))}</div></th>
+                <th><div class="th-label">${e(t('timesheet.city'))}</div></th>
+                <th><div class="th-label">${e(t('timesheet.notes'))}</div></th>
               </tr>
             </thead>
             <tbody>
-              ${rows.map(r => `<tr><td>${e(r.dayName)}</td><td>${e(r.date)}</td><td>${e(r.from)}</td><td>${e(r.to)}</td><td>${e(r.total)}</td><td>${e(r.catering)}</td><td>${e(r.city)}</td><td>${e(r.note)}</td></tr>`).join('')}
+              ${rows.map(r => `<tr><td><div class="td-label">${e(r.dayName)}</div></td><td><div class="td-label">${e(r.date)}</div></td><td><div class="td-label">${e(r.from)}</div></td><td><div class="td-label">${e(r.to)}</div></td><td><div class="td-label">${e(r.total)}</div></td><td><div class="td-label">${e(r.catering)}</div></td><td><div class="td-label">${e(r.city)}</div></td><td><div class="td-label">${e(r.note)}</div></td></tr>`).join('')}
               <tr class="total-row">
-                <td colspan="4">${e(t('timesheet.total'))}</td>
-                <td>${e(total)}</td>
+                <td colspan="4"><div class="td-label">${e(t('timesheet.total'))}</div></td>
+                <td><div class="td-label">${e(total)}</div></td>
                 <td colspan="3"></td>
               </tr>
             </tbody>

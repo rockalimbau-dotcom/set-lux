@@ -29,13 +29,22 @@ const EXTRA_STYLES = `
     padding: 0;
   }
   .team-table th {
-    text-align: left;
+    background: #bfe4f8;
+    color: #0f172a;
+    text-align: center;
+    vertical-align: middle;
+    border: 1px solid #7dbfe8;
+    padding: 6px 6px;
+    font-weight: 700;
   }
   .team-table td {
+    padding: 0;
     text-align: left;
+    vertical-align: middle;
   }
   .team-table {
     table-layout: fixed;
+    border: 2px solid #7dbfe8;
   }
   .team-table th:first-child,
   .team-table td:first-child {
@@ -44,6 +53,24 @@ const EXTRA_STYLES = `
   .team-table th:last-child,
   .team-table td:last-child {
     width: 60%;
+  }
+  .team-table .th-label {
+    display: block;
+    line-height: 1.2;
+    text-align: center;
+    transform: translateY(-5px);
+  }
+  .team-table .td-label {
+    display: flex;
+    align-items: center;
+    min-height: 36px;
+    padding: 6px 10px;
+    line-height: 1.2;
+    transform: translateY(-3px);
+  }
+  .team-table .td-label-role {
+    font-weight: 600;
+    transform: translateY(-4px);
   }
 `;
 
@@ -68,7 +95,7 @@ const buildTeamSection = (
     .map(row => {
       const name = row?.name || '—';
       const label = getRoleLabel(project, row, groupKey);
-      return `<tr><td>${label}</td><td>${name}</td></tr>`;
+      return `<tr><td><span class="td-label td-label-role">${label}</span></td><td><span class="td-label">${name}</span></td></tr>`;
     })
     .join('');
   return `
@@ -77,8 +104,8 @@ const buildTeamSection = (
       <table class="team-table">
         <thead>
           <tr>
-            <th>${headerRole}</th>
-            <th>${headerName}</th>
+            <th><span class="th-label">${headerRole}</span></th>
+            <th><span class="th-label">${headerName}</span></th>
           </tr>
         </thead>
         <tbody>

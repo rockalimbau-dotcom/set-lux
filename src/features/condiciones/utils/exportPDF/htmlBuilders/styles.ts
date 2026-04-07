@@ -98,24 +98,47 @@ export const baseStyles = `
     width: 100%; 
     border-collapse: collapse; 
     font-size: 10px; 
-    border: 2px solid #1e3a8a; 
+    border: 2px solid #7dbfe8; 
   }
   th { 
-    background: #1e3a8a; 
-    color: white; 
+    background: #bfe4f8; 
+    color: #0f172a; 
     padding: 6px 6px; 
-    text-align: left; 
-    font-weight: 600; 
+    text-align: center; 
+    vertical-align: middle;
+    font-weight: 700; 
     font-size: 9px; 
     text-transform: uppercase; 
-    border: 1px solid white; 
+    border: 1px solid #7dbfe8; 
+  }
+  th .th-label {
+    display: block;
+    line-height: 1.2;
+    text-align: center;
+    transform: translateY(-5px);
   }
   td { 
-    padding: 6px 6px; 
+    padding: 0; 
     border: 1px solid #e2e8f0; 
     background: white; 
-    vertical-align: top; 
+    vertical-align: middle; 
     color: #1e293b; 
+  }
+  td .td-label {
+    display: flex;
+    align-items: center;
+    min-height: 36px;
+    padding: 6px 10px;
+    line-height: 1.2;
+    transform: translateY(-3px);
+  }
+  td:not(:first-child) .td-label {
+    justify-content: center;
+    text-align: center;
+  }
+  td .td-label-role {
+    font-weight: 600;
+    transform: translateY(-4px);
   }
   section {
     background: white;

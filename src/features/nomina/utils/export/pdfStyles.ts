@@ -196,24 +196,33 @@ export const PDF_STYLES = `
       border-collapse: collapse;
       table-layout: fixed;
       font-size: 10px;
-      border: 2px solid #1e3a8a;
+      border: 2px solid #7dbfe8;
     }
     
     th {
-      background: #1e40af !important;
-      color: white !important;
+      background: #bfe4f8 !important;
+      color: #0f172a !important;
       padding: 8px 6px !important;
       text-align: center !important;
       vertical-align: middle !important;
       font-weight: 600 !important;
       font-size: 9px !important;
       text-transform: uppercase !important;
-      border: 1px solid white !important;
+      border: 1px solid #7dbfe8 !important;
       height: 40px !important;
       line-height: 1.2 !important;
       display: table-cell !important;
       word-break: break-word !important;
       overflow-wrap: anywhere !important;
+    }
+
+    .th-label {
+      display: flex !important;
+      min-height: 24px !important;
+      align-items: center !important;
+      justify-content: center !important;
+      text-align: center !important;
+      transform: translateY(-2px) !important;
     }
     
     thead th {
@@ -233,12 +242,87 @@ export const PDF_STYLES = `
       word-break: break-word;
       overflow-wrap: anywhere;
     }
+
+    .td-label {
+      display: block;
+      width: 100%;
+      min-height: 20px;
+      position: relative;
+      top: -2px;
+    }
+
+    .td-label-center {
+      text-align: center;
+    }
+
+    .person-chip-wrap {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+    }
+
+    .member-chip-line {
+      display: inline-table;
+      border-collapse: separate;
+      border-spacing: 0;
+      height: 18px;
+      padding: 0 6px 0 2px;
+      margin: 2px 0;
+      border-radius: 999px;
+      border: 1px solid #e6dccb;
+      background: #fff9f0;
+      max-width: 100%;
+      vertical-align: middle;
+    }
+
+    .member-chip-badge {
+      display: table-cell;
+      min-width: 14px;
+      height: 14px;
+      padding: 0 4px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #60a5fa, #0369a1);
+      color: #ffffff;
+      font-size: 7px;
+      font-weight: 700;
+      line-height: 14px;
+      text-align: center;
+      vertical-align: middle;
+    }
+
+    .member-chip-name {
+      display: table-cell;
+      color: #1f2937;
+      font-weight: 500;
+      font-size: 7px;
+      line-height: 14px;
+      letter-spacing: 0.1px;
+      vertical-align: middle;
+      padding-left: 5px;
+    }
+
+    .member-chip-badge-text {
+      position: relative;
+      top: -5px;
+      display: inline-block;
+    }
+
+    .member-chip-name-text {
+      position: relative;
+      top: -5px;
+      display: inline-block;
+    }
     
     td.text-right {
       text-align: right !important;
     }
     
     td.text-left {
+      text-align: left !important;
+    }
+
+    td.text-left .td-label {
       text-align: left !important;
     }
     

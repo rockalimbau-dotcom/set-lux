@@ -11,16 +11,16 @@ export function generateDaysHeader(
 ): string {
   return `
       <tr>
-        <th style="border:1px solid #999;padding:6px;text-align:left;background:#1e40af;color:#fff;">&nbsp;</th>
+        <th style="border:1px solid #7dbfe8;padding:6px;text-align:center;vertical-align:middle;background:#bfe4f8;color:#0f172a;"><div class="th-label">&nbsp;</div></th>
         ${safeSemanaWithData
           .map(
             (iso, i) => `
-          <th style="border:1px solid #999;padding:6px;text-align:left;background:#1e40af;color:#fff;">
-            ${esc(translateDayName(dayNameFromISO(iso, i)))}<br/>${esc(toDisplayDate(iso))}
+          <th style="border:1px solid #7dbfe8;padding:6px;text-align:center;vertical-align:middle;background:#bfe4f8;color:#0f172a;">
+            <div class="th-label">${esc(translateDayName(dayNameFromISO(iso, i)))}<br/>${esc(toDisplayDate(iso))}</div>
           </th>`
           )
           .join('')}
-        <th style="border:1px solid #999;padding:6px;text-align:left;background:#1e40af;color:#fff;font-weight:bold;">${esc(getTranslation('reports.total', 'Total'))}</th>
+        <th style="border:1px solid #7dbfe8;padding:6px;text-align:center;vertical-align:middle;background:#bfe4f8;color:#0f172a;font-weight:bold;"><div class="th-label">${esc(getTranslation('reports.total', 'Total'))}</div></th>
       </tr>`;
 }
 
@@ -34,16 +34,16 @@ export function generateScheduleHeader(
 ): string {
   return `
       <tr>
-        <th style="border:1px solid #999;padding:6px;text-align:left;background:#1e40af;color:#fff;">${esc(scheduleLabel)}</th>
+        <th style="border:1px solid #7dbfe8;padding:6px;text-align:center;vertical-align:middle;background:#bfe4f8;color:#0f172a;"><div class="th-label">${esc(scheduleLabel)}</div></th>
         ${safeSemanaWithData
           .map(
             iso =>
-              `<th style="border:1px solid #999;padding:6px;text-align:left;background:#1e40af;color:#fff;">${esc(
+              `<th style="border:1px solid #7dbfe8;padding:6px;text-align:center;vertical-align:middle;background:#bfe4f8;color:#0f172a;"><div class="th-label">${esc(
                 horarioTexto(iso)
-              )}</th>`
+              )}</div></th>`
           )
           .join('')}
-        <th style="border:1px solid #999;padding:6px;text-align:left;background:#1e40af;color:#fff;">${esc(getTranslation('reports.week', 'Semana'))}</th>
+        <th style="border:1px solid #7dbfe8;padding:6px;text-align:center;vertical-align:middle;background:#bfe4f8;color:#0f172a;"><div class="th-label">${esc(getTranslation('reports.week', 'Semana'))}</div></th>
       </tr>`;
 }
 

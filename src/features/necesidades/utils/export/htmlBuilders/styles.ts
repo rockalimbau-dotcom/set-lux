@@ -129,7 +129,7 @@ export const baseStyles = `
     width: 100%;
     border-collapse: collapse;
     font-size: 10px;
-    border: 2px solid #1e40af;
+    border: 2px solid #7dbfe8;
   }
   
   th:first-child,
@@ -139,22 +139,111 @@ export const baseStyles = `
   }
   
   th {
-    background: #1e40af;
-    color: white;
+    background: #bfe4f8;
+    color: #0f172a;
     padding: 6px 6px;
-    text-align: left;
-    font-weight: 600;
+    text-align: center;
+    font-weight: 700;
     font-size: 9px;
     text-transform: uppercase;
-    border: 1px solid white;
+    border: 1px solid #7dbfe8;
+    vertical-align: middle;
   }
   
   td {
     padding: 6px 6px;
     border: 1px solid #e2e8f0;
     background: white;
-    vertical-align: top;
+    vertical-align: middle;
     color: #1e293b;
+  }
+
+  .th-label {
+    display: flex;
+    min-height: 28px;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    transform: translateY(-5px);
+  }
+
+  .td-label {
+    display: block;
+    min-height: 34px;
+    width: 100%;
+  }
+
+  .td-label-role {
+    display: flex;
+    min-height: 34px;
+    align-items: center;
+    font-weight: 600;
+    width: 100%;
+  }
+
+  td:not(:first-child) .td-label {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    text-align: center;
+  }
+
+  td:not(:first-child) {
+    padding-top: 10px;
+    padding-bottom: 2px;
+  }
+
+  .member-chip-line {
+    display: inline-table;
+    border-collapse: separate;
+    border-spacing: 0;
+    height: 18px;
+    padding: 0 6px 0 2px;
+    margin: 2px 0;
+    border-radius: 999px;
+    border: 1px solid #e6dccb;
+    background: #fff9f0;
+    max-width: 100%;
+    vertical-align: middle;
+  }
+
+  .member-chip-badge {
+    display: table-cell;
+    min-width: 14px;
+    height: 14px;
+    padding: 0 4px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #60a5fa, #0369a1);
+    color: #ffffff;
+    font-size: 7px;
+    font-weight: 700;
+    line-height: 14px;
+    text-align: center;
+    vertical-align: middle;
+  }
+
+  .member-chip-name {
+    display: table-cell;
+    color: #1f2937;
+    font-weight: 500;
+    font-size: 7px;
+    line-height: 14px;
+    letter-spacing: 0.1px;
+    vertical-align: middle;
+    padding-left: 5px;
+  }
+
+  .member-chip-badge-text {
+    position: relative;
+    top: -5px;
+    display: inline-block;
+  }
+
+  .member-chip-name-text {
+    position: relative;
+    top: -5px;
+    display: inline-block;
   }
   
   .footer {

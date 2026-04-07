@@ -170,7 +170,7 @@ export function buildNecesidadesHTMLForPDF(
             <table>
               <thead>
                 <tr>
-                  <th>${i18n.t('needs.fieldDay')}</th>
+                  <th><div class="th-label">${i18n.t('needs.fieldDay')}</div></th>
                   ${headerRow}
                 </tr>
               </thead>

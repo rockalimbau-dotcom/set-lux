@@ -115,15 +115,15 @@ export function generatePriceTableHTML(
     <table>
       <thead>
         <tr>
-          <th>${i18n.t('conditions.rolePrice')}</th>
-          ${headersWithValues.map(h => `<th>${esc(translateHeader(h))}</th>`).join('')}
+          <th><span class="th-label">${i18n.t('conditions.rolePrice')}</span></th>
+          ${headersWithValues.map(h => `<th><span class="th-label">${esc(translateHeader(h))}</span></th>`).join('')}
         </tr>
       </thead>
       <tbody>
         ${rolesConPrecios.map(
           role => `
           <tr>
-            <td style="font-weight:600;">${esc(translateRoleName(project, role, sectionKey))}</td>
+            <td><span class="td-label td-label-role">${esc(translateRoleName(project, role, sectionKey))}</span></td>
             ${headersWithValues.map(h => {
               if (h === 'Material propio') {
                 const rawVal = prices[role]?.[h] ?? '';
@@ -136,9 +136,9 @@ export function generatePriceTableHTML(
                   ? i18n.t('common.unique')
                   : '';
                 const display = rawVal && tipoLabel ? `${rawVal} (${tipoLabel})` : rawVal;
-                return `<td>${esc(display)}</td>`;
+                return `<td><span class="td-label">${esc(display)}</span></td>`;
               }
-              return `<td>${esc(prices[role]?.[h] ?? '')}</td>`;
+              return `<td><span class="td-label">${esc(prices[role]?.[h] ?? '')}</span></td>`;
             }).join('')}
           </tr>
         `

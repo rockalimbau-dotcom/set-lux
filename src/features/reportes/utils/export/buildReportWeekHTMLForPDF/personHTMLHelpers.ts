@@ -39,17 +39,24 @@ function generatePersonHeader(
   const gender = genderMap?.[pk];
   const badgeCode = getRoleBadgeCode(role, i18n.language);
   const badgeDisplay = applyGenderToBadge(badgeCode, gender);
-  const displayName = badgeDisplay && name ? `${badgeDisplay} — ${name}` : badgeDisplay || name;
+  const displayName = `
+    <div class="person-chip-wrap">
+      <div class="member-chip-line">
+        <span class="member-chip-badge"><span class="member-chip-badge-text">${esc(badgeDisplay || '—')}</span></span>
+        <span class="member-chip-name"><span class="member-chip-name-text">${esc(name || '—')}</span></span>
+      </div>
+    </div>
+  `;
 
   return `
         <tr>
-          <td style="border:1px solid #999;padding:6px;font-weight:600;background:#f5f5f5;">
-            ${esc(displayName)}
+          <td style="border:1px solid #e2e8f0;padding:6px;font-weight:600;background:#f8fafc;vertical-align:middle;">
+            ${displayName}
           </td>
           ${safeSemanaWithData
-            .map(() => `<td style="border:1px solid #999;padding:6px;">&nbsp;</td>`)
+            .map(() => `<td style="border:1px solid #e2e8f0;padding:6px;text-align:center;vertical-align:middle;"><div class="td-label td-label-center">&nbsp;</div></td>`)
             .join('')}
-          <td style="border:1px solid #999;padding:6px;">&nbsp;</td>
+          <td style="border:1px solid #e2e8f0;padding:6px;text-align:center;vertical-align:middle;"><div class="td-label td-label-center">&nbsp;</div></td>
         </tr>`;
 }
 
@@ -137,14 +144,14 @@ function generatePersonConceptRows(
 
       return `
         <tr>
-          <td style="border:1px solid #999;padding:6px;">${esc(translateConcept(c))}</td>
+          <td style="border:1px solid #e2e8f0;padding:6px;vertical-align:middle;"><div class="td-label">${esc(translateConcept(c))}</div></td>
           ${safeSemanaWithData
             .map(iso => {
               const cellValue = formatCellValue(finalData?.[pk]?.[c]?.[iso], c);
-              return `<td style="border:1px solid #999;padding:6px;">${esc(cellValue)}</td>`;
+              return `<td style="border:1px solid #e2e8f0;padding:6px;text-align:center;vertical-align:middle;"><div class="td-label td-label-center">${esc(cellValue)}</div></td>`;
             })
             .join('')}
-          <td style="border:1px solid #999;padding:6px;text-align:left;font-weight:bold;">${esc(totalDisplay)}</td>
+          <td style="border:1px solid #e2e8f0;padding:6px;text-align:center;vertical-align:middle;font-weight:bold;"><div class="td-label td-label-center">${esc(totalDisplay)}</div></td>
         </tr>`;
     })
     .join('');

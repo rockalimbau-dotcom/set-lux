@@ -32,6 +32,24 @@ function formatMemberDisplay(
   return applyGenderToBadge(`${badge}${suffix}`, member?.gender);
 }
 
+function formatMemberLine(
+  member: { role?: string; roleLabel?: string; gender?: 'male' | 'female' | 'neutral'; name?: string },
+  suffix = ''
+): string {
+  const rawRole = String(member?.role || '').trim().toUpperCase();
+  const badgeDisplay = applyGenderToBadge(
+    getRoleBadgeCode(`${rawRole}${suffix}`, i18n.language),
+    member?.gender
+  );
+  const name = String(member?.name || '').trim();
+  return `
+    <div class="member-chip-line">
+      <span class="member-chip-badge"><span class="member-chip-badge-text">${esc(badgeDisplay || '—')}</span></span>
+      <span class="member-chip-name"><span class="member-chip-name-text">${esc(name || '—')}</span></span>
+    </div>
+  `;
+}
+
 function translateScheduleType(tipo: string): string {
   return translateJornadaType(tipo, (key: string, defaultValue?: string) => {
     const translated = i18n.t(key);
@@ -51,9 +69,9 @@ function fieldRow(
   const tds = DAYS.map((_, i) => {
     const rawValue = valuesByDay[i]?.[key] || '';
     const displayValue = key === 'loc' ? translateLocationValue(rawValue) : rawValue;
-    return `<td style="border:1px solid #999;padding:6px;vertical-align:top;">${renderCell(displayValue)}</td>`;
+    return `<td style="border:1px solid #999;padding:6px;vertical-align:middle;"><div class="td-label">${renderCell(displayValue)}</div></td>`;
   }).join('');
-  return `<tr><td style="border:1px solid #999;padding:6px;font-weight:600;background:#f8fafc;">${esc(label)}</td>${tds}</tr>`;
+  return `<tr><td style="border:1px solid #999;padding:6px;font-weight:600;background:#f8fafc;"><div class="td-label-role">${esc(label)}</div></td>${tds}</tr>`;
 }
 
 function mergedLocSeqRow(
@@ -65,9 +83,9 @@ function mergedLocSeqRow(
     const loc = translateLocationValue(valuesByDay[i]?.loc || '');
     const seq = valuesByDay[i]?.seq || '';
     const combined = seq ? [loc, seq].filter(Boolean).join('\n') : loc;
-    return `<td style="border:1px solid #999;padding:6px;vertical-align:top;">${renderCell(combined)}</td>`;
+    return `<td style="border:1px solid #999;padding:6px;vertical-align:middle;"><div class="td-label">${renderCell(combined)}</div></td>`;
   }).join('');
-  return `<tr><td style="border:1px solid #999;padding:6px;font-weight:600;background:#f8fafc;">${esc(label)}</td>${tds}</tr>`;
+  return `<tr><td style="border:1px solid #999;padding:6px;font-weight:600;background:#f8fafc;"><div class="td-label-role">${esc(label)}</div></td>${tds}</tr>`;
 }
 
 function simpleRow(
@@ -77,9 +95,9 @@ function simpleRow(
 ): string {
   const tds = DAYS.map((_, i) => {
     const displayValue = values[i] || '';
-    return `<td style="border:1px solid #999;padding:6px;vertical-align:top;">${renderCell(displayValue)}</td>`;
+    return `<td style="border:1px solid #999;padding:6px;vertical-align:middle;"><div class="td-label">${renderCell(displayValue)}</div></td>`;
   }).join('');
-  return `<tr><td style="border:1px solid #999;padding:6px;font-weight:600;background:#f8fafc;">${esc(label)}</td>${tds}</tr>`;
+  return `<tr><td style="border:1px solid #999;padding:6px;font-weight:600;background:#f8fafc;"><div class="td-label-role">${esc(label)}</div></td>${tds}</tr>`;
 }
 
 /**
@@ -100,15 +118,13 @@ function listRow(
         const role = (m?.role || '').toUpperCase();
         const isRefRole = role === 'REF' || (role && role.startsWith('REF') && role.length > 3);
         const suffix = !isRefRole && listKey === 'preList' ? 'P' : !isRefRole && listKey === 'pickList' ? 'R' : '';
-        const badgeDisplay = formatMemberDisplay(m, isRefRole ? '' : suffix);
-        const name = m?.name || '';
-        return `<div>• ${esc(badgeDisplay ? `${badgeDisplay}: ` : '')}${esc(name)}</div>`;
+        return formatMemberLine(m, isRefRole ? '' : suffix);
       })
       .join('');
     const block = `${chips}${notes ? `<hr style="margin:6px 0;border:none;border-top:1px solid #ddd;"/>` : ''}${renderCell(notes)}`;
-    return `<td style="border:1px solid #999;padding:6px;vertical-align:top;">${block}</td>`;
+    return `<td style="border:1px solid #999;padding:6px;vertical-align:middle;"><div class="td-label">${block}</div></td>`;
   }).join('');
-  return `<tr><td style="border:1px solid #999;padding:6px;font-weight:600;background:#f8fafc;">${esc(label)}</td>${tds}</tr>`;
+  return `<tr><td style="border:1px solid #999;padding:6px;font-weight:600;background:#f8fafc;"><div class="td-label-role">${esc(label)}</div></td>${tds}</tr>`;
 }
 
 function listRowWithSchedule(
@@ -135,16 +151,14 @@ function listRowWithSchedule(
         const role = (m?.role || '').toUpperCase();
         const isRefRole = role === 'REF' || (role && role.startsWith('REF') && role.length > 3);
         const suffix = !isRefRole && listKey === 'preList' ? 'P' : !isRefRole && listKey === 'pickList' ? 'R' : '';
-        const badgeDisplay = formatMemberDisplay(m, isRefRole ? '' : suffix);
-        const name = m?.name || '';
-        return `<div>• ${esc(badgeDisplay ? `${badgeDisplay}: ` : '')}${esc(name)}</div>`;
+        return formatMemberLine(m, isRefRole ? '' : suffix);
       })
       .join('');
     const header = scheduleLine ? `<div style="margin-bottom:6px;font-weight:600;">${esc(scheduleLine)}</div>` : '';
     const block = `${header}${chips}${notes ? `<hr style="margin:6px 0;border:none;border-top:1px solid #ddd;"/>` : ''}${renderCell(notes)}`;
-    return `<td style="border:1px solid #999;padding:6px;vertical-align:top;">${block}</td>`;
+    return `<td style="border:1px solid #999;padding:6px;vertical-align:middle;"><div class="td-label">${block}</div></td>`;
   }).join('');
-  return `<tr><td style="border:1px solid #999;padding:6px;font-weight:600;background:#f8fafc;">${esc(label)}</td>${tds}</tr>`;
+  return `<tr><td style="border:1px solid #999;padding:6px;font-weight:600;background:#f8fafc;"><div class="td-label-role">${esc(label)}</div></td>${tds}</tr>`;
 }
 
 function extraBlocksRow(
@@ -166,9 +180,7 @@ function extraBlocksRow(
           .map(m => {
             const role = (m?.role || '').toUpperCase();
             const isRefRole = role === 'REF' || (role && role.startsWith('REF') && role.length > 3);
-            const badgeDisplay = formatMemberDisplay(m, isRefRole ? '' : '');
-            const name = m?.name || '';
-            return `<div>• ${esc(badgeDisplay ? `${badgeDisplay}: ` : '')}${esc(name)}</div>`;
+            return formatMemberLine(m, isRefRole ? '' : '');
           })
           .join('');
         const notes = block.text || '';
@@ -177,9 +189,9 @@ function extraBlocksRow(
         </div>`;
       })
       .join('<div style="border-top:1px dashed #ddd;"></div>');
-    return `<td style="border:1px solid #999;padding:6px;vertical-align:top;">${content || renderCell('')}</td>`;
+    return `<td style="border:1px solid #999;padding:6px;vertical-align:middle;"><div class="td-label">${content || renderCell('')}</div></td>`;
   }).join('');
-  return `<tr><td style="border:1px solid #999;padding:6px;font-weight:600;background:#f8fafc;">${esc(label)}</td>${tds}</tr>`;
+  return `<tr><td style="border:1px solid #999;padding:6px;font-weight:600;background:#f8fafc;"><div class="td-label-role">${esc(label)}</div></td>${tds}</tr>`;
 }
 
 function fieldRowWithTime(
@@ -193,9 +205,9 @@ function fieldRowWithTime(
     const value = valuesByDay[i]?.[key] || '';
     const time = valuesByDay[i]?.[timeKey] || '';
     const header = time ? `<div style="margin-bottom:6px;font-weight:600;">${esc(time)}</div>` : '';
-    return `<td style="border:1px solid #999;padding:6px;vertical-align:top;">${header}${renderCell(value)}</td>`;
+    return `<td style="border:1px solid #999;padding:6px;vertical-align:middle;"><div class="td-label">${header}${renderCell(value)}</div></td>`;
   }).join('');
-  return `<tr><td style="border:1px solid #999;padding:6px;font-weight:600;background:#f8fafc;">${esc(label)}</td>${tds}</tr>`;
+  return `<tr><td style="border:1px solid #999;padding:6px;font-weight:600;background:#f8fafc;"><div class="td-label-role">${esc(label)}</div></td>${tds}</tr>`;
 }
 
 /**
@@ -386,8 +398,8 @@ export function generateHeaderRow(
 ): string {
   return DAYS.map(
     day =>
-      `<th style="border:1px solid #999;padding:6px;text-align:left;background:#1e40af;color:#fff;">
-        ${esc(day.name)}<br/>${esc(formatDDMM(addDays(monday, day.idx)))}
+      `<th style="border:1px solid #7dbfe8;padding:6px;text-align:center;vertical-align:middle;background:#bfe4f8;color:#0f172a;">
+        <div class="th-label">${esc(day.name)}<br/>${esc(formatDDMM(addDays(monday, day.idx)))}</div>
       </th>`
   ).join('');
 }

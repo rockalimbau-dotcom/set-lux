@@ -1,5 +1,5 @@
 import i18n from '../../../../i18n/config';
-import { applyGenderToBadge } from '@shared/constants/roles';
+import { applyGenderToBadge, getRoleBadgeCode } from '@shared/constants/roles';
 import { esc, displayValue, displayMoney, generateWorkedDaysText, generateExtrasText, generateDietasText, generateCargaDescargaText, getColumnVisibility } from './helpers';
 
 /**
@@ -34,73 +34,73 @@ export const generateHeaderCells = (
     : `text-align:center !important;vertical-align:middle !important;white-space:nowrap !important;min-width:${projectMode === 'diario' ? '290px' : 'auto'};`;
 
   const headerCells = [
-    `<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.person')}</th>`,
-    `<th style="${workedStyle}">${workedLabel}</th>`,
-    `<th style="${totalWorkedStyle}">${totalWorkedLabel}</th>`,
+    `<th style="text-align:center !important;vertical-align:middle !important;"><div class="th-label">${i18n.t('payroll.person')}</div></th>`,
+    `<th style="${workedStyle}"><div class="th-label">${workedLabel}</div></th>`,
+    `<th style="${totalWorkedStyle}"><div class="th-label">${totalWorkedLabel}</div></th>`,
   ];
 
   if (columnVisibility.halfDays) {
-    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.halfDays')}</th>`);
-    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.totalHalfDays')}</th>`);
+    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;"><div class="th-label">${i18n.t('payroll.halfDays')}</div></th>`);
+    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;"><div class="th-label">${i18n.t('payroll.totalHalfDays')}</div></th>`);
   }
 
   if (columnVisibility.localizacion) {
-    headerCells.push(`<th style="${localizacionStyle}">${localizacionLabel}</th>`);
-    headerCells.push(`<th style="${totalLocalizacionStyle}">${totalLocalizacionLabel}</th>`);
+    headerCells.push(`<th style="${localizacionStyle}"><div class="th-label">${localizacionLabel}</div></th>`);
+    headerCells.push(`<th style="${totalLocalizacionStyle}"><div class="th-label">${totalLocalizacionLabel}</div></th>`);
   }
 
   if (columnVisibility.cargaDescarga) {
-    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.cargaDescarga')}</th>`);
-    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.totalCargaDescarga')}</th>`);
+    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;"><div class="th-label">${i18n.t('payroll.cargaDescarga')}</div></th>`);
+    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;"><div class="th-label">${i18n.t('payroll.totalCargaDescarga')}</div></th>`);
   }
 
   if (columnVisibility.holidays) {
-    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.holidayDays')}</th>`);
-    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.totalHolidayDays')}</th>`);
+    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;"><div class="th-label">${i18n.t('payroll.holidayDays')}</div></th>`);
+    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;"><div class="th-label">${i18n.t('payroll.totalHolidayDays')}</div></th>`);
   }
 
   if (columnVisibility.travel) {
-    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.travelDays')}</th>`);
-    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.totalTravelDays')}</th>`);
+    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;"><div class="th-label">${i18n.t('payroll.travelDays')}</div></th>`);
+    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;"><div class="th-label">${i18n.t('payroll.totalTravelDays')}</div></th>`);
   }
 
   if (columnVisibility.extras) {
-    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.extraHours')}</th>`);
-    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.totalExtraHours')}</th>`);
+    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;"><div class="th-label">${i18n.t('payroll.extraHours')}</div></th>`);
+    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;"><div class="th-label">${i18n.t('payroll.totalExtraHours')}</div></th>`);
   }
 
   if (columnVisibility.materialPropio) {
-    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.ownMaterial')}</th>`);
-    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.totalOwnMaterial')}</th>`);
+    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;"><div class="th-label">${i18n.t('payroll.ownMaterial')}</div></th>`);
+    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;"><div class="th-label">${i18n.t('payroll.totalOwnMaterial')}</div></th>`);
   }
 
   if (columnVisibility.dietas) {
-    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.dietas')}</th>`);
-    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.totalDietas')}</th>`);
+    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;"><div class="th-label">${i18n.t('payroll.dietas')}</div></th>`);
+    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;"><div class="th-label">${i18n.t('payroll.totalDietas')}</div></th>`);
   }
 
   if (columnVisibility.transporte) {
-    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.transportes')}</th>`);
-    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.totalTransportes')}</th>`);
+    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;"><div class="th-label">${i18n.t('payroll.transportes')}</div></th>`);
+    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;"><div class="th-label">${i18n.t('payroll.totalTransportes')}</div></th>`);
   }
 
   if (columnVisibility.km) {
-    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.kilometraje')}</th>`);
-    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.totalKilometraje')}</th>`);
+    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;"><div class="th-label">${i18n.t('payroll.kilometraje')}</div></th>`);
+    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;"><div class="th-label">${i18n.t('payroll.totalKilometraje')}</div></th>`);
   }
 
   if (columnVisibility.gasolina) {
-    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.totalGasoline')}</th>`);
+    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;"><div class="th-label">${i18n.t('payroll.totalGasoline')}</div></th>`);
   }
 
-  headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.totalBruto')}</th>`);
+  headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;"><div class="th-label">${i18n.t('payroll.totalBruto')}</div></th>`);
   if (columnVisibility.netColumns) {
-    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.irpf')}</th>`);
-    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.stateTax')}</th>`);
+    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;"><div class="th-label">${i18n.t('payroll.irpf')}</div></th>`);
+    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;"><div class="th-label">${i18n.t('payroll.stateTax')}</div></th>`);
     if (columnVisibility.extraHoursPercent) {
-      headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.extraHoursPercentColumn')}</th>`);
+      headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;"><div class="th-label">${i18n.t('payroll.extraHoursPercentColumn')}</div></th>`);
     }
-    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;">${i18n.t('payroll.totalNet')}</th>`);
+    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;"><div class="th-label">${i18n.t('payroll.totalNet')}</div></th>`);
   }
 
   return headerCells;
@@ -113,43 +113,42 @@ export const generateRowDataCells = (
   r: any,
   columnVisibility: ReturnType<typeof getColumnVisibility>
 ): string[] => {
-  // Usar rol original para mostrar REFG, REFBB, etc. en lugar de solo REF
   const roleForDisplay = (r as any)._originalRole || r.role || '';
-  const roleDisplay = applyGenderToBadge(String(roleForDisplay), (r as any).gender);
+  const roleDisplay = applyGenderToBadge(getRoleBadgeCode(String(roleForDisplay), i18n.language), (r as any).gender);
   const dataCells = [
-    `<td class="text-left" style="font-weight:600;vertical-align:middle !important;">${esc(roleDisplay)} — ${esc(r.name)}</td>`,
-    `<td style="text-align:center !important;vertical-align:middle !important;">${generateWorkedDaysText(r) || esc(displayValue(r._worked))}</td>`,
-    `<td style="text-align:center !important;vertical-align:middle !important;">${esc(displayMoney(r._totalDias, 2))}</td>`,
+    `<td class="text-left person-cell" style="font-weight:600;vertical-align:middle !important;"><div class="person-chip-wrap"><div class="member-chip-line"><span class="member-chip-badge"><span class="member-chip-badge-text">${esc(roleDisplay || '—')}</span></span><span class="member-chip-name"><span class="member-chip-name-text">${esc(r.name || '—')}</span></span></div></div></td>`,
+    `<td style="text-align:center !important;vertical-align:middle !important;"><div class="td-label td-label-center">${generateWorkedDaysText(r) || esc(displayValue(r._worked))}</div></td>`,
+    `<td style="text-align:center !important;vertical-align:middle !important;"><div class="td-label td-label-center">${esc(displayMoney(r._totalDias, 2))}</div></td>`,
   ];
 
   if (columnVisibility.halfDays) {
-    dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;">${esc(displayValue(r._halfDays))}</td>`);
-    dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;">${esc(displayMoney(r._totalHalfDays, 2))}</td>`);
+    dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;"><div class="td-label td-label-center">${esc(displayValue(r._halfDays))}</div></td>`);
+    dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;"><div class="td-label td-label-center">${esc(displayMoney(r._totalHalfDays, 2))}</div></td>`);
   }
 
   if (columnVisibility.localizacion) {
-    dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;">${esc(displayValue(r._localizarDays))}</td>`);
-    dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;">${esc(displayMoney(r._totalLocalizacion, 2))}</td>`);
+    dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;"><div class="td-label td-label-center">${esc(displayValue(r._localizarDays))}</div></td>`);
+    dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;"><div class="td-label td-label-center">${esc(displayMoney(r._totalLocalizacion, 2))}</div></td>`);
   }
 
   if (columnVisibility.cargaDescarga) {
-    dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;">${generateCargaDescargaText(r) || esc(displayValue((r._cargaDays || 0) + (r._descargaDays || 0)))}</td>`);
-    dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;">${esc(displayMoney(r._totalCargaDescarga, 2))}</td>`);
+    dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;"><div class="td-label td-label-center">${generateCargaDescargaText(r) || esc(displayValue((r._cargaDays || 0) + (r._descargaDays || 0)))}</div></td>`);
+    dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;"><div class="td-label td-label-center">${esc(displayMoney(r._totalCargaDescarga, 2))}</div></td>`);
   }
 
   if (columnVisibility.holidays) {
-    dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;">${esc(displayValue(r._holidays))}</td>`);
-    dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;">${esc(displayMoney(r._totalHolidays, 2))}</td>`);
+    dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;"><div class="td-label td-label-center">${esc(displayValue(r._holidays))}</div></td>`);
+    dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;"><div class="td-label td-label-center">${esc(displayMoney(r._totalHolidays, 2))}</div></td>`);
   }
 
   if (columnVisibility.travel) {
-    dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;">${esc(displayValue(r._travel))}</td>`);
-    dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;">${esc(displayMoney(r._totalTravel, 2))}</td>`);
+    dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;"><div class="td-label td-label-center">${esc(displayValue(r._travel))}</div></td>`);
+    dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;"><div class="td-label td-label-center">${esc(displayMoney(r._totalTravel, 2))}</div></td>`);
   }
 
   if (columnVisibility.extras) {
-    dataCells.push(`<td class="extras-cell" style="text-align:center !important;vertical-align:middle !important;">${generateExtrasText(r)}</td>`);
-    dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;">${esc(displayMoney(r._totalExtras, 2))}</td>`);
+    dataCells.push(`<td class="extras-cell" style="text-align:center !important;vertical-align:middle !important;"><div class="td-label td-label-center">${generateExtrasText(r)}</div></td>`);
+    dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;"><div class="td-label td-label-center">${esc(displayMoney(r._totalExtras, 2))}</div></td>`);
   }
 
   if (columnVisibility.materialPropio) {
@@ -162,37 +161,37 @@ export const generateRowDataCells = (
           ? i18n.t('common.unique')
           : `${materialCount} ${materialType === 'semanal' ? 'semanas' : 'días'}`
         : '—';
-    dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;">${esc(materialLabel)}</td>`);
-    dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;">${esc(displayMoney(r._totalMaterialPropio, 2))}</td>`);
+    dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;"><div class="td-label td-label-center">${esc(materialLabel)}</div></td>`);
+    dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;"><div class="td-label td-label-center">${esc(displayMoney(r._totalMaterialPropio, 2))}</div></td>`);
   }
 
   if (columnVisibility.dietas) {
-    dataCells.push(`<td class="dietas-cell" style="text-align:center !important;vertical-align:middle !important;">${generateDietasText(r)}</td>`);
-    dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;">${esc(displayMoney(r._totalDietas, 2))}</td>`);
+    dataCells.push(`<td class="dietas-cell" style="text-align:center !important;vertical-align:middle !important;"><div class="td-label td-label-center">${generateDietasText(r)}</div></td>`);
+    dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;"><div class="td-label td-label-center">${esc(displayMoney(r._totalDietas, 2))}</div></td>`);
   }
 
   if (columnVisibility.transporte) {
-    dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;">${esc(displayValue(r.transporte))}</td>`);
-    dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;">${esc(displayMoney(r._totalTrans, 2))}</td>`);
+    dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;"><div class="td-label td-label-center">${esc(displayValue(r.transporte))}</div></td>`);
+    dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;"><div class="td-label td-label-center">${esc(displayMoney(r._totalTrans, 2))}</div></td>`);
   }
 
   if (columnVisibility.km) {
-    dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;">${esc(displayValue(r.km, 1))}</td>`);
-    dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;">${esc(displayMoney(r._totalKm, 2))}</td>`);
+    dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;"><div class="td-label td-label-center">${esc(displayValue(r.km, 1))}</div></td>`);
+    dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;"><div class="td-label td-label-center">${esc(displayMoney(r._totalKm, 2))}</div></td>`);
   }
 
   if (columnVisibility.gasolina) {
-    dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;">${esc(displayMoney(r._totalGasolina, 2))}</td>`);
+    dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;"><div class="td-label td-label-center">${esc(displayMoney(r._totalGasolina, 2))}</div></td>`);
   }
 
-  dataCells.push(`<td class="total-cell" style="text-align:center !important;vertical-align:middle !important;">${esc(displayMoney(r._totalBruto, 2))}</td>`);
+  dataCells.push(`<td class="total-cell" style="text-align:center !important;vertical-align:middle !important;"><div class="td-label td-label-center">${esc(displayMoney(r._totalBruto, 2))}</div></td>`);
   if (columnVisibility.netColumns) {
-    dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;">${esc(displayValue(r._irpfPercent, 1))}${r._irpfPercent ? '%' : ''}</td>`);
-    dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;">${esc(displayValue(r._estadoPercent, 1))}${r._estadoPercent ? '%' : ''}</td>`);
+    dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;"><div class="td-label td-label-center">${esc(displayValue(r._irpfPercent, 1))}${r._irpfPercent ? '%' : ''}</div></td>`);
+    dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;"><div class="td-label td-label-center">${esc(displayValue(r._estadoPercent, 1))}${r._estadoPercent ? '%' : ''}</div></td>`);
     if (columnVisibility.extraHoursPercent) {
-      dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;">${esc(displayValue(r._extraHoursPercent, 1))}${r._extraHoursPercent ? '%' : ''}</td>`);
+      dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;"><div class="td-label td-label-center">${esc(displayValue(r._extraHoursPercent, 1))}${r._extraHoursPercent ? '%' : ''}</div></td>`);
     }
-    dataCells.push(`<td class="total-cell" style="text-align:center !important;vertical-align:middle !important;">${esc(displayMoney(r._totalNeto, 2))}</td>`);
+    dataCells.push(`<td class="total-cell" style="text-align:center !important;vertical-align:middle !important;"><div class="td-label td-label-center">${esc(displayMoney(r._totalNeto, 2))}</div></td>`);
   }
 
   return dataCells;
