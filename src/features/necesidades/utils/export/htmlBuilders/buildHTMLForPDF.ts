@@ -69,6 +69,7 @@ export function buildNecesidadesHTMLForPDF(
   const translatedWeekLabel = translateWeekLabel(weekLabel);
   const headerRow = generateHeaderRow(filteredDays, monday);
   const body = generateTableBody(
+    project,
     filteredDays,
     filteredValuesByDay,
     selectedRowKeys,
@@ -86,38 +87,27 @@ export function buildNecesidadesHTMLForPDF(
   const pdfTitle = i18n.t('pdf.calendarTitle');
   const hasValue = (value: unknown): boolean => String(value ?? '').trim() !== '';
   const safeValue = (value: unknown): string => esc(String(value ?? '').trim());
-  const renderInfoRow = (label: string, value: unknown, sideClass: string): string =>
+  const renderInfoItem = (label: string, value: unknown, sideClass: string): string =>
     hasValue(value)
-      ? `<div class="info-row ${sideClass}">
+      ? `<div class="info-item ${sideClass}">
            <span class="info-label">${label}</span>
            <span class="info-value">${safeValue(value)}</span>
          </div>`
       : '';
-  const renderEmptyInfoRow = (sideClass: string): string =>
-    `<div class="info-row ${sideClass}">
-       <span class="info-label"></span>
-       <span class="info-value"></span>
-     </div>`;
-  const topRows = [
-    renderInfoRow(`${i18n.t('pdf.production')}:`, project?.productora || project?.produccion, 'info-row-left'),
-    renderInfoRow(`${i18n.t('pdf.dop')}:`, project?.dop, 'info-row-right'),
-    renderInfoRow(`${i18n.t('pdf.project')}:`, project?.nombre, 'info-row-left'),
-    renderInfoRow(`${i18n.t('pdf.gaffer')}:`, (project as any)?.gaffer, 'info-row-right'),
-    renderInfoRow(`${i18n.t('pdf.warehouse')}:`, project?.almacen, 'info-row-left'),
-    renderInfoRow(`${i18n.t('pdf.bestBoy')}:`, (project as any)?.bestBoy, 'info-row-right'),
+  const leftItems = [
+    renderInfoItem(`${i18n.t('pdf.production')}:`, project?.productora || project?.produccion, 'info-item-left'),
+    renderInfoItem(`${i18n.t('pdf.project')}:`, project?.nombre, 'info-item-left'),
+    renderInfoItem(`${i18n.t('pdf.warehouse')}:`, project?.almacen, 'info-item-left'),
+    renderInfoItem(`${i18n.t('pdf.productionManager')}:`, (project as any)?.jefeProduccion, 'info-item-left'),
+    renderInfoItem(`${i18n.t('pdf.transport')}:`, (project as any)?.transportes, 'info-item-left'),
   ].filter(Boolean);
-  if (topRows.length % 2 === 1) {
-    topRows.push(renderEmptyInfoRow('info-row-right'));
-  }
-  const secondaryLeftRows = [
-    renderInfoRow(`${i18n.t('pdf.productionManager')}:`, (project as any)?.jefeProduccion, 'info-row'),
-    renderInfoRow(`${i18n.t('pdf.transport')}:`, (project as any)?.transportes, 'info-row'),
+  const rightItems = [
+    renderInfoItem(`${i18n.t('pdf.dop')}:`, project?.dop, 'info-item-right'),
+    renderInfoItem(`${i18n.t('pdf.gaffer')}:`, (project as any)?.gaffer, 'info-item-right'),
+    renderInfoItem(`${i18n.t('pdf.bestBoy')}:`, (project as any)?.bestBoy, 'info-item-right'),
+    renderInfoItem(`${i18n.t('pdf.locations')}:`, (project as any)?.localizaciones, 'info-item-right'),
+    renderInfoItem(`${i18n.t('pdf.productionCoordinator')}:`, (project as any)?.coordinadoraProduccion, 'info-item-right'),
   ].filter(Boolean);
-  const secondaryRightRows = [
-    renderInfoRow(`${i18n.t('pdf.locations')}:`, (project as any)?.localizaciones, 'info-row-right'),
-    renderInfoRow(`${i18n.t('pdf.productionCoordinator')}:`, (project as any)?.coordinadoraProduccion, 'info-row-right'),
-  ].filter(Boolean);
-  const hasSecondaryRows = secondaryLeftRows.length > 0 || secondaryRightRows.length > 0;
   const planName = String(planFileName ?? '').trim();
 
   return `
@@ -144,22 +134,14 @@ export function buildNecesidadesHTMLForPDF(
           </div>
 
           <div class="info-panel">
-            <div class="info-grid info-grid-top">
-              ${topRows.join('')}
+            <div class="info-grid">
+              <div class="info-column">
+                ${leftItems.join('')}
+              </div>
+              <div class="info-column info-column-right">
+                ${rightItems.join('')}
+              </div>
             </div>
-
-            ${
-              hasSecondaryRows
-                ? `<div class="info-grid info-grid-secondary">
-                    <div class="info-column">
-                      ${secondaryLeftRows.join('')}
-                    </div>
-                    <div class="info-column info-column-right">
-                      ${secondaryRightRows.join('')}
-                    </div>
-                  </div>`
-                : ''
-            }
           </div>
         </div>
         

@@ -48,6 +48,52 @@ describe('buildNecesidadesHTMLForPDF', () => {
     expect(html).toContain('Ana');
   });
 
+  it('applies gender to slash role labels in crew rows', () => {
+    const html = buildNecesidadesHTMLForPDF(
+      { nombre: 'Proyecto Test' },
+      'Semana 1',
+      '2026-03-02',
+      [
+        {
+          crewTipo: 'Rodaje',
+          crewList: [{ role: 'E', roleId: 'e_default', roleLabel: 'Eléctrico/a', name: 'Ana', gender: 'female' }],
+        },
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+      ]
+    );
+
+    expect(html).toContain('Eléctrica');
+    expect(html).not.toContain('Eléctrico/a');
+  });
+
+  it('matches the same neutral role label used in team rows', () => {
+    const html = buildNecesidadesHTMLForPDF(
+      { nombre: 'Proyecto Test' },
+      'Semana 1',
+      '2026-03-02',
+      [
+        {
+          crewTipo: 'Rodaje',
+          crewList: [{ role: 'E', roleId: 'e_default', roleLabel: 'Eléctrico/a', name: 'Alex', gender: 'neutral' }],
+        },
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+      ]
+    );
+
+    expect(html).toContain('Electric@');
+    expect(html).not.toContain('Eléctrico/a');
+  });
+
   it('translates stored jornada aliases in schedule headers', () => {
     const html = buildNecesidadesHTMLForPDF(
       { nombre: 'Proyecto Test' },

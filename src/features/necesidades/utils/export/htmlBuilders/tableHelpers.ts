@@ -1,6 +1,7 @@
 import i18n from '../../../../../i18n/config';
 import { getRoleBadgeCode, applyGenderToBadge } from '@shared/constants/roles';
 import { normalizeJornadaType, translateJornadaType } from '@shared/utils/jornadaTranslations';
+import { getDisplayRoleLabel } from '@features/equipo/pages/EquipoTab/EquipoTabUtils';
 import { CustomRow, DayValues, RowLabelOverrides } from '../types';
 import {
   esc,
@@ -18,34 +19,72 @@ function renderCell(text: any): string {
   return `<div style="white-space:pre-wrap;line-height:1.35">${esc(text || '')}</div>`;
 }
 
+function normalizeSlashRoleLabel(label: string, gender?: 'male' | 'female' | 'neutral'): string {
+  const safeLabel = String(label || '').trim().replace(/0\/a\b/gi, 'o/a');
+  if (!safeLabel) return safeLabel;
+
+  if (gender === 'female') {
+    return safeLabel
+      .replace(/o\/a\b/gi, 'a')
+      .replace(/e\/a\b/gi, 'a');
+  }
+
+  if (gender === 'male') {
+    return safeLabel
+      .replace(/o\/a\b/gi, 'o')
+      .replace(/e\/a\b/gi, 'e');
+  }
+
+  return safeLabel
+    .replace(/o\/a\b/gi, '@')
+    .replace(/a\/o\b/gi, '@')
+    .replace(/e\/a\b/gi, '@');
+}
+
 function formatMemberDisplay(
+  project: any,
   member: { role?: string; roleLabel?: string; gender?: 'male' | 'female' | 'neutral' },
   suffix = ''
 ): string {
   const role = (member?.role || '').toUpperCase();
   const roleLabel = String(member?.roleLabel || '').trim();
-  const isCustomLabel = roleLabel !== '' && roleLabel.toUpperCase() !== role;
-  if (isCustomLabel) {
-    return `${roleLabel}${suffix}`.trim();
+  const hasInclusiveSlash = roleLabel.includes('/') || roleLabel.includes('0/a');
+  const isCustomRoleLabel =
+    roleLabel !== '' &&
+    roleLabel.toUpperCase() !== role &&
+    !hasInclusiveSlash &&
+    !roleLabel.includes('@') &&
+    !roleLabel.includes('0/a');
+
+  if (isCustomRoleLabel) {
+    return roleLabel;
   }
+
+  if (hasInclusiveSlash) {
+    if ((member?.gender || 'neutral') === 'neutral') {
+      const displayRole = getDisplayRoleLabel(project, member, i18n.t.bind(i18n), undefined, 'neutral');
+      if (displayRole) return displayRole;
+    }
+    return normalizeSlashRoleLabel(roleLabel, member?.gender);
+  }
+
+  const displayRole = getDisplayRoleLabel(project, member, i18n.t.bind(i18n), undefined, member?.gender || 'neutral');
+  if (displayRole) return displayRole;
+
   const badge = getRoleBadgeCode(role, i18n.language);
   return applyGenderToBadge(`${badge}${suffix}`, member?.gender);
 }
 
 function formatMemberLine(
+  project: any,
   member: { role?: string; roleLabel?: string; gender?: 'male' | 'female' | 'neutral'; name?: string },
   suffix = ''
 ): string {
-  const rawRole = String(member?.role || '').trim().toUpperCase();
-  const badgeDisplay = applyGenderToBadge(
-    getRoleBadgeCode(`${rawRole}${suffix}`, i18n.language),
-    member?.gender
-  );
+  const customDisplay = formatMemberDisplay(project, member, suffix);
   const name = String(member?.name || '').trim();
   return `
-    <div class="member-chip-line">
-      <span class="member-chip-badge"><span class="member-chip-badge-text">${esc(badgeDisplay || '—')}</span></span>
-      <span class="member-chip-name"><span class="member-chip-name-text">${esc(name || '—')}</span></span>
+    <div class="member-line">
+      ${esc(customDisplay || '—')}${name ? ` · ${esc(name)}` : ''}
     </div>
   `;
 }
@@ -104,6 +143,7 @@ function simpleRow(
  * Generate list row HTML
  */
 function listRow(
+  project: any,
   label: string,
   listKey: string,
   notesKey: string,
@@ -118,7 +158,7 @@ function listRow(
         const role = (m?.role || '').toUpperCase();
         const isRefRole = role === 'REF' || (role && role.startsWith('REF') && role.length > 3);
         const suffix = !isRefRole && listKey === 'preList' ? 'P' : !isRefRole && listKey === 'pickList' ? 'R' : '';
-        return formatMemberLine(m, isRefRole ? '' : suffix);
+        return formatMemberLine(project, m, isRefRole ? '' : suffix);
       })
       .join('');
     const block = `${chips}${notes ? `<hr style="margin:6px 0;border:none;border-top:1px solid #ddd;"/>` : ''}${renderCell(notes)}`;
@@ -128,6 +168,7 @@ function listRow(
 }
 
 function listRowWithSchedule(
+  project: any,
   label: string,
   listKey: string,
   notesKey: string,
@@ -151,7 +192,7 @@ function listRowWithSchedule(
         const role = (m?.role || '').toUpperCase();
         const isRefRole = role === 'REF' || (role && role.startsWith('REF') && role.length > 3);
         const suffix = !isRefRole && listKey === 'preList' ? 'P' : !isRefRole && listKey === 'pickList' ? 'R' : '';
-        return formatMemberLine(m, isRefRole ? '' : suffix);
+        return formatMemberLine(project, m, isRefRole ? '' : suffix);
       })
       .join('');
     const header = scheduleLine ? `<div style="margin-bottom:6px;font-weight:600;">${esc(scheduleLine)}</div>` : '';
@@ -162,6 +203,7 @@ function listRowWithSchedule(
 }
 
 function extraBlocksRow(
+  project: any,
   label: string,
   DAYS: ReturnType<typeof getDays>,
   valuesByDay: DayValues[]
@@ -180,7 +222,7 @@ function extraBlocksRow(
           .map(m => {
             const role = (m?.role || '').toUpperCase();
             const isRefRole = role === 'REF' || (role && role.startsWith('REF') && role.length > 3);
-            return formatMemberLine(m, isRefRole ? '' : '');
+            return formatMemberLine(project, m, isRefRole ? '' : '');
           })
           .join('');
         const notes = block.text || '';
@@ -238,6 +280,7 @@ function isListRowEmpty(listKey: string, notesKey: string, valuesByDay: DayValue
  * Generate table body HTML
  */
 export function generateTableBody(
+  project: any,
   DAYS: ReturnType<typeof getDays>,
   valuesByDay: DayValues[],
   selectedRowKeys?: string[], // Filas seleccionadas para filtrar qué mostrar
@@ -279,6 +322,7 @@ export function generateTableBody(
       key: 'crewList',
       generate: () =>
         listRowWithSchedule(
+          project,
           resolveLabel('crewList', i18n.t('needs.technicalTeam')),
           'crewList',
           'crewTxt',
@@ -293,7 +337,7 @@ export function generateTableBody(
     {
       key: 'refList',
       generate: () =>
-        extraBlocksRow(resolveLabel('refList', i18n.t('needs.reinforcements')), DAYS, valuesByDay),
+        extraBlocksRow(project, resolveLabel('refList', i18n.t('needs.reinforcements')), DAYS, valuesByDay),
       isEmpty: () => isListRowEmpty('refList', 'refTxt', valuesByDay),
     },
     { key: 'needTransport', generate: () => fieldRow('needTransport', resolveLabel('needTransport', i18n.t('needs.transport')), DAYS, valuesByDay), isEmpty: () => isFieldRowEmpty('needTransport', valuesByDay) },
@@ -306,6 +350,7 @@ export function generateTableBody(
       key: 'preList',
       generate: () =>
         listRowWithSchedule(
+          project,
           resolveLabel('preList', i18n.t('needs.prelight')),
           'preList',
           'preNote',
@@ -321,6 +366,7 @@ export function generateTableBody(
       key: 'pickList',
       generate: () =>
         listRowWithSchedule(
+          project,
           resolveLabel('pickList', i18n.t('needs.pickup')),
           'pickList',
           'pickNote',
