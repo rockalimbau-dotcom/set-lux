@@ -41,22 +41,16 @@ export function generateInfoPanel(project: any, hideSecondaryInfo: boolean = tru
           <span class="info-value">${safeValue(value)}</span>
         </div>`
       : '';
-  const renderEmptyInfoRow = (sideClass: string): string =>
-    `<div class="info-row ${sideClass}">
-      <span class="info-label"></span>
-      <span class="info-value"></span>
-    </div>`;
-  const topRows = [
+  const leftRows = [
     renderInfoRow(`${esc(i18n.t('pdf.production'))}:`, project?.productora || project?.produccion, 'info-row-left'),
-    renderInfoRow(`${esc(i18n.t('pdf.dop'))}:`, project?.dop, 'info-row-right'),
     renderInfoRow(`${esc(i18n.t('pdf.project'))}:`, project?.nombre || i18n.t('pdf.project'), 'info-row-left'),
-    renderInfoRow(`${esc(i18n.t('pdf.gaffer'))}:`, (project as any)?.gaffer, 'info-row-right'),
     renderInfoRow(`${esc(i18n.t('pdf.warehouse'))}:`, project?.almacen, 'info-row-left'),
+  ].filter(Boolean);
+  const rightRows = [
+    renderInfoRow(`${esc(i18n.t('pdf.dop'))}:`, project?.dop, 'info-row-right'),
+    renderInfoRow(`${esc(i18n.t('pdf.gaffer'))}:`, (project as any)?.gaffer, 'info-row-right'),
     renderInfoRow(`${esc(i18n.t('pdf.bestBoy'))}:`, (project as any)?.bestBoy, 'info-row-right'),
   ].filter(Boolean);
-  if (topRows.length % 2 === 1) {
-    topRows.push(renderEmptyInfoRow('info-row-right'));
-  }
   const secondaryLeftRows = [
     renderInfoRow(`${esc(i18n.t('pdf.productionManager'))}:`, (project as any)?.jefeProduccion, 'info-row-left'),
     renderInfoRow(`${esc(i18n.t('pdf.transport'))}:`, (project as any)?.transportes, 'info-row-left'),
@@ -70,15 +64,24 @@ export function generateInfoPanel(project: any, hideSecondaryInfo: boolean = tru
   return `
     <div class="info-panel">
       <div class="info-grid info-grid-top">
-        ${topRows.join('')}
+        <div class="info-column">
+          ${leftRows.join('')}
+        </div>
+        <div class="info-column info-column-right">
+          ${rightRows.join('')}
+        </div>
       </div>
       ${
         hideSecondaryInfo || !hasSecondaryRows
           ? ''
           : `
       <div class="info-grid info-grid-secondary">
-        ${secondaryLeftRows.join('')}
-        ${secondaryRightRows.join('')}
+        <div class="info-column">
+          ${secondaryLeftRows.join('')}
+        </div>
+        <div class="info-column info-column-right">
+          ${secondaryRightRows.join('')}
+        </div>
       </div>`
       }
     </div>

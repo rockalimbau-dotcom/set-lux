@@ -54,13 +54,22 @@ export const baseStyles = `
     grid-template-columns: 1fr 1fr;
     gap: 6px 18px;
   }
+  .info-column {
+    display: grid;
+    gap: 6px;
+    min-width: 0;
+  }
+  .info-column-right {
+    justify-items: end;
+  }
   .info-row {
     display: flex;
     gap: 6px;
     align-items: baseline;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     font-size: 10px;
     color: #334155;
+    min-width: 0;
   }
   .info-row-right {
     justify-content: flex-end;
@@ -73,6 +82,7 @@ export const baseStyles = `
   .info-value { 
     font-weight: 500; 
     color: #0f172a; 
+    word-break: break-word;
   }
   .table-container { 
     background: white; 
