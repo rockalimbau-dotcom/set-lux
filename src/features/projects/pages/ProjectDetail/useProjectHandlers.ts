@@ -40,6 +40,16 @@ export function useProjectHandlers({
   pid,
   isNavigatingRef,
 }: UseProjectHandlersProps): UseProjectHandlersReturn {
+  const deferProjectUpdate = (updatedProject: Project) => {
+    if (!onUpdateProject) return;
+
+    queueMicrotask(() => {
+      try {
+        onUpdateProject(updatedProject);
+      } catch {}
+    });
+  };
+
   const handleTabChange = (newTab: ProjectTab | null) => {
     // Si estamos en la pestaña de equipo o saliendo de ella, validar nombres
     if (activeTab === 'equipo' || newTab === 'equipo') {
@@ -118,9 +128,7 @@ export function useProjectHandlers({
           tipo: nextTipo,
         },
       };
-      try {
-        onUpdateProject?.(updated);
-      } catch {}
+      deferProjectUpdate(updated);
       return updated;
     });
   };
@@ -129,9 +137,7 @@ export function useProjectHandlers({
     const nextEstado: ProjectStatus = isActive ? 'Cerrado' : 'Activo';
     setProj(p => {
       const updated = { ...p, estado: nextEstado };
-      try {
-        onUpdateProject?.(updated);
-      } catch {}
+      deferProjectUpdate(updated);
       return updated;
     });
   };
@@ -143,9 +149,7 @@ export function useProjectHandlers({
         ...p,
         roleCatalog,
       };
-      try {
-        onUpdateProject?.(updated);
-      } catch {}
+      deferProjectUpdate(updated);
       return updated;
     });
   };

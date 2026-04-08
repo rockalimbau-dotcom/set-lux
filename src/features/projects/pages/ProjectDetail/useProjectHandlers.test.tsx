@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { useProjectHandlers } from './useProjectHandlers';
 
 describe('useProjectHandlers', () => {
-  it('persists roleCatalog changes through onUpdateProject', () => {
+  it('persists roleCatalog changes through onUpdateProject', async () => {
     const setProj = vi.fn((updater: any) =>
       updater({
         id: 'p1',
@@ -45,6 +45,10 @@ describe('useProjectHandlers', () => {
       result.current.handleRoleCatalogChange(nextRoleCatalog);
     });
 
+    await act(async () => {
+      await Promise.resolve();
+    });
+
     expect(setProj).toHaveBeenCalled();
     expect(onUpdateProject).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -53,7 +57,7 @@ describe('useProjectHandlers', () => {
     );
   });
 
-  it('persists conditions changes through onUpdateProject', () => {
+  it('persists conditions changes through onUpdateProject', async () => {
     const setProj = vi.fn((updater: any) =>
       updater({
         id: 'p1',
@@ -98,6 +102,10 @@ describe('useProjectHandlers', () => {
 
     act(() => {
       result.current.handleConditionsChange(patch);
+    });
+
+    await act(async () => {
+      await Promise.resolve();
     });
 
     expect(setProj).toHaveBeenCalled();
