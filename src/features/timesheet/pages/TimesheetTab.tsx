@@ -9,6 +9,12 @@ import { usePlanWeeks } from '@features/reportes/pages/ReportesTab/usePlanWeeks'
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { shareOrSavePDF } from '@shared/utils/pdfShare';
+import {
+  PDF_IMAGE_COMPRESSION,
+  PDF_IMAGE_FORMAT,
+  PDF_RENDER_SCALE,
+  canvasToPdfImage,
+} from '@shared/lib/pdf/raster';
 
 type TimesheetTabProps = {
   project?: AnyRecord;
@@ -1004,7 +1010,7 @@ export default function TimesheetTab({ project, readOnly = false }: TimesheetTab
       await new Promise(resolve => setTimeout(resolve, 120));
 
       const canvas = await html2canvas(tempContainer, {
-        scale: 3,
+        scale: PDF_RENDER_SCALE,
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#ffffff',
@@ -1024,8 +1030,8 @@ export default function TimesheetTab({ project, readOnly = false }: TimesheetTab
         format: 'a4',
       });
 
-      const imgData = canvas.toDataURL('image/png');
-      pdf.addImage(imgData, 'PNG', 0, 0, 297, 210);
+      const imgData = canvasToPdfImage(canvas);
+      pdf.addImage(imgData, PDF_IMAGE_FORMAT, 0, 0, 297, 210, undefined, PDF_IMAGE_COMPRESSION);
 
       const sanitizePart = (value: string, fallback: string) => {
         const clean = String(value || '')

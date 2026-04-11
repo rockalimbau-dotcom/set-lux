@@ -11,6 +11,12 @@ import { renderWithParams, restoreStrongTags, markdownToHtml, normalizeCustomSec
 import { buildCondicionesPageHTMLForPDF } from './htmlBuilders';
 import { getConditionsLabel, filterRolesWithPrices } from './helpers';
 import { shareOrSavePDF } from '@shared/utils/pdfShare';
+import {
+  PDF_IMAGE_COMPRESSION,
+  PDF_IMAGE_FORMAT,
+  PDF_RENDER_SCALE,
+  canvasToPdfImage,
+} from '@shared/lib/pdf/raster';
 
 export interface CondicionesExportSections {
   includePricesTable: boolean;
@@ -337,7 +343,7 @@ export async function exportCondicionesToPDF(
       await new Promise(resolve => setTimeout(resolve, 100));
 
       const canvas = await html2canvas(tempContainer, {
-        scale: 3,
+        scale: PDF_RENDER_SCALE,
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#ffffff',
@@ -392,13 +398,13 @@ export async function exportCondicionesToPDF(
 
       document.body.removeChild(tempContainer);
 
-      const imgData = canvas.toDataURL('image/png');
+      const imgData = canvasToPdfImage(canvas);
       
       if (pageNumber > 1) {
         pdf.addPage();
       }
       
-      pdf.addImage(imgData, 'PNG', 0, 0, 210, 297); // Vertical A4
+      pdf.addImage(imgData, PDF_IMAGE_FORMAT, 0, 0, 210, 297, undefined, PDF_IMAGE_COMPRESSION);
     }
 
     const projectName = project?.nombre || 'Proyecto';

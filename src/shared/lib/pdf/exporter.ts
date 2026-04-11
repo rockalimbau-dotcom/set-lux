@@ -1,5 +1,6 @@
 // src/lib/pdf/exporter.ts
 import html2pdf from 'html2pdf.js';
+import { PDF_RENDER_SCALE } from './raster';
 
 export interface PDFOptions {
   filename?: string;
@@ -23,7 +24,7 @@ export async function elementOnScreenToPDF(selector: string | Element, opts: PDF
     margin = 10,
     landscape = true,
     format = 'a4',
-    scale = 2,
+    scale = PDF_RENDER_SCALE,
     backgroundColor = '#ffffff',
     applyPdfMode = false,
   } = opts;
@@ -31,10 +32,11 @@ export async function elementOnScreenToPDF(selector: string | Element, opts: PDF
   const opt = {
     margin,
     filename,
-    image: { type: 'jpeg', quality: 0.98 },
+    image: { type: 'jpeg', quality: 0.88 },
     html2canvas: { scale, useCORS: true, backgroundColor }, // 👈 importante
     pagebreak: { mode: ['css', 'legacy'] },
     jsPDF: {
+      compress: true,
       unit: 'mm',
       format,
       orientation: landscape ? 'landscape' : 'portrait',

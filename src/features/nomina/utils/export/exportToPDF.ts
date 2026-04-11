@@ -6,6 +6,12 @@ import { getBlockFromRole } from './helpers';
 import { calculatePagination } from './paginationHelpers';
 import { generateNominaFilename } from './filenameHelpers';
 import { shareOrSavePDF } from '@shared/utils/pdfShare';
+import {
+  PDF_IMAGE_COMPRESSION,
+  PDF_IMAGE_FORMAT,
+  PDF_RENDER_SCALE,
+  canvasToPdfImage,
+} from '@shared/lib/pdf/raster';
 
 export async function exportToPDF({
   project,
@@ -132,7 +138,7 @@ export async function exportToPDF({
       
       // Convert to canvas with fixed dimensions
       const canvas = await html2canvas(tempContainer, {
-        scale: 3,
+        scale: PDF_RENDER_SCALE,
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#ffffff',
@@ -162,8 +168,8 @@ export async function exportToPDF({
       }
       
       // Add image to PDF (full page)
-      const imgData = canvas.toDataURL('image/png');
-      pdf.addImage(imgData, 'PNG', 0, 0, 297, 210);
+      const imgData = canvasToPdfImage(canvas);
+      pdf.addImage(imgData, PDF_IMAGE_FORMAT, 0, 0, 297, 210, undefined, PDF_IMAGE_COMPRESSION);
       console.log(`   - Page ${pageIndex + 1} added to PDF`);
     }
     

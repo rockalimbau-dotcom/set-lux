@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 import { elementOnScreenToPDF } from './exporter.ts';
+import { PDF_RENDER_SCALE } from './raster.ts';
 
 // Mock html2pdf
 const mockHtml2pdf = {
@@ -52,10 +53,11 @@ describe('exporter', () => {
       expect(mockHtml2pdf.set).toHaveBeenCalledWith({
         margin: 10,
         filename: 'export.pdf',
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
+        image: { type: 'jpeg', quality: 0.88 },
+        html2canvas: { scale: PDF_RENDER_SCALE, useCORS: true, backgroundColor: '#ffffff' },
         pagebreak: { mode: ['css', 'legacy'] },
         jsPDF: {
+          compress: true,
           unit: 'mm',
           format: 'a4',
           orientation: 'landscape',
@@ -82,10 +84,11 @@ describe('exporter', () => {
       expect(mockHtml2pdf.set).toHaveBeenCalledWith({
         margin: 20,
         filename: 'custom.pdf',
-        image: { type: 'jpeg', quality: 0.98 },
+        image: { type: 'jpeg', quality: 0.88 },
         html2canvas: { scale: 1.5, useCORS: true, backgroundColor: '#000000' },
         pagebreak: { mode: ['css', 'legacy'] },
         jsPDF: {
+          compress: true,
           unit: 'mm',
           format: 'letter',
           orientation: 'portrait',

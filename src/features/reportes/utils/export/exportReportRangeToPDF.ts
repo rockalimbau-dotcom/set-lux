@@ -15,6 +15,12 @@ import html2canvas from 'html2canvas';
 import { shareOrSavePDF } from '@shared/utils/pdfShare';
 import { needsDataToPlanData } from '@shared/utils/needsPlanAdapter';
 import { hasExtraBlockContent } from '../extra';
+import {
+  PDF_IMAGE_COMPRESSION,
+  PDF_IMAGE_FORMAT,
+  PDF_RENDER_SCALE,
+  canvasToPdfImage,
+} from '@shared/lib/pdf/raster';
 
 export async function exportReportRangeToPDF(params: ExportReportRangeParams) {
   const {
@@ -501,7 +507,7 @@ export async function exportReportRangeToPDF(params: ExportReportRangeParams) {
         tempContainer.style.overflow = 'visible';
         
         const canvas = await html2canvas(tempContainer, {
-          scale: 3,
+          scale: PDF_RENDER_SCALE,
           useCORS: true,
           allowTaint: true,
           backgroundColor: '#ffffff',
@@ -527,7 +533,7 @@ export async function exportReportRangeToPDF(params: ExportReportRangeParams) {
         document.body.removeChild(tempContainer);
         
         // Calcular altura real en mm
-        const imgData = canvas.toDataURL('image/png');
+        const imgData = canvasToPdfImage(canvas);
         const imgHeightMM = (canvas.height / canvas.width) * 297;
         const maxPageHeightMM = 210;
         
@@ -545,14 +551,23 @@ export async function exportReportRangeToPDF(params: ExportReportRangeParams) {
             pdf.saveGraphicsState();
             pdf.rect(0, 0, 297, pageHeight);
             pdf.clip();
-            pdf.addImage(imgData, 'PNG', 0, -currentY, 297, totalHeight);
+            pdf.addImage(
+              imgData,
+              PDF_IMAGE_FORMAT,
+              0,
+              -currentY,
+              297,
+              totalHeight,
+              undefined,
+              PDF_IMAGE_COMPRESSION
+            );
             pdf.restoreGraphicsState();
             
             currentY += pageHeight;
           }
         } else {
           // Contenido cabe en una página
-          pdf.addImage(imgData, 'PNG', 0, 0, 297, imgHeightMM);
+          pdf.addImage(imgData, PDF_IMAGE_FORMAT, 0, 0, 297, imgHeightMM, undefined, PDF_IMAGE_COMPRESSION);
         }
       }
     }

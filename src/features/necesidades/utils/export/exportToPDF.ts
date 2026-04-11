@@ -5,6 +5,12 @@ import { CustomRow, DayValues, RowLabelOverrides } from './types';
 import { buildNecesidadesHTMLForPDF } from './htmlBuilders';
 import { translateWeekLabel, getNeedsLabel } from './helpers';
 import { shareOrSavePDF } from '@shared/utils/pdfShare';
+import {
+  PDF_IMAGE_COMPRESSION,
+  PDF_IMAGE_FORMAT,
+  PDF_RENDER_SCALE,
+  canvasToPdfImage,
+} from '@shared/lib/pdf/raster';
 
 /**
  * Export single week to PDF
@@ -57,7 +63,7 @@ export async function exportToPDF(
     }
 
     const canvas = await html2canvas(tempContainer, {
-      scale: 3, // Higher quality for readability
+      scale: PDF_RENDER_SCALE,
       useCORS: true,
       allowTaint: true,
       backgroundColor: '#ffffff',
@@ -88,14 +94,14 @@ export async function exportToPDF(
 
     document.body.removeChild(tempContainer);
 
-    const imgData = canvas.toDataURL('image/png');
+    const imgData = canvasToPdfImage(canvas);
     const pdf = new jsPDF({
       orientation: 'landscape',
       unit: 'mm',
       format: 'a4'
     });
 
-    pdf.addImage(imgData, 'PNG', 0, 0, 297, 210);
+    pdf.addImage(imgData, PDF_IMAGE_FORMAT, 0, 0, 297, 210, undefined, PDF_IMAGE_COMPRESSION);
     
     // Generate translated filename
     const needsLabel = getNeedsLabel();

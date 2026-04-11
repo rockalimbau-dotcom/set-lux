@@ -5,6 +5,12 @@ import { buildReportWeekHTMLForPDF } from './buildReportWeekHTMLForPDF';
 import { calculatePersonsPerPage } from './paginationHelpers';
 import { generateWeekFilename } from './filenameHelpers';
 import { shareOrSavePDF } from '@shared/utils/pdfShare';
+import {
+  PDF_IMAGE_COMPRESSION,
+  PDF_IMAGE_FORMAT,
+  PDF_RENDER_SCALE,
+  canvasToPdfImage,
+} from '@shared/lib/pdf/raster';
 
 export async function exportReportWeekToPDF(params: BuildPdfParams) {
   const {
@@ -112,7 +118,7 @@ export async function exportReportWeekToPDF(params: BuildPdfParams) {
       
       // Convert to canvas with fixed dimensions (igual que nómina)
       const canvas = await html2canvas(tempContainer, {
-        scale: 3,
+        scale: PDF_RENDER_SCALE,
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#ffffff',
@@ -144,12 +150,12 @@ export async function exportReportWeekToPDF(params: BuildPdfParams) {
       }
       
       // Add image to PDF with dynamic height
-      const imgData = canvas.toDataURL('image/png');
+      const imgData = canvasToPdfImage(canvas);
       // Convertir altura de píxeles a mm y limitar a 210mm (altura máxima de A4 landscape)
       const imgHeightMM = (canvas.height / canvas.width) * 297;
       const maxPageHeightMM = 210;
       const imgHeight = Math.min(imgHeightMM, maxPageHeightMM);
-      pdf.addImage(imgData, 'PNG', 0, 0, 297, imgHeight);
+      pdf.addImage(imgData, PDF_IMAGE_FORMAT, 0, 0, 297, imgHeight, undefined, PDF_IMAGE_COMPRESSION);
     }
     
     // Generate and save filename

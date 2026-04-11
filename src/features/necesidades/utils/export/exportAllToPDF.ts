@@ -7,6 +7,12 @@ import { buildNecesidadesHTMLForPDF } from './htmlBuilders';
 import { getNeedsLabel, getCompleteLabel } from './helpers';
 import { storage } from '@shared/services/localStorage.service';
 import { shareOrSavePDF } from '@shared/utils/pdfShare';
+import {
+  PDF_IMAGE_COMPRESSION,
+  PDF_IMAGE_FORMAT,
+  PDF_RENDER_SCALE,
+  canvasToPdfImage,
+} from '@shared/lib/pdf/raster';
 
 /**
  * Export all weeks to PDF
@@ -143,7 +149,7 @@ export async function exportAllToPDF(
       await new Promise(resolve => setTimeout(resolve, 100));
 
       const canvas = await html2canvas(tempContainer, {
-        scale: 3, // Higher quality for readability
+        scale: PDF_RENDER_SCALE,
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#ffffff',
@@ -174,7 +180,7 @@ export async function exportAllToPDF(
 
       document.body.removeChild(tempContainer);
 
-      const imgData = canvas.toDataURL('image/png');
+      const imgData = canvasToPdfImage(canvas);
 
       const weekDays = (wk as AnyRecord)?.days || [];
       for (let d = 0; d < 7; d++) {
@@ -191,7 +197,7 @@ export async function exportAllToPDF(
         pdf.addPage();
       }
       
-      pdf.addImage(imgData, 'PNG', 0, 0, 297, 210);
+      pdf.addImage(imgData, PDF_IMAGE_FORMAT, 0, 0, 297, 210, undefined, PDF_IMAGE_COMPRESSION);
       
       console.log(`📄 Necesidades PDF All: Page ${i + 1}/${weekEntries.length} generated`);
     }

@@ -1,4 +1,5 @@
 import html2canvas from 'html2canvas';
+import { PDF_RENDER_SCALE, canvasToPdfImage } from '@shared/lib/pdf/raster';
 
 interface GeneratePDFPageParams {
   html: string;
@@ -28,7 +29,7 @@ export async function generatePDFPageFromHTML({
   await new Promise(resolve => setTimeout(resolve, 200));
 
   const canvas = await html2canvas(tempContainer, {
-    scale: 3,
+    scale: PDF_RENDER_SCALE,
     useCORS: true,
     allowTaint: true,
     backgroundColor: '#ffffff',
@@ -53,7 +54,7 @@ export async function generatePDFPageFromHTML({
 
   document.body.removeChild(tempContainer);
 
-  const imgData = canvas.toDataURL('image/png');
+  const imgData = canvasToPdfImage(canvas);
   // Convertir altura de píxeles a mm (297mm es el ancho de A4 landscape)
   // canvas.width = 1123px (297mm), canvas.height en píxeles
   const imgHeightMM = (canvas.height / canvas.width) * 297;
@@ -64,4 +65,3 @@ export async function generatePDFPageFromHTML({
   
   return { imgData, imgHeight };
 }
-

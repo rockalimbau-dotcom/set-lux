@@ -5,6 +5,12 @@ import { baseStyles } from '@features/condiciones/utils/exportPDF/htmlBuilders/s
 import { generateFooter, generateInfoPanel } from '@features/condiciones/utils/exportPDF/htmlBuilders/contentHelpers';
 import { getDisplayRoleLabel } from '@features/equipo/pages/EquipoTab/EquipoTabUtils';
 import { shareOrSavePDF } from '@shared/utils/pdfShare';
+import {
+  PDF_IMAGE_COMPRESSION,
+  PDF_IMAGE_FORMAT,
+  PDF_RENDER_SCALE,
+  canvasToPdfImage,
+} from '@shared/lib/pdf/raster';
 
 type TeamGroupKey = 'base' | 'reinforcements' | 'prelight' | 'pickup';
 
@@ -166,7 +172,7 @@ export async function exportEquipoToPDF(project: any, team: any): Promise<void> 
   await new Promise(resolve => setTimeout(resolve, 100));
 
   const canvas = await html2canvas(tempContainer, {
-    scale: 3,
+    scale: PDF_RENDER_SCALE,
     useCORS: true,
     allowTaint: true,
     backgroundColor: '#ffffff',
@@ -195,7 +201,7 @@ export async function exportEquipoToPDF(project: any, team: any): Promise<void> 
     format: 'a4',
   });
 
-  const imgData = canvas.toDataURL('image/png');
+  const imgData = canvasToPdfImage(canvas);
   const pageWidth = 210;
   const pageHeight = 297;
   const imgWidth = pageWidth;
@@ -203,13 +209,13 @@ export async function exportEquipoToPDF(project: any, team: any): Promise<void> 
   let heightLeft = imgHeight;
   let position = 0;
 
-  pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+  pdf.addImage(imgData, PDF_IMAGE_FORMAT, 0, position, imgWidth, imgHeight, undefined, PDF_IMAGE_COMPRESSION);
   heightLeft -= pageHeight;
 
   while (heightLeft > 1) {
     position = heightLeft - imgHeight;
     pdf.addPage();
-    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+    pdf.addImage(imgData, PDF_IMAGE_FORMAT, 0, position, imgWidth, imgHeight, undefined, PDF_IMAGE_COMPRESSION);
     heightLeft -= pageHeight;
   }
 
