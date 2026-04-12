@@ -873,7 +873,7 @@ export function WeekSection({
 	                        <span className={`transition-transform opacity-80 text-[8px] sm:text-[9px] md:text-[10px] ${isBlockCollapsed('team') ? '-rotate-90' : ''}`}>⌄</span>
 	                      </button>
 	                      <EditableRowLabel
-	                        value={getRowLabel('sectionTeam', 'Equipo')}
+	                        value={getRowLabel('sectionTeam', t('needs.team'))}
 	                        onChange={label => updateRowLabel(wid, 'sectionTeam', label)}
 	                        readOnly={readOnly}
 	                        placeholder={t('needs.customRowPlaceholder')}

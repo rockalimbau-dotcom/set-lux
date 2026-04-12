@@ -448,6 +448,7 @@
     "locationSequences": "Location and sequences",
     "locationSequencesExample": "Location + Seq INT/EXT - DAY/NIGHT Example",
     "sequences": "Sequences",
+    "team": "Team",
     "technicalTeam": "Base team",
     "jornada": "Day type",
     "shootingDay": "Shooting day",

@@ -30,7 +30,7 @@ export default function ProjectDetail({
   onUpdateProject,
   initialTab = null,
 }: ProjectDetailProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
 
   // Storage and state management
@@ -102,7 +102,7 @@ export default function ProjectDetail({
     if (activeTab === 'reportes') return t('navigation.reports');
     if (activeTab === 'timesheet') return t('timesheet.title');
     return activeTab;
-  }, [activeTab, condModeLabel, t]);
+  }, [activeTab, condModeLabel, i18n.resolvedLanguage, t]);
 
   useEffect(() => {
     if (condTipo === 'diario' && activeTab === 'timesheet') {
