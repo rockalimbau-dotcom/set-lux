@@ -235,16 +235,34 @@ export function useNeedsActions({
 
   const updateRowLabel = useCallback((weekId: string, rowKey: string, label: string) => {
     if (readOnly) return;
-    updateNeeds((prev: AnyRecord) =>
-      updateWeekById(prev, weekId, (w: AnyRecord) => ({
-        ...w,
-        rowLabels: {
-          ...((w.rowLabels as AnyRecord) || {}),
-          [rowKey]: label,
-        },
-      }))
-    );
-  }, [readOnly, updateNeeds, updateWeekById]);
+    updateNeeds((prev: AnyRecord) => {
+      let changed = false;
+      const updateList = (list: AnyRecord[] = []) =>
+        list.map((week: AnyRecord) => {
+          const currentLabel = (week?.rowLabels as AnyRecord)?.[rowKey];
+          if (currentLabel === label) return week;
+          changed = true;
+          return {
+            ...week,
+            rowLabels: {
+              ...((week.rowLabels as AnyRecord) || {}),
+              [rowKey]: label,
+            },
+          };
+        });
+
+      const nextPre = updateList(prev.pre || []);
+      const nextPro = updateList(prev.pro || []);
+
+      if (!changed) return prev;
+
+      return {
+        ...prev,
+        pre: nextPre,
+        pro: nextPro,
+      };
+    });
+  }, [readOnly, updateNeeds]);
 
   const removeCustomRow = useCallback((weekId: string, rowId: string) => {
     if (readOnly) return;
