@@ -34,6 +34,7 @@ export interface ReportPersonRowsProps {
   project?: AnyRecord;
   list: AnyRecord[];
   block: 'base' | 'pre' | 'pick' | string;
+  personStickyTop?: number;
   semana: readonly string[];
   collapsed: Record<string, boolean>;
   setCollapsed: (updater: (prev: Record<string, boolean>) => Record<string, boolean>) => void;

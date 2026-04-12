@@ -885,6 +885,26 @@ html input[style*="borderWidth"] {
   z-index: 28;
 }
 
+.report-week-table .report-sticky-row--schedule > th,
+.report-week-table .report-sticky-row--schedule > td {
+  z-index: 24;
+}
+
+.report-week-table .report-sticky-row--block > th,
+.report-week-table .report-sticky-row--block > td {
+  z-index: 30;
+}
+
+.report-week-table .report-sticky-row--person > th,
+.report-week-table .report-sticky-row--person > td {
+  z-index: 22;
+  background-clip: padding-box;
+}
+
+.report-week-table .report-sticky-row--block .report-sticky-first-col {
+  z-index: 34 !important;
+}
+
 .report-week-table .report-sticky-first-col {
   position: sticky !important;
   left: 0;
@@ -899,7 +919,8 @@ html input[style*="borderWidth"] {
 }
 
 .report-week-table thead th:first-child,
-.report-week-table tbody td:first-child:not([colspan]) {
+.report-week-table tbody td:first-child:not([colspan]),
+.report-week-table tbody th:first-child:not([colspan]) {
   width: var(--report-sticky-label-width, 140px);
   min-width: var(--report-sticky-label-width, 140px);
   max-width: var(--report-sticky-label-width, 140px);
@@ -917,6 +938,10 @@ html input[style*="borderWidth"] {
   z-index: 34 !important;
 }
 
+.report-week-table .report-person-sticky-row .report-sticky-first-col {
+  z-index: 34 !important;
+}
+
 [data-theme='light'] .report-week-table .report-sticky-first-col,
 [data-theme='light'] .report-week-table .report-sticky-row > th,
 [data-theme='light'] .report-week-table .report-sticky-row > td {
@@ -927,6 +952,66 @@ html input[style*="borderWidth"] {
 [data-theme='dark'] .report-week-table .report-sticky-row > th,
 [data-theme='dark'] .report-week-table .report-sticky-row > td {
   background-color: var(--panel);
+}
+
+[data-theme='light'] .report-week-table .report-sticky-row--schedule > th.report-rest-cell,
+[data-theme='light'] .report-week-table .report-sticky-row--schedule > td.report-rest-cell,
+[data-theme='light'] .report-week-table .report-sticky-row--block > th.report-rest-cell,
+[data-theme='light'] .report-week-table .report-sticky-row--block > td.report-rest-cell {
+  background-color: #dbeafe !important;
+  color: #1d4ed8 !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  border-color: rgba(37, 99, 235, 0.45) !important;
+}
+
+[data-theme='dark'] .report-week-table .report-sticky-row--schedule > th.report-rest-cell,
+[data-theme='dark'] .report-week-table .report-sticky-row--schedule > td.report-rest-cell,
+[data-theme='dark'] .report-week-table .report-sticky-row--block > th.report-rest-cell,
+[data-theme='dark'] .report-week-table .report-sticky-row--block > td.report-rest-cell {
+  background-color: #6b4a14 !important;
+  color: #fcd34d !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  border-color: rgba(59, 85, 104, 0.9) !important;
+}
+
+[data-theme='light'] .report-week-table .report-sticky-row--person > th.report-off-cell,
+[data-theme='light'] .report-week-table .report-sticky-row--person > td.report-off-cell {
+  background-color: #dbeafe !important;
+  border-color: rgba(37, 99, 235, 0.45) !important;
+}
+
+[data-theme='light'] .report-week-table .report-sticky-row--person > th.report-filled-cell,
+[data-theme='light'] .report-week-table .report-sticky-row--person > td.report-filled-cell {
+  background-color: #fed7aa !important;
+  border-color: #F27405 !important;
+}
+
+[data-theme='light'] .report-week-table .report-sticky-row--person > th.report-rest-cell,
+[data-theme='light'] .report-week-table .report-sticky-row--person > td.report-rest-cell {
+  background-color: #bfdbfe !important;
+  border-color: rgba(37, 99, 235, 0.45) !important;
+  color: #1d4ed8 !important;
+}
+
+[data-theme='dark'] .report-week-table .report-sticky-row--person > th.report-off-cell,
+[data-theme='dark'] .report-week-table .report-sticky-row--person > td.report-off-cell {
+  background-color: rgba(245, 158, 11, 0.18) !important;
+  border-color: rgba(59, 85, 104, 0.9) !important;
+}
+
+[data-theme='dark'] .report-week-table .report-sticky-row--person > th.report-filled-cell,
+[data-theme='dark'] .report-week-table .report-sticky-row--person > td.report-filled-cell {
+  background-color: rgba(160, 211, 242, 0.55) !important;
+  border-color: #0468BF !important;
+}
+
+[data-theme='dark'] .report-week-table .report-sticky-row--person > th.report-rest-cell,
+[data-theme='dark'] .report-week-table .report-sticky-row--person > td.report-rest-cell {
+  background-color: rgba(245, 158, 11, 0.3) !important;
+  border-color: rgba(59, 85, 104, 0.9) !important;
+  color: #fcd34d !important;
 }
 
 @media (min-width: 640px) {

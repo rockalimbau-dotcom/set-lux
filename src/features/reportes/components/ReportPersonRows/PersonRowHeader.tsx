@@ -10,6 +10,7 @@ interface PersonRowHeaderProps {
   project?: AnyRecord;
   person: AnyRecord;
   block: 'base' | 'pre' | 'pick' | string;
+  stickyTop?: number;
   semana: readonly string[];
   collapsed: Record<string, boolean>;
   setCollapsed: (updater: (prev: Record<string, boolean>) => Record<string, boolean>) => void;
@@ -22,6 +23,7 @@ export function PersonRowHeader({
   project,
   person,
   block,
+  stickyTop = 0,
   semana,
   collapsed,
   setCollapsed,
@@ -96,8 +98,14 @@ export function PersonRowHeader({
     : 'w-4 sm:w-5 md:w-6';
 
   return (
-    <tr>
-      <Td className='align-middle report-sticky-first-col' scope='row'>
+    <tr
+      className='report-person-sticky-row report-sticky-row report-sticky-row--person'
+      style={{ ['--report-sticky-row-top' as string]: `${stickyTop}px` }}
+    >
+      <Td
+        className='align-middle report-sticky-first-col'
+        scope='row'
+      >
         <div className='flex items-center gap-1 sm:gap-1.5 md:gap-2'>
           <button
             onClick={() => !readOnly && setCollapsed(c => ({ ...c, [pKey]: !c[pKey] }))}
@@ -148,10 +156,17 @@ export function PersonRowHeader({
         const headerCellClasses = offHeader ? 'report-off-cell' : '';
         
         return (
-          <Td key={`head_${pKey}_${block || 'base'}_${iso}`} className={`text-center ${headerCellClasses}`}> </Td>
+          <Td
+            key={`head_${pKey}_${block || 'base'}_${iso}`}
+            className={`text-center ${headerCellClasses}`}
+          >
+            {' '}
+          </Td>
         );
       })}
-      <Td className='text-center'>&nbsp;</Td>
+      <Td className='text-center'>
+        &nbsp;
+      </Td>
     </tr>
   );
 }

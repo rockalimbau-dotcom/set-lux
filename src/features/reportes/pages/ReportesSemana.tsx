@@ -63,9 +63,12 @@ export default function ReportesSemana({
   const [autoCalculationsReady, setAutoCalculationsReady] = useState(false);
   const headerRowRef = useRef<HTMLTableRowElement | null>(null);
   const dateRowRef = useRef<HTMLTableRowElement | null>(null);
+  const scheduleRowRef = useRef<HTMLTableRowElement | null>(null);
   const [stickyOffsets, setStickyOffsets] = useState({
     header: 0,
     date: 0,
+    schedule: 0,
+    person: 0,
   });
   
   const providedPersonas = Array.isArray(personas) ? personas : [];
@@ -479,9 +482,13 @@ export default function ReportesSemana({
   useEffect(() => {
     const updateStickyOffsets = () => {
       const headerHeight = headerRowRef.current?.getBoundingClientRect().height ?? 0;
+      const dateHeight = dateRowRef.current?.getBoundingClientRect().height ?? 0;
+      const scheduleHeight = scheduleRowRef.current?.getBoundingClientRect().height ?? 0;
       setStickyOffsets({
         header: 0,
         date: headerHeight,
+        schedule: headerHeight + dateHeight,
+        person: headerHeight + dateHeight + scheduleHeight,
       });
     };
 
@@ -495,6 +502,7 @@ export default function ReportesSemana({
     const observer = new ResizeObserver(() => updateStickyOffsets());
     if (headerRowRef.current) observer.observe(headerRowRef.current);
     if (dateRowRef.current) observer.observe(dateRowRef.current);
+    if (scheduleRowRef.current) observer.observe(scheduleRowRef.current);
     window.addEventListener('resize', updateStickyOffsets);
 
     return () => {
@@ -508,6 +516,7 @@ export default function ReportesSemana({
       project={project as AnyRecord}
       list={list}
       block={block}
+      personStickyTop={stickyOffsets.person}
       semana={[...filteredSemana]}
       collapsed={collapsed}
       setCollapsed={setCollapsed}
@@ -554,7 +563,7 @@ export default function ReportesSemana({
             role='region'
             aria-label={t('reports.weekContent')}
           >
-            <table className='report-week-table min-w-[720px] sm:min-w-[860px] md:min-w-[1100px] w-full table-fixed border-collapse text-[9px] sm:text-[10px] md:text-xs lg:text-sm'>
+            <table className='report-week-table min-w-[720px] sm:min-w-[860px] md:min-w-[1100px] w-full table-fixed border-separate border-spacing-0 text-[9px] sm:text-[10px] md:text-xs lg:text-sm'>
               <colgroup>
                 <col className='report-week-col-label' />
                 {filteredSemana.map(iso => (
@@ -571,8 +580,10 @@ export default function ReportesSemana({
                 scheduleLabel={reportLabels.base}
                 headerRowRef={headerRowRef}
                 dateRowRef={dateRowRef}
+                scheduleRowRef={scheduleRowRef}
                 headerTop={stickyOffsets.header}
                 dateTop={stickyOffsets.date}
+                scheduleTop={stickyOffsets.schedule}
               />
 
               <tbody>
@@ -584,6 +595,7 @@ export default function ReportesSemana({
                       label={reportLabels.extra}
                       semana={[...filteredSemana]}
                       valueForISO={horarioExtraByIndex(group.index)}
+                      stickyTop={stickyOffsets.schedule}
                     />
                     {renderPersonRows(group.people, group.blockKey as any)}
                   </React.Fragment>
@@ -594,6 +606,7 @@ export default function ReportesSemana({
                     label={reportLabels.pre}
                     semana={[...filteredSemana]}
                     valueForISO={horarioPrelight}
+                    stickyTop={stickyOffsets.schedule}
                   />
                 )}
                 {renderPersonRows(peoplePre, 'pre')}
@@ -603,6 +616,7 @@ export default function ReportesSemana({
                     label={reportLabels.pick}
                     semana={[...filteredSemana]}
                     valueForISO={horarioPickup}
+                    stickyTop={stickyOffsets.schedule}
                   />
                 )}
                 {renderPersonRows(peoplePick, 'pick')}

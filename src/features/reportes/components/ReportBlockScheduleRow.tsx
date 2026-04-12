@@ -1,14 +1,15 @@
 import React, { useMemo } from 'react';
-import { Td } from '@shared/components';
+import { Th } from '@shared/components';
 import { useTranslation } from 'react-i18next';
 
 type Props = {
   label: string;
   semana: readonly string[];
   valueForISO: (iso: string) => string;
+  stickyTop?: number;
 };
 
-function ReportBlockScheduleRow({ label, semana, valueForISO }: Props) {
+function ReportBlockScheduleRow({ label, semana, valueForISO, stickyTop = 0 }: Props) {
   const { t } = useTranslation();
   if (!Array.isArray(semana) || semana.length === 0) return null;
   const values = useMemo(() => semana.map(iso => valueForISO(iso)), [semana, valueForISO]);
@@ -22,15 +23,23 @@ function ReportBlockScheduleRow({ label, semana, valueForISO }: Props) {
     : label;
   
   return (
-    <tr className='schedule-row'>
-      <Td className='align-middle bg-white/5 report-sticky-first-col' align='middle'>
+    <tr
+      className='schedule-row report-sticky-row report-sticky-row--block'
+      style={{ ['--report-sticky-row-top' as string]: `${stickyTop}px` }}
+    >
+      <Th
+        scope='row'
+        className='align-middle bg-white/5 report-sticky-first-col'
+        align='middle'
+      >
         <div className='text-[9px] sm:text-[10px] md:text-xs lg:text-sm font-semibold text-zinc-200 flex items-center whitespace-normal break-words leading-tight'>
           {translatedLabel}
         </div>
-      </Td>
+      </Th>
       {semana.map((iso, i) => (
-        <Td
+        <Th
           key={`sched_${label}_${iso}`}
+          scope='col'
           className={`text-[9px] sm:text-[10px] md:text-xs lg:text-sm font-semibold text-center align-middle bg-white/5 ${
             values[i] === restLabel ? 'report-rest-cell' : ''
           }`}
@@ -43,9 +52,15 @@ function ReportBlockScheduleRow({ label, semana, valueForISO }: Props) {
           >
             {values[i]}
           </div>
-        </Td>
+        </Th>
       ))}
-      <Td className='text-center align-middle bg-white/5' align='middle'>&nbsp;</Td>
+      <Th
+        scope='col'
+        className='text-center align-middle bg-white/5'
+        align='middle'
+      >
+        &nbsp;
+      </Th>
     </tr>
   );
 }

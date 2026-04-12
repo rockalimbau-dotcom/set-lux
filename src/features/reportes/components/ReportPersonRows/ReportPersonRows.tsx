@@ -13,6 +13,7 @@ function ReportPersonRows({
   project,
   list,
   block,
+  personStickyTop = 0,
   semana,
   collapsed,
   setCollapsed,
@@ -73,6 +74,7 @@ function ReportPersonRows({
               project={project}
               person={p}
               block={block}
+              stickyTop={personStickyTop}
               semana={semana}
               collapsed={collapsed}
               setCollapsed={setCollapsed}
