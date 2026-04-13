@@ -417,7 +417,7 @@ export default function ReportesSemana({
     personaRole,
     personaName,
     blockKeyForPerson,
-    isPersonScheduledOnBlock,
+    isPersonScheduledOnBlock: isPersonScheduledOnBlockFn,
     setData,
     horasExtraTipo,
     currentData: data,

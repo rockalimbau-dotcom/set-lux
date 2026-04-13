@@ -1,5 +1,11 @@
 import { parseYYYYMMDD, toYYYYMMDD, addDays } from '@shared/utils/date';
 import { AnyRecord } from '@shared/types/common';
+import {
+  hasRoleGroupSuffix,
+  stripRefuerzoSuffix,
+  stripRoleSuffix,
+} from '@shared/constants/roles';
+import { personaKey } from '../../utils/model';
 
 /**
  * Convert a planning week to array of 7 ISO days
@@ -16,23 +22,44 @@ export function weekToPersonas(week: AnyRecord): AnyRecord[] {
   const seen = new Set<string>();
   const out: AnyRecord[] = [];
   const SOURCES = [
-    { key: 'team', suffix: '' },
-    { key: 'prelight', suffix: 'P' },
-    { key: 'pickup', suffix: 'R' },
+    { key: 'team', suffix: '', block: '' },
+    { key: 'prelight', suffix: 'P', block: 'pre' },
+    { key: 'pickup', suffix: 'R', block: 'pick' },
   ];
   for (const day of (week.days || []) as AnyRecord[]) {
-    for (const { key, suffix } of SOURCES) {
+    for (const { key, suffix, block } of SOURCES) {
       for (const m of (day[key] as AnyRecord[]) || []) {
-        const baseRole = m.role || '';
+        const rawRole = String(m.role || '').trim().toUpperCase();
         const sourceSuffix =
-          m.source === 'pre' ? 'P' : m.source === 'pick' ? 'R' : '';
-        const role = baseRole ? `${baseRole}${sourceSuffix || suffix}` : '';
-        // Generar nombre por defecto si no hay nombre
-        const name = m.name || `Persona_${baseRole || 'UNKNOWN'}`;
-        const id = `${role}__${name}`;
+          m.source === 'pre' ? 'P' : m.source === 'pick' ? 'R' : suffix;
+        const isRefuerzo = rawRole.startsWith('REF');
+        const role = isRefuerzo
+          ? stripRefuerzoSuffix(rawRole) || 'REF'
+          : !rawRole
+            ? ''
+            : !sourceSuffix
+              ? stripRoleSuffix(rawRole)
+              : hasRoleGroupSuffix(rawRole)
+                ? rawRole
+                : `${stripRoleSuffix(rawRole)}${sourceSuffix}`;
+        const name = String(m.name || '').trim() || `Persona_${role || 'UNKNOWN'}`;
+        const persona: AnyRecord = {
+          id: '',
+          cargo: role,
+          nombre: name,
+          role,
+          name,
+          gender: (m as AnyRecord)?.gender,
+          personId: (m as AnyRecord)?.personId,
+          roleId: (m as AnyRecord)?.roleId,
+          roleLabel: (m as AnyRecord)?.roleLabel,
+          source: (m as AnyRecord)?.source,
+          __block: block || undefined,
+        };
+        const id = personaKey(persona);
         if (!seen.has(id) && (role || name)) {
           seen.add(id);
-          out.push({ id, cargo: role, nombre: name, gender: (m as AnyRecord)?.gender });
+          out.push({ ...persona, id });
         }
       }
     }
@@ -66,4 +93,3 @@ export function formatDateForTitle(iso: string): string {
   const [y, m, d] = iso.split('-').map(Number);
   return `${String(d).padStart(2, '0')}/${String(m).padStart(2, '0')}/${y}`;
 }
-
