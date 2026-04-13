@@ -136,7 +136,7 @@ export function useProjectSync(proj: Project | null) {
         let changed = false;
         const nextDays = days.map(d => {
           const day: any = { ...(d || {}) };
-          const tipo = String(day?.crewTipo || '').trim();
+          const tipo = String(day?.crewTipo || day?.tipo || '').trim();
           if (tipo === 'Descanso' || tipo === 'Fin') {
             if ((day.crewList || []).length || (day.preList || []).length || (day.pickList || []).length || (day.refList || []).length) {
               changed = true;
@@ -148,7 +148,7 @@ export function useProjectSync(proj: Project | null) {
           day.crewList = applyRenameMap(crewList, renameMaps.base);
           const nextCrew =
             day.crewList.length === 0
-              ? baseRoster
+              ? day.crewList
               : syncDayListWithRosterBlankOnly(day.crewList, baseTeam as any, 'base');
           if (JSON.stringify(crewList) !== JSON.stringify(nextCrew)) changed = true;
 

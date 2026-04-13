@@ -144,7 +144,7 @@ export default function NecesidadesTab({ project, readOnly = false }: Necesidade
         weeks.map(w => {
           const days = normalizeDays(w.days);
           const nextDays = days.map((d: AnyRecord) => {
-            const tipo = String(d?.crewTipo || '').trim();
+            const tipo = String(d?.crewTipo || d?.tipo || '').trim();
             if (tipo === 'Descanso' || tipo === 'Fin') {
               if (Array.isArray(d?.crewList) && d.crewList.length > 0) changed = true;
               if (Array.isArray(d?.preList) && d.preList.length > 0) changed = true;
@@ -155,16 +155,7 @@ export default function NecesidadesTab({ project, readOnly = false }: Necesidade
             }
             const current = Array.isArray(d?.crewList) ? d.crewList : [];
             const synced = current.length === 0
-              ? (baseRoster || []).map((m: AnyRecord) => ({
-                  role: m?.role,
-                  roleId: m?.roleId,
-                  roleLabel: m?.roleLabel,
-                  personId: m?.personId,
-                  name: m?.name || '',
-                  gender: m?.gender,
-                  source: 'base',
-                  rosterManaged: true,
-                }))
+              ? current
               : syncDayListWithRosterBlankOnly(current, baseRoster, 'base');
             const sameLength = current.length === synced.length;
             const sameMembers = sameLength && current.every((m: AnyRecord, idx: number) => {
