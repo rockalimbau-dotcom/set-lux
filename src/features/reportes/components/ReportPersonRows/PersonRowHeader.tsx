@@ -6,11 +6,50 @@ import { personaKeyFrom } from './ReportPersonRowsHelpers';
 import { getRoleBadgeCode, applyGenderToBadge } from '@shared/constants/roles';
 import { findProjectRoleByLegacyCode, normalizeProjectRoleCatalog, resolveMemberProjectRole } from '@shared/utils/projectRoles';
 
+const normalizeTimeValue = (value: string): string | null => {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+
+  const colonMatch = raw.match(/^(\d{1,2}):(\d{1,2})$/);
+  if (colonMatch) {
+    const hours = Number(colonMatch[1]);
+    const minutes = Number(colonMatch[2]);
+    if (hours >= 0 && hours <= 23 && minutes >= 0 && minutes <= 59) {
+      return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+    }
+    return null;
+  }
+
+  const digits = raw.replace(/\D/g, '');
+  if (digits.length === 3 || digits.length === 4) {
+    const padded = digits.length === 3 ? `0${digits}` : digits;
+    const hours = Number(padded.slice(0, 2));
+    const minutes = Number(padded.slice(2, 4));
+    if (hours >= 0 && hours <= 23 && minutes >= 0 && minutes <= 59) {
+      return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+    }
+  }
+
+  return null;
+};
+
 interface PersonRowHeaderProps {
   project?: AnyRecord;
   person: AnyRecord;
   block: 'base' | 'pre' | 'pick' | string;
   stickyTop?: number;
+  scheduleWindowForISO: (
+    block: 'base' | 'pre' | 'pick' | string,
+    iso: string,
+    personKey: string
+  ) => { start: string; end: string; isRest: boolean };
+  onScheduleChange: (
+    block: 'base' | 'pre' | 'pick' | string,
+    iso: string,
+    field: 'start' | 'end',
+    value: string,
+    personKey: string
+  ) => void;
   semana: readonly string[];
   collapsed: Record<string, boolean>;
   setCollapsed: (updater: (prev: Record<string, boolean>) => Record<string, boolean>) => void;
@@ -24,6 +63,8 @@ export function PersonRowHeader({
   person,
   block,
   stickyTop = 0,
+  scheduleWindowForISO,
+  onScheduleChange,
   semana,
   collapsed,
   setCollapsed,
@@ -35,8 +76,9 @@ export function PersonRowHeader({
   const visualRole = person?.role || '';
   const name = person?.name || '';
   const personId = person?.personId;
+  const roleId = String(person?.roleId || '').trim() || undefined;
   const gender = person?.gender;
-  const pKey = personaKeyFrom(visualRole, name, block);
+  const pKey = personaKeyFrom(visualRole, name, block, { roleId });
   const resolvedRole = resolveMemberProjectRole(project, person);
   const defaultRole = findProjectRoleByLegacyCode(normalizeProjectRoleCatalog(project), visualRole);
   const explicitRoleLabel = String(person?.roleLabel || resolvedRole.label || '').trim();
@@ -96,6 +138,51 @@ export function PersonRowHeader({
   const badgeWidthClass = isLongCode
     ? 'min-w-[28px] sm:min-w-[32px] md:min-w-[36px] px-2 sm:px-2.5 md:px-3'
     : 'w-4 sm:w-5 md:w-6';
+  const [drafts, setDrafts] = useState<Record<string, string>>({});
+  const [activeDraftKey, setActiveDraftKey] = useState<string | null>(null);
+
+  useEffect(() => {
+    const nextEntries: Array<[string, string]> = [];
+    semana.forEach(iso => {
+      const schedule = scheduleWindowForISO(block, iso, pKey);
+      nextEntries.push([`${pKey}_${String(block)}_${iso}_start`, schedule.start || '']);
+      nextEntries.push([`${pKey}_${String(block)}_${iso}_end`, schedule.end || '']);
+    });
+
+    setDrafts(prev => {
+      let changed = false;
+      const next = { ...prev };
+      nextEntries.forEach(([key, value]) => {
+        if (key === activeDraftKey) return;
+        if ((next[key] || '') !== value) {
+          next[key] = value;
+          changed = true;
+        }
+      });
+      return changed ? next : prev;
+    });
+  }, [activeDraftKey, block, pKey, scheduleWindowForISO, semana]);
+
+  const commitDraft = (iso: string, field: 'start' | 'end') => {
+    const draftKey = `${pKey}_${String(block)}_${iso}_${field}`;
+    const rawValue = drafts[draftKey] ?? '';
+    const normalized = normalizeTimeValue(rawValue);
+    if (normalized === null) {
+      const schedule = scheduleWindowForISO(block, iso, pKey);
+      setDrafts(prev => ({
+        ...prev,
+        [draftKey]: schedule[field] || '',
+      }));
+      setActiveDraftKey(null);
+      return;
+    }
+    setDrafts(prev => ({
+      ...prev,
+      [draftKey]: normalized,
+    }));
+    onScheduleChange(block, iso, field, normalized, pKey);
+    setActiveDraftKey(null);
+  };
 
   return (
     <tr
@@ -153,14 +240,80 @@ export function PersonRowHeader({
       {semana.map(iso => {
         const key = `${person?.roleId || personId || visualRole}_${name}_${iso}_${block}`;
         const offHeader = offMap.get(key) ?? false;
-        const headerCellClasses = offHeader ? 'report-off-cell' : '';
+        const scheduleWindow = scheduleWindowForISO(block, iso, pKey);
+        const isRest = scheduleWindow.isRest;
+        const headerCellClasses = [
+          offHeader && !isRest ? 'report-off-cell' : '',
+          isRest ? 'report-rest-cell' : '',
+        ]
+          .filter(Boolean)
+          .join(' ');
         
         return (
           <Td
             key={`head_${pKey}_${block || 'base'}_${iso}`}
             className={`text-center ${headerCellClasses}`}
           >
-            {' '}
+            {isRest ? (
+              <div className='flex items-center justify-center whitespace-normal break-words leading-tight text-center min-h-[1.5rem] text-[10px] sm:text-xs md:text-sm font-semibold report-rest-cell__content'>
+                {t('reports.rest')}
+              </div>
+            ) : offHeader ? (
+              <div className='min-h-[1.5rem]'>&nbsp;</div>
+            ) : (
+              <div className='flex items-center justify-center gap-1 px-1 py-1 whitespace-nowrap'>
+                {(() => {
+                  const startKey = `${pKey}_${String(block)}_${iso}_start`;
+                  const endKey = `${pKey}_${String(block)}_${iso}_end`;
+                  const startValue = drafts[startKey] ?? scheduleWindow.start ?? '';
+                  const endValue = drafts[endKey] ?? scheduleWindow.end ?? '';
+                  return (
+                    <>
+                <input
+                  type='text'
+                  inputMode='numeric'
+                  placeholder='00:00'
+                  value={startValue}
+                  onChange={e => {
+                    const cleaned = e.target.value.replace(/[^\d:]/g, '').slice(0, 5);
+                    setActiveDraftKey(startKey);
+                    setDrafts(prev => ({ ...prev, [startKey]: cleaned }));
+                  }}
+                  onBlur={() => commitDraft(iso, 'start')}
+                  onFocus={e => {
+                    e.stopPropagation();
+                    setActiveDraftKey(startKey);
+                  }}
+                  onClick={e => e.stopPropagation()}
+                  className='report-schedule-input rounded border border-neutral-border bg-black/40 px-1 py-0.5 text-[8px] sm:text-[9px] md:text-[10px] text-center text-zinc-200 focus:outline-none focus:ring-1 focus:ring-brand'
+                  disabled={readOnly}
+                  readOnly={readOnly}
+                />
+                <input
+                  type='text'
+                  inputMode='numeric'
+                  placeholder='00:00'
+                  value={endValue}
+                  onChange={e => {
+                    const cleaned = e.target.value.replace(/[^\d:]/g, '').slice(0, 5);
+                    setActiveDraftKey(endKey);
+                    setDrafts(prev => ({ ...prev, [endKey]: cleaned }));
+                  }}
+                  onBlur={() => commitDraft(iso, 'end')}
+                  onFocus={e => {
+                    e.stopPropagation();
+                    setActiveDraftKey(endKey);
+                  }}
+                  onClick={e => e.stopPropagation()}
+                  className='report-schedule-input rounded border border-neutral-border bg-black/40 px-1 py-0.5 text-[8px] sm:text-[9px] md:text-[10px] text-center text-zinc-200 focus:outline-none focus:ring-1 focus:ring-brand'
+                  disabled={readOnly}
+                  readOnly={readOnly}
+                />
+                    </>
+                  );
+                })()}
+              </div>
+            )}
           </Td>
         );
       })}

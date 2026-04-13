@@ -930,8 +930,19 @@ html input[style*="borderWidth"] {
   width: var(--report-sticky-label-width, 140px);
 }
 
+.report-week-table .report-week-col-day {
+  width: var(--report-day-col-width, 150px);
+  min-width: var(--report-day-col-width, 150px);
+}
+
 .report-week-table .report-week-col-total {
   width: 84px;
+}
+
+.report-week-table .report-schedule-input {
+  width: 72px;
+  min-width: 0;
+  max-width: 72px;
 }
 
 .report-week-table .report-sticky-row .report-sticky-first-col {
@@ -1017,18 +1028,21 @@ html input[style*="borderWidth"] {
 @media (min-width: 640px) {
   .report-week-table {
     --report-sticky-label-width: 180px;
+    --report-day-col-width: 150px;
   }
 }
 
 @media (min-width: 768px) {
   .report-week-table {
     --report-sticky-label-width: 210px;
+    --report-day-col-width: 164px;
   }
 }
 
 @media (min-width: 1024px) {
   .report-week-table {
     --report-sticky-label-width: 230px;
+    --report-day-col-width: 176px;
   }
 }
 

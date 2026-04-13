@@ -6,8 +6,6 @@ import ReportTableHead from './ReportTableHead.jsx';
 const DAY_NAMES = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
 const dayNameFromISO = (iso, i, names) => names[i % names.length];
 const toDisplayDate = iso => iso;
-const horarioTexto = () => '08:00–17:00';
-
 describe('ReportTableHead (smoke)', () => {
   it('renders headers for week', () => {
     const semana = [
@@ -27,12 +25,11 @@ describe('ReportTableHead (smoke)', () => {
           dayNameFromISO={dayNameFromISO}
           DAY_NAMES={DAY_NAMES}
           toDisplayDate={toDisplayDate}
-          horarioTexto={horarioTexto}
         />
       </table>
     );
 
     expect(screen.getByText('Fecha')).toBeInTheDocument();
-    expect(screen.getByText('Horario')).toBeInTheDocument();
+    expect(screen.getByText('Semana')).toBeInTheDocument();
   });
 });

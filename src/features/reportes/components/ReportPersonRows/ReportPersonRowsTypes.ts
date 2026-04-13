@@ -35,6 +35,18 @@ export interface ReportPersonRowsProps {
   list: AnyRecord[];
   block: 'base' | 'pre' | 'pick' | string;
   personStickyTop?: number;
+  scheduleWindowForISO: (
+    block: 'base' | 'pre' | 'pick' | string,
+    iso: string,
+    personKey: string
+  ) => { start: string; end: string; isRest: boolean };
+  onScheduleChange: (
+    block: 'base' | 'pre' | 'pick' | string,
+    iso: string,
+    field: 'start' | 'end',
+    value: string,
+    personKey: string
+  ) => void;
   semana: readonly string[];
   collapsed: Record<string, boolean>;
   setCollapsed: (updater: (prev: Record<string, boolean>) => Record<string, boolean>) => void;

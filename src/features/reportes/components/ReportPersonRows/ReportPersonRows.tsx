@@ -14,6 +14,8 @@ function ReportPersonRows({
   list,
   block,
   personStickyTop = 0,
+  scheduleWindowForISO,
+  onScheduleChange,
   semana,
   collapsed,
   setCollapsed,
@@ -75,6 +77,8 @@ function ReportPersonRows({
               person={p}
               block={block}
               stickyTop={personStickyTop}
+              scheduleWindowForISO={scheduleWindowForISO}
+              onScheduleChange={onScheduleChange}
               semana={semana}
               collapsed={collapsed}
               setCollapsed={setCollapsed}

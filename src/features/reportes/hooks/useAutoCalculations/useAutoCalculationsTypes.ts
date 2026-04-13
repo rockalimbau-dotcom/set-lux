@@ -35,6 +35,7 @@ export interface AutoCalculationsProps {
   safeSemana: readonly string[];
   findWeekAndDay: (iso: string) => WeekAndDay | any;
   getBlockWindow: (day: any, block: string) => BlockWindow;
+  getBlockWindowForPerson?: (person: Persona, day: any, block: string) => BlockWindow;
   calcHorasExtraMin: (workedMin: number, baseHours: number, cortes: number) => number;
   buildDateTime: (iso: string, time: string) => Date | null;
   findPrevWorkingContext: (iso: string) => PrevWorkingContext;

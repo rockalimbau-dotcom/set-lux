@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react';
 import { mondayOf, toYYYYMMDD, defaultWeek } from '@shared/utils/date';
-import { storage } from '@shared/services/localStorage.service';
+import { useLocalStorage } from '@shared/hooks/useLocalStorage';
 import {
   collectWeekTeamWithSuffixFactory,
   buildSafePersonas,
@@ -29,16 +29,16 @@ export function useWeekData(
     () => `needs_${project?.id || project?.nombre || 'demo'}`,
     [project?.id, project?.nombre]
   );
+  const [needsData] = useLocalStorage<any>(needsKey, { pre: [], pro: [] });
 
   const planAllWeeks = useMemo(() => {
     try {
-      const obj = storage.getJSON<any>(needsKey);
-      if (!obj) return { pre: [], pro: [] };
-      return needsDataToPlanData(obj);
+      if (!needsData) return { pre: [], pro: [] };
+      return needsDataToPlanData(needsData);
     } catch {
       return { pre: [], pro: [] };
     }
-  }, [needsKey]);
+  }, [needsData]);
 
   const getPlanAllWeeks = useCallback(() => planAllWeeks, [planAllWeeks]);
 

@@ -319,6 +319,8 @@ describe('useAutoCalculations', () => {
   });
 
   it('should handle calculation of extra hours', () => {
+    const mockSetData = vi.fn(updater => updater({}));
+
     renderHook(() =>
       useAutoCalculations({
         safeSemana: mockSafeSemana,
@@ -334,7 +336,7 @@ describe('useAutoCalculations', () => {
         personaName: mockFunctions.personaName,
         blockKeyForPerson: mockFunctions.blockKeyForPerson,
         isPersonScheduledOnBlock: mockFunctions.isPersonScheduledOnBlock,
-        setData: mockFunctions.setData,
+        setData: mockSetData,
       })
     );
 

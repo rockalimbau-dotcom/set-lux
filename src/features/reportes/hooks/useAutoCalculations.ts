@@ -1,7 +1,6 @@
 import { useEffect, useRef } from 'react';
 import {
   AutoCalculationsProps,
-  AutoByDate,
   AutoResult,
   WeekAndDay,
   Persona,
@@ -31,6 +30,7 @@ export default function useAutoCalculations({
   safeSemana,
   findWeekAndDay,
   getBlockWindow,
+  getBlockWindowForPerson,
   calcHorasExtraMin,
   buildDateTime,
   findPrevWorkingContext,
@@ -69,11 +69,13 @@ export default function useAutoCalculations({
     if (!enabled) return;
     const debugEnabled = isDebugEnabled();
     const { baseHours, cortes, taD, taF } = normalizeParams(params);
-    const autoByDate: AutoByDate = {};
-
-    const computeForISOAndBlock = (iso: string, block: string): AutoResult => {
+    const computeForISOAndBlock = (person: Persona, iso: string, block: string): AutoResult => {
       const { day } = findWeekAndDay(iso) as WeekAndDay;
-      const { start, end } = getBlockWindow(day, block);
+      const personBlockWindow = (targetDay: any, targetBlock: string) =>
+        getBlockWindowForPerson
+          ? getBlockWindowForPerson(person, targetDay, targetBlock)
+          : getBlockWindow(targetDay, targetBlock);
+      const { start, end } = personBlockWindow(day, block);
       if (!start) return { extra: '', ta: '', noct: '' };
 
       // Calcular horas extra
@@ -96,7 +98,7 @@ export default function useAutoCalculations({
           iso,
           start,
           findWeekAndDay,
-          getBlockWindow,
+          personBlockWindow,
           buildDateTime,
           findPrevWorkingContext,
           params,
@@ -107,7 +109,7 @@ export default function useAutoCalculations({
           iso,
           start,
           findWeekAndDay,
-          getBlockWindow,
+          personBlockWindow,
           buildDateTime,
           findPrevWorkingContext,
           params
@@ -117,7 +119,7 @@ export default function useAutoCalculations({
           iso,
           start,
           findWeekAndDay,
-          getBlockWindow,
+          personBlockWindow,
           buildDateTime,
           findPrevWorkingContext,
           params,
@@ -128,7 +130,7 @@ export default function useAutoCalculations({
           iso,
           start,
           findWeekAndDay,
-          getBlockWindow,
+          personBlockWindow,
           buildDateTime,
           findPrevWorkingContext,
           params,
@@ -146,16 +148,6 @@ export default function useAutoCalculations({
         noct: noctStr,
       };
     };
-
-    // Calcular valores automáticos para cada día
-    for (const iso of safeSemana as string[]) {
-      autoByDate[iso] = {
-        base: computeForISOAndBlock(iso, 'base'),
-        pre: computeForISOAndBlock(iso, 'pre'),
-        pick: computeForISOAndBlock(iso, 'pick'),
-        extra: computeForISOAndBlock(iso, 'extra'),
-      };
-    }
 
     // Aplicar los valores calculados preservando valores manuales
     setData((prev: any) => {
@@ -230,15 +222,7 @@ export default function useAutoCalculations({
           // Determinar el bloque de la fila
           const explicitBlock = ((p as any)?.__block as 'pre' | 'pick' | 'extra' | undefined) || undefined;
           const rowBlock = determineRowBlock(pk, explicitBlock);
-
-          if (autoByDate[iso] && !(rowBlock in autoByDate[iso])) {
-            (autoByDate[iso] as any)[rowBlock] = computeForISOAndBlock(iso, rowBlock);
-          }
-          const auto = (autoByDate[iso] && (autoByDate[iso] as any)[rowBlock]) || {
-            extra: '',
-            ta: '',
-            noct: '',
-          };
+          const auto = computeForISOAndBlock(p, iso, rowBlock);
 
           // Verificar si trabaja ese día en este bloque
           const roleForCheck = determineRoleForCheck(role, rowBlock);
@@ -364,8 +348,10 @@ export default function useAutoCalculations({
     JSON.stringify(safeSemana),
     JSON.stringify(params),
     JSON.stringify(safePersonas),
+    JSON.stringify(currentData?.__schedule__ || {}),
     horasExtraTipo,
     generatePlanWindowsSignature(safeSemana, findWeekAndDay, getBlockWindow),
     getMaterialPropioConfig,
+    getBlockWindowForPerson,
   ]);
 }

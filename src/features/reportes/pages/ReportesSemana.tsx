@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useRef, useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import ReportBlockScheduleRow from '../components/ReportBlockScheduleRow';
 import ReportPersonRows from '../components/ReportPersonRows';
 import ReportTableHead from '../components/ReportTableHead';
 import ReportWeekHeader from '../components/ReportWeekHeader';
@@ -25,12 +24,13 @@ import {
   findPrevWorkingContextFactory,
 } from '../utils/runtime';
 import { personaKey, personaRole, personaName, stripPR } from '../utils/model';
-import { mondayOf, toYYYYMMDD } from '@shared/utils/date';
+import { addDays, mondayOf, toYYYYMMDD } from '@shared/utils/date';
 import { loadCondModel } from '@features/nomina/utils/cond';
 import { ROLE_CODE_TO_LABEL, stripRoleSuffix, stripRefuerzoSuffix } from '@shared/constants/roles';
 import { useTheme } from '../components/ReportPersonRows/useTheme';
 import { getNeedsRowLabel } from '@features/necesidades/utils/rowLabels';
 import { buildReportScheduleLabel } from '../utils/reportLabels';
+import { normalizeExtraBlocks } from '@shared/utils/extraBlocks';
 
 import { ReportesSemanaProps } from './ReportesSemana/ReportesSemanaTypes';
 import { useDietasOpciones } from './ReportesSemana/useDietasOpciones';
@@ -43,6 +43,17 @@ import { useDayNameTranslator } from './ReportesSemana/useDayNameTranslator';
 import { useReportExport } from './ReportesSemana/useReportExport';
 import { useReportCollapsible } from './ReportesSemana/useReportCollapsible';
 import { toDisplayDate } from './ReportesSemana/ReportTableHeadHelpers';
+
+const normalizeStoredTime = (value: unknown): string => {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  const match = raw.match(/^(\d{1,2}):(\d{1,2})$/);
+  if (!match) return raw;
+  const hours = Number(match[1]);
+  const minutes = Number(match[2]);
+  if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) return raw;
+  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+};
 
 export default function ReportesSemana({
   project,
@@ -63,11 +74,9 @@ export default function ReportesSemana({
   const [autoCalculationsReady, setAutoCalculationsReady] = useState(false);
   const headerRowRef = useRef<HTMLTableRowElement | null>(null);
   const dateRowRef = useRef<HTMLTableRowElement | null>(null);
-  const scheduleRowRef = useRef<HTMLTableRowElement | null>(null);
   const [stickyOffsets, setStickyOffsets] = useState({
     header: 0,
     date: 0,
-    schedule: 0,
     person: 0,
   });
   
@@ -152,7 +161,7 @@ export default function ReportesSemana({
 
   const dietasOpciones = useDietasOpciones(mode);
 
-  const { horarioTexto, horarioPrelight, horarioPickup, horarioExtra, horarioExtraByIndex } = createHorarioHelpers(findWeekAndDay, t);
+  const { horarioTexto, horarioPrelight, horarioPickup, horarioExtraByIndex } = createHorarioHelpers(findWeekAndDay, t);
   const reportLabels = useMemo(() => {
     const schedulePrefix = t('reports.schedulePrefix', 'Horario');
     const weekWithLabels = safeSemana
@@ -187,7 +196,15 @@ export default function ReportesSemana({
     },
     [horarioExtraByIndex]
   );
-
+  const scheduleForBlock = useCallback(
+    (blockKey: 'base' | 'pre' | 'pick' | string, iso: string) => {
+      if (blockKey === 'pre') return horarioPrelight(iso);
+      if (blockKey === 'pick') return horarioPickup(iso);
+      if (String(blockKey).startsWith('extra:')) return horarioExtraByBlock(String(blockKey), iso);
+      return horarioTexto(iso);
+    },
+    [horarioExtraByBlock, horarioPickup, horarioPrelight, horarioTexto]
+  );
   const filteredSemana = useFilteredSemana({
     safeSemana,
     horarioTexto,
@@ -215,6 +232,110 @@ export default function ReportesSemana({
     [...CONCEPTS] as any,
     isPersonScheduledOnBlockFn,
     findWeekAndDay
+  );
+
+  const scheduleWindowForBlock = useCallback(
+    (blockKey: 'base' | 'pre' | 'pick' | string, iso: string, personKey: string) => {
+      const { day } = findWeekAndDay(iso);
+      if (!day) return { start: '', end: '', isRest: false };
+      if ((day.tipo || '') === 'Descanso') {
+        return { start: '', end: '', isRest: true };
+      }
+      let baseStart = '';
+      let baseEnd = '';
+
+      if (blockKey === 'pre') {
+        baseStart = normalizeStoredTime(day.prelightStart || day.preStart || '');
+        baseEnd = normalizeStoredTime(day.prelightEnd || day.preEnd || '');
+      } else if (blockKey === 'pick') {
+        baseStart = normalizeStoredTime(day.pickupStart || day.pickStart || '');
+        baseEnd = normalizeStoredTime(day.pickupEnd || day.pickEnd || '');
+      } else if (String(blockKey).startsWith('extra:')) {
+        const match = String(blockKey).match(/^extra:(\d+)$/);
+        const block = match ? normalizeExtraBlocks(day)[Number(match[1])] : null;
+        baseStart = normalizeStoredTime(block?.start || '');
+        baseEnd = normalizeStoredTime(block?.end || '');
+      } else {
+        baseStart = normalizeStoredTime(day.start || day.crewStart || '');
+        baseEnd = normalizeStoredTime(day.end || day.crewEnd || '');
+      }
+
+      const saved = data?.__schedule__?.[personKey]?.[String(blockKey)]?.[iso];
+      return {
+        start: normalizeStoredTime(saved?.start ?? baseStart),
+        end: normalizeStoredTime(saved?.end ?? baseEnd),
+        isRest: false,
+      };
+    },
+    [data, findWeekAndDay]
+  );
+
+  const updateScheduleForBlock = useCallback(
+    (
+      blockKey: 'base' | 'pre' | 'pick' | string,
+      iso: string,
+      field: 'start' | 'end',
+      value: string,
+      personKey: string
+    ) => {
+      setData(prev => {
+        const next = { ...(prev || {}) } as AnyRecord;
+        const scheduleState = { ...(next.__schedule__ || {}) } as AnyRecord;
+        const personState = { ...(scheduleState[personKey] || {}) } as AnyRecord;
+        const blockState = { ...(personState[String(blockKey)] || {}) } as AnyRecord;
+        const current = { ...(blockState[iso] || {}) } as AnyRecord;
+
+        if (String(current[field] || '') === String(value || '')) {
+          return prev;
+        }
+
+        current[field] = value;
+        blockState[iso] = current;
+        personState[String(blockKey)] = blockState;
+        scheduleState[personKey] = personState;
+        next.__schedule__ = scheduleState;
+        return next;
+      });
+    },
+    [setData]
+  );
+
+  const reportDayIsoMap = useMemo(() => {
+    const map = new WeakMap<object, string>();
+    const allWeeks = getPlanAllWeeks();
+    [...(allWeeks?.pre || []), ...(allWeeks?.pro || [])].forEach((week: AnyRecord) => {
+      const weekStart = String(week?.startDate || '').trim();
+      if (!weekStart) return;
+      const baseDate = new Date(`${weekStart}T00:00:00`);
+      const days = Array.isArray(week?.days) ? week.days : [];
+      days.forEach((day: AnyRecord, index: number) => {
+        if (!day || typeof day !== 'object') return;
+        const iso = toYYYYMMDD(addDays(baseDate, index));
+        map.set(day, iso);
+      });
+    });
+    return map;
+  }, [getPlanAllWeeks]);
+
+  const reportGetBlockWindow = useCallback(
+    (person: AnyRecord, day: AnyRecord, block: string) => {
+      const fallback = getBlockWindow(day, block as any);
+      if (!day || typeof day !== 'object') return fallback;
+      const iso = reportDayIsoMap.get(day as object);
+      if (!iso) return fallback;
+      const personKey = personaKey(person);
+
+      const saved =
+        data?.__schedule__?.[personKey]?.[String(block)]?.[iso]
+        || (block === 'extra' ? data?.__schedule__?.[personKey]?.['extra:0']?.[iso] : undefined);
+
+      if (!saved) return fallback;
+      return {
+        start: saved.start || fallback.start || null,
+        end: saved.end || fallback.end || null,
+      };
+    },
+    [data, reportDayIsoMap]
   );
 
   const exportGenderMap = useMemo(() => {
@@ -408,6 +529,7 @@ export default function ReportesSemana({
     safeSemana: [...safeSemana],
     findWeekAndDay: findWeekAndDay as any,
     getBlockWindow: getBlockWindow as any,
+    getBlockWindowForPerson: reportGetBlockWindow as any,
     calcHorasExtraMin,
     buildDateTime: buildDateTime as any,
     findPrevWorkingContext,
@@ -483,12 +605,10 @@ export default function ReportesSemana({
     const updateStickyOffsets = () => {
       const headerHeight = headerRowRef.current?.getBoundingClientRect().height ?? 0;
       const dateHeight = dateRowRef.current?.getBoundingClientRect().height ?? 0;
-      const scheduleHeight = scheduleRowRef.current?.getBoundingClientRect().height ?? 0;
       setStickyOffsets({
         header: 0,
         date: headerHeight,
-        schedule: headerHeight + dateHeight,
-        person: headerHeight + dateHeight + scheduleHeight,
+        person: headerHeight + dateHeight,
       });
     };
 
@@ -502,7 +622,6 @@ export default function ReportesSemana({
     const observer = new ResizeObserver(() => updateStickyOffsets());
     if (headerRowRef.current) observer.observe(headerRowRef.current);
     if (dateRowRef.current) observer.observe(dateRowRef.current);
-    if (scheduleRowRef.current) observer.observe(scheduleRowRef.current);
     window.addEventListener('resize', updateStickyOffsets);
 
     return () => {
@@ -517,13 +636,15 @@ export default function ReportesSemana({
       list={list}
       block={block}
       personStickyTop={stickyOffsets.person}
+      scheduleWindowForISO={scheduleWindowForBlock}
+      onScheduleChange={updateScheduleForBlock}
       semana={[...filteredSemana]}
       collapsed={collapsed}
       setCollapsed={setCollapsed}
       data={data}
       setCell={setCell}
       findWeekAndDay={findWeekAndDay as any}
-      isPersonScheduledOnBlock={isPersonScheduledOnBlock as any}
+      isPersonScheduledOnBlock={isPersonScheduledOnBlockFn as any}
       CONCEPTS={[...CONCEPTS] as any}
       DIETAS_OPCIONES={dietasOpciones as any}
       SI_NO={SI_NO as any}
@@ -563,11 +684,11 @@ export default function ReportesSemana({
             role='region'
             aria-label={t('reports.weekContent')}
           >
-            <table className='report-week-table min-w-[720px] sm:min-w-[860px] md:min-w-[1100px] w-full table-fixed border-separate border-spacing-0 text-[9px] sm:text-[10px] md:text-xs lg:text-sm'>
+            <table className='report-week-table min-w-[1080px] sm:min-w-[1220px] md:min-w-[1360px] w-full table-fixed border-separate border-spacing-0 text-[9px] sm:text-[10px] md:text-xs lg:text-sm'>
               <colgroup>
                 <col className='report-week-col-label' />
                 {filteredSemana.map(iso => (
-                  <col key={`report-col-${iso}`} />
+                  <col key={`report-col-${iso}`} className='report-week-col-day' />
                 ))}
                 <col className='report-week-col-total' />
               </colgroup>
@@ -576,14 +697,10 @@ export default function ReportesSemana({
                 dayNameFromISO={dayNameTranslator}
                 DAY_NAMES={[...DAY_NAMES] as any}
                 toDisplayDate={toDisplayDate}
-                horarioTexto={horarioTexto}
-                scheduleLabel={reportLabels.base}
                 headerRowRef={headerRowRef}
                 dateRowRef={dateRowRef}
-                scheduleRowRef={scheduleRowRef}
                 headerTop={stickyOffsets.header}
                 dateTop={stickyOffsets.date}
-                scheduleTop={stickyOffsets.schedule}
               />
 
               <tbody>
@@ -591,34 +708,12 @@ export default function ReportesSemana({
 
                 {extraGroups.map(group => (
                   <React.Fragment key={group.blockKey}>
-                    <ReportBlockScheduleRow
-                      label={reportLabels.extra}
-                      semana={[...filteredSemana]}
-                      valueForISO={horarioExtraByIndex(group.index)}
-                      stickyTop={stickyOffsets.schedule}
-                    />
                     {renderPersonRows(group.people, group.blockKey as any)}
                   </React.Fragment>
                 ))}
 
-                {peoplePre.length > 0 && (
-                  <ReportBlockScheduleRow
-                    label={reportLabels.pre}
-                    semana={[...filteredSemana]}
-                    valueForISO={horarioPrelight}
-                    stickyTop={stickyOffsets.schedule}
-                  />
-                )}
                 {renderPersonRows(peoplePre, 'pre')}
 
-                {peoplePick.length > 0 && (
-                  <ReportBlockScheduleRow
-                    label={reportLabels.pick}
-                    semana={[...filteredSemana]}
-                    valueForISO={horarioPickup}
-                    stickyTop={stickyOffsets.schedule}
-                  />
-                )}
                 {renderPersonRows(peoplePick, 'pick')}
               </tbody>
             </table>
