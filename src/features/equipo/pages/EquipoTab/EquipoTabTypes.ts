@@ -5,6 +5,7 @@ export interface TeamRoleOption {
   label: string;
   roleId?: string;
   legacyCode?: string;
+  isDefault?: boolean;
   color?: {
     bg: string;
     fg: string;

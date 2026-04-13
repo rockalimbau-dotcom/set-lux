@@ -34,18 +34,22 @@ export function buildAllowedRoles(
     .filter(role => groupKey === 'reinforcements' || String(role.legacyCode || role.baseRole || '').toUpperCase() !== 'REF')
     .map(role => {
       const legacyCode = normalizeRoleValue(role.legacyCode || role.baseRole || role.id).toUpperCase();
+      const defaultRoleId = buildProjectRoleId(legacyCode);
       return {
         code: `${prefix}${legacyCode}`,
         label: role.label,
         roleId: role.id,
         legacyCode,
+        isDefault: role.id === defaultRoleId,
         color: role.color || getProjectRoleColor(project, { roleId: role.id }),
       } satisfies TeamRoleOption;
     })
     .sort((a, b) => {
       const orderA = getMemberRoleSortOrder(project, { roleId: a.roleId, role: a.code });
       const orderB = getMemberRoleSortOrder(project, { roleId: b.roleId, role: b.code });
-      return orderA - orderB || a.label.localeCompare(b.label, 'es');
+      if (orderA !== orderB) return orderA - orderB;
+      if (a.isDefault !== b.isDefault) return a.isDefault ? -1 : 1;
+      return a.label.localeCompare(b.label, 'es');
     });
 }
 
@@ -212,7 +216,6 @@ export function getDisplayRoleLabel(
     const defaultRoleId = buildProjectRoleId(baseCode);
     const shouldUseGenderedBaseLabel =
       resolved.roleId === defaultRoleId ||
-      resolvedLabel.includes('/') ||
       resolvedLabel === resolved.definition?.legacyCode ||
       resolvedLabel === resolved.definition?.baseRole;
 

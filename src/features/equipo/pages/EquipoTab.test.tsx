@@ -267,4 +267,88 @@ describe('EquipoTab (smoke)', () => {
     const lastCall = handleRoleCatalogChange.mock.calls.at(-1)?.[0];
     expect(lastCall.roles.some((role: any) => role.label === 'Gaffer noche')).toBe(true);
   });
+
+  it('mantiene visible un rol personalizado con simbolos', () => {
+    render(
+      <EquipoTab
+        currentUser={bossUser}
+        initialTeam={{
+          base: [{ id: '1', role: 'E', roleId: 'electric_s_n_gaffer', name: 'Ana' }],
+          reinforcements: [],
+          prelight: [],
+          pickup: [],
+        }}
+        allowEditOverride
+        storageKey={'test-equipo-6'}
+        project={{
+          id: 'p1',
+          nombre: 'Demo',
+          roleCatalog: {
+            version: 1,
+            roles: [
+              {
+                id: 'electric_s_n_gaffer',
+                label: 'Eléctrico s/n Gaffer',
+                legacyCode: 'E',
+                baseRole: 'E',
+                sortOrder: 10,
+                active: true,
+                supportsPrelight: true,
+                supportsPickup: true,
+                supportsRefuerzo: true,
+              },
+            ],
+          },
+        }}
+      />
+    );
+
+    expect(screen.getByRole('button', { name: 'Cargo' })).toHaveTextContent('Eléctrico s/n Gaffer');
+  });
+
+  it('prioriza el rol base por defecto al añadir una fila aunque exista uno custom alfabeticamente anterior', () => {
+    render(
+      <EquipoTab
+        currentUser={bossUser}
+        initialTeam={{ base: [], reinforcements: [], prelight: [], pickup: [] }}
+        allowEditOverride
+        storageKey={'test-equipo-7'}
+        project={{
+          id: 'p1',
+          nombre: 'Demo',
+          roleCatalog: {
+            version: 1,
+            roles: [
+              {
+                id: 'g_default',
+                label: 'Gaffer',
+                legacyCode: 'G',
+                baseRole: 'G',
+                sortOrder: 0,
+                active: true,
+                supportsPrelight: true,
+                supportsPickup: true,
+                supportsRefuerzo: true,
+              },
+              {
+                id: 'g_cacacatua',
+                label: 'Cacacatua',
+                legacyCode: 'G',
+                baseRole: 'G',
+                sortOrder: 0,
+                active: true,
+                supportsPrelight: true,
+                supportsPickup: true,
+                supportsRefuerzo: true,
+              },
+            ],
+          },
+        }}
+      />
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Añadir miembro a Equipo base' }));
+
+    expect(screen.getByRole('button', { name: 'Cargo' })).toHaveTextContent('Gaffer');
+  });
 });
