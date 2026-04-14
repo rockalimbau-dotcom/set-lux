@@ -32,6 +32,7 @@ const MaterialPropioTypeDropdown: React.FC<MaterialPropioTypeDropdownProps> = ({
   const { t } = useTranslation();
   const dropdownRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
     if (typeof document !== 'undefined') {
       return (document.documentElement.getAttribute('data-theme') || 'light') as 'dark' | 'light';
@@ -54,7 +55,10 @@ const MaterialPropioTypeDropdown: React.FC<MaterialPropioTypeDropdownProps> = ({
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+      const insideTrigger = dropdownRef.current?.contains(target);
+      const insideMenu = menuRef.current?.contains(target);
+      if (!insideTrigger && !insideMenu) {
         setDropdownState(prev => ({ ...prev, isOpen: false, hoveredOption: null }));
       }
     };
@@ -143,6 +147,7 @@ const MaterialPropioTypeDropdown: React.FC<MaterialPropioTypeDropdownProps> = ({
       {dropdownState.isOpen && dropdownPosition && typeof document !== 'undefined'
         ? createPortal(
             <div
+              ref={menuRef}
               className={`fixed border border-neutral-border rounded sm:rounded-md md:rounded-lg shadow-xl z-[10000] overflow-y-auto max-h-48 sm:max-h-56 md:max-h-60 ${
                 theme === 'light' ? 'bg-white' : 'bg-neutral-panel'
               }`}
