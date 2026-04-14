@@ -13,6 +13,29 @@ import {
 } from './dataHelpers';
 import { groupAndSortPersonsByBlock } from './buildReportWeekHTMLForPDF/sortingHelpers';
 
+function scheduleForPerson(
+  pk: string,
+  iso: string,
+  finalData: any,
+  horarioTexto?: (iso: string) => string,
+  horarioPrelight?: (iso: string) => string,
+  horarioPickup?: (iso: string) => string,
+  horarioExtraByBlock?: (blockKey: string, iso: string) => string
+): string {
+  const parsed = parsePersonKey(pk);
+  const block = parsed.block || 'base';
+  const saved = finalData?.__schedule__?.[pk]?.[block]?.[iso];
+  if (saved?.start || saved?.end) {
+    return `${saved?.start || ''} ${saved?.end || ''}`.trim();
+  }
+  if (block === 'pre' && typeof horarioPrelight === 'function') return horarioPrelight(iso);
+  if (block === 'pick' && typeof horarioPickup === 'function') return horarioPickup(iso);
+  if (String(block).startsWith('extra') && typeof horarioExtraByBlock === 'function') {
+    return horarioExtraByBlock(block, iso);
+  }
+  return typeof horarioTexto === 'function' ? horarioTexto(iso) : '';
+}
+
 function parsePersonKeyForDisplay(pk: string): { role: string; name: string } {
   let { role, name } = parsePersonKey(pk);
   if (role.startsWith('REF')) {
@@ -86,31 +109,6 @@ export function buildReportWeekHTML({
         <th style="border:1px solid #999;padding:6px;text-align:left;background:#1e40af;color:#fff;font-weight:bold;">${esc(getTranslation('reports.total', 'Total'))}</th>
       </tr>`;
 
-  const headHorario = `
-      <tr>
-        <th style="border:1px solid #999;padding:6px;text-align:left;background:#1e40af;color:#fff;">${esc(
-          reportLabels?.base || getTranslation('reports.scheduleBase', 'Horario equipo base')
-        )}</th>
-        ${safeSemanaWithData
-          .map(
-            iso =>
-              `<th style="border:1px solid #999;padding:6px;text-align:left;background:#1e40af;color:#fff;">${esc(
-                horarioTexto(iso)
-              )}</th>`
-          )
-          .join('')}
-        <th style="border:1px solid #999;padding:6px;text-align:left;background:#1e40af;color:#fff;">${esc(getTranslation('reports.week', 'Semana'))}</th>
-      </tr>`;
-
-  const generateScheduleRow = (label: string, valueForISO: (iso: string) => string) => `
-        <tr>
-          <td style="border:1px solid #999;padding:6px;font-weight:700;background:#f8fafc;">${esc(label)}</td>
-          ${safeSemanaWithData
-            .map(iso => `<td style="border:1px solid #999;padding:6px;font-weight:700;background:#fff8e8;">${esc(valueForISO(iso))}</td>`)
-            .join('')}
-          <td style="border:1px solid #999;padding:6px;">&nbsp;</td>
-        </tr>`;
-
   const renderPersonBlock = (keys: string[]) =>
     keys
       .map(pk => {
@@ -140,7 +138,9 @@ export function buildReportWeekHTML({
           </td>
           ${safeSemanaWithData
             .map(
-              () => `<td style="border:1px solid #999;padding:6px;">&nbsp;</td>`
+              iso => `<td style="border:1px solid #999;padding:6px;">${esc(
+                scheduleForPerson(pk, iso, finalData, horarioTexto, horarioPrelight, horarioPickup, horarioExtraByBlock)
+              )}</td>`
             )
             .join('')}
           <td style="border:1px solid #999;padding:6px;">&nbsp;</td>
@@ -215,33 +215,9 @@ export function buildReportWeekHTML({
   const bodyParts: string[] = [];
   bodyParts.push(renderPersonBlock(grouped.personsByBlock.base));
   grouped.extraGroups.forEach(group => {
-    if (typeof horarioExtraByBlock === 'function') {
-      bodyParts.push(
-        generateScheduleRow(
-          reportLabels?.extra || getTranslation('reports.extraSchedule', 'Equipo extra / Dif horarios'),
-          iso => horarioExtraByBlock(group.blockKey, iso)
-        )
-      );
-    }
     bodyParts.push(renderPersonBlock(group.people));
   });
-  if (grouped.personsByBlock.pre.length > 0 && typeof horarioPrelight === 'function') {
-    bodyParts.push(
-      generateScheduleRow(
-        reportLabels?.pre || getTranslation('reports.prelightSchedule', 'Horario Equipo Prelight'),
-        horarioPrelight
-      )
-    );
-  }
   bodyParts.push(renderPersonBlock(grouped.personsByBlock.pre));
-  if (grouped.personsByBlock.pick.length > 0 && typeof horarioPickup === 'function') {
-    bodyParts.push(
-      generateScheduleRow(
-        reportLabels?.pick || getTranslation('reports.pickupSchedule', 'Horario Equipo Recogida'),
-        horarioPickup
-      )
-    );
-  }
   bodyParts.push(renderPersonBlock(grouped.personsByBlock.pick));
 
   const body = bodyParts.join('');
@@ -382,7 +358,6 @@ export function buildReportWeekHTML({
         <table>
           <thead>
             ${headDays}
-            ${headHorario}
           </thead>
           <tbody>
             ${body}

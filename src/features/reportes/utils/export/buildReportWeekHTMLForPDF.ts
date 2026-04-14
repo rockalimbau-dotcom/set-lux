@@ -3,7 +3,7 @@ import { deduplicateData, isMeaningfulValue } from './dataHelpers';
 import { esc } from './htmlHelpers';
 import { getTranslation } from './translationHelpers';
 import { groupAndSortPersonsByBlock } from './buildReportWeekHTMLForPDF/sortingHelpers';
-import { generateDaysHeader, generateScheduleHeader } from './buildReportWeekHTMLForPDF/tableHelpers';
+import { generateDaysHeader } from './buildReportWeekHTMLForPDF/tableHelpers';
 import { generateBodyByBlocks, generateInfoPanel, generateFooter, generateHeaderTitle } from './buildReportWeekHTMLForPDF/contentHelpers';
 import { baseStyles } from './buildReportWeekHTMLForPDF/styles';
 
@@ -78,12 +78,6 @@ export function buildReportWeekHTMLForPDF({
 
   // Generate table headers
   const headDays = generateDaysHeader(safeSemanaWithData, dayNameFromISO, toDisplayDate);
-  const headHorario = generateScheduleHeader(
-    safeSemanaWithData,
-    horarioTexto,
-    reportLabels?.base
-  );
-
   // Generate body grouped by blocks
   const body = generateBodyByBlocks(
     personsByBlock,
@@ -93,10 +87,10 @@ export function buildReportWeekHTMLForPDF({
     finalData,
     genderMap,
     project,
+    horarioTexto,
     horarioPrelight,
     horarioPickup,
-    horarioExtraByBlock,
-    reportLabels
+    horarioExtraByBlock
   );
 
   // Generate HTML
@@ -123,7 +117,6 @@ export function buildReportWeekHTMLForPDF({
         <table>
           <thead>
             ${headDays}
-            ${headHorario}
           </thead>
           <tbody>
             ${body}

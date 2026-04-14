@@ -1,93 +1,79 @@
-/**
- * Estimate content height for pagination
- */
-const estimateContentHeight = (
-  numPersons: number,
-  conceptsPerPerson: number,
-  headerHeight: number = 80,
-  footerHeight: number = 25,
-  tableHeaderHeight: number = 40,
-  personHeaderHeight: number = 20,
-  conceptRowHeight: number = 15
-): number => {
-  const totalPersonHeight = numPersons * (personHeaderHeight + (conceptsPerPerson * conceptRowHeight));
-  return headerHeight + footerHeight + tableHeaderHeight + totalPersonHeight;
-};
+import { isMeaningfulValue } from './dataHelpers';
 
-/**
- * Calculate optimal persons per page with smart pagination
- */
+const DEFAULT_PAGE_HEIGHT = 794;
+const HEADER_AND_FOOTER_RESERVED = 340;
+const PERSON_HEADER_HEIGHT = 44;
+const CONCEPT_ROW_HEIGHT = 34;
+
+function countVisibleConceptsForPerson(
+  pk: string,
+  concepts: string[],
+  safeSemana: string[],
+  data: any
+): number {
+  return concepts.filter(concept =>
+    safeSemana.some(iso => isMeaningfulValue(data?.[pk]?.[concept]?.[iso]))
+  ).length;
+}
+
+function estimatePersonHeight(
+  pk: string,
+  concepts: string[],
+  safeSemana: string[],
+  data: any
+): number {
+  const visibleConcepts = countVisibleConceptsForPerson(pk, concepts, safeSemana, data);
+  return PERSON_HEADER_HEIGHT + Math.max(visibleConcepts, 0) * CONCEPT_ROW_HEIGHT;
+}
+
+export function paginatePersonKeysForPDF(
+  personKeys: string[],
+  concepts: string[],
+  safeSemana: string[],
+  data: any,
+  maxPageHeight: number = DEFAULT_PAGE_HEIGHT
+): string[][] {
+  const effectiveHeight = maxPageHeight - HEADER_AND_FOOTER_RESERVED;
+  const pages: string[][] = [];
+  let currentPage: string[] = [];
+  let currentHeight = 0;
+
+  personKeys.forEach(pk => {
+    const personHeight = estimatePersonHeight(pk, concepts, safeSemana, data);
+    const nextHeight = currentHeight + personHeight;
+
+    if (currentPage.length > 0 && nextHeight > effectiveHeight) {
+      pages.push(currentPage);
+      currentPage = [pk];
+      currentHeight = personHeight;
+      return;
+    }
+
+    currentPage.push(pk);
+    currentHeight = nextHeight;
+  });
+
+  if (currentPage.length > 0) {
+    pages.push(currentPage);
+  }
+
+  return pages.length > 0 ? pages : [[]];
+}
+
 export const calculatePersonsPerPage = (
   totalPersons: number,
-  CONCEPTS: string[],
-  maxPageHeight: number = 794, // 210mm en píxeles a escala 3x (210 * 3.7795 ≈ 794)
-  minPersonsPerPage: number = 1
+  concepts: string[],
+  safeSemana: string[] = [],
+  data: any = {}
 ): { personsPerPage: number; totalPages: number } => {
-  // Estimate concepts per person (average case)
-  const estimatedConceptsPerPerson = Math.min(CONCEPTS.length, 3);
-  
-  // Margen inferior extra para evitar que invada el footer
-  const safetyMargin = 200;
-  const effectiveMaxHeight = maxPageHeight - safetyMargin;
-  
-  // Start more conservative para asegurar que siempre quepa en una página
-  let personsPerPage = Math.min(10, totalPersons);
-  
-  // Dynamic adjustment with estimated concepts
-  while (
-    estimateContentHeight(personsPerPage, estimatedConceptsPerPerson) > effectiveMaxHeight &&
-    personsPerPage > minPersonsPerPage
-  ) {
-    personsPerPage--;
-  }
-  
-  // Auto-fill logic: if we have space, try to add more persons
-  // Pero ser más conservador con el espacio buffer
-  let optimalPersonsPerPage = personsPerPage;
-  const spaceBuffer = 60; // Buffer para evitar cortes en el footer
-  
-  for (let testPersons = personsPerPage + 1; testPersons <= totalPersons; testPersons++) {
-    const testHeight = estimateContentHeight(testPersons, estimatedConceptsPerPerson);
-    const availableSpace = effectiveMaxHeight - testHeight;
-    
-    if (testHeight <= effectiveMaxHeight && availableSpace >= spaceBuffer) {
-      optimalPersonsPerPage = testPersons;
-    } else if (testHeight <= effectiveMaxHeight && availableSpace < spaceBuffer) {
-      // We can fit it but would be too tight, stop here
-      break;
-    } else {
-      // Would exceed page height
-      break;
-    }
-  }
-  
-  personsPerPage = optimalPersonsPerPage;
-  
-  // Additional optimization: if concepts are few, we can be more aggressive
-  // Pero siempre respetar el límite máximo con margen de seguridad
-  if (estimatedConceptsPerPerson <= 2) {
-    const aggressiveMaxHeight = Math.min(750, effectiveMaxHeight); // Usar effectiveMaxHeight con margen
-    let aggressivePersonsPerPage = personsPerPage;
-    const aggressiveBuffer = 30; // Buffer más conservador
-    
-    for (let testPersons = personsPerPage + 1; testPersons <= totalPersons; testPersons++) {
-      const testHeight = estimateContentHeight(testPersons, estimatedConceptsPerPerson);
-      const availableSpace = aggressiveMaxHeight - testHeight;
-      if (testHeight <= aggressiveMaxHeight && availableSpace >= aggressiveBuffer) {
-        aggressivePersonsPerPage = testPersons;
-      } else {
-        break;
-      }
-    }
-    
-    if (aggressivePersonsPerPage > personsPerPage) {
-      personsPerPage = aggressivePersonsPerPage;
-    }
-  }
-  
-  const totalPages = Math.ceil(totalPersons / personsPerPage) || 1;
-  
-  
-  return { personsPerPage, totalPages };
-};
+  const personKeys = Object.keys(data || {}).filter(key => !String(key).startsWith('__'));
 
+  if (personKeys.length === 0) {
+    const fallback = Math.max(1, Math.min(totalPersons || 1, 6));
+    return { personsPerPage: fallback, totalPages: Math.ceil((totalPersons || 1) / fallback) };
+  }
+
+  const pages = paginatePersonKeysForPDF(personKeys, concepts, safeSemana, data);
+  const personsPerPage = Math.max(...pages.map(page => page.length), 1);
+  return { personsPerPage, totalPages: pages.length };
+};

@@ -2,7 +2,7 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { BuildPdfParams } from './types';
 import { buildReportWeekHTMLForPDF } from './buildReportWeekHTMLForPDF';
-import { calculatePersonsPerPage } from './paginationHelpers';
+import { paginatePersonKeysForPDF } from './paginationHelpers';
 import { generateWeekFilename } from './filenameHelpers';
 import { shareOrSavePDF } from '@shared/utils/pdfShare';
 import {
@@ -42,9 +42,8 @@ export async function exportReportWeekToPDF(params: BuildPdfParams) {
 
     // Calculate pagination
     const personKeys = orderedPersonKeys;
-    const totalPersons = personKeys.length;
-    
-    const { personsPerPage, totalPages } = calculatePersonsPerPage(totalPersons, CONCEPTS);
+    const pagedPersonKeys = paginatePersonKeysForPDF(personKeys, CONCEPTS, safeSemana, data);
+    const totalPages = pagedPersonKeys.length;
 
     // Create PDF
     const pdf = new jsPDF({
@@ -55,9 +54,7 @@ export async function exportReportWeekToPDF(params: BuildPdfParams) {
 
     // Generate pages
     for (let pageIndex = 0; pageIndex < totalPages; pageIndex++) {
-      const startPerson = pageIndex * personsPerPage;
-      const endPerson = Math.min(startPerson + personsPerPage, totalPersons);
-      const pagePersonKeys = personKeys.slice(startPerson, endPerson);
+      const pagePersonKeys = pagedPersonKeys[pageIndex] || [];
       
       // Create data subset for this page
       const pageData: any = {};
@@ -130,13 +127,13 @@ export async function exportReportWeekToPDF(params: BuildPdfParams) {
         windowHeight: 794,
         ignoreElements: () => false,
         onclone: (clonedDoc) => {
-          // Aplicar exactamente la misma lógica que en nómina
           const footer = clonedDoc.querySelector('.footer') as HTMLElement;
           if (footer) {
             footer.style.position = 'relative';
             footer.style.display = 'flex';
             footer.style.visibility = 'visible';
             footer.style.opacity = '1';
+            footer.style.marginTop = 'auto';
           }
         }
       });

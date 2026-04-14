@@ -17,6 +17,7 @@ export const baseStyles = `
     background: white;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
   }
   .header { background: white; color: #0f172a; flex-shrink: 0; }
   .header h1 { margin: 0; font-size: 16px; font-weight: 700; letter-spacing: -0.5px; }
@@ -32,7 +33,13 @@ export const baseStyles = `
     text-transform: uppercase;
     letter-spacing: 0.2px;
   }
-  .content { padding: 12px 20px; flex: 1; margin-bottom: 0; }
+  .content {
+    padding: 12px 20px 12px 20px;
+    flex: 1;
+    margin-bottom: 0;
+    min-height: 0;
+    overflow: hidden;
+  }
   .info-panel {
     background: #f1f5f9;
     margin: 10px 0 6px 0;
@@ -78,8 +85,16 @@ export const baseStyles = `
     color: #0f172a;
   }
   .week-title { font-size: 14px; font-weight: 600; color: #1e293b; margin: 12px 0 8px 0; padding: 4px 0; border-bottom: 1px solid #e2e8f0; }
-  .table-container { background: white; border-radius: 6px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+  .table-container {
+    background: white;
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    margin-bottom: 18px;
+  }
   table { width: 100%; border-collapse: collapse; font-size: 10px; border: 2px solid #7dbfe8; }
+  thead { display: table-header-group; }
+  tr { break-inside: avoid; page-break-inside: avoid; }
   th { background: #bfe4f8; color: #0f172a; padding: 6px 6px; text-align: center; font-weight: 700; font-size: 9px; text-transform: uppercase; border: 1px solid #7dbfe8; vertical-align: middle; }
   td { padding: 6px 6px; border: 1px solid #e2e8f0; background: white; vertical-align: middle; color: #1e293b; }
   .th-label {
@@ -152,7 +167,7 @@ export const baseStyles = `
   }
   .footer {
     text-align: center;
-    padding: 10px 0;
+    padding: 12px 0 10px 0;
     color: #64748b;
     font-size: 6px;
     border-top: 1px solid #e2e8f0;
@@ -162,11 +177,9 @@ export const baseStyles = `
     gap: 2px;
     flex-shrink: 0;
     width: 100%;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
     background: white;
+    margin-top: auto;
+    min-height: 26px;
   }
   .setlux-logo { font-weight: 700; }
   .setlux-logo .set { color: #f97316; }
@@ -178,20 +191,17 @@ export const baseStyles = `
   
   @media print {
     .footer { 
-      position: fixed !important; 
-      bottom: 0 !important; 
-      left: 0 !important; 
-      right: 0 !important; 
       width: 100% !important; 
       background: white !important; 
-      z-index: 9999 !important; 
       display: flex !important;
       visibility: visible !important;
       opacity: 1 !important;
       color: #64748b !important;
       font-size: 6px !important;
-      padding: 6px 0 !important;
+      padding: 10px 0 8px 0 !important;
       border-top: 1px solid #e2e8f0 !important;
+      margin-top: auto !important;
+      min-height: 26px !important;
     }
   }
 `;

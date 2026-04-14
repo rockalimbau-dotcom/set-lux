@@ -1,6 +1,6 @@
 import { ExportReportRangeParams } from './types';
 import { buildReportWeekHTMLForPDF } from './buildReportWeekHTMLForPDF';
-import { calculatePersonsPerPage } from './paginationHelpers';
+import { paginatePersonKeysForPDF } from './paginationHelpers';
 import { generateRangeFilename } from './filenameHelpers';
 import { sortPersonKeysByRole } from './dataHelpers';
 import { groupAndSortPersonsByBlock } from './buildReportWeekHTMLForPDF/sortingHelpers';
@@ -452,8 +452,8 @@ export async function exportReportRangeToPDF(params: ExportReportRangeParams) {
       const { finalPersonKeys } = groupAndSortPersonsByBlock(finalWeekData, false, project);
       
       // Calcular paginación igual que en exportReportWeekToPDF
-      const totalPersons = finalPersonKeys.length;
-      const { personsPerPage, totalPages } = calculatePersonsPerPage(totalPersons, CONCEPTS);
+      const pagedPersonKeys = paginatePersonKeysForPDF(finalPersonKeys, CONCEPTS, filteredWeekDays, finalWeekData);
+      const totalPages = pagedPersonKeys.length;
 
       // Generate pages for this week - igual que exportReportWeekToPDF
       for (let pageIndex = 0; pageIndex < totalPages; pageIndex++) {
@@ -463,9 +463,7 @@ export async function exportReportRangeToPDF(params: ExportReportRangeParams) {
         }
 
         // Crear datos solo para las personas de esta página (igual que exportReportWeekToPDF)
-        const startPerson = pageIndex * personsPerPage;
-        const endPerson = Math.min(startPerson + personsPerPage, totalPersons);
-        const pagePersonKeys = finalPersonKeys.slice(startPerson, endPerson);
+        const pagePersonKeys = pagedPersonKeys[pageIndex] || [];
         
         const pageData: any = {};
         pagePersonKeys.forEach(pk => {
@@ -502,21 +500,17 @@ export async function exportReportRangeToPDF(params: ExportReportRangeParams) {
         // Wait for fonts and images to load
         await new Promise(resolve => setTimeout(resolve, 200));
         
-        // Convert to canvas - permitir altura completa para detectar si excede
-        tempContainer.style.height = 'auto';
-        tempContainer.style.overflow = 'visible';
-        
         const canvas = await html2canvas(tempContainer, {
           scale: PDF_RENDER_SCALE,
           useCORS: true,
           allowTaint: true,
           backgroundColor: '#ffffff',
           width: 1123,
-          // No limitar height, dejar que html2canvas calcule la altura real
+          height: 794,
           scrollX: 0,
           scrollY: 0,
           windowWidth: 1123,
-          // No limitar windowHeight, dejar que se calcule automáticamente
+          windowHeight: 794,
           ignoreElements: () => false,
           onclone: (clonedDoc) => {
             const footer = clonedDoc.querySelector('.footer') as HTMLElement;
@@ -525,6 +519,7 @@ export async function exportReportRangeToPDF(params: ExportReportRangeParams) {
               footer.style.display = 'flex';
               footer.style.visibility = 'visible';
               footer.style.opacity = '1';
+              footer.style.marginTop = 'auto';
             }
           }
         });
@@ -532,43 +527,8 @@ export async function exportReportRangeToPDF(params: ExportReportRangeParams) {
         // Remove temporary container
         document.body.removeChild(tempContainer);
         
-        // Calcular altura real en mm
         const imgData = canvasToPdfImage(canvas);
-        const imgHeightMM = (canvas.height / canvas.width) * 297;
-        const maxPageHeightMM = 210;
-        
-        // Si el contenido excede la altura máxima, dividirlo en múltiples páginas
-        if (imgHeightMM > maxPageHeightMM) {
-          let currentY = 0;
-          const totalHeight = imgHeightMM;
-          
-          while (currentY < totalHeight) {
-            if (currentY > 0) {
-              pdf.addPage();
-            }
-            
-            const pageHeight = Math.min(maxPageHeightMM, totalHeight - currentY);
-            pdf.saveGraphicsState();
-            pdf.rect(0, 0, 297, pageHeight);
-            pdf.clip();
-            pdf.addImage(
-              imgData,
-              PDF_IMAGE_FORMAT,
-              0,
-              -currentY,
-              297,
-              totalHeight,
-              undefined,
-              PDF_IMAGE_COMPRESSION
-            );
-            pdf.restoreGraphicsState();
-            
-            currentY += pageHeight;
-          }
-        } else {
-          // Contenido cabe en una página
-          pdf.addImage(imgData, PDF_IMAGE_FORMAT, 0, 0, 297, imgHeightMM, undefined, PDF_IMAGE_COMPRESSION);
-        }
+        pdf.addImage(imgData, PDF_IMAGE_FORMAT, 0, 0, 297, 210, undefined, PDF_IMAGE_COMPRESSION);
       }
     }
 

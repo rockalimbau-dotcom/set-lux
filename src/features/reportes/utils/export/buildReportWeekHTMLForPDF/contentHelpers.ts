@@ -2,26 +2,6 @@ import { esc } from '../htmlHelpers';
 import { getTranslation } from '../translationHelpers';
 import { generatePersonHTML } from './personHTMLHelpers';
 
-function generateScheduleRow(
-  label: string,
-  safeSemanaWithData: string[],
-  valueForISO: (iso: string) => string
-): string {
-  return `
-    <tr>
-      <td style="border:1px solid #999;padding:6px;text-align:left;background:#1e40af;color:#fff;font-weight:700;font-size:9px;text-transform:uppercase;">${esc(label)}</td>
-      ${safeSemanaWithData
-        .map(
-          iso =>
-            `<td style="border:1px solid #999;padding:6px;text-align:left;background:#1e40af;color:#fff;font-weight:700;font-size:9px;">${esc(
-              valueForISO(iso)
-            )}</td>`
-        )
-        .join('')}
-      <td style="border:1px solid #999;padding:6px;text-align:left;background:#1e40af;color:#fff;font-weight:700;font-size:9px;">&nbsp;</td>
-    </tr>`;
-}
-
 /**
  * Generate body HTML grouped by blocks
  */
@@ -33,63 +13,36 @@ export function generateBodyByBlocks(
   finalData: any,
   genderMap?: Record<string, string>,
   project?: any,
+  horarioTexto?: (iso: string) => string,
   horarioPrelight?: (iso: string) => string,
   horarioPickup?: (iso: string) => string,
-  horarioExtraByBlock?: (blockKey: string, iso: string) => string,
-  reportLabels?: { extra: string; pre: string; pick: string }
+  horarioExtraByBlock?: (blockKey: string, iso: string) => string
 ): string {
   const bodyParts: string[] = [];
 
   bodyParts.push(
     ...personsByBlock.base.map(pk =>
-      generatePersonHTML(pk, conceptosConDatos, safeSemanaWithData, finalData, genderMap, project)
+      generatePersonHTML(pk, conceptosConDatos, safeSemanaWithData, finalData, genderMap, project, horarioTexto, horarioPrelight, horarioPickup, horarioExtraByBlock)
     )
   );
 
   extraGroups.forEach(group => {
-    if (typeof horarioExtraByBlock === 'function') {
-      bodyParts.push(
-        generateScheduleRow(
-          reportLabels?.extra || getTranslation('reports.extraSchedule', 'Equipo extra / Dif horarios'),
-          safeSemanaWithData,
-          iso => horarioExtraByBlock(group.blockKey, iso)
-        )
-      );
-    }
     bodyParts.push(
       ...group.people.map(pk =>
-        generatePersonHTML(pk, conceptosConDatos, safeSemanaWithData, finalData, genderMap, project)
+        generatePersonHTML(pk, conceptosConDatos, safeSemanaWithData, finalData, genderMap, project, horarioTexto, horarioPrelight, horarioPickup, horarioExtraByBlock)
       )
     );
   });
 
-  if (personsByBlock.pre.length > 0 && typeof horarioPrelight === 'function') {
-    bodyParts.push(
-      generateScheduleRow(
-        reportLabels?.pre || getTranslation('reports.prelightSchedule', 'Horario Equipo Prelight'),
-        safeSemanaWithData,
-        horarioPrelight
-      )
-    );
-  }
   bodyParts.push(
     ...personsByBlock.pre.map(pk =>
-      generatePersonHTML(pk, conceptosConDatos, safeSemanaWithData, finalData, genderMap, project)
+      generatePersonHTML(pk, conceptosConDatos, safeSemanaWithData, finalData, genderMap, project, horarioTexto, horarioPrelight, horarioPickup, horarioExtraByBlock)
     )
   );
 
-  if (personsByBlock.pick.length > 0 && typeof horarioPickup === 'function') {
-    bodyParts.push(
-      generateScheduleRow(
-        reportLabels?.pick || getTranslation('reports.pickupSchedule', 'Horario Equipo Recogida'),
-        safeSemanaWithData,
-        horarioPickup
-      )
-    );
-  }
   bodyParts.push(
     ...personsByBlock.pick.map(pk =>
-      generatePersonHTML(pk, conceptosConDatos, safeSemanaWithData, finalData, genderMap, project)
+      generatePersonHTML(pk, conceptosConDatos, safeSemanaWithData, finalData, genderMap, project, horarioTexto, horarioPrelight, horarioPickup, horarioExtraByBlock)
     )
   );
 

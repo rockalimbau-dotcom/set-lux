@@ -52,21 +52,20 @@ describe('reportes/utils/export', () => {
     it('generates table headers with day names and dates', () => {
       const result = buildReportWeekHTML(defaultParams);
 
-      expect(result).toContain(
-        '<th style="border:1px solid #999;padding:6px;text-align:left;background:#1e40af;color:#fff;">Horario Equipo base</th>'
-      );
+      expect(result).toContain('Day 1<br/>2023-01-01');
+      expect(result).toContain('Day 2<br/>2023-01-02');
       expect(mockDayNameFromISO).toHaveBeenCalledWith('2023-01-01', 0);
       expect(mockDayNameFromISO).toHaveBeenCalledWith('2023-01-02', 1);
       expect(mockToDisplayDate).toHaveBeenCalledWith('2023-01-01');
       expect(mockToDisplayDate).toHaveBeenCalledWith('2023-01-02');
     });
 
-    it('generates horario row', () => {
+    it('renders schedule inside the person row', () => {
       const result = buildReportWeekHTML(defaultParams);
 
-      expect(result).toContain(
-        '<th style="border:1px solid #999;padding:6px;text-align:left;background:#1e40af;color:#fff;">Horario Equipo base</th>'
-      );
+      expect(result).not.toContain('Horario Equipo base');
+      expect(result).toContain('Horario 2023-01-01');
+      expect(result).toContain('Horario 2023-01-02');
       expect(mockHorarioTexto).toHaveBeenCalledWith('2023-01-01');
       expect(mockHorarioTexto).toHaveBeenCalledWith('2023-01-02');
     });
@@ -96,10 +95,13 @@ describe('reportes/utils/export', () => {
         },
       });
 
-      expect(result).toContain('Horario Equipo cámara');
-      expect(result).toContain('Horario Refuerzos cámara');
-      expect(result).toContain('Horario Montaje previo');
-      expect(result).toContain('Horario Desmontaje');
+      expect(result).not.toContain('Horario Equipo cámara');
+      expect(result).not.toContain('Horario Refuerzos cámara');
+      expect(result).not.toContain('Horario Montaje previo');
+      expect(result).not.toContain('Horario Desmontaje');
+      expect(result).toContain('R1 — Pepe');
+      expect(result).toContain('G1 — John');
+      expect(result).toContain('E2 — Jane');
     });
 
     it('generates person rows with role and name', () => {

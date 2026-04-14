@@ -10,6 +10,29 @@ import {
   resolveExportRoleMeta,
 } from '../dataHelpers';
 
+function scheduleForPerson(
+  pk: string,
+  iso: string,
+  finalData: any,
+  horarioTexto?: (iso: string) => string,
+  horarioPrelight?: (iso: string) => string,
+  horarioPickup?: (iso: string) => string,
+  horarioExtraByBlock?: (blockKey: string, iso: string) => string
+): string {
+  const parsed = parsePersonKey(pk);
+  const block = parsed.block || 'base';
+  const saved = finalData?.__schedule__?.[pk]?.[block]?.[iso];
+  if (saved?.start || saved?.end) {
+    return `${saved?.start || ''} ${saved?.end || ''}`.trim();
+  }
+  if (block === 'pre' && typeof horarioPrelight === 'function') return horarioPrelight(iso);
+  if (block === 'pick' && typeof horarioPickup === 'function') return horarioPickup(iso);
+  if (String(block).startsWith('extra') && typeof horarioExtraByBlock === 'function') {
+    return horarioExtraByBlock(block, iso);
+  }
+  return typeof horarioTexto === 'function' ? horarioTexto(iso) : '';
+}
+
 /**
  * Generate HTML for a person's header row
  * IMPORTANTE: Convertir formato de roles de "G.pre__" a "GP", "REFE.pre__" a "REFE", etc.
@@ -17,8 +40,13 @@ import {
 function generatePersonHeader(
   pk: string,
   safeSemanaWithData: string[],
+  finalData: any,
   genderMap?: Record<string, string>,
-  project?: any
+  project?: any,
+  horarioTexto?: (iso: string) => string,
+  horarioPrelight?: (iso: string) => string,
+  horarioPickup?: (iso: string) => string,
+  horarioExtraByBlock?: (blockKey: string, iso: string) => string
 ): string {
   // El formato del pk es: "role.block__name" donde block puede ser "pre" o "pick"
   // Ejemplos: "G.pre__Nombre", "REFE.pre__Nombre", "G.pick__Nombre", "G__Nombre" (base)
@@ -54,7 +82,11 @@ function generatePersonHeader(
             ${displayName}
           </td>
           ${safeSemanaWithData
-            .map(() => `<td style="border:1px solid #e2e8f0;padding:6px;text-align:center;vertical-align:middle;"><div class="td-label td-label-center">&nbsp;</div></td>`)
+            .map(
+              iso => `<td style="border:1px solid #e2e8f0;padding:6px;text-align:center;vertical-align:middle;"><div class="td-label td-label-center">${esc(
+                scheduleForPerson(pk, iso, finalData, horarioTexto, horarioPrelight, horarioPickup, horarioExtraByBlock)
+              )}</div></td>`
+            )
             .join('')}
           <td style="border:1px solid #e2e8f0;padding:6px;text-align:center;vertical-align:middle;"><div class="td-label td-label-center">&nbsp;</div></td>
         </tr>`;
@@ -166,9 +198,23 @@ export function generatePersonHTML(
   safeSemanaWithData: string[],
   finalData: any,
   genderMap?: Record<string, string>,
-  project?: any
+  project?: any,
+  horarioTexto?: (iso: string) => string,
+  horarioPrelight?: (iso: string) => string,
+  horarioPickup?: (iso: string) => string,
+  horarioExtraByBlock?: (blockKey: string, iso: string) => string
 ): string {
-  const header = generatePersonHeader(pk, safeSemanaWithData, genderMap, project);
+  const header = generatePersonHeader(
+    pk,
+    safeSemanaWithData,
+    finalData,
+    genderMap,
+    project,
+    horarioTexto,
+    horarioPrelight,
+    horarioPickup,
+    horarioExtraByBlock
+  );
   if (!header) return ''; // Skip invalid entries
 
   const rows = generatePersonConceptRows(pk, conceptosConDatos, safeSemanaWithData, finalData);
