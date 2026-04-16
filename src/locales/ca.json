@@ -679,10 +679,22 @@
   "projects": {
     "calendarExport": "Calendari",
     "calendarExportError": "No s'ha pogut exportar el calendari.",
+    "calendarExportTitle": "Calendari global de projectes",
+    "calendarExportDescription": "Exporta una vista mensual de tots els projectes planificats dins del rang seleccionat.",
     "calendarExportSelectorTitle": "Selecciona què exportar",
     "calendarExportAllHint": "Exportar preproducció i producció.",
     "calendarExportPreHint": "Exportar només les setmanes de preproducció.",
-    "calendarExportProHint": "Exportar només les setmanes de producció."
+    "calendarExportProHint": "Exportar només les setmanes de producció.",
+    "calendarNoProjectsToExport": "No hi ha projectes amb planificació desada dins del rang seleccionat.",
+    "calendarProjectsActive": "Només actius",
+    "calendarProjectsAll": "Tots els projectes",
+    "calendarRange": "Rang",
+    "calendarProjects": "Projectes",
+    "calendarPreview": "Previsualització",
+    "calendarProjectsScope": "Abast",
+    "calendarAssignments": "Dies ocupats",
+    "calendarActiveDays": "Dies amb activitat",
+    "calendarMoreProjects": "+{{count}} més"
   },
   "projectDetail": {
     "confirmStatusChangeTitle": "Confirmar canvi d'estat",

@@ -679,10 +679,22 @@
   "projects": {
     "calendarExport": "Calendario",
     "calendarExportError": "No se ha podido exportar el calendario.",
+    "calendarExportTitle": "Calendario global de proyectos",
+    "calendarExportDescription": "Exporta una vista mensual de todos los proyectos planificados del rango seleccionado.",
     "calendarExportSelectorTitle": "Selecciona qué exportar",
     "calendarExportAllHint": "Exportar preproducción y producción.",
     "calendarExportPreHint": "Exportar solo las semanas de preproducción.",
-    "calendarExportProHint": "Exportar solo las semanas de producción."
+    "calendarExportProHint": "Exportar solo las semanas de producción.",
+    "calendarNoProjectsToExport": "No hay proyectos con planificación guardada dentro del rango seleccionado.",
+    "calendarProjectsActive": "Solo activos",
+    "calendarProjectsAll": "Todos los proyectos",
+    "calendarRange": "Rango",
+    "calendarProjects": "Proyectos",
+    "calendarPreview": "Previsualización",
+    "calendarProjectsScope": "Alcance",
+    "calendarAssignments": "Días ocupados",
+    "calendarActiveDays": "Días con actividad",
+    "calendarMoreProjects": "+{{count}} más"
   },
   "projectDetail": {
     "confirmStatusChangeTitle": "Confirmar cambio de estado",
