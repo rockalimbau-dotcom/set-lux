@@ -3,6 +3,7 @@ import { useMemo, useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AnyRecord } from '@shared/types/common';
 import { exportToPDF, exportAllToPDF } from '../utils/export';
+import { exportProjectCalendarToPDF } from '../utils/exportProjectCalendarToPDF';
 import { parsePlanPdf, applyImportToNeeds } from '../importPlan';
 import type { ImportConflict, ImportResult, WeekDecision } from '../importPlan';
 import { NecesidadesTabProps, DayInfo, NeedsState, NeedsWeek } from './NecesidadesTab/NecesidadesTabTypes';
@@ -430,6 +431,41 @@ export default function NecesidadesTab({ project, readOnly = false }: Necesidade
     }
   };
 
+  const exportCalendarPDF = async (scope: 'pre' | 'pro' | 'all' = 'all') => {
+    try {
+      const scopedEntries =
+        scope === 'pre'
+          ? preEntries.map(entry => ({ ...(entry as AnyRecord), __calendarScope: 'pre' }))
+          : scope === 'pro'
+          ? proEntries.map(entry => ({ ...(entry as AnyRecord), __calendarScope: 'pro' }))
+          : [
+              ...preEntries.map(entry => ({ ...(entry as AnyRecord), __calendarScope: 'pre' })),
+              ...proEntries.map(entry => ({ ...(entry as AnyRecord), __calendarScope: 'pro' })),
+            ];
+
+      const allEntries = [...scopedEntries]
+        .filter(entry => String(entry?.startDate || '').trim() !== '')
+        .sort((a, b) => {
+          const dateA = new Date((a as AnyRecord).startDate || 0).getTime();
+          const dateB = new Date((b as AnyRecord).startDate || 0).getTime();
+          return dateA - dateB;
+        });
+
+      if (allEntries.length === 0) {
+        alert(t('planning.noWeeksInPlanning', { defaultValue: 'No hay semanas en Calendario' }));
+        return;
+      }
+
+      const ok = await exportProjectCalendarToPDF(project, allEntries);
+      if (!ok) {
+        alert(t('projects.calendarExportError', { defaultValue: 'No se ha podido exportar el calendario.' }));
+      }
+    } catch (error) {
+      console.error('Error exporting project calendar PDF:', error);
+      alert(t('projects.calendarExportError', { defaultValue: 'No se ha podido exportar el calendario.' }));
+    }
+  };
+
   const exportScopePDF = async (scope: 'pre' | 'pro') => {
     try {
       const entries = scope === 'pre' ? preEntries : proEntries;
@@ -492,6 +528,7 @@ export default function NecesidadesTab({ project, readOnly = false }: Necesidade
         duplicateWeek={duplicateWeek}
         deleteWeek={deleteWeek}
         exportAllNeedsPDF={exportAllNeedsPDF}
+        exportCalendarPDF={exportCalendarPDF}
         exportScopePDF={exportScopePDF}
         swapDays={swapDays}
         addCustomRow={addCustomRow}

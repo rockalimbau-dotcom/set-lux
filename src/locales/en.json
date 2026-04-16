@@ -674,6 +674,14 @@
     "locations": "Head of locations",
     "productionCoordinator": "Production coordinator"
   },
+  "projects": {
+    "calendarExport": "Calendar",
+    "calendarExportError": "The calendar could not be exported.",
+    "calendarExportSelectorTitle": "Select what to export",
+    "calendarExportAllHint": "Export pre-production and production.",
+    "calendarExportPreHint": "Export only the pre-production weeks.",
+    "calendarExportProHint": "Export only the production weeks."
+  },
   "projectDetail": {
     "confirmStatusChangeTitle": "Confirm status change",
     "confirmStatusChangeMessage": "Are you sure you want to change the status of {{projectName}} to {{status}}?",

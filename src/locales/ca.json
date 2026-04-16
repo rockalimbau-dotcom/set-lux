@@ -676,6 +676,14 @@
     "locations": "Cap de localitzacions",
     "productionCoordinator": "Coordinadora de producció"
   },
+  "projects": {
+    "calendarExport": "Calendari",
+    "calendarExportError": "No s'ha pogut exportar el calendari.",
+    "calendarExportSelectorTitle": "Selecciona què exportar",
+    "calendarExportAllHint": "Exportar preproducció i producció.",
+    "calendarExportPreHint": "Exportar només les setmanes de preproducció.",
+    "calendarExportProHint": "Exportar només les setmanes de producció."
+  },
   "projectDetail": {
     "confirmStatusChangeTitle": "Confirmar canvi d'estat",
     "confirmStatusChangeMessage": "Estàs segur que vols canviar l'estat de {{projectName}} a {{status}}?",
