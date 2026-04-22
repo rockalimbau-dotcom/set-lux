@@ -82,7 +82,7 @@ export function ProjectsScreenHeader({
             </h1>
           </div>
 
-          {/* Botón Nuevo Proyecto */}
+          {/* Acciones principales */}
           <div className='relative flex items-center gap-2' style={{minHeight: 'auto', justifyContent: 'flex-start'}}>
             <ThemeToggleButton />
             <button

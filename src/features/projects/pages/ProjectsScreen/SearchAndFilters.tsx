@@ -27,6 +27,7 @@ interface SearchAndFiltersProps {
   sortMenuRef: React.RefObject<HTMLDivElement>;
   isLight: boolean;
   focusColor: string;
+  onCalendarExport?: () => void;
 }
 
 export function SearchAndFilters({
@@ -52,6 +53,7 @@ export function SearchAndFilters({
   sortMenuRef,
   isLight,
   focusColor,
+  onCalendarExport,
 }: SearchAndFiltersProps) {
   const { t } = useTranslation();
 
@@ -139,7 +141,22 @@ export function SearchAndFilters({
           />
         )}
       </div>
+
+      <div className='relative flex-shrink-0'>
+        <button
+          onClick={onCalendarExport}
+          className='px-1.5 py-1 sm:px-2 sm:py-1.5 md:px-3 md:py-2 lg:px-4 lg:py-3 rounded sm:rounded-md md:rounded-lg lg:rounded-xl border transition text-[10px] sm:text-xs md:text-sm whitespace-nowrap'
+          style={{
+            backgroundColor: isLight ? '#E8F4FD' : 'rgba(242,116,5,0.12)',
+            color: isLight ? '#0468BF' : '#FCD34D',
+            borderColor: isLight ? 'rgba(4,104,191,0.22)' : 'rgba(242,116,5,0.28)',
+          }}
+        >
+          <span className='flex items-center gap-0.5 sm:gap-1 md:gap-2'>
+            📅 {t('projects.calendarExport', { defaultValue: 'Calendari' })}
+          </span>
+        </button>
+      </div>
     </div>
   );
 }
-
