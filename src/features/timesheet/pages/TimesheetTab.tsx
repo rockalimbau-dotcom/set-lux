@@ -6,6 +6,8 @@ import { parseYYYYMMDD, addDays, toYYYYMMDD, formatDDMMYYYY } from '@shared/util
 import { hasRoleGroupSuffix, roleLabelFromCode, roleRank, stripRefuerzoSuffix, stripRoleSuffix } from '@shared/constants/roles';
 import { getMemberRoleSortOrder, resolveMemberProjectRole } from '@shared/utils/projectRoles';
 import { usePlanWeeks } from '@features/reportes/pages/ReportesTab/usePlanWeeks';
+import { EmptyState } from '@features/nomina/nominas/NominaPublicidad/EmptyState';
+import { useHasTeam } from '@features/nomina/nominas/NominaPublicidad/useHasTeam';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { shareOrSavePDF } from '@shared/utils/pdfShare';
@@ -835,6 +837,11 @@ export default function TimesheetTab({ project, readOnly = false }: TimesheetTab
     [allWeeks, project]
   );
   const baseId = getProjectBase(project);
+  const hasTeam = useHasTeam(project, baseId);
+  const hasWeeks = allWeeks.length > 0;
+  const projectId = project?.id || project?.nombre;
+  const planificacionPath = projectId ? `/project/${projectId}/calendario` : '/projects';
+  const equipoPath = projectId ? `/project/${projectId}/equipo` : '/projects';
 
   const [selectedWeekId, setSelectedWeekId] = useLocalStorage<string>(`timesheet_${baseId}_selectedWeek`, '');
   const selectedWeek = useMemo(
@@ -1060,11 +1067,54 @@ export default function TimesheetTab({ project, readOnly = false }: TimesheetTab
     }));
   };
 
+  if (!hasWeeks && !hasTeam) {
+    return (
+      <EmptyState
+        title={t('timesheet.configureProject')}
+        message={t('timesheet.addWeeksInPlanningAndTeam')}
+        planificacionPath={planificacionPath}
+        equipoPath={equipoPath}
+        planningLabel={t('navigation.needs')}
+        teamLabel={t('navigation.team')}
+        andLabel={t('timesheet.andTeamIn')}
+        toLabel={t('timesheet.toGenerateTimesheet')}
+      />
+    );
+  }
+
+  if (!hasWeeks) {
+    return (
+      <EmptyState
+        title={t('timesheet.noWeeksInPlanning')}
+        message={t('timesheet.addWeeksInPlanningForTimesheet')}
+        planificacionPath={planificacionPath}
+        planningLabel={t('navigation.needs')}
+        toLabel={t('timesheet.toAppearHere')}
+      />
+    );
+  }
+
+  if (!hasTeam) {
+    return (
+      <EmptyState
+        title={t('timesheet.missingTeam')}
+        message={t('timesheet.fillTeamIn')}
+        equipoPath={equipoPath}
+        teamLabel={t('navigation.team')}
+        toLabel={t('timesheet.toGenerateTimesheet')}
+      />
+    );
+  }
+
   if (weeksWithPeople.length === 0) {
     return (
-      <div className='rounded-xl border border-neutral-border bg-neutral-panel/80 p-4 text-sm text-neutral-500'>
-        {t('timesheet.emptyState')}
-      </div>
+      <EmptyState
+        title={t('timesheet.assignPeopleToWeeks')}
+        message={t('timesheet.weeksWithoutTeam')}
+        planificacionPath={planificacionPath}
+        planningLabel={t('navigation.needs')}
+        toLabel={t('timesheet.toGenerateTimesheet')}
+      />
     );
   }
 
