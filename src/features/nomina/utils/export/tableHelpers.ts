@@ -129,6 +129,7 @@ export const generateRowDataCells = (
   r: any,
   columnVisibility: ReturnType<typeof getColumnVisibility>,
   options: {
+    projectMode?: 'semanal' | 'mensual' | 'diario';
     useNetAmounts?: boolean;
     showIrpfColumn?: boolean;
     showEstadoColumn?: boolean;
@@ -136,6 +137,7 @@ export const generateRowDataCells = (
   } = {}
 ): string[] => {
   const {
+    projectMode = 'semanal',
     useNetAmounts = false,
     showIrpfColumn = true,
     showEstadoColumn = true,
@@ -145,7 +147,7 @@ export const generateRowDataCells = (
   const roleDisplay = applyGenderToBadge(getRoleBadgeCode(String(roleForDisplay), i18n.language), (r as any).gender);
   const dataCells = [
     `<td class="text-left person-cell" style="font-weight:600;vertical-align:middle !important;"><div class="person-chip-wrap"><div class="member-chip-line"><span class="member-chip-badge"><span class="member-chip-badge-text">${esc(roleDisplay || '—')}</span></span><span class="member-chip-name"><span class="member-chip-name-text">${esc(r.name || '—')}</span></span></div></div></td>`,
-    `<td style="text-align:center !important;vertical-align:middle !important;"><div class="td-label td-label-center">${generateWorkedDaysText(r) || esc(displayValue(r._worked))}</div></td>`,
+    `<td style="text-align:center !important;vertical-align:middle !important;"><div class="td-label td-label-center">${generateWorkedDaysText(r, { includeCargaDescarga: projectMode !== 'diario' }) || esc(displayValue(r._worked))}</div></td>`,
     `<td style="text-align:center !important;vertical-align:middle !important;"><div class="td-label td-label-center">${esc(displayMoney(r._totalDias, 2))}</div></td>`,
   ];
 
@@ -188,7 +190,7 @@ export const generateRowDataCells = (
         ? materialType === 'unico'
           ? i18n.t('common.unique')
           : `${materialCount} ${materialType === 'semanal' ? 'semanas' : 'días'}`
-        : '—';
+        : '';
     dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;"><div class="td-label td-label-center">${esc(materialLabel)}</div></td>`);
     dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;"><div class="td-label td-label-center">${esc(displayMoney(r._totalMaterialPropio, 2))}</div></td>`);
   }

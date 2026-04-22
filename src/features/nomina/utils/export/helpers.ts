@@ -51,7 +51,11 @@ const translateDietItem = (item: string): string => {
 /**
  * Generate worked days summary text for export
  */
-export const generateWorkedDaysText = (r: any): string => {
+export const generateWorkedDaysText = (
+  r: any,
+  options: { includeCargaDescarga?: boolean } = {}
+): string => {
+  const { includeCargaDescarga = true } = options;
   const parts: string[] = [];
   
   // Localizar no se repite aquí porque ya tiene su propia columna.
@@ -59,7 +63,7 @@ export const generateWorkedDaysText = (r: any): string => {
     parts.push(`${i18n.t('payroll.dayTypes.office')} x${r._oficina}`);
   }
   
-  if ((r._carga || 0) > 0) {
+  if (includeCargaDescarga && (r._carga || 0) > 0) {
     parts.push(`${i18n.t('payroll.dayTypes.loading')} x${r._carga}`);
   }
   
@@ -79,7 +83,7 @@ export const generateWorkedDaysText = (r: any): string => {
     parts.push(`${i18n.t('payroll.dayTypes.pickup', 'Recogida')} x${r._recogida}`);
   }
   
-  if ((r._descarga || 0) > 0) {
+  if (includeCargaDescarga && (r._descarga || 0) > 0) {
     parts.push(`${i18n.t('payroll.dayTypes.unloading')} x${r._descarga}`);
   }
   
@@ -189,7 +193,13 @@ export const getColumnVisibility = (enrichedRows: any[]) => {
     holidays: enrichedRows.some(r => (r._holidays || 0) > 0),
     travel: enrichedRows.some(r => (r._travel || 0) > 0),
     extras: enrichedRows.some(r => (r.extras || 0) > 0),
-    materialPropio: enrichedRows.some(r => (r._materialPropioDays || 0) > 0 || (r._materialPropioWeeks || 0) > 0 || (r._totalMaterialPropio || 0) > 0),
+    materialPropio: enrichedRows.some(
+      r =>
+        (r._materialPropioDays || 0) > 0 ||
+        (r._materialPropioWeeks || 0) > 0 ||
+        (r._materialPropioUnique || 0) > 0 ||
+        (r._totalMaterialPropio || 0) > 0
+    ),
     transporte: enrichedRows.some(r => (r.transporte || 0) > 0),
     km: enrichedRows.some(r => (r.km || 0) > 0),
     gasolina: enrichedRows.some(r => (r.gasolina || 0) > 0 || (r._totalGasolina || 0) > 0),

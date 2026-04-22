@@ -148,7 +148,7 @@ export function MonthSectionPersonRow({
       ? materialPropioType === 'unico'
         ? t('common.unique')
         : `${materialPropioCount} ${materialPropioType === 'semanal' ? 'semanas' : 'días'}`
-      : '—';
+      : '';
 
   const roleVariants = React.useMemo(() => {
     const variants = Array.isArray((r as any)._roleVariants) ? (r as any)._roleVariants : [];

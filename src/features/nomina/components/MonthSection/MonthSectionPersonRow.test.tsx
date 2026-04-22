@@ -66,6 +66,7 @@ describe('MonthSectionPersonRow', () => {
             col={{ bg: '#60A5FA', fg: '#fff' }}
             roleLabelFromCode={(code: string) => code}
             received={{}}
+            irpfByPerson={{}}
             isSelected={false}
             toggleRowSelection={vi.fn()}
             setRcv={vi.fn()}
@@ -85,6 +86,8 @@ describe('MonthSectionPersonRow', () => {
               materialPropio: false,
             }}
             showRowSelection={false}
+            showNetColumns={false}
+            showExtraHoursPercentColumn={false}
           />
         </tbody>
       </table>
@@ -156,6 +159,7 @@ describe('MonthSectionPersonRow', () => {
             col={{ bg: '#60A5FA', fg: '#fff' }}
             roleLabelFromCode={(code: string) => code}
             received={{}}
+            irpfByPerson={{}}
             isSelected={false}
             toggleRowSelection={vi.fn()}
             setRcv={vi.fn()}
@@ -175,6 +179,8 @@ describe('MonthSectionPersonRow', () => {
               materialPropio: false,
             }}
             showRowSelection={false}
+            showNetColumns={false}
+            showExtraHoursPercentColumn={false}
           />
         </tbody>
       </table>
@@ -183,5 +189,87 @@ describe('MonthSectionPersonRow', () => {
     expect(getByText('payroll.dayTypes.shooting x3')).toBeInTheDocument();
     expect(getByText('payroll.dayTypes.localizar x1')).toBeInTheDocument();
     expect(getByText('4')).toBeInTheDocument();
+  });
+
+  it('leaves empty own material cells blank instead of showing a dash', () => {
+    const row = {
+      role: 'E',
+      name: 'Pol Peitx',
+      _totalBruto: 0,
+      _worked: 0,
+      _halfDays: 0,
+      _travel: 0,
+      _holidays: 0,
+      _localizarDays: 0,
+      _cargaDays: 0,
+      _descargaDays: 0,
+      horasExtra: 0,
+      turnAround: 0,
+      nocturnidad: 0,
+      penaltyLunch: 0,
+      transporte: 0,
+      km: 0,
+      gasolina: 0,
+      _totalDias: 0,
+      _totalHalfDays: 0,
+      _totalTravel: 0,
+      _totalHolidays: 0,
+      _totalExtras: 0,
+      _totalDietas: 0,
+      _totalTrans: 0,
+      _totalKm: 0,
+      _totalGasolina: 0,
+      _totalMaterialPropio: 0,
+      _totalLocalizacion: 0,
+      _totalCargaDescarga: 0,
+      _materialPropioDays: 0,
+      _materialPropioWeeks: 0,
+      _materialPropioUnique: 0,
+      _materialPropioType: 'diario',
+      _missingPrices: {},
+      dietasCount: new Map(),
+      ticketTotal: 0,
+      otherTotal: 0,
+      _roleVariants: [],
+    };
+
+    const { queryByText } = render(
+      <table>
+        <tbody>
+          <MonthSectionPersonRow
+            row={row}
+            personKey='person:person_pol'
+            roleForColor='E'
+            col={{ bg: '#60A5FA', fg: '#fff' }}
+            roleLabelFromCode={(code: string) => code}
+            received={{}}
+            irpfByPerson={{}}
+            isSelected={false}
+            toggleRowSelection={vi.fn()}
+            setRcv={vi.fn()}
+            projectMode='diario'
+            hasWorkedDaysData={false}
+            hasHalfDaysData={false}
+            hasLocalizacionData={false}
+            hasCargaDescargaData={false}
+            columnVisibility={{
+              holidays: false,
+              travel: false,
+              extras: false,
+              transporte: false,
+              km: false,
+              gasolina: false,
+              dietas: false,
+              materialPropio: true,
+            }}
+            showRowSelection={false}
+            showNetColumns={false}
+            showExtraHoursPercentColumn={false}
+          />
+        </tbody>
+      </table>
+    );
+
+    expect(queryByText('—')).not.toBeInTheDocument();
   });
 });

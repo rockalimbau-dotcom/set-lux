@@ -40,6 +40,7 @@ export function buildNominaMonthHTMLForPDF({
     enrichedRows,
     columnVisibility,
     numColumns,
+    projectMode,
   });
 
   const title = i18n.t('pdf.payrollTitle');

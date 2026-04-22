@@ -5,6 +5,7 @@ interface GenerateTableBodyParams {
   enrichedRows: any[];
   columnVisibility: any;
   numColumns: number;
+  projectMode?: 'semanal' | 'mensual' | 'diario';
 }
 
 /**
@@ -52,7 +53,12 @@ function groupRowsByBlock(enrichedRows: any[]) {
 /**
  * Generate table body HTML grouped by blocks
  */
-export function generateTableBody({ enrichedRows, columnVisibility, numColumns }: GenerateTableBodyParams): string {
+export function generateTableBody({
+  enrichedRows,
+  columnVisibility,
+  numColumns,
+  projectMode = 'semanal',
+}: GenerateTableBodyParams): string {
   const rowsByBlock = groupRowsByBlock(enrichedRows);
   const useNetAmounts = enrichedRows.length === 1;
   const showIrpfColumn = !useNetAmounts || enrichedRows.some(r => Number(r?._irpfAmount || 0) !== 0);
@@ -63,6 +69,7 @@ export function generateTableBody({ enrichedRows, columnVisibility, numColumns }
     enrichedRows.some(r => Number(r?._extraHoursAmount || 0) !== 0);
   const generateRowHTML = (r: any) => {
     const dataCells = generateRowDataCells(r, columnVisibility, {
+      projectMode,
       useNetAmounts,
       showIrpfColumn,
       showEstadoColumn,

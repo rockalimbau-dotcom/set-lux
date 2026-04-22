@@ -26,6 +26,7 @@ export function buildNominaMonthHTML({
     enrichedRows,
     columnVisibility,
     numColumns,
+    projectMode,
   });
 
   const title = `${i18n.t('payroll.title')} - ${monthLabelEs(monthKey, true)}`;
