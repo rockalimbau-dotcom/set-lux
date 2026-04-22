@@ -10,6 +10,9 @@ import ca from '../locales/ca.json';
 
 // Mapeo de nombres de idioma a códigos
 const languageMap: Record<string, string> = {
+  'es': 'es',
+  'ca': 'ca',
+  'en': 'en',
   'Español': 'es',
   'Catalán': 'ca',
   'Inglés': 'en',
@@ -18,13 +21,17 @@ const languageMap: Record<string, string> = {
   'English': 'en',
 };
 
+export function resolveLanguageCode(language: string | undefined): string {
+  return languageMap[language || ''] || 'es';
+}
+
 // Función para obtener el idioma desde el perfil del usuario
-function getLanguageFromProfile(): string {
+export function getLanguageFromProfile(): string {
   try {
     const profile = storage.getJSON<any>('profile_v1') || {};
     const idioma = profile.idioma;
-    if (idioma && languageMap[idioma]) {
-      return languageMap[idioma];
+    if (idioma) {
+      return resolveLanguageCode(idioma);
     }
   } catch (error) {
     console.error('Error reading language from profile:', error);
@@ -62,7 +69,7 @@ i18n
 
 // Función helper para cambiar el idioma y guardarlo en el perfil
 export function changeLanguage(languageName: string) {
-  const languageCode = languageMap[languageName] || 'es';
+  const languageCode = resolveLanguageCode(languageName);
   i18n.changeLanguage(languageCode);
   
   // Guardar en el perfil para persistencia
@@ -75,4 +82,3 @@ export function changeLanguage(languageName: string) {
 }
 
 export default i18n;
-

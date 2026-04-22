@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { COUNTRIES, REGIONS } from '@shared/constants/countries';
-import { ProjectForm, ProjectMode, ProjectStatus } from '../../types';
+import { ProjectForm, ProjectLanguage, ProjectMode, ProjectStatus } from '../../types';
 import { FormInput } from './FormInput';
 import { FormDropdown } from './FormDropdown';
 import { EditProjectModalFormProps } from './EditProjectModalTypes';
@@ -9,6 +9,7 @@ import {
   getEstadoLabel,
   getCondicionesLabel,
   getPaisLabel,
+  getProjectLanguageLabel,
   getRegionLabel,
 } from './EditProjectModalUtils';
 
@@ -24,17 +25,21 @@ export function EditProjectModalForm({
   setPaisDropdown,
   regionDropdown,
   setRegionDropdown,
+  languageDropdown,
+  setLanguageDropdown,
   inputHovered,
   setInputHovered,
   estadoRef,
   condicionesRef,
   paisRef,
   regionRef,
+  languageRef,
 }: EditProjectModalFormProps) {
   const { t } = useTranslation();
 
   const estadoLabel = getEstadoLabel(form.estado, t);
   const condicionesLabel = getCondicionesLabel(form.condicionesTipo, t);
+  const languageLabel = getProjectLanguageLabel(form.language, t);
   const paisLabel = getPaisLabel(form.country);
   const regionLabel = getRegionLabel(form.country, form.region, t);
 
@@ -188,6 +193,22 @@ export function EditProjectModalForm({
         dropdownState={condicionesDropdown}
         setDropdownState={setCondicionesDropdown}
         dropdownRef={condicionesRef}
+        t={t}
+      />
+
+      <FormDropdown
+        label={t('common.projectLanguage')}
+        value={languageLabel}
+        options={[
+          { value: 'es', label: t('settings.spanish') },
+          { value: 'ca', label: t('settings.catalan') },
+          { value: 'en', label: t('settings.english') },
+        ]}
+        onChange={value => setForm({ ...form, language: value as ProjectLanguage })}
+        theme={theme}
+        dropdownState={languageDropdown}
+        setDropdownState={setLanguageDropdown}
+        dropdownRef={languageRef}
         t={t}
       />
 

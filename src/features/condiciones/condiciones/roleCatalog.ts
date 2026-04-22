@@ -8,6 +8,7 @@ export interface ConditionRoleOption {
   label: string;
   sortOrder: number;
   legacyCode?: string;
+  baseRole?: string;
 }
 
 export const LEGACY_CONDITION_ROLE_TO_CODE: Record<string, string> = {
@@ -35,6 +36,50 @@ const roleSuffixForSection = (sectionKey?: ConditionSectionKey): string => {
   if (sectionKey === 'prelight') return ' Prelight';
   if (sectionKey === 'pickup') return ' Recogida';
   return '';
+};
+
+const DEFAULT_ROLE_LABELS_BY_CODE: Record<string, string[]> = {
+  G: ['Gaffer'],
+  BB: ['Best boy', 'Best Boy Electric', 'Best boy electric'],
+  RG: ['Rigging Gaffer'],
+  RBB: ['Rigging Best Boy'],
+  RE: ['Rigging Eléctrico', 'Rigging electric@', 'Rigging eléctrico', 'Rigging Electrician'],
+  E: ['Eléctrico', 'Eléctrico/a', 'Electric@', 'Elèctric@', 'Set Lighting Technician / Electrician'],
+  AUX: ['Auxiliar', 'Auxiliar electric@', 'Auxiliar elèctric@', 'Electric Assistant'],
+  M: ['Meritorio', 'Meritori@', 'Trainee'],
+  TM: ['Técnico de mesa', 'Técnic@ de mesa', 'Tècnic@ de taula', 'Lighting control programmer'],
+  FB: ['Finger boy', 'Finger Boy', 'Dimmer board operator'],
+  TG: ['Técnico de Generador', 'Grupista eléctrico', 'Grupista eléctric@', 'Grupista elèctric@', 'Electric Generator'],
+  CE: ['Chofer eléctrico', 'Chofer eléctric@', 'Xofer elèctric@', 'Electric Driver'],
+  EPO: ['Eléctrico de potencia', 'Electric@ de potencia', 'Elèctric@ de potència', 'Power Distribution Technician'],
+  TP: ['Técnico de prácticos', 'Técnic@ de prácticos', 'Tècnic@ de pràctics', 'Practical Lighting Technician'],
+  RIG: ['Rigger', 'Rigging Eléctrico', 'Rigging eléctrico', 'Rigging elèctric', 'Rigging Electrician'],
+};
+
+const normalizeLabel = (value: string): string =>
+  String(value || '')
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '');
+
+const isDefaultRoleLabel = (code: string | undefined, label: string): boolean => {
+  if (!code) return false;
+  const normalizedLabel = normalizeLabel(label);
+  return (DEFAULT_ROLE_LABELS_BY_CODE[code] || []).some(
+    defaultLabel => normalizeLabel(defaultLabel) === normalizedLabel
+  );
+};
+
+const getTranslatedBaseRoleLabel = (
+  code: string | undefined,
+  fallbackLabel: string,
+  t: (key: string, options?: any) => string
+): string => {
+  if (!code) return fallbackLabel;
+  const key = `team.roles.${code}`;
+  const translated = t(key, { context: 'neutral' });
+  return translated !== key ? translated : fallbackLabel;
 };
 
 function findDefaultConditionRoleByLegacyCode(
@@ -93,6 +138,33 @@ export function getConditionRoleLabel(
   return `${baseLabel}${roleSuffixForSection(sectionKey)}`;
 }
 
+export function getTranslatedConditionRoleLabel(
+  project: AnyRecord | null | undefined,
+  roleKey: string,
+  sectionKey: ConditionSectionKey | undefined,
+  t: (key: string, options?: any) => string
+): string {
+  const normalizedKey = normalizeConditionRoleKey(project, roleKey);
+  const catalog = normalizeProjectRoleCatalog(project);
+  const byId = findProjectRoleById(catalog, normalizedKey);
+  const mappedCode = LEGACY_CONDITION_ROLE_TO_CODE[roleKey];
+  const byCode = mappedCode ? findDefaultConditionRoleByLegacyCode(project, mappedCode) : null;
+  const baseLabel = byId?.label || byCode?.label || String(roleKey || '').trim();
+  const roleCode = normalizeLegacyRoleCode(byId?.legacyCode || byId?.baseRole || byCode?.legacyCode || mappedCode);
+  const defaultRoleId = roleCode ? buildProjectRoleId(roleCode) : '';
+  const shouldTranslate =
+    Boolean(roleCode) &&
+    (normalizedKey === defaultRoleId ||
+      normalizedKey.endsWith('_default') ||
+      isDefaultRoleLabel(roleCode, baseLabel));
+
+  const label = shouldTranslate
+    ? getTranslatedBaseRoleLabel(roleCode, baseLabel, t)
+    : baseLabel;
+
+  return `${label}${roleSuffixForSection(sectionKey)}`;
+}
+
 export function getConditionRoleOptions(project: AnyRecord | null | undefined): ConditionRoleOption[] {
   const catalog = normalizeProjectRoleCatalog(project);
   return catalog.roles
@@ -103,6 +175,7 @@ export function getConditionRoleOptions(project: AnyRecord | null | undefined): 
       label: role.label,
       sortOrder: role.sortOrder,
       legacyCode: role.legacyCode,
+      baseRole: role.baseRole,
     }))
     .sort((a, b) => a.sortOrder - b.sortOrder || a.label.localeCompare(b.label, 'es'));
 }

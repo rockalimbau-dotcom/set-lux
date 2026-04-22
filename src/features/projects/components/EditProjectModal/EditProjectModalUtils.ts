@@ -1,4 +1,4 @@
-import { ProjectMode } from '../../types';
+import { ProjectLanguage, ProjectMode } from '../../types';
 import { COUNTRIES, REGIONS } from '@shared/constants/countries';
 
 /**
@@ -10,6 +10,13 @@ export function formatMode(m: string | undefined): ProjectMode {
   if (v === 'mensual') return 'mensual';
   if (v === 'diario') return 'diario';
   return 'semanal';
+}
+
+export function formatProjectLanguage(language: string | undefined): ProjectLanguage {
+  const value = String(language || '').toLowerCase();
+  if (value.startsWith('ca')) return 'ca';
+  if (value.startsWith('en')) return 'en';
+  return 'es';
 }
 
 /**
@@ -49,6 +56,15 @@ export function getRegionLabel(
   if (!region) return t('common.noSpecificRegion');
   const regionData = REGIONS[country as keyof typeof REGIONS]?.find(r => r.code === region);
   return regionData?.name || t('common.noSpecificRegion');
+}
+
+export function getProjectLanguageLabel(
+  language: string,
+  t: (key: string) => string
+): string {
+  if (language === 'ca') return t('settings.catalan');
+  if (language === 'en') return t('settings.english');
+  return t('settings.spanish');
 }
 
 /**
@@ -92,4 +108,3 @@ export function getHoverTextColor(theme: 'light' | 'dark', isHovered: boolean): 
   }
   return theme === 'light' ? '#111827' : '#d1d5db';
 }
-

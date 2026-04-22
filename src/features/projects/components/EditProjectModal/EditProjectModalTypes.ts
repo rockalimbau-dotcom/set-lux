@@ -1,4 +1,4 @@
-import { Project, ProjectForm, ProjectMode, ProjectStatus } from '../../types';
+import { Project, ProjectForm } from '../../types';
 
 export interface EditProjectModalProps {
   project: Project;
@@ -37,10 +37,13 @@ export interface EditProjectModalFormProps {
   setPaisDropdown: React.Dispatch<React.SetStateAction<DropdownState>>;
   regionDropdown: DropdownState;
   setRegionDropdown: React.Dispatch<React.SetStateAction<DropdownState>>;
+  languageDropdown: DropdownState;
+  setLanguageDropdown: React.Dispatch<React.SetStateAction<DropdownState>>;
   inputHovered: InputHoverState;
   setInputHovered: React.Dispatch<React.SetStateAction<InputHoverState>>;
   estadoRef: React.RefObject<HTMLDivElement>;
   condicionesRef: React.RefObject<HTMLDivElement>;
   paisRef: React.RefObject<HTMLDivElement>;
   regionRef: React.RefObject<HTMLDivElement>;
+  languageRef: React.RefObject<HTMLDivElement>;
 }

@@ -1,6 +1,7 @@
 import {
   getConditionRoleLabel,
   getConditionRoleOptions,
+  getTranslatedConditionRoleLabel,
   normalizeConditionModel,
   normalizeConditionRoleKey,
 } from './roleCatalog';
@@ -99,6 +100,20 @@ describe('condition role catalog helpers', () => {
   it('devuelve labels desde roleCatalog', () => {
     expect(getConditionRoleLabel(project, 'e_noche')).toBe('Eléctrico noche');
     expect(getConditionRoleLabel(project, 'e_noche', 'prelight')).toBe('Eléctrico noche Prelight');
+  });
+
+  it('traduce roles estándar y conserva roles personalizados', () => {
+    const t = (key: string) => {
+      if (key === 'team.roles.E') return 'Set Lighting Technician / Electrician';
+      return key;
+    };
+
+    expect(getTranslatedConditionRoleLabel(project, 'e_default', undefined, t)).toBe(
+      'Set Lighting Technician / Electrician'
+    );
+    expect(getTranslatedConditionRoleLabel(project, 'e_noche', undefined, t)).toBe(
+      'Eléctrico noche'
+    );
   });
 
   it('normaliza roles y prices del modelo legado', () => {

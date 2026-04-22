@@ -15,6 +15,7 @@ import { useProjectStorage } from './ProjectDetail/useProjectStorage';
 import { useProjectNavigation } from './ProjectDetail/useProjectNavigation';
 import { useProjectModals } from './ProjectDetail/useProjectModals';
 import { useProjectHandlers } from './ProjectDetail/useProjectHandlers';
+import { getLanguageFromProfile, resolveLanguageCode } from '../../../i18n/config';
 
 /**
  * ProjectDetail
@@ -35,6 +36,20 @@ export default function ProjectDetail({
 
   // Storage and state management
   const { proj, setProj, condTipo, isActive } = useProjectStorage({ project });
+
+  useEffect(() => {
+    const projectLanguage = resolveLanguageCode(proj?.language || getLanguageFromProfile());
+    if ((i18n.resolvedLanguage || i18n.language) !== projectLanguage) {
+      i18n.changeLanguage(projectLanguage);
+    }
+
+    return () => {
+      const appLanguage = getLanguageFromProfile();
+      if ((i18n.resolvedLanguage || i18n.language) !== appLanguage) {
+        i18n.changeLanguage(appLanguage);
+      }
+    };
+  }, [proj?.id, proj?.language, i18n]);
 
   // Navigation and tab management
   const { activeTab, setActiveTab, pid, isNavigatingRef } = useProjectNavigation({

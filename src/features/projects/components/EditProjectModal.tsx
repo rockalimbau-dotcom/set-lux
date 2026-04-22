@@ -2,13 +2,13 @@ import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useClickOutsideMultiple } from '@shared/hooks/useClickOutside';
 import { useTheme } from '@shared/hooks/useTheme';
-import { Project, ProjectForm, ProjectMode } from '../types';
+import { Project, ProjectForm } from '../types';
 import { EditProjectModalProps, DropdownState, InputHoverState } from './EditProjectModal/EditProjectModalTypes';
 import { EditProjectModalForm } from './EditProjectModal/EditProjectModalForm';
-import { formatMode, getBorderStyles } from './EditProjectModal/EditProjectModalUtils';
+import { formatMode, formatProjectLanguage, getBorderStyles } from './EditProjectModal/EditProjectModalUtils';
 
 export function EditProjectModal({ project, onClose, onSave }: EditProjectModalProps) {
-  const { t } = useTranslation();
+  const { i18n, t } = useTranslation();
   const theme = useTheme();
   const [form, setForm] = useState<ProjectForm>(() => ({
     nombre: project?.nombre || '',
@@ -25,6 +25,7 @@ export function EditProjectModal({ project, onClose, onSave }: EditProjectModalP
     condicionesTipo: project?.conditions?.tipo || 'semanal',
     country: project?.country || 'ES',
     region: project?.region || 'CT',
+    language: formatProjectLanguage(project?.language || i18n.resolvedLanguage || i18n.language),
   }));
 
   // Estados para los dropdowns
@@ -44,6 +45,11 @@ export function EditProjectModal({ project, onClose, onSave }: EditProjectModalP
     hoveredOption: null,
   });
   const [regionDropdown, setRegionDropdown] = useState<DropdownState>({
+    isOpen: false,
+    isButtonHovered: false,
+    hoveredOption: null,
+  });
+  const [languageDropdown, setLanguageDropdown] = useState<DropdownState>({
     isOpen: false,
     isButtonHovered: false,
     hoveredOption: null,
@@ -70,10 +76,11 @@ export function EditProjectModal({ project, onClose, onSave }: EditProjectModalP
   const condicionesRef = useRef<HTMLDivElement>(null);
   const paisRef = useRef<HTMLDivElement>(null);
   const regionRef = useRef<HTMLDivElement>(null);
+  const languageRef = useRef<HTMLDivElement>(null);
 
   // Cerrar dropdowns al hacer clic fuera
   useClickOutsideMultiple(
-    [estadoRef, condicionesRef, paisRef, regionRef],
+    [estadoRef, condicionesRef, paisRef, regionRef, languageRef],
     (event) => {
       if (estadoRef.current && !estadoRef.current.contains(event.target as Node)) {
         setEstadoDropdown(prev => ({ ...prev, isOpen: false }));
@@ -86,6 +93,9 @@ export function EditProjectModal({ project, onClose, onSave }: EditProjectModalP
       }
       if (regionRef.current && !regionRef.current.contains(event.target as Node)) {
         setRegionDropdown(prev => ({ ...prev, isOpen: false }));
+      }
+      if (languageRef.current && !languageRef.current.contains(event.target as Node)) {
+        setLanguageDropdown(prev => ({ ...prev, isOpen: false }));
       }
     }
   );
@@ -112,6 +122,7 @@ export function EditProjectModal({ project, onClose, onSave }: EditProjectModalP
       },
       country: form.country || 'ES',
       region: form.region || 'CT',
+      language: formatProjectLanguage(form.language),
     };
 
     onSave?.(updated);
@@ -141,12 +152,15 @@ export function EditProjectModal({ project, onClose, onSave }: EditProjectModalP
           setPaisDropdown={setPaisDropdown}
           regionDropdown={regionDropdown}
           setRegionDropdown={setRegionDropdown}
+          languageDropdown={languageDropdown}
+          setLanguageDropdown={setLanguageDropdown}
           inputHovered={inputHovered}
           setInputHovered={setInputHovered}
           estadoRef={estadoRef}
           condicionesRef={condicionesRef}
           paisRef={paisRef}
           regionRef={regionRef}
+          languageRef={languageRef}
           />
         </div>
 

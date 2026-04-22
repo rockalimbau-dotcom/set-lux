@@ -71,6 +71,7 @@
     "locations": "Cap de localitzacions",
     "productionCoordinator": "Coordinadora de producció",
     "conditionsType": "Tipus de condicions",
+    "projectLanguage": "Idioma del projecte",
     "country": "País",
     "region": "Regió",
     "noSpecificRegion": "Sense regió específica",

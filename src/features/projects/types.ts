@@ -2,6 +2,7 @@ import type { ProjectRoleCatalog } from '@shared/utils/projectRoles';
 
 export type ProjectMode = 'semanal' | 'mensual' | 'diario';
 export type ProjectStatus = 'Activo' | 'Cerrado';
+export type ProjectLanguage = 'es' | 'ca' | 'en';
 
 export interface ProjectConditions {
   tipo: ProjectMode;
@@ -33,6 +34,7 @@ export interface Project {
   conditions?: ProjectConditions;
   country?: string;
   region?: string;
+  language?: ProjectLanguage;
   roleCatalog?: ProjectRoleCatalog;
 }
 
@@ -51,6 +53,7 @@ export interface ProjectForm {
   condicionesTipo: ProjectMode;
   country: string;
   region: string;
+  language: ProjectLanguage;
 }
 
 export interface ProjectsScreenProps {

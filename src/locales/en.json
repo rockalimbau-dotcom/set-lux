@@ -72,6 +72,7 @@
     "productionCoordinator": "Production coordinator",
     "productionLabel": "Production company:",
     "conditionsType": "Conditions type",
+    "projectLanguage": "Project language",
     "country": "Country",
     "region": "Region",
     "noSpecificRegion": "No specific region",

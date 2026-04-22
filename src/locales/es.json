@@ -71,6 +71,7 @@
     "locations": "Jefe localizaciones",
     "productionCoordinator": "Coordinadora de producción",
     "conditionsType": "Tipo de condiciones",
+    "projectLanguage": "Idioma del proyecto",
     "country": "País",
     "region": "Región",
     "noSpecificRegion": "Sin región específica",

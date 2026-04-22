@@ -5,7 +5,7 @@ import { useTheme } from '@shared/hooks/useTheme';
 import { Project, ProjectForm } from '../types';
 import { NewProjectModalForm } from './NewProjectModal/NewProjectModalForm';
 import { DropdownState, InputHoverState } from './EditProjectModal/EditProjectModalTypes';
-import { getBorderStyles } from './EditProjectModal/EditProjectModalUtils';
+import { formatProjectLanguage, getBorderStyles } from './EditProjectModal/EditProjectModalUtils';
 
 interface NewProjectModalProps {
   onClose: () => void;
@@ -13,7 +13,7 @@ interface NewProjectModalProps {
 }
 
 export function NewProjectModal({ onClose, onCreate }: NewProjectModalProps) {
-  const { t } = useTranslation();
+  const { i18n, t } = useTranslation();
   const theme = useTheme();
   const [form, setForm] = useState<ProjectForm>(() => ({
     nombre: '',
@@ -30,6 +30,7 @@ export function NewProjectModal({ onClose, onCreate }: NewProjectModalProps) {
     condicionesTipo: 'semanal',
     country: 'ES',
     region: 'CT',
+    language: formatProjectLanguage(i18n.resolvedLanguage || i18n.language),
   }));
 
   // Estados para los dropdowns
@@ -49,6 +50,11 @@ export function NewProjectModal({ onClose, onCreate }: NewProjectModalProps) {
     hoveredOption: null,
   });
   const [regionDropdown, setRegionDropdown] = useState<DropdownState>({
+    isOpen: false,
+    isButtonHovered: false,
+    hoveredOption: null,
+  });
+  const [languageDropdown, setLanguageDropdown] = useState<DropdownState>({
     isOpen: false,
     isButtonHovered: false,
     hoveredOption: null,
@@ -75,10 +81,11 @@ export function NewProjectModal({ onClose, onCreate }: NewProjectModalProps) {
   const condicionesRef = useRef<HTMLDivElement>(null);
   const paisRef = useRef<HTMLDivElement>(null);
   const regionRef = useRef<HTMLDivElement>(null);
+  const languageRef = useRef<HTMLDivElement>(null);
 
   // Cerrar dropdowns al hacer clic fuera
   useClickOutsideMultiple(
-    [estadoRef, condicionesRef, paisRef, regionRef],
+    [estadoRef, condicionesRef, paisRef, regionRef, languageRef],
     (event) => {
       if (estadoRef.current && !estadoRef.current.contains(event.target as Node)) {
         setEstadoDropdown(prev => ({ ...prev, isOpen: false }));
@@ -91,6 +98,9 @@ export function NewProjectModal({ onClose, onCreate }: NewProjectModalProps) {
       }
       if (regionRef.current && !regionRef.current.contains(event.target as Node)) {
         setRegionDropdown(prev => ({ ...prev, isOpen: false }));
+      }
+      if (languageRef.current && !languageRef.current.contains(event.target as Node)) {
+        setLanguageDropdown(prev => ({ ...prev, isOpen: false }));
       }
     }
   );
@@ -115,6 +125,7 @@ export function NewProjectModal({ onClose, onCreate }: NewProjectModalProps) {
       },
       country: form.country || 'ES',
       region: form.region || 'CT',
+      language: formatProjectLanguage(form.language),
     };
     onCreate(proj);
     try {
@@ -155,12 +166,15 @@ export function NewProjectModal({ onClose, onCreate }: NewProjectModalProps) {
             setPaisDropdown={setPaisDropdown}
             regionDropdown={regionDropdown}
             setRegionDropdown={setRegionDropdown}
+            languageDropdown={languageDropdown}
+            setLanguageDropdown={setLanguageDropdown}
             inputHovered={inputHovered}
             setInputHovered={setInputHovered}
             estadoRef={estadoRef}
             condicionesRef={condicionesRef}
             paisRef={paisRef}
             regionRef={regionRef}
+            languageRef={languageRef}
           />
         </div>
 

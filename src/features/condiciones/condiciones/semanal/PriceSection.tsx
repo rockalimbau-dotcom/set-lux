@@ -4,7 +4,7 @@ import { Th, Td } from '@shared/components';
 import { PRICE_HEADERS } from '../shared.constants';
 import MaterialPropioTypeDropdown from '../shared/MaterialPropioTypeDropdown';
 import { AnyRecord } from '@shared/types/common';
-import { getConditionRoleOptions, getDefaultConditionRoleKeys, sortConditionRoleKeys } from '../roleCatalog';
+import { getConditionRoleOptions, getDefaultConditionRoleKeys, getTranslatedConditionRoleLabel, sortConditionRoleKeys } from '../roleCatalog';
 
 interface PriceSectionProps {
   project?: AnyRecord | null;
@@ -187,7 +187,7 @@ export function PriceSection({
                   }}
                   className='w-full text-left px-1.5 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-2 text-[8px] sm:text-[9px] md:text-[10px] lg:text-sm text-gray-900 dark:text-white hover:bg-blue-100 dark:hover:bg-amber-600/40 transition-colors'
                 >
-                  {roleOption.label}
+                  {getTranslatedConditionRoleLabel(project, roleOption.key, undefined, t)}
                 </button>
               ))}
             </div>

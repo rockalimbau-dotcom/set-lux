@@ -1,4 +1,5 @@
 import type { ProjectRoleCatalog } from '@shared/utils/projectRoles';
+import type { ProjectLanguage } from '../../types';
 
 export type ProjectMode = 'semanal' | 'mensual' | 'diario';
 export type ProjectStatus = 'Activo' | 'Cerrado';
@@ -45,6 +46,7 @@ export interface Project {
   team?: ProjectTeam;
   conditions?: ProjectConditions;
   conditionsMode?: ProjectMode; // Legacy compatibility
+  language?: ProjectLanguage;
   roleCatalog?: ProjectRoleCatalog;
 }
 

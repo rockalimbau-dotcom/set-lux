@@ -23,6 +23,7 @@ export function shouldSyncProjectMetadata(project: Project | null | undefined, p
     project?.coordinadoraProduccion !== proj?.coordinadoraProduccion ||
     project?.country !== proj?.country ||
     project?.region !== proj?.region ||
+    project?.language !== proj?.language ||
     JSON.stringify(project?.roleCatalog || null) !== JSON.stringify(proj?.roleCatalog || null)
   );
 }
@@ -103,6 +104,7 @@ export function useProjectStorage({ project }: UseProjectStorageProps): UseProje
         estado: normalizedIncoming.estado,
         country: normalizedIncoming.country,
         region: normalizedIncoming.region,
+        language: normalizedIncoming.language,
         roleCatalog: normalizedIncoming.roleCatalog,
         conditions: {
           ...(prev?.conditions || {}),
@@ -128,6 +130,7 @@ export function useProjectStorage({ project }: UseProjectStorageProps): UseProje
     proj?.coordinadoraProduccion,
     proj?.country,
     proj?.region,
+    proj?.language,
     JSON.stringify(proj?.roleCatalog || null),
     setProj
   ]);

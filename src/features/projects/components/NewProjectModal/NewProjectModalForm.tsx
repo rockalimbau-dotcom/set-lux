@@ -1,13 +1,14 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { COUNTRIES, REGIONS } from '@shared/constants/countries';
-import { ProjectForm, ProjectMode, ProjectStatus } from '../../types';
+import { ProjectForm, ProjectLanguage, ProjectMode, ProjectStatus } from '../../types';
 import { FormInput } from '../EditProjectModal/FormInput';
 import { FormDropdown } from '../EditProjectModal/FormDropdown';
 import {
   getEstadoLabel,
   getCondicionesLabel,
   getPaisLabel,
+  getProjectLanguageLabel,
   getRegionLabel,
 } from '../EditProjectModal/EditProjectModalUtils';
 import { DropdownState, InputHoverState } from '../EditProjectModal/EditProjectModalTypes';
@@ -24,12 +25,15 @@ interface NewProjectModalFormProps {
   setPaisDropdown: React.Dispatch<React.SetStateAction<DropdownState>>;
   regionDropdown: DropdownState;
   setRegionDropdown: React.Dispatch<React.SetStateAction<DropdownState>>;
+  languageDropdown: DropdownState;
+  setLanguageDropdown: React.Dispatch<React.SetStateAction<DropdownState>>;
   inputHovered: InputHoverState;
   setInputHovered: React.Dispatch<React.SetStateAction<InputHoverState>>;
   estadoRef: React.RefObject<HTMLDivElement>;
   condicionesRef: React.RefObject<HTMLDivElement>;
   paisRef: React.RefObject<HTMLDivElement>;
   regionRef: React.RefObject<HTMLDivElement>;
+  languageRef: React.RefObject<HTMLDivElement>;
 }
 
 export function NewProjectModalForm({
@@ -44,17 +48,21 @@ export function NewProjectModalForm({
   setPaisDropdown,
   regionDropdown,
   setRegionDropdown,
+  languageDropdown,
+  setLanguageDropdown,
   inputHovered,
   setInputHovered,
   estadoRef,
   condicionesRef,
   paisRef,
   regionRef,
+  languageRef,
 }: NewProjectModalFormProps) {
   const { t } = useTranslation();
 
   const estadoLabel = getEstadoLabel(form.estado, t);
   const condicionesLabel = getCondicionesLabel(form.condicionesTipo, t);
+  const languageLabel = getProjectLanguageLabel(form.language, t);
   const paisLabel = getPaisLabel(form.country);
   const regionLabel = getRegionLabel(form.country, form.region, t);
 
@@ -208,6 +216,22 @@ export function NewProjectModalForm({
         dropdownState={condicionesDropdown}
         setDropdownState={setCondicionesDropdown}
         dropdownRef={condicionesRef}
+        t={t}
+      />
+
+      <FormDropdown
+        label={t('common.projectLanguage')}
+        value={languageLabel}
+        options={[
+          { value: 'es', label: t('settings.spanish') },
+          { value: 'ca', label: t('settings.catalan') },
+          { value: 'en', label: t('settings.english') },
+        ]}
+        onChange={value => setForm({ ...form, language: value as ProjectLanguage })}
+        theme={theme}
+        dropdownState={languageDropdown}
+        setDropdownState={setLanguageDropdown}
+        dropdownRef={languageRef}
         t={t}
       />
 
