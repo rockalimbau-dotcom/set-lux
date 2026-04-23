@@ -7,6 +7,7 @@ type Props = {
   dayNameFromISO: (iso: string, i: number, dayNames: readonly string[]) => string;
   DAY_NAMES: readonly string[];
   toDisplayDate: (iso: string) => string;
+  getDayStyle?: (iso: string, block?: string) => React.CSSProperties | undefined;
   headerRowRef?: React.RefObject<HTMLTableRowElement | null>;
   dateRowRef?: React.RefObject<HTMLTableRowElement | null>;
   headerTop?: number;
@@ -18,6 +19,7 @@ function ReportTableHead({
   dayNameFromISO,
   DAY_NAMES,
   toDisplayDate,
+  getDayStyle,
   headerRowRef,
   dateRowRef,
   headerTop = 0,
@@ -36,7 +38,13 @@ function ReportTableHead({
       >
         <Th aria-label={t('reports.person')} scope='col' align='left' className='report-sticky-first-col' />
         {semana.map((iso, i) => (
-          <Th key={`dname_${iso}`} scope='col' align='center'>
+          <Th
+            key={`dname_${iso}`}
+            scope='col'
+            align='center'
+            className={getDayStyle ? 'report-jornada-header-cell' : ''}
+            style={getDayStyle?.(iso, 'base')}
+          >
             {dayNames[i]}
           </Th>
         ))}
@@ -50,7 +58,13 @@ function ReportTableHead({
       >
         <Th scope='col' align='left' className='report-sticky-first-col'>{t('reports.date')}</Th>
         {semana.map((iso, i) => (
-          <Th key={`fecha_${iso}`} scope='col' align='center'>
+          <Th
+            key={`fecha_${iso}`}
+            scope='col'
+            align='center'
+            className={getDayStyle ? 'report-jornada-cell' : ''}
+            style={getDayStyle?.(iso, 'base')}
+          >
             {dates[i]}
           </Th>
         ))}

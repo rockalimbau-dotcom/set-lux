@@ -42,7 +42,11 @@ interface PersonRowHeaderProps {
     block: 'base' | 'pre' | 'pick' | string,
     iso: string,
     personKey: string
-  ) => { start: string; end: string; isRest: boolean };
+  ) => { start: string; end: string; isRest: boolean; blockKey?: string };
+  getDayStyle?: (
+    iso: string,
+    block?: 'base' | 'pre' | 'pick' | string
+  ) => React.CSSProperties | undefined;
   onScheduleChange: (
     block: 'base' | 'pre' | 'pick' | string,
     iso: string,
@@ -64,6 +68,7 @@ export function PersonRowHeader({
   block,
   stickyTop = 0,
   scheduleWindowForISO,
+  getDayStyle,
   onScheduleChange,
   semana,
   collapsed,
@@ -145,8 +150,9 @@ export function PersonRowHeader({
     const nextEntries: Array<[string, string]> = [];
     semana.forEach(iso => {
       const schedule = scheduleWindowForISO(block, iso, pKey);
-      nextEntries.push([`${pKey}_${String(block)}_${iso}_start`, schedule.start || '']);
-      nextEntries.push([`${pKey}_${String(block)}_${iso}_end`, schedule.end || '']);
+      const activeBlock = schedule.blockKey || block;
+      nextEntries.push([`${pKey}_${String(activeBlock)}_${iso}_start`, schedule.start || '']);
+      nextEntries.push([`${pKey}_${String(activeBlock)}_${iso}_end`, schedule.end || '']);
     });
 
     setDrafts(prev => {
@@ -164,11 +170,12 @@ export function PersonRowHeader({
   }, [activeDraftKey, block, pKey, scheduleWindowForISO, semana]);
 
   const commitDraft = (iso: string, field: 'start' | 'end') => {
-    const draftKey = `${pKey}_${String(block)}_${iso}_${field}`;
+    const activeBlock = scheduleWindowForISO(block, iso, pKey).blockKey || block;
+    const draftKey = `${pKey}_${String(activeBlock)}_${iso}_${field}`;
     const rawValue = drafts[draftKey] ?? '';
     const normalized = normalizeTimeValue(rawValue);
     if (normalized === null) {
-      const schedule = scheduleWindowForISO(block, iso, pKey);
+      const schedule = scheduleWindowForISO(activeBlock, iso, pKey);
       setDrafts(prev => ({
         ...prev,
         [draftKey]: schedule[field] || '',
@@ -180,7 +187,7 @@ export function PersonRowHeader({
       ...prev,
       [draftKey]: normalized,
     }));
-    onScheduleChange(block, iso, field, normalized, pKey);
+    onScheduleChange(activeBlock, iso, field, normalized, pKey);
     setActiveDraftKey(null);
   };
 
@@ -190,7 +197,7 @@ export function PersonRowHeader({
       style={{ ['--report-sticky-row-top' as string]: `${stickyTop}px` }}
     >
       <Td
-        className='align-middle report-sticky-first-col'
+        className={`align-middle report-sticky-first-col ${getDayStyle ? 'report-jornada-person-cell' : ''}`}
         scope='row'
       >
         <div className='flex items-center gap-1 sm:gap-1.5 md:gap-2'>
@@ -241,9 +248,11 @@ export function PersonRowHeader({
         const key = `${person?.roleId || personId || visualRole}_${name}_${iso}_${block}`;
         const offHeader = offMap.get(key) ?? false;
         const scheduleWindow = scheduleWindowForISO(block, iso, pKey);
+        const activeBlock = scheduleWindow.blockKey || block;
         const isRest = scheduleWindow.isRest;
+        const isOff = offHeader && !isRest;
         const headerCellClasses = [
-          offHeader && !isRest ? 'report-off-cell' : '',
+          isOff ? 'report-off-cell' : '',
           isRest ? 'report-rest-cell' : '',
         ]
           .filter(Boolean)
@@ -252,19 +261,22 @@ export function PersonRowHeader({
         return (
           <Td
             key={`head_${pKey}_${block || 'base'}_${iso}`}
-            className={`text-center ${headerCellClasses}`}
+            className={`text-center ${getDayStyle ? 'report-jornada-cell' : ''} ${headerCellClasses}`}
+            style={isRest || isOff ? undefined : getDayStyle?.(iso, activeBlock)}
           >
             {isRest ? (
               <div className='flex items-center justify-center whitespace-normal break-words leading-tight text-center min-h-[1.5rem] text-[10px] sm:text-xs md:text-sm font-semibold report-rest-cell__content'>
                 {t('reports.rest')}
               </div>
             ) : offHeader ? (
-              <div className='min-h-[1.5rem]'>&nbsp;</div>
+              <div className='flex items-center justify-center whitespace-normal break-words leading-tight text-center min-h-[1.5rem] text-[10px] sm:text-xs md:text-sm font-semibold report-rest-cell__content'>
+                {t('reports.rest')}
+              </div>
             ) : (
               <div className='flex items-center justify-center gap-1 px-1 py-1 whitespace-nowrap'>
                 {(() => {
-                  const startKey = `${pKey}_${String(block)}_${iso}_start`;
-                  const endKey = `${pKey}_${String(block)}_${iso}_end`;
+                  const startKey = `${pKey}_${String(activeBlock)}_${iso}_start`;
+                  const endKey = `${pKey}_${String(activeBlock)}_${iso}_end`;
                   const startValue = drafts[startKey] ?? scheduleWindow.start ?? '';
                   const endValue = drafts[endKey] ?? scheduleWindow.end ?? '';
                   return (

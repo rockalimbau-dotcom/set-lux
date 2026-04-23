@@ -2,7 +2,10 @@ import { Td } from '@shared/components';
 import { AnyRecord } from '@shared/types/common';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { translateJornadaType as translateJornadaTypeUtil } from '@shared/utils/jornadaTranslations';
+import {
+  normalizeJornadaType,
+  translateJornadaType as translateJornadaTypeUtil,
+} from '@shared/utils/jornadaTranslations';
 import { useLocalStorage } from '@shared/hooks/useLocalStorage';
 import { sortTeam } from '@features/equipo/pages/EquipoTab/EquipoTabUtils';
 import { ExtraBlock, applyExtraBlocksToDay, normalizeExtraBlocks } from '@shared/utils/extraBlocks';
@@ -11,6 +14,7 @@ import { ConfirmModal } from './ConfirmModal';
 import EditableRowLabel from './EditableRowLabel';
 import TextAreaAuto from './TextAreaAuto';
 import { JornadaDropdownCell, MemberDropdown } from './MembersRow';
+import { getNeedsDayTypePalette } from '../utils/dayTypeColors';
 
 type ExtraBlocksRowProps = {
   label: string;
@@ -216,19 +220,31 @@ export function ExtraBlocksRow({
           const blocks = normalizeExtraBlocks(day);
           const renderBlocks = blocks.length > 0 ? blocks : [createEmptyBlock(`draft_${weekId}_${dayIdx}`)];
           return (
-            <Td key={d.key} align='middle' className='text-center'>
+            <Td key={d.key} align='middle' className='text-center needs-extra-blocks-cell'>
               {collapsible && collapsed ? (
                 <div className='flex items-center justify-center min-h-[20px] sm:min-h-[24px] md:min-h-[28px]' />
               ) : (
-                <div className='space-y-2'>
-                  {renderBlocks.map((block, index) => (
-                    <div
-                      key={block.id}
-                      className={index === 0 ? '' : 'mt-2 border-t border-neutral-border/60 pt-2'}
-                    >
-                      {(() => {
-                        const jornadaNormalized = String(block.tipo || '').trim().toLowerCase();
-                        const isRestOrEnd = jornadaNormalized === 'descanso' || jornadaNormalized === 'fin';
+                <div className='needs-extra-blocks-stack'>
+                  {renderBlocks.map((block, index) => {
+                    const blockPalette = getNeedsDayTypePalette(block.tipo, theme);
+                    return (
+                      <div
+                        key={block.id}
+                        className={`needs-extra-block-item ${blockPalette ? 'needs-extra-jornada-block' : ''}`}
+                        style={
+                          blockPalette
+                            ? ({
+                                '--needs-extra-block-bg': blockPalette.bg,
+                                '--needs-extra-block-border': blockPalette.border,
+                                '--needs-current-day-bg': blockPalette.bg,
+                                '--needs-current-day-border': blockPalette.border,
+                              } as React.CSSProperties)
+                            : undefined
+                        }
+                      >
+                        {(() => {
+                          const jornadaNormalized = normalizeJornadaType(block.tipo).toLowerCase();
+                          const isRestOrEnd = jornadaNormalized === 'descanso' || jornadaNormalized === 'fin';
                         return (
                           <>
                       <div className='mb-1 flex items-center gap-1'>
@@ -362,12 +378,13 @@ export function ExtraBlocksRow({
                         );
                       })()}
                     </div>
-                  ))}
+                    );
+                  })}
                   {!readOnly && (
                     <button
                       type='button'
                       onClick={() => addBlock(dayIdx)}
-                      className='w-full rounded-md border border-neutral-border px-2 py-1 text-[9px] sm:text-[10px] md:text-xs font-medium hover:bg-black/5 dark:hover:bg-white/10'
+                      className='needs-extra-add-block-btn w-full rounded-md border border-neutral-border px-2 py-1 text-[9px] sm:text-[10px] md:text-xs font-medium hover:bg-black/5 dark:hover:bg-white/10'
                     >
                       {t('needs.addBlock')}
                     </button>

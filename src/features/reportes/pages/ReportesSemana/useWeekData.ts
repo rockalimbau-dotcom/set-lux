@@ -14,9 +14,16 @@ import { AnyRecord } from '@shared/types/common';
 import { needsDataToPlanData } from '@shared/utils/needsPlanAdapter';
 import { getExtraBlockCount, getExtraBlocks, hasExtraBlockContent } from '../../utils/extra';
 import { personaKey } from '../../utils/model';
+import { norm } from '../../utils/text';
 
 const getMemberIdentityKey = (member: AnyRecord): string =>
   `${String(member?.personId || member?.roleId || member?.role || '').trim().toUpperCase()}__${String(member?.name || '').trim()}`;
+
+const getPersonIdentityKey = (person: AnyRecord): string => {
+  const name = norm(String(person?.name || person?.nombre || person?.label || '').trim());
+  const personId = String(person?.personId || '').trim();
+  return name ? `name:${name}` : `id:${personId}`;
+};
 
 export function useWeekData(
   project: { id?: string; nombre?: string } | undefined,
@@ -123,7 +130,7 @@ export function useWeekData(
         members.forEach((member: AnyRecord) => {
           const role = String(member?.role || '').trim().toUpperCase();
           const name = String(member?.name || '').trim();
-          const key = getMemberIdentityKey(member);
+          const key = getPersonIdentityKey(member);
           if (!role && !name) return;
           if (seen.has(key)) return;
           seen.add(key);
@@ -189,26 +196,21 @@ export function useWeekData(
     // IMPORTANTE: NO usar refNamesBase porque collectWeekTeamWithSuffix ya procesa
     // TODOS los miembros del equipo base, incluyendo refuerzos. Usar refNamesBase causaría duplicados.
     // Siempre pasar un Set vacío para refNamesBase
-    const extrasKey = new Set(
-      (extraPeople || []).map(m => getMemberIdentityKey(m))
-    );
-    const cleanedBase = (basePeople || []).filter(m => {
-      const key = getMemberIdentityKey(m);
-      return !extrasKey.has(key);
-    });
-    return buildPeopleBase(cleanedBase, new Set<string>());
+    return buildPeopleBase(basePeople, new Set<string>());
   }, [
     JSON.stringify(basePeople),
-    JSON.stringify(extraPeople),
   ]);
 
   const peoplePre = useMemo(() => {
     // IMPORTANTE: NO usar refNamesPre porque collectWeekTeamWithSuffix ya procesa
     // TODOS los miembros de prelight, incluyendo refuerzos. Usar refNamesPre causaría duplicados.
     // Siempre pasar un Set vacío para refNamesPre
-    return buildPeoplePre(weekPrelightActive, prelightPeople, new Set<string>());
+    const existingKeys = new Set((peopleBase || []).map(getPersonIdentityKey));
+    const filteredPeople = (prelightPeople || []).filter(person => !existingKeys.has(getPersonIdentityKey(person)));
+    return buildPeoplePre(weekPrelightActive, filteredPeople, new Set<string>());
   }, [
     weekPrelightActive,
+    JSON.stringify(peopleBase),
     JSON.stringify(prelightPeople),
   ]);
 
@@ -216,15 +218,53 @@ export function useWeekData(
     // IMPORTANTE: NO usar refNamesPick porque collectWeekTeamWithSuffix ya procesa
     // TODOS los miembros de pickup, incluyendo refuerzos. Usar refNamesPick causaría duplicados.
     // Siempre pasar un Set vacío para refNamesPick
-    return buildPeoplePick(weekPickupActive, pickupPeople, new Set<string>());
+    const existingKeys = new Set([
+      ...(peopleBase || []).map(getPersonIdentityKey),
+      ...(peoplePre || []).map(getPersonIdentityKey),
+    ]);
+    const filteredPeople = (pickupPeople || []).filter(person => !existingKeys.has(getPersonIdentityKey(person)));
+    return buildPeoplePick(weekPickupActive, filteredPeople, new Set<string>());
   }, [
     weekPickupActive,
+    JSON.stringify(peopleBase),
+    JSON.stringify(peoplePre),
     JSON.stringify(pickupPeople),
   ]);
 
   const peopleExtra = useMemo(() => {
-    return buildPeopleExtra(extraPeople, new Set<string>());
-  }, [JSON.stringify(extraPeople)]);
+    const existingKeys = new Set([
+      ...(peopleBase || []).map(getPersonIdentityKey),
+      ...(peoplePre || []).map(getPersonIdentityKey),
+      ...(peoplePick || []).map(getPersonIdentityKey),
+    ]);
+    const filteredPeople = (extraPeople || []).filter(person => !existingKeys.has(getPersonIdentityKey(person)));
+    return buildPeopleExtra(filteredPeople, new Set<string>());
+  }, [
+    JSON.stringify(peopleBase),
+    JSON.stringify(peoplePre),
+    JSON.stringify(peoplePick),
+    JSON.stringify(extraPeople),
+  ]);
+
+  const visiblePersonKeys = useMemo(
+    () => new Set([
+      ...(peopleBase || []).map(getPersonIdentityKey),
+      ...(peoplePre || []).map(getPersonIdentityKey),
+      ...(peoplePick || []).map(getPersonIdentityKey),
+    ]),
+    [JSON.stringify(peopleBase), JSON.stringify(peoplePre), JSON.stringify(peoplePick)]
+  );
+
+  const visibleExtraGroups = useMemo(
+    () =>
+      extraGroups
+        .map(group => ({
+          ...group,
+          people: group.people.filter(person => !visiblePersonKeys.has(getPersonIdentityKey(person))),
+        }))
+        .filter(group => group.people.length > 0),
+    [JSON.stringify(extraGroups), visiblePersonKeys]
+  );
 
   return {
     safeSemana,
@@ -237,7 +277,7 @@ export function useWeekData(
     peoplePre,
     peoplePick,
     peopleExtra,
-    extraGroups,
+    extraGroups: visibleExtraGroups,
     safePersonas,
   };
 }

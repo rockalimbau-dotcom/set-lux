@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect, useRef } from 'react';
+import { useMemo, useState, useEffect, useRef, type CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Th, Td } from '@shared/components';
 import ToggleIconButton from '@shared/components/ToggleIconButton';
@@ -20,6 +20,7 @@ import { ConfirmModal } from '../../components/ConfirmModal';
 import { dayHasExtraBlocks } from '@shared/utils/extraBlocks';
 import { getNeedsRowLabel } from '../../utils/rowLabels';
 import { normalizeJornadaType } from '@shared/utils/jornadaTranslations';
+import { getNeedsDayTypePalette } from '../../utils/dayTypeColors';
 
 interface SelectedDayForSwap {
   weekId: string;
@@ -139,6 +140,17 @@ export function WeekSection({
       return '';
     });
   }, [DAYS, wk, shootingDayOffset]);
+  const dayTypeTableVars = useMemo(() => {
+    const vars: CSSProperties & Record<string, string> = {};
+    DAYS.forEach((_, i) => {
+      const day: AnyRecord = (wk as AnyRecord).days?.[i] || {};
+      const palette = getNeedsDayTypePalette(day?.crewTipo || day?.tipo, theme);
+      vars[`--needs-day-${i}-bg`] = palette?.bg || 'transparent';
+      vars[`--needs-day-${i}-header-bg`] = palette?.headerBg || 'transparent';
+      vars[`--needs-day-${i}-border`] = palette?.border || 'transparent';
+    });
+    return vars;
+  }, [DAYS, wk, theme]);
   const isDark = theme === 'dark';
   const focusColor = theme === 'light' ? '#0476D9' : '#F27405';
   
@@ -542,11 +554,24 @@ export function WeekSection({
       {wk.open && (
         <div className='px-3 pb-3 sm:px-4 sm:pb-4 md:px-5 md:pb-5'>
           <div className='overflow-x-auto overflow-y-auto overscroll-contain max-h-[70vh]'>
-          <table className={`needs-week-table min-w-[600px] sm:min-w-[680px] md:min-w-[760px] w-full table-fixed border-separate border-spacing-0 text-[9px] sm:text-[10px] md:text-xs lg:text-sm ${showExportControls ? 'needs-week-table--selectable' : ''}`}>
+          <table
+            className={`needs-week-table min-w-[600px] sm:min-w-[680px] md:min-w-[760px] w-full table-fixed border-separate border-spacing-0 text-[9px] sm:text-[10px] md:text-xs lg:text-sm ${showExportControls ? 'needs-week-table--selectable' : ''}`}
+            style={dayTypeTableVars}
+          >
             <colgroup>
               {showExportControls && <col className='w-6 sm:w-7 md:w-8' />}
               <col className='w-[150px] sm:w-[180px] md:w-[210px] lg:w-[240px]' />
-              <col span={DAYS.length} className='w-[110px] sm:w-[130px] md:w-[150px] lg:w-[170px]' />
+              {DAYS.map((d, i) => {
+                const day: AnyRecord = (wk as AnyRecord).days?.[i] || {};
+                const palette = getNeedsDayTypePalette(day?.crewTipo || day?.tipo, theme);
+                return (
+                  <col
+                    key={d.key}
+                    className='w-[110px] sm:w-[130px] md:w-[150px] lg:w-[170px]'
+                    style={{ backgroundColor: palette?.bg || 'transparent' }}
+                  />
+                );
+              })}
             </colgroup>
             <thead>
               <tr

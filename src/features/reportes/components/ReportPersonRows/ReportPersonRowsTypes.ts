@@ -1,4 +1,5 @@
 import { AnyRecord } from '@shared/types/common';
+import type { CSSProperties } from 'react';
 
 export interface DietasCellProps {
   pKey: string;
@@ -6,6 +7,7 @@ export interface DietasCellProps {
   fecha: string;
   val: string;
   cellClasses: string;
+  dayStyle?: CSSProperties;
   theme: 'dark' | 'light';
   focusColor: string;
   readOnly: boolean;
@@ -25,6 +27,7 @@ export interface SiNoCellProps {
   fecha: string;
   val: string;
   cellClasses: string;
+  dayStyle?: CSSProperties;
   readOnly: boolean;
   off: boolean;
   setCell: (pKey: string, concepto: string, fecha: string, value: any) => void;
@@ -39,7 +42,16 @@ export interface ReportPersonRowsProps {
     block: 'base' | 'pre' | 'pick' | string,
     iso: string,
     personKey: string
-  ) => { start: string; end: string; isRest: boolean };
+  ) => { start: string; end: string; isRest: boolean; blockKey?: string };
+  resolveBlockForISO?: (
+    block: 'base' | 'pre' | 'pick' | string,
+    iso: string,
+    personKey: string
+  ) => string;
+  getDayStyle?: (
+    iso: string,
+    block?: 'base' | 'pre' | 'pick' | string
+  ) => CSSProperties | undefined;
   onScheduleChange: (
     block: 'base' | 'pre' | 'pick' | string,
     iso: string,

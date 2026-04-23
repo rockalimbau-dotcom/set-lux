@@ -6,10 +6,12 @@ type Props = {
   label: string;
   semana: readonly string[];
   valueForISO: (iso: string) => string;
+  block?: string;
+  getDayStyle?: (iso: string, block?: string) => React.CSSProperties | undefined;
   stickyTop?: number;
 };
 
-function ReportBlockScheduleRow({ label, semana, valueForISO, stickyTop = 0 }: Props) {
+function ReportBlockScheduleRow({ label, semana, valueForISO, block = 'base', getDayStyle, stickyTop = 0 }: Props) {
   const { t } = useTranslation();
   if (!Array.isArray(semana) || semana.length === 0) return null;
   const values = useMemo(() => semana.map(iso => valueForISO(iso)), [semana, valueForISO]);
@@ -41,9 +43,12 @@ function ReportBlockScheduleRow({ label, semana, valueForISO, stickyTop = 0 }: P
           key={`sched_${label}_${iso}`}
           scope='col'
           className={`text-[9px] sm:text-[10px] md:text-xs lg:text-sm font-semibold text-center align-middle bg-white/5 ${
+            getDayStyle ? 'report-jornada-cell' : ''
+          } ${
             values[i] === restLabel ? 'report-rest-cell' : ''
           }`}
           align='middle'
+          style={getDayStyle?.(iso, block)}
         >
           <div
             className={`flex items-center justify-center whitespace-normal break-words leading-tight text-center min-h-[1.5rem] ${

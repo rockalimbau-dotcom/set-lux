@@ -15,6 +15,8 @@ import { btnExport } from '@shared/utils/tailwindClasses';
 import {
   isPersonScheduledOnBlock,
   blockKeyForPerson,
+  BLOCKS,
+  getDayBlockList,
 } from '../utils/plan';
 import {
   readCondParams,
@@ -43,6 +45,7 @@ import { useDayNameTranslator } from './ReportesSemana/useDayNameTranslator';
 import { useReportExport } from './ReportesSemana/useReportExport';
 import { useReportCollapsible } from './ReportesSemana/useReportCollapsible';
 import { toDisplayDate } from './ReportesSemana/ReportTableHeadHelpers';
+import { getReportDayTypePalette } from '../utils/dayTypePalette';
 
 const normalizeStoredTime = (value: unknown): string => {
   const raw = String(value || '').trim();
@@ -53,6 +56,31 @@ const normalizeStoredTime = (value: unknown): string => {
   const minutes = Number(match[2]);
   if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) return raw;
   return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+};
+
+const normalizeReportText = (value: unknown): string =>
+  String(value || '')
+    .trim()
+    .toLocaleLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s+/g, ' ');
+
+const parseReportPersonKey = (personKey: string) => {
+  const extraMatch = String(personKey).match(/^(.*?)\.extra(?::\d+)?__(.*)$/);
+  if (extraMatch) return { role: extraMatch[1] || '', name: extraMatch[2] || '' };
+  const preMatch = String(personKey).match(/^(.*?)\.pre__(.*)$/);
+  if (preMatch) return { role: preMatch[1] || '', name: preMatch[2] || '' };
+  const pickMatch = String(personKey).match(/^(.*?)\.pick__(.*)$/);
+  if (pickMatch) return { role: pickMatch[1] || '', name: pickMatch[2] || '' };
+  const [rolePart, ...nameParts] = String(personKey).split('__');
+  return { role: rolePart || '', name: nameParts.join('__') || '' };
+};
+
+const reportPersonMergeKey = (person: AnyRecord): string => {
+  const name = normalizeReportText(person?.name || person?.nombre || person?.label);
+  const personId = normalizeReportText(person?.personId);
+  return name ? `name:${name}` : `id:${personId}`;
 };
 
 export default function ReportesSemana({
@@ -211,6 +239,23 @@ export default function ReportesSemana({
     horarioPrelight,
     horarioPickup,
   });
+  const getReportDayStyle = useCallback(
+    (iso: string, block: string = 'base') => {
+      try {
+        const { day } = findWeekAndDay(iso);
+        const palette = getReportDayTypePalette(day, block, theme);
+        if (!palette) return undefined;
+        return {
+          '--report-jornada-bg': palette.bg,
+          '--report-jornada-header-bg': palette.headerBg,
+          '--report-jornada-border': palette.border,
+        } as React.CSSProperties;
+      } catch {
+        return undefined;
+      }
+    },
+    [findWeekAndDay, theme]
+  );
 
   const { storageKey, persistBase } = useReportStorageKeys({
     project,
@@ -241,33 +286,67 @@ export default function ReportesSemana({
       if ((day.tipo || '') === 'Descanso') {
         return { start: '', end: '', isRest: true };
       }
+      const personMatchesBlock = (candidateBlock: string) => {
+        const parsed = parseReportPersonKey(personKey);
+        const wantedName = normalizeReportText(parsed.name);
+        const wantedRole = normalizeReportText(stripRoleSuffix(parsed.role));
+        if (!wantedName) return false;
+        return getDayBlockList(day, candidateBlock).some((member: AnyRecord) => {
+          if (normalizeReportText(member?.name) !== wantedName) return false;
+          const memberRoleId = normalizeReportText(member?.roleId);
+          if (memberRoleId && memberRoleId === normalizeReportText(parsed.role)) return true;
+          const memberRole = normalizeReportText(stripRoleSuffix(String(member?.role || '')));
+          return !wantedRole || !memberRole || memberRole === wantedRole;
+        });
+      };
+      const resolvePersonBlock = () => {
+        if (blockKey !== 'base') return String(blockKey);
+        if (personMatchesBlock(BLOCKS.base)) return BLOCKS.base;
+        if (personMatchesBlock(BLOCKS.pre)) return BLOCKS.pre;
+        if (personMatchesBlock(BLOCKS.pick)) return BLOCKS.pick;
+        const extraIndex = normalizeExtraBlocks(day).findIndex((_, index) => personMatchesBlock(`extra:${index}`));
+        if (extraIndex >= 0) return `extra:${extraIndex}`;
+        if (personMatchesBlock(BLOCKS.extra)) return BLOCKS.extra;
+        return String(blockKey);
+      };
+      const resolvedBlockKey = resolvePersonBlock();
       let baseStart = '';
       let baseEnd = '';
 
-      if (blockKey === 'pre') {
+      if (resolvedBlockKey === 'pre') {
         baseStart = normalizeStoredTime(day.prelightStart || day.preStart || '');
         baseEnd = normalizeStoredTime(day.prelightEnd || day.preEnd || '');
-      } else if (blockKey === 'pick') {
+      } else if (resolvedBlockKey === 'pick') {
         baseStart = normalizeStoredTime(day.pickupStart || day.pickStart || '');
         baseEnd = normalizeStoredTime(day.pickupEnd || day.pickEnd || '');
-      } else if (String(blockKey).startsWith('extra:')) {
-        const match = String(blockKey).match(/^extra:(\d+)$/);
+      } else if (String(resolvedBlockKey).startsWith('extra:')) {
+        const match = String(resolvedBlockKey).match(/^extra:(\d+)$/);
         const block = match ? normalizeExtraBlocks(day)[Number(match[1])] : null;
         baseStart = normalizeStoredTime(block?.start || '');
         baseEnd = normalizeStoredTime(block?.end || '');
+      } else if (resolvedBlockKey === 'extra') {
+        baseStart = normalizeStoredTime(day.refStart || '');
+        baseEnd = normalizeStoredTime(day.refEnd || '');
       } else {
         baseStart = normalizeStoredTime(day.start || day.crewStart || '');
         baseEnd = normalizeStoredTime(day.end || day.crewEnd || '');
       }
 
-      const saved = data?.__schedule__?.[personKey]?.[String(blockKey)]?.[iso];
+      const saved = data?.__schedule__?.[personKey]?.[String(resolvedBlockKey)]?.[iso];
       return {
         start: normalizeStoredTime(saved?.start ?? baseStart),
         end: normalizeStoredTime(saved?.end ?? baseEnd),
         isRest: false,
+        blockKey: resolvedBlockKey,
       };
     },
     [data, findWeekAndDay]
+  );
+
+  const resolveBlockForPersonISO = useCallback(
+    (blockKey: 'base' | 'pre' | 'pick' | string, iso: string, personKey: string) =>
+      scheduleWindowForBlock(blockKey, iso, personKey).blockKey || String(blockKey),
+    [scheduleWindowForBlock]
   );
 
   const updateScheduleForBlock = useCallback(
@@ -338,6 +417,30 @@ export default function ReportesSemana({
     [data, reportDayIsoMap]
   );
 
+  const renderedPeopleGroups = useMemo(() => {
+    const seen = new Set<string>();
+    const takeList = (list: AnyRecord[] = []) =>
+      (list || []).filter(person => {
+        const key = reportPersonMergeKey(person);
+        if (!key || key === 'name:') return true;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+
+    const base = takeList(peopleBase);
+    const pre = takeList(peoplePre);
+    const pick = takeList(peoplePick);
+    const extra = (extraGroups || [])
+      .map(group => ({
+        ...group,
+        people: takeList(group.people || []),
+      }))
+      .filter(group => group.people.length > 0);
+
+    return { base, pre, pick, extra };
+  }, [peopleBase, peoplePre, peoplePick, extraGroups]);
+
   const exportGenderMap = useMemo(() => {
     const map: Record<string, string> = {};
     (safePersonas || []).forEach(p => {
@@ -360,15 +463,15 @@ export default function ReportesSemana({
 
   const groupedPersonKeys = useMemo(
     () => ({
-      base: peopleBase.map(personaKey),
-      pre: peoplePre.map(personaKey),
-      pick: peoplePick.map(personaKey),
-      extraGroups: extraGroups.map(group => ({
+      base: renderedPeopleGroups.base.map(personaKey),
+      pre: renderedPeopleGroups.pre.map(personaKey),
+      pick: renderedPeopleGroups.pick.map(personaKey),
+      extraGroups: renderedPeopleGroups.extra.map(group => ({
         blockKey: group.blockKey,
         people: group.people.map(personaKey),
       })),
     }),
-    [peopleBase, peoplePre, peoplePick, extraGroups]
+    [renderedPeopleGroups]
   );
 
   const params = useMemo(
@@ -637,6 +740,8 @@ export default function ReportesSemana({
       block={block}
       personStickyTop={stickyOffsets.person}
       scheduleWindowForISO={scheduleWindowForBlock}
+      resolveBlockForISO={resolveBlockForPersonISO}
+      getDayStyle={getReportDayStyle}
       onScheduleChange={updateScheduleForBlock}
       semana={[...filteredSemana]}
       collapsed={collapsed}
@@ -701,20 +806,21 @@ export default function ReportesSemana({
                 dateRowRef={dateRowRef}
                 headerTop={stickyOffsets.header}
                 dateTop={stickyOffsets.date}
+                getDayStyle={getReportDayStyle}
               />
 
               <tbody>
-                {renderPersonRows(peopleBase, 'base')}
+                {renderPersonRows(renderedPeopleGroups.base, 'base')}
 
-                {extraGroups.map(group => (
+                {renderedPeopleGroups.extra.map(group => (
                   <React.Fragment key={group.blockKey}>
                     {renderPersonRows(group.people, group.blockKey as any)}
                   </React.Fragment>
                 ))}
 
-                {renderPersonRows(peoplePre, 'pre')}
+                {renderPersonRows(renderedPeopleGroups.pre, 'pre')}
 
-                {renderPersonRows(peoplePick, 'pick')}
+                {renderPersonRows(renderedPeopleGroups.pick, 'pick')}
               </tbody>
             </table>
           </div>

@@ -114,6 +114,42 @@ describe('ReportPersonRows (smoke)', () => {
     expect(cellsWithOffStyling.length).toBeGreaterThan(0);
   });
 
+  it('marks normalized rest days without treating Dietas as blocked', () => {
+    const semana = ['2025-01-06'];
+    const list = [{ role: 'EL', name: 'Juan' }];
+    const collapsed = {};
+    const setCollapsed = fn => fn(collapsed);
+    const findRestDay = () => ({ day: { tipo: 'rest', team: [{ name: 'Juan', role: 'EL' }] } });
+
+    const { container } = render(
+      <table>
+        <tbody>
+          <ReportPersonRows
+            list={list}
+            block='base'
+            scheduleWindowForISO={() => ({ start: '', end: '', isRest: true })}
+            onScheduleChange={onScheduleChange}
+            semana={semana}
+            collapsed={collapsed}
+            setCollapsed={setCollapsed}
+            data={{}}
+            setCell={noop}
+            findWeekAndDay={findRestDay}
+            isPersonScheduledOnBlock={isPersonScheduledOnBlock}
+            CONCEPTS={CONCEPTS}
+            DIETAS_OPCIONES={DIETAS_OPCIONES}
+            SI_NO={SI_NO}
+            parseDietas={parseDietas}
+            formatDietas={formatDietas}
+          />
+        </tbody>
+      </table>
+    );
+
+    expect(container.querySelector('td.report-rest-cell input[type="number"]')).toBeInTheDocument();
+    expect(container.querySelector('td.report-rest-cell [data-testid="dietas-cell"]')).not.toBeInTheDocument();
+  });
+
   it('passes the prelight block when checking off-map for non-ref roles', () => {
     const semana = ['2025-01-06'];
     const list = [{ role: 'E', name: 'Ricard Durany' }];

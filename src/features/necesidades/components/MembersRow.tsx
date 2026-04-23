@@ -11,6 +11,7 @@ import Chip from './Chip';
 import { ConfirmModal } from './ConfirmModal';
 import EditableRowLabel from './EditableRowLabel';
 import TextAreaAuto from './TextAreaAuto';
+import { getNeedsDayTypePalette } from '../utils/dayTypeColors';
 
 const normalizeMemberName = (value: unknown): string =>
   String(value || '').trim().toLowerCase();
@@ -144,6 +145,7 @@ export function JornadaDropdownCell({
   translateJornadaType,
 }: JornadaDropdownCellProps) {
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const palette = getNeedsDayTypePalette(value, theme);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -180,11 +182,12 @@ export function JornadaDropdownCell({
         style={{
           borderWidth: dropdownState.isButtonHovered ? '1.5px' : '1px',
           borderStyle: 'solid',
-          borderColor: dropdownState.isButtonHovered && theme === 'light'
-            ? '#0476D9'
-            : (dropdownState.isButtonHovered && theme === 'dark'
-              ? '#fff'
-              : 'var(--border)'),
+          borderColor: dropdownState.isButtonHovered
+            ? palette?.controlBorder || (theme === 'light' ? '#0476D9' : '#fff')
+            : palette?.controlBorder || 'var(--border)',
+          backgroundColor: palette?.controlBg || undefined,
+          color: palette?.controlText || undefined,
+          boxShadow: palette ? `inset 3px 0 0 ${palette.border}` : undefined,
           backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath fill='${theme === 'light' ? '%23111827' : '%23ffffff'}' d='M5 7.5L1.25 3.75h7.5z'/%3E%3C/svg%3E")`,
           backgroundRepeat: 'no-repeat',
           backgroundPosition: 'right 0.4rem center',
@@ -586,9 +589,27 @@ export function MembersRow({
               : listKey === 'refList'
                 ? 'mixed'
                 : undefined;
+          const blockPalette =
+            showSchedule && jornadaKey && listKey !== 'crewList' && jornadaValue
+              ? getNeedsDayTypePalette(jornadaValue, theme)
+              : null;
 
           return (
-            <Td key={d.key} align='middle' className='text-center'>
+            <Td
+              key={d.key}
+              align='middle'
+              className={`text-center ${blockPalette ? 'needs-member-jornada-cell' : ''}`}
+              style={
+                blockPalette
+                  ? ({
+                      '--needs-member-bg': blockPalette.bg,
+                      '--needs-member-border': blockPalette.border,
+                      '--needs-current-day-bg': blockPalette.bg,
+                      '--needs-current-day-border': blockPalette.border,
+                    } as React.CSSProperties)
+                  : undefined
+              }
+            >
               {collapsible && collapsed ? (
                 <div className='flex items-center justify-center min-h-[20px] sm:min-h-[24px] md:min-h-[28px]' />
               ) : (

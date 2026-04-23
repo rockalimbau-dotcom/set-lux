@@ -9,6 +9,7 @@ const SiNoCell: React.FC<SiNoCellProps> = ({
   fecha,
   val,
   cellClasses,
+  dayStyle,
   readOnly,
   off,
   setCell,
@@ -29,6 +30,7 @@ const SiNoCell: React.FC<SiNoCellProps> = ({
       key={`${pKey}_${concepto}_${fecha}`}
       className={`text-center ${cellClasses} ${!off && isChecked ? 'report-filled-cell' : ''}`}
       align='center'
+      style={dayStyle}
     >
       <div className='w-full flex justify-center items-center'>
         <input

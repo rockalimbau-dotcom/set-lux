@@ -8,6 +8,7 @@ import { useDropdownState } from './useDropdownState';
 import { useOffMap } from './useOffMap';
 import { PersonRowHeader } from './PersonRowHeader';
 import { ConceptRow } from './ConceptRow';
+import { normalizeJornadaType } from '@shared/utils/jornadaTranslations';
 
 function ReportPersonRows({
   project,
@@ -15,6 +16,8 @@ function ReportPersonRows({
   block,
   personStickyTop = 0,
   scheduleWindowForISO,
+  resolveBlockForISO,
+  getDayStyle,
   onScheduleChange,
   semana,
   collapsed,
@@ -48,6 +51,20 @@ function ReportPersonRows({
 
   const focusColor = theme === 'light' ? '#0476D9' : '#F27405';
   const dietasOptions = useMemo(() => (DIETAS_OPCIONES.filter(Boolean) as string[]), [DIETAS_OPCIONES]);
+  const restDays = useMemo(() => {
+    const dates = new Set<string>();
+    semana.forEach(iso => {
+      try {
+        const { day } = findWeekAndDay(iso) || {};
+        if (normalizeJornadaType(day?.tipo) === 'Descanso') {
+          dates.add(iso);
+        }
+      } catch {
+        // If planning lookup fails, leave the day unstyled rather than hiding data.
+      }
+    });
+    return dates;
+  }, [semana, findWeekAndDay]);
 
   return (
     <>
@@ -78,6 +95,7 @@ function ReportPersonRows({
               block={block}
               stickyTop={personStickyTop}
               scheduleWindowForISO={scheduleWindowForISO}
+              getDayStyle={getDayStyle}
               onScheduleChange={onScheduleChange}
               semana={semana}
               collapsed={collapsed}
@@ -97,6 +115,9 @@ function ReportPersonRows({
                   semana={semana}
                   data={data}
                   offMap={offMap}
+                  restDays={restDays}
+                  getDayStyle={getDayStyle}
+                  resolveBlockForISO={resolveBlockForISO}
                   readOnly={readOnly}
                   horasExtraTipo={horasExtraTipo}
                   theme={theme}

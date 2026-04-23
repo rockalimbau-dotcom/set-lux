@@ -3,6 +3,7 @@ import { AnyRecord } from '@shared/types/common';
 import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { translateJornadaType as translateJornadaTypeUtil } from '@shared/utils/jornadaTranslations';
+import { getNeedsDayTypePalette } from '../utils/dayTypeColors';
 
 type JornadaRowProps = {
   label: string;
@@ -58,6 +59,7 @@ function JornadaDropdownCell({
   translateJornadaType,
 }: JornadaDropdownCellProps) {
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const palette = getNeedsDayTypePalette(value, theme);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -94,11 +96,12 @@ function JornadaDropdownCell({
         style={{
           borderWidth: dropdownState.isButtonHovered ? '1.5px' : '1px',
           borderStyle: 'solid',
-          borderColor: dropdownState.isButtonHovered && theme === 'light'
-            ? '#0476D9'
-            : (dropdownState.isButtonHovered && theme === 'dark'
-              ? '#fff'
-              : 'var(--border)'),
+          borderColor: dropdownState.isButtonHovered
+            ? palette?.controlBorder || (theme === 'light' ? '#0476D9' : '#fff')
+            : palette?.controlBorder || 'var(--border)',
+          backgroundColor: palette?.controlBg || undefined,
+          color: palette?.controlText || undefined,
+          boxShadow: palette ? `inset 3px 0 0 ${palette.border}` : undefined,
           backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath fill='${theme === 'light' ? '%23111827' : '%23ffffff'}' d='M5 7.5L1.25 3.75h7.5z'/%3E%3C/svg%3E")`,
           backgroundRepeat: 'no-repeat',
           backgroundPosition: 'right 0.4rem center',

@@ -14,6 +14,7 @@ const DietasCell: React.FC<DietasCellProps> = ({
   fecha,
   val,
   cellClasses,
+  dayStyle,
   theme,
   focusColor,
   readOnly,
@@ -62,8 +63,9 @@ const DietasCell: React.FC<DietasCellProps> = ({
   return (
     <Td
       key={`${pKey}_${concepto}_${fecha}`}
-      className={`text-center ${cellClasses} ${hasValue ? 'report-filled-cell' : ''}`}
+      className={`text-center report-dietas-cell ${cellClasses} ${hasValue ? 'report-filled-cell' : ''}`}
       align='center'
+      style={dayStyle}
     >
       <div className='flex flex-col gap-1 sm:gap-1.5 md:gap-2 items-center justify-center'>
         <div className='w-full relative' ref={dropdownRef}>

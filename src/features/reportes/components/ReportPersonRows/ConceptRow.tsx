@@ -12,6 +12,16 @@ interface ConceptRowProps {
   semana: readonly string[];
   data: AnyRecord;
   offMap: Map<string, boolean>;
+  restDays: Set<string>;
+  getDayStyle?: (
+    iso: string,
+    block?: 'base' | 'pre' | 'pick' | string
+  ) => React.CSSProperties | undefined;
+  resolveBlockForISO?: (
+    block: 'base' | 'pre' | 'pick' | string,
+    iso: string,
+    personKey: string
+  ) => string;
   readOnly: boolean;
   horasExtraTipo: string;
   theme: 'dark' | 'light';
@@ -33,6 +43,9 @@ export function ConceptRow({
   semana,
   data,
   offMap,
+  restDays,
+  getDayStyle,
+  resolveBlockForISO,
   readOnly,
   horasExtraTipo,
   theme,
@@ -74,10 +87,17 @@ export function ConceptRow({
         const val = data?.[pKey]?.[concepto]?.[fecha] ?? '';
         const key = `${roleId || personId || visualRole}_${name}_${fecha}_${block}`;
         const off = offMap.get(key) ?? false;
+        const isRest = restDays.has(fecha);
+        const isRestBlocked = isRest && concepto !== 'Dietas';
         const hasValue = String(val ?? '').trim() !== '';
+        const activeBlock = resolveBlockForISO?.(block, fecha, pKey) || block;
+        const dayStyle = getDayStyle?.(fecha, activeBlock);
         const cellClasses = [
-          off && concepto !== 'Dietas' ? 'report-off-cell' : '',
-          !off && hasValue ? 'report-filled-cell' : '',
+          getDayStyle ? 'report-jornada-cell' : '',
+          isRestBlocked ? 'report-rest-cell' : '',
+          off && concepto === 'Dietas' ? 'report-off-cell' : '',
+          off && !isRestBlocked && concepto !== 'Dietas' ? 'report-off-cell' : '',
+          !off && !isRestBlocked && hasValue ? 'report-filled-cell' : '',
         ]
           .filter(Boolean)
           .join(' ');
@@ -93,6 +113,7 @@ export function ConceptRow({
               fecha={fecha}
               val={val}
               cellClasses={cellClasses}
+              dayStyle={dayStyle}
               theme={theme}
               focusColor={focusColor}
               readOnly={readOnly}
@@ -122,6 +143,7 @@ export function ConceptRow({
               fecha={fecha}
               val={val}
               cellClasses={cellClasses}
+              dayStyle={dayStyle}
               readOnly={readOnly}
               off={off}
               setCell={setCell}
@@ -131,12 +153,12 @@ export function ConceptRow({
 
         if (concepto === 'Gasolina') {
           return (
-            <Td key={`${pKey}_${concepto}_${fecha}`} className={`text-center ${cellClasses}`} align='center'>
+            <Td key={`${pKey}_${concepto}_${fecha}`} className={`text-center ${cellClasses}`} align='center' style={dayStyle}>
               <div className='flex flex-col items-center justify-center gap-1'>
                 <input
                   type='text'
                   inputMode='decimal'
-                  className={`w-full px-1 py-0.5 sm:px-1.5 sm:py-1 md:px-2 md:py-1 rounded sm:rounded-md md:rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-[9px] sm:text-[10px] md:text-xs lg:text-sm text-left ${
+                  className={`report-gasolina-value-input w-full px-1 py-0.5 sm:px-1.5 sm:py-1 md:px-2 md:py-1 rounded sm:rounded-md md:rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-[9px] sm:text-[10px] md:text-xs lg:text-sm text-left ${
                     readOnly ? 'opacity-50 cursor-not-allowed' : ''
                   }`}
                   value={val}
@@ -153,10 +175,9 @@ export function ConceptRow({
                   type='button'
                   disabled={readOnly}
                   title={t('reports.uploadTicket')}
-                  className={`px-1 py-0.5 rounded border border-neutral-border text-[8px] sm:text-[9px] md:text-[10px] ${
+                  className={`report-gasolina-ticket-button px-1 py-0.5 rounded border border-neutral-border text-[8px] sm:text-[9px] md:text-[10px] ${
                     readOnly ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-80'
                   }`}
-                  style={{ color: 'var(--text)' }}
                   onClick={() => !readOnly && onAttachmentClick?.()}
                 >
                   📎 {t('reports.uploadTicket')}
@@ -192,7 +213,7 @@ export function ConceptRow({
               };
 
         return (
-          <Td key={`${pKey}_${concepto}_${fecha}`} className={`text-center ${cellClasses}`} align='center'>
+            <Td key={`${pKey}_${concepto}_${fecha}`} className={`text-center ${cellClasses}`} align='center' style={dayStyle}>
             <input
               {...numericProps}
               className={`w-full px-1 py-0.5 sm:px-1.5 sm:py-1 md:px-2 md:py-1 rounded sm:rounded-md md:rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-[9px] sm:text-[10px] md:text-xs lg:text-sm text-left ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}

@@ -43,26 +43,26 @@ export function usePersonScheduledChecker({
           matchesRef(getDayBlockList(day, BLOCKS.extra))
         );
       }
-      const resolvedBlock = block
-        ? block
+      const blocksToCheck = block
+        ? [block]
         : /P$/i.test(role || '')
-        ? BLOCKS.pre
+        ? [BLOCKS.pre]
         : /R$/i.test(role || '')
-        ? BLOCKS.pick
-        : BLOCKS.base;
+        ? [BLOCKS.pick]
+        : [BLOCKS.base, BLOCKS.pre, BLOCKS.pick, BLOCKS.extra];
       const baseRole = stripRoleSuffix(String(role || ''));
-      const list = getDayBlockList(day, resolvedBlock);
-      return list.some(
-        (m: AnyRecord) => {
+      return blocksToCheck.some(resolvedBlock => {
+        const list = getDayBlockList(day, resolvedBlock);
+        return list.some((m: AnyRecord) => {
           if (norm(m?.name) !== norm(name)) return false;
           const memberRoleId = String(m?.roleId || '').trim();
           if (roleId) {
             if (memberRoleId) return memberRoleId === roleId;
-            return false;
+            return true;
           }
           return !m?.role || norm(stripRoleSuffix(String(m?.role || ''))) === norm(baseRole) || !baseRole;
-        }
-      );
+        });
+      });
     },
     [findWeekAndDay]
   );
