@@ -63,7 +63,11 @@ if(
   && !(login.user === 'JamboLights' && login.pass === '1234')
   && !(login.user === 'OscarVallejo' && login.pass === '1234')
   && !(login.user === 'JorgeBarros' && login.pass === '1234')
-  
+  && !(login.user === 'EricSole' && login.pass === '1234')
+  && !(login.user === 'AlexGracia' && login.pass === '1234')
+  && !(login.user === 'RaulPeña' && login.pass === '1234')
+  && !(login.user === 'XaviRuiz' && login.pass === '1234')
+
 
 ){
   setError(t('auth.invalidCredentials'));
