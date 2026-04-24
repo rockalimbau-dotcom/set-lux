@@ -67,7 +67,7 @@ export function buildNecesidadesHTMLForPDF(
   const filteredDays = DAYS.filter((_, idx) => effectiveDayIdxs.includes(idx));
   const filteredValuesByDay = effectiveDayIdxs.map(idx => valuesByDay[idx] || {});
   const translatedWeekLabel = translateWeekLabel(weekLabel);
-  const headerRow = generateHeaderRow(filteredDays, monday);
+  const headerRow = generateHeaderRow(filteredDays, monday, filteredValuesByDay);
   const body = generateTableBody(
     project,
     filteredDays,
@@ -108,6 +108,7 @@ export function buildNecesidadesHTMLForPDF(
     renderInfoItem(`${i18n.t('pdf.locations')}:`, (project as any)?.localizaciones, 'info-item-right'),
     renderInfoItem(`${i18n.t('pdf.productionCoordinator')}:`, (project as any)?.coordinadoraProduccion, 'info-item-right'),
   ].filter(Boolean);
+  const hasProjectInfo = leftItems.length > 0 || rightItems.length > 0;
   const planName = String(planFileName ?? '').trim();
 
   return `
@@ -133,16 +134,20 @@ export function buildNecesidadesHTMLForPDF(
             }
           </div>
 
-          <div class="info-panel">
-            <div class="info-grid">
-              <div class="info-column">
-                ${leftItems.join('')}
-              </div>
-              <div class="info-column info-column-right">
-                ${rightItems.join('')}
-              </div>
-            </div>
-          </div>
+          ${
+            hasProjectInfo
+              ? `<div class="info-panel">
+                  <div class="info-grid">
+                    <div class="info-column">
+                      ${leftItems.join('')}
+                    </div>
+                    <div class="info-column info-column-right">
+                      ${rightItems.join('')}
+                    </div>
+                  </div>
+                </div>`
+              : ''
+          }
         </div>
         
         <div class="content">

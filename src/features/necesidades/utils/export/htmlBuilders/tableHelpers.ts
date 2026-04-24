@@ -12,6 +12,114 @@ import {
 } from '../helpers';
 import { normalizeExtraBlocks } from '@shared/utils/extraBlocks';
 
+type HtmlDayPalette = {
+  headerBg: string;
+  headerText: string;
+  border: string;
+  cellBg: string;
+  accentBg: string;
+  accentText: string;
+};
+
+function getDayPalette(day: DayValues | undefined): HtmlDayPalette {
+  const tipo = normalizeJornadaType(day?.crewTipo ?? day?.tipo ?? '').toLowerCase();
+
+  switch (tipo) {
+    case 'rodaje':
+      return {
+        headerBg: '#60A5FA',
+        headerText: '#0f172a',
+        border: '#93C5FD',
+        cellBg: '#EFF6FF',
+        accentBg: '#DBEAFE',
+        accentText: '#1D4ED8',
+      };
+    case 'rodaje festivo':
+      return {
+        headerBg: '#FB7185',
+        headerText: '#ffffff',
+        border: '#FDA4AF',
+        cellBg: '#FFF1F2',
+        accentBg: '#FFE4E6',
+        accentText: '#BE123C',
+      };
+    case 'carga':
+    case 'descarga':
+      return {
+        headerBg: '#FB923C',
+        headerText: '#0f172a',
+        border: '#FDBA74',
+        cellBg: '#FFF7ED',
+        accentBg: '#FFEDD5',
+        accentText: '#C2410C',
+      };
+    case 'prelight':
+    case 'recogida':
+      return {
+        headerBg: '#F59E0B',
+        headerText: '#0f172a',
+        border: '#FCD34D',
+        cellBg: '#FFFBEB',
+        accentBg: '#FEF3C7',
+        accentText: '#92400E',
+      };
+    case 'oficina':
+    case 'localizar':
+      return {
+        headerBg: '#22D3EE',
+        headerText: '#0f172a',
+        border: '#67E8F9',
+        cellBg: '#ECFEFF',
+        accentBg: '#CFFAFE',
+        accentText: '#0E7490',
+      };
+    case 'travel day':
+    case '1/2 jornada':
+      return {
+        headerBg: '#2DD4BF',
+        headerText: '#0f172a',
+        border: '#5EEAD4',
+        cellBg: '#F0FDFA',
+        accentBg: '#CCFBF1',
+        accentText: '#0F766E',
+      };
+    case 'descanso':
+    case 'fin':
+      return {
+        headerBg: '#6B7280',
+        headerText: '#ffffff',
+        border: '#9CA3AF',
+        cellBg: '#E2E8F0',
+        accentBg: '#CBD5E1',
+        accentText: '#334155',
+      };
+    default:
+      return {
+        headerBg: '#BFE4F8',
+        headerText: '#0f172a',
+        border: '#7DBFE8',
+        cellBg: '#ffffff',
+        accentBg: '#F8FAFC',
+        accentText: '#1E293B',
+      };
+  }
+}
+
+function getCellStyle(day: DayValues | undefined): string {
+  const palette = getDayPalette(day);
+  return `border:1px solid ${palette.border};padding:6px;vertical-align:middle;background:${palette.cellBg};`;
+}
+
+function getLabelCellStyle(): string {
+  return 'border:1px solid #cbd5e1;padding:6px 8px;font-weight:600;background:#f8fafc;';
+}
+
+function getScheduleBadge(scheduleLine: string, day: DayValues | undefined): string {
+  if (!scheduleLine) return '';
+  const palette = getDayPalette(day);
+  return `<div style="margin-bottom:6px;font-weight:700;color:${palette.accentText};text-align:center;line-height:1.15;">${esc(scheduleLine)}</div>`;
+}
+
 /**
  * Render cell content
  */
@@ -108,9 +216,9 @@ function fieldRow(
   const tds = DAYS.map((_, i) => {
     const rawValue = valuesByDay[i]?.[key] || '';
     const displayValue = key === 'loc' ? translateLocationValue(rawValue) : rawValue;
-    return `<td style="border:1px solid #999;padding:6px;vertical-align:middle;"><div class="td-label">${renderCell(displayValue)}</div></td>`;
+    return `<td style="${getCellStyle(valuesByDay[i])}"><div class="td-label">${renderCell(displayValue)}</div></td>`;
   }).join('');
-  return `<tr><td style="border:1px solid #999;padding:6px;font-weight:600;background:#f8fafc;"><div class="td-label-role">${esc(label)}</div></td>${tds}</tr>`;
+  return `<tr><td style="${getLabelCellStyle()}"><div class="td-label-role">${esc(label)}</div></td>${tds}</tr>`;
 }
 
 function mergedLocSeqRow(
@@ -122,21 +230,22 @@ function mergedLocSeqRow(
     const loc = translateLocationValue(valuesByDay[i]?.loc || '');
     const seq = valuesByDay[i]?.seq || '';
     const combined = seq ? [loc, seq].filter(Boolean).join('\n') : loc;
-    return `<td style="border:1px solid #999;padding:6px;vertical-align:middle;"><div class="td-label">${renderCell(combined)}</div></td>`;
+    return `<td style="${getCellStyle(valuesByDay[i])}"><div class="td-label">${renderCell(combined)}</div></td>`;
   }).join('');
-  return `<tr><td style="border:1px solid #999;padding:6px;font-weight:600;background:#f8fafc;"><div class="td-label-role">${esc(label)}</div></td>${tds}</tr>`;
+  return `<tr><td style="${getLabelCellStyle()}"><div class="td-label-role">${esc(label)}</div></td>${tds}</tr>`;
 }
 
 function simpleRow(
   label: string,
   DAYS: ReturnType<typeof getDays>,
-  values: string[]
+  values: string[],
+  valuesByDay?: DayValues[]
 ): string {
   const tds = DAYS.map((_, i) => {
     const displayValue = values[i] || '';
-    return `<td style="border:1px solid #999;padding:6px;vertical-align:middle;"><div class="td-label">${renderCell(displayValue)}</div></td>`;
+    return `<td style="${getCellStyle(valuesByDay?.[i])}"><div class="td-label">${renderCell(displayValue)}</div></td>`;
   }).join('');
-  return `<tr><td style="border:1px solid #999;padding:6px;font-weight:600;background:#f8fafc;"><div class="td-label-role">${esc(label)}</div></td>${tds}</tr>`;
+  return `<tr><td style="${getLabelCellStyle()}"><div class="td-label-role">${esc(label)}</div></td>${tds}</tr>`;
 }
 
 /**
@@ -161,10 +270,10 @@ function listRow(
         return formatMemberLine(project, m, isRefRole ? '' : suffix);
       })
       .join('');
-    const block = `${chips}${notes ? `<hr style="margin:6px 0;border:none;border-top:1px solid #ddd;"/>` : ''}${renderCell(notes)}`;
-    return `<td style="border:1px solid #999;padding:6px;vertical-align:middle;"><div class="td-label">${block}</div></td>`;
+    const block = `${chips}${notes ? `<hr style="margin:6px 0;border:none;border-top:1px solid #cbd5e1;"/>` : ''}${renderCell(notes)}`;
+    return `<td style="${getCellStyle(valuesByDay[i])}"><div class="td-label">${block}</div></td>`;
   }).join('');
-  return `<tr><td style="border:1px solid #999;padding:6px;font-weight:600;background:#f8fafc;"><div class="td-label-role">${esc(label)}</div></td>${tds}</tr>`;
+  return `<tr><td style="${getLabelCellStyle()}"><div class="td-label-role">${esc(label)}</div></td>${tds}</tr>`;
 }
 
 function listRowWithSchedule(
@@ -195,11 +304,11 @@ function listRowWithSchedule(
         return formatMemberLine(project, m, isRefRole ? '' : suffix);
       })
       .join('');
-    const header = scheduleLine ? `<div style="margin-bottom:6px;font-weight:600;">${esc(scheduleLine)}</div>` : '';
+    const header = list.length > 0 ? getScheduleBadge(scheduleLine, valuesByDay[i]) : '';
     const block = `${header}${chips}${notes ? `<hr style="margin:6px 0;border:none;border-top:1px solid #ddd;"/>` : ''}${renderCell(notes)}`;
-    return `<td style="border:1px solid #999;padding:6px;vertical-align:middle;"><div class="td-label">${block}</div></td>`;
+    return `<td style="${getCellStyle(valuesByDay[i])}"><div class="td-label">${block}</div></td>`;
   }).join('');
-  return `<tr><td style="border:1px solid #999;padding:6px;font-weight:600;background:#f8fafc;"><div class="td-label-role">${esc(label)}</div></td>${tds}</tr>`;
+  return `<tr><td style="${getLabelCellStyle()}"><div class="td-label-role">${esc(label)}</div></td>${tds}</tr>`;
 }
 
 function extraBlocksRow(
@@ -212,13 +321,13 @@ function extraBlocksRow(
     const blocks = normalizeExtraBlocks(valuesByDay[i] || {});
     const content = blocks
       .map(block => {
+        const members = Array.isArray(block.list) ? block.list : [];
+        if (members.length === 0) return '';
         const scheduleLine = [translateScheduleType(block.tipo || ''), block.start || block.end ? `${block.start}${block.start && block.end ? ' - ' : ''}${block.end}` : '']
           .filter(Boolean)
           .join(' | ');
-        const header = scheduleLine
-          ? `<div style="margin-bottom:6px;font-weight:600;">${esc(scheduleLine)}</div>`
-          : '';
-        const chips = (block.list || [])
+        const header = getScheduleBadge(scheduleLine, valuesByDay[i]);
+        const chips = members
           .map(m => {
             const role = (m?.role || '').toUpperCase();
             const isRefRole = role === 'REF' || (role && role.startsWith('REF') && role.length > 3);
@@ -227,13 +336,14 @@ function extraBlocksRow(
           .join('');
         const notes = block.text || '';
         return `<div style="padding:6px 0;${header || chips || notes ? '' : 'min-height:18px;'}">
-          ${header}${chips}${notes ? `<hr style="margin:6px 0;border:none;border-top:1px solid #ddd;"/>${renderCell(notes)}` : ''}
+          ${header}${chips}${notes ? `<hr style="margin:6px 0;border:none;border-top:1px solid #cbd5e1;"/>${renderCell(notes)}` : ''}
         </div>`;
       })
+      .filter(Boolean)
       .join('<div style="border-top:1px dashed #ddd;"></div>');
-    return `<td style="border:1px solid #999;padding:6px;vertical-align:middle;"><div class="td-label">${content || renderCell('')}</div></td>`;
+    return `<td style="${getCellStyle(valuesByDay[i])}"><div class="td-label">${content || renderCell('')}</div></td>`;
   }).join('');
-  return `<tr><td style="border:1px solid #999;padding:6px;font-weight:600;background:#f8fafc;"><div class="td-label-role">${esc(label)}</div></td>${tds}</tr>`;
+  return `<tr><td style="${getLabelCellStyle()}"><div class="td-label-role">${esc(label)}</div></td>${tds}</tr>`;
 }
 
 function fieldRowWithTime(
@@ -246,10 +356,10 @@ function fieldRowWithTime(
   const tds = DAYS.map((_, i) => {
     const value = valuesByDay[i]?.[key] || '';
     const time = valuesByDay[i]?.[timeKey] || '';
-    const header = time ? `<div style="margin-bottom:6px;font-weight:600;">${esc(time)}</div>` : '';
-    return `<td style="border:1px solid #999;padding:6px;vertical-align:middle;"><div class="td-label">${header}${renderCell(value)}</div></td>`;
+    const header = getScheduleBadge(time, valuesByDay[i]);
+    return `<td style="${getCellStyle(valuesByDay[i])}"><div class="td-label">${header}${renderCell(value)}</div></td>`;
   }).join('');
-  return `<tr><td style="border:1px solid #999;padding:6px;font-weight:600;background:#f8fafc;"><div class="td-label-role">${esc(label)}</div></td>${tds}</tr>`;
+  return `<tr><td style="${getLabelCellStyle()}"><div class="td-label-role">${esc(label)}</div></td>${tds}</tr>`;
 }
 
 /**
@@ -267,12 +377,13 @@ function isFieldRowEmpty(key: string, valuesByDay: DayValues[]): boolean {
  */
 function isListRowEmpty(listKey: string, notesKey: string, valuesByDay: DayValues[]): boolean {
   if (listKey === 'refList') {
-    return valuesByDay.every(day => normalizeExtraBlocks(day || {}).length === 0);
+    return valuesByDay.every(day =>
+      normalizeExtraBlocks(day || {}).every(block => !Array.isArray(block.list) || block.list.length === 0)
+    );
   }
   return valuesByDay.every(day => {
     const list = Array.isArray(day[listKey]) ? day[listKey] : [];
-    const notes = day[notesKey] || '';
-    return list.length === 0 && (!notes || (typeof notes === 'string' && notes.trim() === ''));
+    return list.length === 0;
   });
 }
 
@@ -311,7 +422,7 @@ export function generateTableBody(
         }
         return '';
       });
-	      return simpleRow(resolveLabel('shootDay', i18n.t('needs.shootingDay')), DAYS, labels);
+	      return simpleRow(resolveLabel('shootDay', i18n.t('needs.shootingDay')), DAYS, labels, valuesByDay);
     }, isEmpty: () => {
       return valuesByDay.every(day => {
         const jornada = normalizeJornadaType(day?.crewTipo ?? day?.tipo ?? '').toLowerCase();
@@ -440,12 +551,13 @@ export function generateTableBody(
  */
 export function generateHeaderRow(
   DAYS: ReturnType<typeof getDays>,
-  monday: Date
+  monday: Date,
+  valuesByDay: DayValues[]
 ): string {
-  return DAYS.map(
-    day =>
-      `<th style="border:1px solid #7dbfe8;padding:6px;text-align:center;vertical-align:middle;background:#bfe4f8;color:#0f172a;">
+  return DAYS.map((day, index) => {
+      const palette = getDayPalette(valuesByDay[index]);
+      return `<th style="border:1px solid ${palette.border};padding:6px;text-align:center;vertical-align:middle;background:${palette.headerBg};color:${palette.headerText};">
         <div class="th-label">${esc(day.name)}<br/>${esc(formatDDMM(addDays(monday, day.idx)))}</div>
-      </th>`
-  ).join('');
+      </th>`;
+  }).join('');
 }
