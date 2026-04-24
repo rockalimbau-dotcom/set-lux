@@ -1,6 +1,7 @@
 import { translateJornadaType as translateJornadaTypeUtil } from '@shared/utils/jornadaTranslations';
 import { BLOCKS, getDayBlockList } from '../../utils/plan';
 import { formatExtraScheduleByIndex, formatExtraSchedules } from '../../utils/extra';
+import { getReportDayType } from '../../utils/dayTypePalette';
 
 export const createHorarioHelpers = (
   findWeekAndDay: (iso: string) => { day: any },
@@ -23,6 +24,13 @@ export const createHorarioHelpers = (
       : '';
     if (!day.start || !day.end) return `${etiqueta}${t('reports.addInPlanning')}`;
     return `${etiqueta}${day.start}–${day.end}`;
+  };
+
+  const jornadaTipoTexto = (iso: string, blockKey: string = 'base') => {
+    const { day } = findWeekAndDay(iso);
+    if (!day) return '';
+    const tipo = getReportDayType(day, blockKey);
+    return tipo ? translateJornadaTypeUtil(tipo, t) : '';
   };
 
   const horarioPrelight = (iso: string) => {
@@ -59,5 +67,5 @@ export const createHorarioHelpers = (
     return formatExtraScheduleByIndex(day, index, t('reports.addInPlanning'), t);
   };
 
-  return { horarioTexto, horarioPrelight, horarioPickup, horarioExtra, horarioExtraByIndex };
+  return { horarioTexto, jornadaTipoTexto, horarioPrelight, horarioPickup, horarioExtra, horarioExtraByIndex };
 };

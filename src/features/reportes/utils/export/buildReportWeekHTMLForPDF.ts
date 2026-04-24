@@ -6,6 +6,7 @@ import { groupAndSortPersonsByBlock } from './buildReportWeekHTMLForPDF/sortingH
 import { generateDaysHeader } from './buildReportWeekHTMLForPDF/tableHelpers';
 import { generateBodyByBlocks, generateInfoPanel, generateFooter, generateHeaderTitle } from './buildReportWeekHTMLForPDF/contentHelpers';
 import { baseStyles } from './buildReportWeekHTMLForPDF/styles';
+import { getNeedsDayTypePalette } from '@features/necesidades/utils/dayTypeColors';
 
 export function buildReportWeekHTMLForPDF({
   project,
@@ -14,6 +15,9 @@ export function buildReportWeekHTMLForPDF({
   dayNameFromISO,
   toDisplayDate,
   horarioTexto,
+  jornadaTipoTexto,
+  jornadaTipoPersonaTexto,
+  resolvePersonaBlockKey,
   horarioPrelight,
   horarioPickup,
   horarioExtraByBlock,
@@ -77,7 +81,21 @@ export function buildReportWeekHTMLForPDF({
 
 
   // Generate table headers
-  const headDays = generateDaysHeader(safeSemanaWithData, dayNameFromISO, toDisplayDate);
+  const headDays = generateDaysHeader(
+    safeSemanaWithData,
+    dayNameFromISO,
+    toDisplayDate,
+    iso => {
+      const tipo = typeof jornadaTipoTexto === 'function' ? jornadaTipoTexto(iso, 'base') : '';
+      const palette = getNeedsDayTypePalette(tipo, 'light');
+      if (!palette) return null;
+      return {
+        headerBg: palette.headerBg,
+        border: palette.border,
+        text: palette.controlText,
+      };
+    }
+  );
   // Generate body grouped by blocks
   const body = generateBodyByBlocks(
     personsByBlock,
@@ -88,6 +106,9 @@ export function buildReportWeekHTMLForPDF({
     genderMap,
     project,
     horarioTexto,
+    jornadaTipoTexto,
+    jornadaTipoPersonaTexto,
+    resolvePersonaBlockKey,
     horarioPrelight,
     horarioPickup,
     horarioExtraByBlock
@@ -109,9 +130,9 @@ export function buildReportWeekHTMLForPDF({
       <div class="title-bar">
         <div class="title-text">${generateHeaderTitle(title)}</div>
       </div>
+      ${generateInfoPanel(project)}
     </div>
     <div class="content">
-      ${generateInfoPanel(project)}
       <div class="week-title">${esc(title || getTranslation('reports.week', 'Semana'))}</div>
       <div class="table-container">
         <table>

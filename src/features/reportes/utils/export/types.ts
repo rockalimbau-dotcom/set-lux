@@ -12,6 +12,9 @@ export interface BuildReportWeekHTMLParams {
   dayNameFromISO: (iso: string, index: number, dayNames?: string[]) => string;
   toDisplayDate: (iso: string) => string;
   horarioTexto: (iso: string) => string;
+  jornadaTipoTexto?: (iso: string, blockKey?: string) => string;
+  jornadaTipoPersonaTexto?: (pk: string, iso: string, blockKey?: string) => string;
+  resolvePersonaBlockKey?: (pk: string, iso: string, blockKey?: string) => string;
   horarioPrelight?: (iso: string) => string;
   horarioPickup?: (iso: string) => string;
   horarioExtraByBlock?: (blockKey: string, iso: string) => string;

@@ -1,9 +1,9 @@
 import { isMeaningfulValue } from './dataHelpers';
 
 const DEFAULT_PAGE_HEIGHT = 794;
-const HEADER_AND_FOOTER_RESERVED = 340;
-const PERSON_HEADER_HEIGHT = 44;
-const CONCEPT_ROW_HEIGHT = 34;
+const HEADER_AND_FOOTER_RESERVED = 230;
+const PERSON_HEADER_HEIGHT = 36;
+const CONCEPT_ROW_HEIGHT = 30;
 
 function countVisibleConceptsForPerson(
   pk: string,

@@ -2,13 +2,15 @@
  * Shared CSS styles for report week HTML PDF
  */
 export const baseStyles = `
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+  * { box-sizing: border-box; }
   body {
     font-family: 'Segoe UI', system-ui, -apple-system, Roboto, Ubuntu, Cantarell, 'Noto Sans', sans-serif;
     background: white;
     color: #1e293b;
-    line-height: 1.3;
+    line-height: 1.35;
     font-size: 12px;
+    margin: 0;
+    padding: 0;
   }
   .container { max-width: 100%; margin: 0 auto; background: white; min-height: 100vh; display: flex; flex-direction: column; padding-bottom: 0; position: relative; }
   .container-pdf {
@@ -24,26 +26,25 @@ export const baseStyles = `
   .title-bar {
     background: linear-gradient(135deg, #f97316 0%, #3b82f6 100%);
     color: #ffffff;
-    padding: 10px 20px;
+    padding: 8px 18px;
     text-align: center;
   }
   .title-text {
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.2px;
   }
   .content {
-    padding: 12px 20px 12px 20px;
+    padding: 8px 20px;
     flex: 1;
     margin-bottom: 0;
-    min-height: 0;
     overflow: hidden;
   }
   .info-panel {
     background: #f1f5f9;
-    margin: 10px 0 6px 0;
-    padding: 10px 14px;
+    margin: 8px 20px 4px 20px;
+    padding: 8px 10px;
     border-radius: 8px;
     border: 1px solid #e2e8f0;
   }
@@ -52,122 +53,113 @@ export const baseStyles = `
     grid-template-columns: 1fr 1fr;
     gap: 6px 18px;
   }
-  .info-grid-secondary {
-    margin-top: 18px;
+  .info-grid-single {
+    grid-template-columns: 1fr;
   }
   .info-column {
     display: grid;
     gap: 4px;
+    min-width: 0;
   }
   .info-column-right {
-    text-align: right;
-    align-items: flex-end;
-    justify-self: end;
-  }
-  .info-row {
-    display: flex;
-    gap: 6px;
-    align-items: baseline;
-    flex-wrap: wrap;
-    font-size: 10px;
-    color: #334155;
-  }
-  .info-row-right {
-    justify-content: flex-end;
-    text-align: right;
+    justify-items: end;
   }
   .info-label {
     font-weight: 700;
     color: #1f2937;
+    font-size: 9px;
+    line-height: 1.2;
   }
   .info-value {
     font-weight: 500;
     color: #0f172a;
+    font-size: 9px;
+    line-height: 1.2;
+    word-break: break-word;
   }
-  .week-title { font-size: 14px; font-weight: 600; color: #1e293b; margin: 12px 0 8px 0; padding: 4px 0; border-bottom: 1px solid #e2e8f0; }
+  .info-item {
+    min-width: 0;
+    display: flex;
+    gap: 4px;
+    align-items: baseline;
+    flex-wrap: nowrap;
+  }
+  .info-item-left {
+    text-align: left;
+  }
+  .info-item-right {
+    justify-content: flex-end;
+    text-align: right;
+  }
+  .week-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1e293b;
+    margin: 8px 0 6px 0;
+    padding: 3px 0;
+    border-bottom: 1px solid #e2e8f0;
+  }
   .table-container {
     background: white;
-    border-radius: 6px;
+    border-radius: 8px;
     overflow: hidden;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    margin-bottom: 18px;
+    box-shadow: 0 1px 3px rgba(15,23,42,0.08);
+    margin-bottom: 14px;
   }
-  table { width: 100%; border-collapse: collapse; font-size: 10px; border: 2px solid #7dbfe8; }
+  table { width: 100%; border-collapse: collapse; font-size: 9px; border: 2px solid #c9d8f0; }
   thead { display: table-header-group; }
   tr { break-inside: avoid; page-break-inside: avoid; }
-  th { background: #bfe4f8; color: #0f172a; padding: 6px 6px; text-align: center; font-weight: 700; font-size: 9px; text-transform: uppercase; border: 1px solid #7dbfe8; vertical-align: middle; }
-  td { padding: 6px 6px; border: 1px solid #e2e8f0; background: white; vertical-align: middle; color: #1e293b; }
+  th {
+    background: linear-gradient(180deg, #d9ecfb 0%, #bfe4f8 100%);
+    color: #0f172a;
+    padding: 6px 6px;
+    text-align: center;
+    font-weight: 700;
+    font-size: 8px;
+    text-transform: uppercase;
+    border: 1px solid #9fcbe9;
+    vertical-align: middle;
+    letter-spacing: 0.35px;
+  }
+  td { padding: 5px 6px; border: 1px solid #e2e8f0; background: white; vertical-align: middle; color: #1e293b; }
   .th-label {
     display: flex;
-    min-height: 24px;
+    min-height: 20px;
     align-items: center;
     justify-content: center;
     text-align: center;
-    transform: translateY(-2px);
+    line-height: 1.1;
   }
   .td-label {
     display: block;
     width: 100%;
-    min-height: 20px;
+    min-height: 18px;
   }
   .td-label-center {
     text-align: center;
   }
-  .person-chip-wrap {
+  .person-label {
     display: flex;
-    justify-content: flex-start;
-    align-items: center;
+    align-items: baseline;
+    gap: 5px;
+    line-height: 1.1;
+    white-space: nowrap;
   }
-  .member-chip-line {
-    display: inline-table;
-    border-collapse: separate;
-    border-spacing: 0;
-    height: 18px;
-    padding: 0 6px 0 2px;
-    margin: 2px 0;
-    border-radius: 999px;
-    border: 1px solid #e6dccb;
-    background: #fff9f0;
-    max-width: 100%;
-    vertical-align: middle;
-  }
-  .member-chip-badge {
-    display: table-cell;
-    min-width: 14px;
-    height: 14px;
-    padding: 0 4px;
-    border-radius: 999px;
-    background: linear-gradient(135deg, #60a5fa, #0369a1);
-    color: #ffffff;
+  .person-role {
     font-size: 7px;
     font-weight: 700;
-    line-height: 14px;
-    text-align: center;
-    vertical-align: middle;
+    text-transform: uppercase;
+    letter-spacing: 0.35px;
+    color: #1d4ed8;
   }
-  .member-chip-name {
-    display: table-cell;
+  .person-name {
+    font-size: 8px;
+    font-weight: 600;
     color: #1f2937;
-    font-weight: 500;
-    font-size: 7px;
-    line-height: 14px;
-    letter-spacing: 0.1px;
-    vertical-align: middle;
-    padding-left: 5px;
-  }
-  .member-chip-badge-text {
-    position: relative;
-    top: -5px;
-    display: inline-block;
-  }
-  .member-chip-name-text {
-    position: relative;
-    top: -5px;
-    display: inline-block;
   }
   .footer {
     text-align: center;
-    padding: 12px 0 10px 0;
+    padding: 10px 0 8px 0;
     color: #64748b;
     font-size: 6px;
     border-top: 1px solid #e2e8f0;
@@ -179,7 +171,7 @@ export const baseStyles = `
     width: 100%;
     background: white;
     margin-top: auto;
-    min-height: 26px;
+    min-height: 24px;
   }
   .setlux-logo { font-weight: 700; }
   .setlux-logo .set { color: #f97316; }

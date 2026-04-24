@@ -38,7 +38,7 @@ const SiNoCell: React.FC<SiNoCellProps> = ({
           checked={isChecked}
           onChange={handleChange}
           disabled={off || readOnly}
-          className={`accent-blue-500 dark:accent-[#f59e0b] ${off || readOnly ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+          className={`report-jornada-checkbox ${off || readOnly ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
           title={readOnly ? t('conditions.projectClosed') : (off ? t('reports.notWorkingThisDay') : (isChecked ? t('reports.uncheck') : t('reports.check')))}
         />
       </div>

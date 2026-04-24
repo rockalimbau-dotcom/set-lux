@@ -68,6 +68,9 @@ export async function exportReportRangeToPDF(params: ExportReportRangeParams) {
 
     const {
       horarioTexto,
+      jornadaTipoTexto,
+      jornadaTipoPersonaTexto,
+      resolvePersonaBlockKey,
       horarioPrelightFn,
       horarioPickupFn,
     } = await initializeExportHelpers({
@@ -479,6 +482,9 @@ export async function exportReportRangeToPDF(params: ExportReportRangeParams) {
           dayNameFromISO: (iso: string, index: number) => dayNameFromISO(iso, index, [...DAY_NAMES] as any),
           toDisplayDate,
           horarioTexto,
+          jornadaTipoTexto,
+          jornadaTipoPersonaTexto,
+          resolvePersonaBlockKey,
           CONCEPTS: [...CONCEPTS],
           data: pageData,
         });
