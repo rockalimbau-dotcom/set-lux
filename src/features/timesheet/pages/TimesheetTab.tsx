@@ -104,6 +104,17 @@ const stableWorkerIdentity = (member: AnyRecord): string => {
   return stableWorkerKey(String(member?.name || ''));
 };
 
+const normalizeStoredTime = (value: unknown): string => {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  const match = raw.match(/^(\d{1,2}):(\d{1,2})$/);
+  if (!match) return raw;
+  const hours = Number(match[1]);
+  const minutes = Number(match[2]);
+  if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) return raw;
+  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+};
+
 const getRosterSourceFromProjectTeam = (
   project: AnyRecord | undefined,
   member: Pick<Worker, 'personId' | 'roleId' | 'name' | 'role'> | AnyRecord
@@ -512,41 +523,84 @@ function getWorkBlockForDay(day: AnyRecord, worker: Worker): 'base' | 'pre' | 'p
 
 function getTimesForBlock(day: AnyRecord, block: 'base' | 'pre' | 'pick' | 'ref' | null): { from: string; to: string } {
   if (!block) return { from: '', to: '' };
-  if (block === 'pre') return { from: String(day?.preStart || day?.start || ''), to: String(day?.preEnd || day?.end || '') };
-  if (block === 'pick') return { from: String(day?.pickStart || day?.start || ''), to: String(day?.pickEnd || day?.end || '') };
-  if (block === 'ref') return { from: String(day?.refStart || day?.start || ''), to: String(day?.refEnd || day?.end || '') };
-  return { from: String(day?.start || ''), to: String(day?.end || '') };
+  if (block === 'pre') return { from: normalizeStoredTime(day?.preStart || day?.start || ''), to: normalizeStoredTime(day?.preEnd || day?.end || '') };
+  if (block === 'pick') return { from: normalizeStoredTime(day?.pickStart || day?.start || ''), to: normalizeStoredTime(day?.pickEnd || day?.end || '') };
+  if (block === 'ref') return { from: normalizeStoredTime(day?.refStart || day?.start || ''), to: normalizeStoredTime(day?.refEnd || day?.end || '') };
+  return { from: normalizeStoredTime(day?.start || ''), to: normalizeStoredTime(day?.end || '') };
+}
+
+function getReportPersonKeyCandidates(worker: Worker, block: 'base' | 'pre' | 'pick' | 'ref' | null): string[] {
+  const name = String(worker.name || '').trim();
+  const roleRaw = String(worker.role || '').trim().toUpperCase();
+  const roleBase = normalizeRole(roleRaw);
+  const roleRef = stripRefuerzoSuffix(roleRaw);
+  const roleId = String(worker.roleId || '').trim();
+  const suffix =
+    block === 'pre'
+      ? '.pre'
+      : block === 'pick'
+      ? '.pick'
+      : block === 'ref'
+      ? '.extra'
+      : '';
+
+  const orderedCandidates = [
+    roleId ? `${roleId}${suffix}__${name}` : '',
+    `${roleRaw}${suffix}__${name}`,
+    `${roleBase}${suffix}__${name}`,
+    `${roleRef}${suffix}__${name}`,
+    block === 'ref' ? `REF${suffix}__${name}` : '',
+    block !== 'base' && roleId ? `${roleId}__${name}` : '',
+    block !== 'base' ? `${roleRaw}__${name}` : '',
+    block !== 'base' ? `${roleBase}__${name}` : '',
+    block !== 'base' ? `${roleRef}__${name}` : '',
+    block === 'ref' ? `REF__${name}` : '',
+  ].filter(Boolean);
+
+  return Array.from(new Set(orderedCandidates));
+}
+
+function getScheduleOverrideForDay(
+  reportData: AnyRecord,
+  worker: Worker,
+  block: 'base' | 'pre' | 'pick' | 'ref' | null,
+  iso: string
+): { from: string; to: string } | null {
+  if (!block || !reportData?.__schedule__) return null;
+  const blockCandidates =
+    block === 'ref'
+      ? ['extra', 'extra:0']
+      : [block];
+
+  for (const personKey of getReportPersonKeyCandidates(worker, block)) {
+    const personSchedule = reportData.__schedule__?.[personKey];
+    if (!personSchedule) continue;
+    for (const blockKey of blockCandidates) {
+      const saved = personSchedule?.[blockKey]?.[iso];
+      if (!saved) continue;
+      return {
+        from: normalizeStoredTime(saved?.start ?? ''),
+        to: normalizeStoredTime(saved?.end ?? ''),
+      };
+    }
+  }
+
+  return null;
 }
 
 function hasDietasForDay(reportData: AnyRecord, worker: Worker, block: 'base' | 'pre' | 'pick' | 'ref' | null, iso: string): boolean {
   if (!block || !reportData) return false;
-  const name = worker.name;
-  const roleRaw = worker.role;
-  const roleBase = normalizeRole(roleRaw);
-  const roleRef = stripRefuerzoSuffix(roleRaw);
   const candidates = new Set<string>([
-    `${roleRaw}__${name}`,
-    `${roleBase}__${name}`,
-    `${roleRef}__${name}`,
-    `REF__${name}`,
+    ...getReportPersonKeyCandidates(worker, block),
+    ...getReportPersonKeyCandidates(worker, 'base'),
   ]);
-  if (block === 'pre') {
-    candidates.add(`${roleRaw}.pre__${name}`);
-    candidates.add(`${roleBase}.pre__${name}`);
-    candidates.add(`${roleRef}.pre__${name}`);
-    candidates.add(`REF.pre__${name}`);
-  }
-  if (block === 'pick') {
-    candidates.add(`${roleRaw}.pick__${name}`);
-    candidates.add(`${roleBase}.pick__${name}`);
-    candidates.add(`${roleRef}.pick__${name}`);
-    candidates.add(`REF.pick__${name}`);
-  }
+
   if (block === 'ref') {
-    candidates.add(`REF__${name}`);
+    const name = String(worker.name || '').trim();
     candidates.add(`REF.pre__${name}`);
     candidates.add(`REF.pick__${name}`);
   }
+
   for (const key of candidates) {
     const v = reportData?.[key]?.['Dietas']?.[iso];
     if (String(v || '').trim() !== '') return true;
@@ -899,7 +953,10 @@ export default function TimesheetTab({ project, readOnly = false }: TimesheetTab
     return weekIsoDays.map((iso, idx) => {
       const day = (days[idx] || {}) as AnyRecord;
       const block = getWorkBlockForDay(day, selectedWorker);
-      const { from, to } = getTimesForBlock(day, block);
+      const scheduleOverride = getScheduleOverrideForDay(reportData || {}, selectedWorker, block, iso);
+      const baseTimes = getTimesForBlock(day, block);
+      const from = scheduleOverride?.from || baseTimes.from;
+      const to = scheduleOverride?.to || baseTimes.to;
       const minutes = diffMinutes(from, to);
       const hasDietas = hasDietasForDay(reportData || {}, selectedWorker, block, iso);
       const note = weekNotes?.[selectedWorker.stableKey]?.[iso] || '';
