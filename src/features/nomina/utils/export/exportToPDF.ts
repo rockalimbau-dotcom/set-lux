@@ -176,7 +176,11 @@ export async function exportToPDF({
     console.log(`✅ PDF generation complete with ${totalPages} pages`);
     
     // Generate and save filename
-    const filename = generateNominaFilename(project, monthKey, monthLabelEs);
+    const isIndividualExport = enrichedRows.length === 1;
+    const filename = generateNominaFilename(project, monthKey, monthLabelEs, {
+      individual: isIndividualExport,
+      workerName: isIndividualExport ? String(enrichedRows[0]?.name || '') : '',
+    });
     await shareOrSavePDF(pdf, filename);
     
     return true;

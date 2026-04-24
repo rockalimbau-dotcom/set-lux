@@ -66,7 +66,7 @@ export function generateTableBody({
   const showExtraHoursNetColumn =
     !useNetAmounts ||
     !columnVisibility.extraHoursPercent ||
-    enrichedRows.some(r => Number(r?._extraHoursAmount || 0) !== 0);
+    enrichedRows.some(r => !!r?._showExtraHoursPercent);
   const generateRowHTML = (r: any) => {
     const dataCells = generateRowDataCells(r, columnVisibility, {
       projectMode,

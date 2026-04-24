@@ -462,7 +462,7 @@ export function MonthSectionPersonRow({
               max='100'
               step='0.1'
               value={rc.extraHoursPercent ?? 4.7}
-              onChange={e => !readOnly && setRcv(pKey, { extraHoursPercent: e.target.value === '' ? 0 : Number(e.target.value) })}
+              onChange={e => !readOnly && setRcv(pKey, { extraHoursPercent: e.target.value === '' ? undefined : Number(e.target.value) })}
               disabled={readOnly}
               readOnly={readOnly}
               className={`w-14 sm:w-16 md:w-20 px-1 py-0.5 sm:px-1.5 sm:py-1 md:px-2 md:py-1 rounded sm:rounded-md md:rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-[9px] sm:text-[10px] md:text-xs text-right ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}

@@ -48,6 +48,16 @@ const translateDietItem = (item: string): string => {
   return itemMap[item] || item;
 };
 
+const renderCompactSummary = (value: string | number, parts: string[]): string => {
+  const safeParts = parts.filter(Boolean);
+  if (!safeParts.length && !String(value || '').trim()) return '';
+  const details = safeParts
+    .map(part => `<span class="summary-detail-item">${part}</span>`)
+    .join('');
+
+  return `<div class="summary-pill summary-pill-compact"><div class="summary-value">${value}</div>${details ? `<div class="summary-details">${details}</div>` : ''}</div>`;
+};
+
 /**
  * Generate worked days summary text for export
  */
@@ -92,7 +102,7 @@ export const generateWorkedDaysText = (
   }
   
   const totalWorked = r._worked || 0;
-  return `<div style="text-align:center;"><strong>${totalWorked}</strong><br/><div style="font-size:10px;line-height:1.2;">${parts.join('<br/>')}</div></div>`;
+  return renderCompactSummary(totalWorked, parts);
 };
 
 /**
@@ -106,7 +116,7 @@ export const generateCargaDescargaText = (r: any): string => {
   const parts: string[] = [];
   if (carga > 0) parts.push(`${i18n.t('payroll.dayTypes.loading')} x${carga}`);
   if (descarga > 0) parts.push(`${i18n.t('payroll.dayTypes.unloading')} x${descarga}`);
-  return `<div style="text-align:center;"><strong>${total}</strong><br/><div style="font-size:10px;line-height:1.2;">${parts.join('<br/>')}</div></div>`;
+  return renderCompactSummary(total, parts);
 };
 
 /**
@@ -149,7 +159,7 @@ export const generateDietasText = (r: any): string => {
     return '';
   }
   
-  return `<div style="text-align:center;"><strong>${totalDietas}</strong><br/><div style="font-size:9px;line-height:1.2;">${parts.join('<br/>')}</div></div>`;
+  return renderCompactSummary(totalDietas, parts);
 };
 
 /**
@@ -179,7 +189,7 @@ export const generateExtrasText = (r: any): string => {
     return '';
   }
   
-  return `<div style="text-align:center;"><strong>${totalExtras}</strong><br/>${parts.join(' ')}</div>`;
+  return renderCompactSummary(totalExtras, parts.map(part => part.replace(/^<div>|<\/div>$/g, '')));
 };
 
 /**

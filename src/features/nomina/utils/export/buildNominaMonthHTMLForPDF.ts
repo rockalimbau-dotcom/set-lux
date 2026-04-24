@@ -24,7 +24,7 @@ export function buildNominaMonthHTMLForPDF({
   const showExtraHoursNetColumn =
     !isIndividualExport ||
     !columnVisibility.extraHoursPercent ||
-    enrichedRows.some(r => Number(r?._extraHoursAmount || 0) !== 0);
+    enrichedRows.some(r => !!r?._showExtraHoursPercent);
   const projectMode = project?.conditions?.tipo === 'mensual' ? 'mensual' : project?.conditions?.tipo === 'diario' ? 'diario' : 'semanal';
   const headerCells = generateHeaderCells(columnVisibility, projectMode, {
     forPDF: true,

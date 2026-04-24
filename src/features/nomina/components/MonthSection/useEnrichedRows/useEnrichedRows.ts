@@ -218,26 +218,29 @@ export function useEnrichedRows({
       const otherValue = getValueWithOverride(ov, 'otherTotal', useFilteredData, filteredRow, r.otherTotal);
 
       const totalDietas = calculateTotalDietas(dietasMap, effectivePr, ticketValue, otherValue);
-      const materialPropioDays = getValueWithOverride(
+      const rawMaterialPropioDays = getValueWithOverride(
         ov,
         'materialPropioDays',
         useFilteredData,
         filteredRow,
         (r as any).materialPropioDays || 0
       );
-      const materialPropioWeeks = getValueWithOverride(
+      const rawMaterialPropioWeeks = getValueWithOverride(
         ov,
         'materialPropioWeeks',
         useFilteredData,
         filteredRow,
         (r as any).materialPropioWeeks || 0
       );
+      const materialPropioType = (effectivePr as any).materialPropioType || 'semanal';
       const materialPropioUnique =
-        (effectivePr as any).materialPropioType === 'unico' &&
+        materialPropioType === 'unico' &&
         ((effectivePr as any).materialPropioValue || 0) > 0 &&
         isFirstProjectMonth
           ? 1
           : 0;
+      const materialPropioDays = materialPropioType === 'unico' ? 0 : rawMaterialPropioDays;
+      const materialPropioWeeks = materialPropioType === 'unico' ? 0 : rawMaterialPropioWeeks;
 
       // Calcular totales según el modo del proyecto
       let totals: {
@@ -394,7 +397,7 @@ export function useEnrichedRows({
         _materialPropioDays: materialPropioDays,
         _materialPropioWeeks: materialPropioWeeks,
         _materialPropioUnique: materialPropioUnique,
-        _materialPropioType: (effectivePr as any).materialPropioType || 'semanal',
+        _materialPropioType: materialPropioType,
         _dietasLabel: dietasLabel,
         _pr: effectivePr,
         _missingPrices: missingPrices,

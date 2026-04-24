@@ -255,63 +255,26 @@ export const PDF_STYLES = `
       text-align: center;
     }
 
-    .person-chip-wrap {
+    .person-label {
       display: flex;
-      justify-content: center;
-      align-items: center;
-      width: 100%;
+      align-items: baseline;
+      gap: 5px;
+      line-height: 1.1;
+      white-space: nowrap;
     }
 
-    .member-chip-line {
-      display: inline-table;
-      border-collapse: separate;
-      border-spacing: 0;
-      height: 18px;
-      padding: 0 6px 0 2px;
-      margin: 2px 0;
-      border-radius: 999px;
-      border: 1px solid #e6dccb;
-      background: #fff9f0;
-      max-width: 100%;
-      vertical-align: middle;
-    }
-
-    .member-chip-badge {
-      display: table-cell;
-      min-width: 14px;
-      height: 14px;
-      padding: 0 4px;
-      border-radius: 999px;
-      background: linear-gradient(135deg, #60a5fa, #0369a1);
-      color: #ffffff;
+    .person-role {
       font-size: 7px;
       font-weight: 700;
-      line-height: 14px;
-      text-align: center;
-      vertical-align: middle;
+      text-transform: uppercase;
+      letter-spacing: 0.35px;
+      color: #1d4ed8;
     }
 
-    .member-chip-name {
-      display: table-cell;
+    .person-name {
+      font-size: 8px;
+      font-weight: 600;
       color: #1f2937;
-      font-weight: 500;
-      font-size: 7px;
-      line-height: 14px;
-      letter-spacing: 0.1px;
-      vertical-align: middle;
-      padding-left: 5px;
-    }
-
-    .member-chip-badge-text {
-      position: relative;
-      top: -5px;
-      display: inline-block;
-    }
-
-    .member-chip-name-text {
-      position: relative;
-      top: -5px;
-      display: inline-block;
     }
     
     td.text-right {
@@ -330,27 +293,58 @@ export const PDF_STYLES = `
       font-weight: 600;
       color: #1e293b;
     }
+
+    .summary-pill {
+      display: inline-block;
+      text-align: center;
+      line-height: 1.1;
+      max-width: 100%;
+    }
+
+    .summary-pill-compact {
+      padding: 1px 0;
+    }
+
+    .summary-value {
+      font-size: 11px;
+      font-weight: 400;
+      color: #0f172a;
+      line-height: 1;
+      margin-bottom: 2px;
+    }
+
+    .summary-details {
+      font-size: 7px;
+      line-height: 1.15;
+      color: #475569;
+    }
+
+    .summary-detail-item {
+      display: block;
+      margin-top: 1px;
+    }
     
     .total-cell {
       font-weight: 700;
       font-size: 12px;
-      color: #f97316;
+      color: #92400e;
+      background: #fef3c7;
     }
     
     .extras-cell, .dietas-cell {
-      font-size: 9px;
+      font-size: 8px;
     }
     
     .extras-cell br + *, .dietas-cell br + * {
-      font-size: 9px !important;
+      font-size: 8px !important;
     }
     
     .dietas-cell {
-      font-size: 9px !important;
+      font-size: 8px !important;
     }
     
     .dietas-cell br + * {
-      font-size: 9px !important;
+      font-size: 8px !important;
     }
     
     .footer {

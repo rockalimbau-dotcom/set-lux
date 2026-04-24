@@ -6,7 +6,11 @@ import i18n from '../../../../i18n/config';
 export const generateNominaFilename = (
   project: any,
   monthKey: string,
-  monthLabelEs: (key: string, withYear?: boolean) => string
+  monthLabelEs: (key: string, withYear?: boolean) => string,
+  options: {
+    workerName?: string;
+    individual?: boolean;
+  } = {}
 ): string => {
   const projectName = project?.nombre || i18n.t('common.project');
   const currentLang = i18n?.language || 'es';
@@ -18,18 +22,18 @@ export const generateNominaFilename = (
     else if (currentLang === 'ca') nominaLabel = 'Nòmina';
   }
   
-  let monthPart = '';
-  try {
-    const [year, month] = monthKey.split('-').map(Number);
-    const dateObj = new Date(year, month - 1, 1);
-    const monthName = dateObj.toLocaleDateString(currentLang, { month: 'long' });
-    const monthCapitalized = monthName.charAt(0).toUpperCase() + monthName.slice(1);
-    monthPart = monthCapitalized.replace(/[^a-zA-Z0-9]/g, '');
-  } catch (e) {
-    const monthName = monthLabelEs(monthKey, true);
-    monthPart = monthName.replace(/[^a-zA-Z0-9]/g, '');
-  }
-  
-  return `${nominaLabel}_${monthPart}_${projectName.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
-};
+  const monthName = monthLabelEs(monthKey, true);
+  const monthPart = String(monthName || monthKey)
+    .trim()
+    .replace(/\s+/g, '_')
+    .replace(/[^a-zA-Z0-9_]/g, '');
 
+  const safeProjectName = projectName.replace(/[^a-zA-Z0-9]/g, '_');
+  const safeWorkerName = String(options.workerName || '').trim().replace(/[^a-zA-Z0-9]/g, '_');
+
+  if (options.individual && safeWorkerName) {
+    return `${nominaLabel}_${monthPart}_${safeWorkerName}_${safeProjectName}.pdf`;
+  }
+
+  return `${nominaLabel}_${monthPart}_${safeProjectName}.pdf`;
+};

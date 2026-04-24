@@ -226,6 +226,7 @@ function MonthSection({
           rc.extraHoursPercent === undefined || rc.extraHoursPercent === null || rc.extraHoursPercent === ''
             ? 4.7
             : Number(rc.extraHoursPercent);
+        const hasEffectiveExtraHoursPercent = totalExtras > 0 && Number(extraHoursPercent || 0) > 0;
         const irpfAmount = totalBruto * irpfPercent / 100;
         const estadoAmount = totalBruto * estadoPercent / 100;
         const extraHoursAmount = totalExtras * extraHoursPercent / 100;
@@ -234,7 +235,14 @@ function MonthSection({
         return {
           ...r,
           _showNetColumns: showNetColumns,
-          _showExtraHoursPercent: showNetColumns && (r.extras || 0) > 0,
+          _showExtraHoursPercent: showNetColumns && hasEffectiveExtraHoursPercent,
+          _hasExplicitExtraHoursPercent:
+            !(
+              rc.extraHoursPercent === undefined ||
+              rc.extraHoursPercent === null ||
+              rc.extraHoursPercent === '' ||
+              Number(rc.extraHoursPercent) === 0
+            ),
           _irpfPercent: irpfPercent,
           _estadoPercent: estadoPercent,
           _extraHoursPercent: extraHoursPercent,
