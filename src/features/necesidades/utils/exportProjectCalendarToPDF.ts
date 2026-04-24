@@ -20,6 +20,19 @@ type MonthPage = {
   weekLabels: Record<number, string>;
 };
 
+type PdfPalette = {
+  fill: [number, number, number];
+  stroke: [number, number, number];
+  text: [number, number, number];
+};
+
+type TeamBlock = {
+  label: string;
+  members: string;
+  schedule: string;
+  palette: PdfPalette;
+};
+
 const DAY_KEYS = [
   'reports.dayNames.monday',
   'reports.dayNames.tuesday',
@@ -53,9 +66,23 @@ function shortText(value: unknown, max = 28): string {
   return `${clean.slice(0, Math.max(0, max - 1)).trim()}…`;
 }
 
+function normalizeDayType(value: unknown): string {
+  return stripHtml(value).toLowerCase().replace(/\s+/g, ' ').trim();
+}
+
 function firstName(value: string): string {
   const clean = stripHtml(value);
   return clean.split(/\s+/)[0] || clean;
+}
+
+function uniqueStrings(values: string[]): string[] {
+  const seen = new Set<string>();
+  return values.filter(value => {
+    const key = value.trim().toLowerCase();
+    if (!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 }
 
 function normalizeTime(value: unknown): string {
@@ -89,21 +116,237 @@ function getDaySchedule(day: AnyRecord): string {
   return start || end || '';
 }
 
-function getTeamSummary(day: AnyRecord): string {
-  const crewList = Array.isArray(day?.crewList) ? day.crewList : [];
-  const names = crewList
+function getListSummary(list: AnyRecord[], maxVisible = 3): string {
+  const names = list
     .map((member: AnyRecord) => firstName(String(member?.name || member?.roleLabel || member?.role || '')))
     .filter(Boolean);
-  const visibleNames = names.slice(0, 3);
+  const visibleNames = names.slice(0, maxVisible);
   const extra = Math.max(0, names.length - visibleNames.length);
   const base = visibleNames.join(', ');
   if (extra > 0) return `${base}${base ? ' ' : ''}+${extra}`;
+  if (!base && list.length > 0) return `${list.length} pax`;
   return base;
 }
 
+function getFullListText(list: AnyRecord[]): string {
+  const names = uniqueStrings(
+    list
+      .map((member: AnyRecord) => firstName(String(member?.name || member?.roleLabel || member?.role || '')))
+      .filter(Boolean)
+  );
+  return names.join(', ');
+}
+
 function isRestDay(day: AnyRecord): boolean {
-  const tipo = String(day?.crewTipo || day?.tipo || '').trim().toLowerCase();
+  const tipo = normalizeDayType(day?.crewTipo || day?.tipo);
   return tipo === 'descanso' || tipo === 'fin';
+}
+
+function flattenRefMembers(day: AnyRecord): AnyRecord[] {
+  const directList = Array.isArray(day?.refList) ? day.refList : [];
+  const blockLists = Array.isArray(day?.refBlocks)
+    ? day.refBlocks.flatMap((block: AnyRecord) => (Array.isArray(block?.list) ? block.list : []))
+    : [];
+  return [...directList, ...blockLists];
+}
+
+function getPaletteForNormalizedDayType(type: string): PdfPalette {
+  switch (type) {
+    case 'rodaje':
+      return { fill: [219, 234, 254], stroke: [96, 165, 250], text: [29, 78, 216] };
+    case 'rodaje festivo':
+      return { fill: [255, 228, 230], stroke: [251, 113, 133], text: [190, 18, 60] };
+    case 'carga':
+    case 'descarga':
+      return { fill: [255, 237, 213], stroke: [251, 146, 60], text: [194, 65, 12] };
+    case 'prelight':
+    case 'recogida':
+      return { fill: [254, 243, 199], stroke: [245, 158, 11], text: [146, 64, 14] };
+    case 'localizar':
+    case 'oficina':
+      return { fill: [207, 250, 254], stroke: [34, 211, 238], text: [14, 116, 144] };
+    case 'pruebas de cámara':
+    case 'pruebas de camara':
+      return { fill: [237, 233, 254], stroke: [167, 139, 250], text: [109, 40, 217] };
+    case 'travel day':
+    case 'travel':
+    case '1/2 jornada':
+      return { fill: [204, 251, 241], stroke: [45, 212, 191], text: [15, 118, 110] };
+    case 'descanso':
+      return { fill: [226, 232, 240], stroke: [107, 114, 128], text: [51, 65, 85] };
+    case 'fin':
+      return { fill: [226, 232, 240], stroke: [107, 114, 128], text: [51, 65, 85] };
+    default:
+      return { fill: [239, 246, 255], stroke: [96, 165, 250], text: [29, 78, 216] };
+  }
+}
+
+function getPrimaryDayType(day: AnyRecord): string {
+  const crewType = normalizeDayType(day?.crewTipo || day?.tipo);
+  const preType = normalizeDayType(day?.prelightTipo || day?.preTipo);
+  const pickType = normalizeDayType(day?.pickupTipo || day?.pickTipo);
+  const refType = normalizeDayType(day?.refTipo);
+
+  if (crewType) return crewType;
+  if (preType || (Array.isArray(day?.preList) && day.preList.length > 0)) return preType || 'prelight';
+  if (pickType || (Array.isArray(day?.pickList) && day.pickList.length > 0)) return pickType || 'pickup';
+  if (refType || flattenRefMembers(day).length > 0) return refType || 'refuerzo';
+  return '';
+}
+
+function getDayTypeLabel(day: AnyRecord): string {
+  const type = getPrimaryDayType(day);
+  switch (type) {
+    case 'descanso':
+    case 'fin':
+      return i18n.t('planning.rest', { defaultValue: 'Descanso' });
+    case 'rodaje festivo':
+      return i18n.t('planning.holidayShoot', { defaultValue: 'Rodaje festivo' });
+    case 'rodaje':
+      return i18n.t('planning.shooting', { defaultValue: 'Rodaje' });
+    case 'prelight':
+      return i18n.t('needs.prelight', { defaultValue: 'Prelight' });
+    case 'pickup':
+      return i18n.t('needs.pickup', { defaultValue: 'Pickup' });
+    case 'refuerzo':
+      return i18n.t('needs.reinforcements', { defaultValue: 'Refuerzos' });
+    case 'carga':
+      return i18n.t('planning.loading', { defaultValue: 'Carga' });
+    case 'descarga':
+      return i18n.t('planning.unloading', { defaultValue: 'Descarga' });
+    case 'oficina':
+      return i18n.t('planning.office', { defaultValue: 'Oficina' });
+    case 'localizar':
+      return i18n.t('planning.location', { defaultValue: 'Localizar' });
+    case 'pruebas de cámara':
+    case 'pruebas de camara':
+      return i18n.t('planning.cameraTests', { defaultValue: 'Pruebas de cámara' });
+    case 'travel':
+    case 'travel day':
+      return i18n.t('planning.travelDay', { defaultValue: 'Travel day' });
+    case '1/2 jornada':
+      return i18n.t('planning.halfDay', { defaultValue: '1/2 jornada' });
+    default:
+      return stripHtml(day?.crewTipo || day?.tipo || day?.prelightTipo || day?.pickupTipo || day?.refTipo) || i18n.t('planning.shooting', { defaultValue: 'Rodaje' });
+  }
+}
+
+function getDayTypePalette(day: AnyRecord): {
+  fill: [number, number, number];
+  stroke: [number, number, number];
+  text: [number, number, number];
+} {
+  const type = getPrimaryDayType(day);
+  return getPaletteForNormalizedDayType(type);
+}
+
+function getTeamSummary(day: AnyRecord): string {
+  const primaryType = getPrimaryDayType(day);
+  const refMembers = flattenRefMembers(day);
+  let list: AnyRecord[] = [];
+
+  if (primaryType === 'prelight') {
+    list = Array.isArray(day?.preList) ? day.preList : [];
+  } else if (primaryType === 'pickup') {
+    list = Array.isArray(day?.pickList) ? day.pickList : [];
+  } else if (primaryType === 'refuerzo') {
+    list = refMembers;
+  } else {
+    list = Array.isArray(day?.crewList) ? day.crewList : [];
+  }
+
+  if (list.length > 0) return getListSummary(list);
+
+  const fallbackLists = [
+    ...(Array.isArray(day?.crewList) ? [day.crewList] : []),
+    ...(Array.isArray(day?.preList) ? [day.preList] : []),
+    ...(Array.isArray(day?.pickList) ? [day.pickList] : []),
+    ...(refMembers.length > 0 ? [refMembers] : []),
+  ].filter(listValue => Array.isArray(listValue) && listValue.length > 0) as AnyRecord[][];
+
+  if (fallbackLists.length === 0) return '';
+  return getListSummary(fallbackLists[0]);
+}
+
+function getScheduleForKeys(day: AnyRecord, startKey: string, endKey: string): string {
+  const start = normalizeTime(day?.[startKey]);
+  const end = normalizeTime(day?.[endKey]);
+  if (start && end) return `${start} - ${end}`;
+  return start || end || '';
+}
+
+function getRefBlockSchedule(block: AnyRecord): string {
+  const start = normalizeTime(block?.start);
+  const end = normalizeTime(block?.end);
+  if (start && end) return `${start} - ${end}`;
+  return start || end || '';
+}
+
+function buildTeamBlocks(day: AnyRecord): TeamBlock[] {
+  const blocks: TeamBlock[] = [];
+  const crewList = Array.isArray(day?.crewList) ? day.crewList : [];
+  const preList = Array.isArray(day?.preList) ? day.preList : [];
+  const pickList = Array.isArray(day?.pickList) ? day.pickList : [];
+  const refBlocks = Array.isArray(day?.refBlocks) ? day.refBlocks : [];
+  const legacyRefList = !refBlocks.length && Array.isArray(day?.refList) ? day.refList : [];
+
+  if (crewList.length > 0) {
+    blocks.push({
+      label: i18n.t('needs.technicalTeam', { defaultValue: 'Equipo base' }),
+      members: getFullListText(crewList),
+      schedule: getScheduleForKeys(day, 'crewStart', 'crewEnd'),
+      palette: getPaletteForNormalizedDayType(normalizeDayType(day?.crewTipo || day?.tipo || 'rodaje')),
+    });
+  }
+
+  if (preList.length > 0) {
+    blocks.push({
+      label: i18n.t('needs.prelight', { defaultValue: 'Prelight' }),
+      members: getFullListText(preList),
+      schedule: getScheduleForKeys(day, 'preStart', 'preEnd'),
+      palette: getPaletteForNormalizedDayType('prelight'),
+    });
+  }
+
+  if (pickList.length > 0) {
+    blocks.push({
+      label: i18n.t('needs.pickup', { defaultValue: 'Recogida' }),
+      members: getFullListText(pickList),
+      schedule: getScheduleForKeys(day, 'pickStart', 'pickEnd'),
+      palette: getPaletteForNormalizedDayType('recogida'),
+    });
+  }
+
+  if (refBlocks.length > 0) {
+    refBlocks.forEach((block: AnyRecord, index: number) => {
+      const members = Array.isArray(block?.list) ? block.list : [];
+      if (members.length === 0 && !stripHtml(block?.tipo) && !stripHtml(block?.text)) return;
+      blocks.push({
+        label:
+          stripHtml(block?.tipo) ||
+          `${i18n.t('needs.reinforcements', { defaultValue: 'Equipo extra' })}${refBlocks.length > 1 ? ` ${index + 1}` : ''}`,
+        members: getFullListText(members) || stripHtml(block?.text),
+        schedule: getRefBlockSchedule(block),
+        palette: { fill: [236, 253, 245], stroke: [16, 185, 129], text: [6, 95, 70] },
+      });
+    });
+  } else if (legacyRefList.length > 0) {
+    blocks.push({
+      label: i18n.t('needs.reinforcements', { defaultValue: 'Equipo extra' }),
+      members: getFullListText(legacyRefList),
+      schedule: getScheduleForKeys(day, 'refStart', 'refEnd'),
+      palette: { fill: [236, 253, 245], stroke: [16, 185, 129], text: [6, 95, 70] },
+    });
+  }
+
+  return blocks.filter(block => stripHtml(block.members) !== '');
+}
+
+function getDayDetail(day: AnyRecord): string {
+  const location = stripHtml(day?.loc);
+  const sequence = stripHtml(day?.seq);
+  if (location && sequence) return shortText(`${location} · ${sequence}`, 26);
+  return shortText(location || sequence, 26);
 }
 
 function hasContent(day: AnyRecord): boolean {
@@ -168,8 +411,6 @@ function buildMonthPages(byDate: Map<string, CalendarDayData>, weekLabelByMonday
       grouped.set(key, bucket);
     });
 
-  const seenScopes = new Set<string>();
-
   return Array.from(grouped.entries()).map(([key, dates]) => {
     const ordered = dates.sort((a, b) => a.getTime() - b.getTime());
     const first = ordered[0];
@@ -186,6 +427,7 @@ function buildMonthPages(byDate: Map<string, CalendarDayData>, weekLabelByMonday
     );
     const sectionMarkers: Record<number, string> = {};
     const weekLabels: Record<number, string> = {};
+    let lastScope = '';
     weeks.forEach((week, index) => {
       const firstDate = week.find((date): date is Date => Boolean(date));
       if (!firstDate) return;
@@ -195,8 +437,8 @@ function buildMonthPages(byDate: Map<string, CalendarDayData>, weekLabelByMonday
         weekLabelByMonday.get(mondayIso) ||
         translateWeekLabel(i18n.t('planning.weekFormat', { number: index + 1 }));
       const scope = byDate.get(toYYYYMMDD(firstDate))?.scope;
-      if (!scope || seenScopes.has(scope)) return;
-      seenScopes.add(scope);
+      if (!scope || scope === lastScope) return;
+      lastScope = scope;
       sectionMarkers[index] = i18n.t(
         scope === 'pre' ? 'planning.preproduction' : 'planning.production',
         { defaultValue: scope === 'pre' ? 'Preproducción' : 'Producción' }
@@ -247,6 +489,31 @@ function drawClampedText(
   const fitted = pdf.splitTextToSize(safe, maxWidth);
   const line = Array.isArray(fitted) ? String(fitted[0] || '') : String(fitted || '');
   pdf.text(line, x, y, { align, baseline: 'top', maxWidth });
+}
+
+function drawWrappedText(
+  pdf: jsPDF,
+  text: string,
+  x: number,
+  y: number,
+  maxWidth: number,
+  maxHeight: number,
+  options?: {
+    align?: 'left' | 'center' | 'right';
+    lineHeight?: number;
+    maxLines?: number;
+  }
+) {
+  const safe = stripHtml(text);
+  if (!safe || maxHeight <= 0) return;
+  const align = options?.align || 'left';
+  const lineHeight = options?.lineHeight || 2.45;
+  const computedMaxLines = Math.max(1, Math.floor(maxHeight / lineHeight));
+  const maxLines = Math.max(1, Math.min(options?.maxLines || computedMaxLines, computedMaxLines));
+  const lines = pdf.splitTextToSize(safe, maxWidth).slice(0, maxLines);
+  lines.forEach((line: string, index: number) => {
+    pdf.text(line, x, y + index * lineHeight, { align, baseline: 'top', maxWidth });
+  });
 }
 
 function drawGradientBar(pdf: jsPDF, x: number, y: number, w: number, h: number) {
@@ -306,6 +573,35 @@ function drawInfoItem(
   });
 }
 
+type ProjectInfoItem = {
+  label: string;
+  value: unknown;
+  align?: 'left' | 'right';
+};
+
+function buildProjectInfoColumns(project: AnyRecord): {
+  left: ProjectInfoItem[];
+  right: ProjectInfoItem[];
+} {
+  const left: ProjectInfoItem[] = [
+    { label: `${i18n.t('pdf.production', { defaultValue: 'Producción' })}:`, value: project?.productora || project?.produccion },
+    { label: `${i18n.t('pdf.project', { defaultValue: 'Proyecto' })}:`, value: project?.nombre },
+    { label: `${i18n.t('pdf.warehouse', { defaultValue: 'Magatzem' })}:`, value: project?.almacen },
+    { label: `${i18n.t('pdf.productionManager', { defaultValue: 'Cap de producció' })}:`, value: project?.jefeProduccion },
+    { label: `${i18n.t('pdf.transport', { defaultValue: 'Cap de transports' })}:`, value: project?.transportes },
+  ].filter(item => stripHtml(item.value));
+
+  const right: ProjectInfoItem[] = [
+    { label: `${i18n.t('pdf.dop', { defaultValue: 'DoP' })}:`, value: project?.dop, align: 'right' },
+    { label: `${i18n.t('pdf.gaffer', { defaultValue: 'Gaffer' })}:`, value: project?.gaffer, align: 'right' },
+    { label: `${i18n.t('pdf.bestBoy', { defaultValue: 'Best boy' })}:`, value: project?.bestBoy, align: 'right' },
+    { label: `${i18n.t('pdf.locations', { defaultValue: 'Cap de localitzacions' })}:`, value: project?.localizaciones, align: 'right' },
+    { label: `${i18n.t('pdf.productionCoordinator', { defaultValue: 'Coordinadora de producció' })}:`, value: project?.coordinadoraProduccion, align: 'right' },
+  ].filter(item => stripHtml(item.value));
+
+  return { left, right };
+}
+
 function drawMonthPage(
   pdf: jsPDF,
   project: AnyRecord,
@@ -315,7 +611,15 @@ function drawMonthPage(
   const titleH = 14.5;
   const titleY = 0;
   const summaryY = titleY + titleH + 5.5;
-  const summaryH = 33;
+  const projectInfo = buildProjectInfoColumns(project);
+  const summaryPaddingTop = 5;
+  const summaryPaddingBottom = 4;
+  const summaryRowGap = 6;
+  const summaryRows = Math.max(projectInfo.left.length, projectInfo.right.length);
+  const summaryH =
+    summaryRows > 0
+      ? summaryPaddingTop + summaryPaddingBottom + (summaryRows - 1) * summaryRowGap + 3.2
+      : 0;
   const monthTitleY = summaryY + summaryH + 5;
   const gridY = monthTitleY + 7;
   const footerH = 3.8;
@@ -341,25 +645,30 @@ function drawMonthPage(
     { align: 'center', baseline: 'top' }
   );
 
-  fillRoundedRect(pdf, PAGE.marginX, summaryY, PAGE.width - PAGE.marginX * 2, summaryH, [241, 245, 249], [226, 232, 240], 4);
-  const leftX = PAGE.marginX + 5;
-  const rightX = PAGE.width - PAGE.marginX - 5;
-  const leftW = 120;
-  const rightW = 120;
-  const leftYs = [summaryY + 5, summaryY + 11, summaryY + 17, summaryY + 23, summaryY + 29];
-  const rightYs = [summaryY + 5, summaryY + 11, summaryY + 17, summaryY + 23, summaryY + 29];
+  if (summaryH > 0) {
+    fillRoundedRect(pdf, PAGE.marginX, summaryY, PAGE.width - PAGE.marginX * 2, summaryH, [241, 245, 249], [226, 232, 240], 4);
+    const leftX = PAGE.marginX + 5;
+    const rightX = PAGE.width - PAGE.marginX - 5;
+    const leftW = 120;
+    const rightW = 120;
+    const firstRowY = summaryY + summaryPaddingTop;
 
-  drawInfoItem(pdf, `${i18n.t('pdf.production', { defaultValue: 'Producción' })}:`, project?.productora || project?.produccion, leftX, leftYs[0], leftW);
-  drawInfoItem(pdf, `${i18n.t('pdf.project', { defaultValue: 'Proyecto' })}:`, project?.nombre, leftX, leftYs[1], leftW);
-  drawInfoItem(pdf, `${i18n.t('pdf.warehouse', { defaultValue: 'Magatzem' })}:`, project?.almacen, leftX, leftYs[2], leftW);
-  drawInfoItem(pdf, `${i18n.t('pdf.productionManager', { defaultValue: 'Cap de producció' })}:`, (project as AnyRecord)?.jefeProduccion, leftX, leftYs[3], leftW);
-  drawInfoItem(pdf, `${i18n.t('pdf.transport', { defaultValue: 'Cap de transports' })}:`, (project as AnyRecord)?.transportes, leftX, leftYs[4], leftW);
+    projectInfo.left.forEach((item, index) => {
+      drawInfoItem(pdf, item.label, item.value, leftX, firstRowY + index * summaryRowGap, leftW);
+    });
 
-  drawInfoItem(pdf, `${i18n.t('pdf.dop', { defaultValue: 'DoP' })}:`, project?.dop, rightX, rightYs[0], rightW, 'right');
-  drawInfoItem(pdf, `${i18n.t('pdf.gaffer', { defaultValue: 'Gaffer' })}:`, (project as AnyRecord)?.gaffer, rightX, rightYs[1], rightW, 'right');
-  drawInfoItem(pdf, `${i18n.t('pdf.bestBoy', { defaultValue: 'Best boy' })}:`, (project as AnyRecord)?.bestBoy, rightX, rightYs[2], rightW, 'right');
-  drawInfoItem(pdf, `${i18n.t('pdf.locations', { defaultValue: 'Cap de localitzacions' })}:`, (project as AnyRecord)?.localizaciones, rightX, rightYs[3], rightW, 'right');
-  drawInfoItem(pdf, `${i18n.t('pdf.productionCoordinator', { defaultValue: 'Coordinadora de producció' })}:`, (project as AnyRecord)?.coordinadoraProduccion, rightX, rightYs[4], rightW, 'right');
+    projectInfo.right.forEach((item, index) => {
+      drawInfoItem(
+        pdf,
+        item.label,
+        item.value,
+        rightX,
+        firstRowY + index * summaryRowGap,
+        rightW,
+        item.align || 'right'
+      );
+    });
+  }
 
   pdf.setFont('helvetica', 'bold');
   pdf.setFontSize(12);
@@ -401,11 +710,10 @@ function drawMonthPage(
     week.forEach((date, dayIndex) => {
       const x = PAGE.marginX + dayIndex * cellW;
 
-      pdf.setFillColor(82, 96, 138);
-      pdf.setDrawColor(221, 228, 238);
-      pdf.rect(x, headerY, cellW, dayHeaderH, 'FD');
-
       if (!date) {
+        pdf.setFillColor(82, 96, 138);
+        pdf.setDrawColor(221, 228, 238);
+        pdf.rect(x, headerY, cellW, dayHeaderH, 'FD');
         pdf.setFillColor(255, 255, 255);
         pdf.rect(x, bodyY, cellW, bodyHLocal, 'FD');
         return;
@@ -415,12 +723,22 @@ function drawMonthPage(
       const day = info?.day || {};
       const rest = isRestDay(day);
       const schedule = getDaySchedule(day);
-      const location = shortText(day?.loc, 24);
-      const team = shortText(getTeamSummary(day), 26);
+      const detail = getDayDetail(day);
+      const teamBlocks = buildTeamBlocks(day);
       const weekdayIndex = (date.getDay() + 6) % 7;
       const dayName = i18n.t(DAY_KEYS[weekdayIndex], { defaultValue: DAY_FALLBACKS[weekdayIndex] });
+      const typeLabel = getDayTypeLabel(day);
+      const typePalette = getDayTypePalette(day);
 
-      pdf.setTextColor(255, 255, 255);
+      pdf.setFillColor(...typePalette.stroke);
+      pdf.setDrawColor(221, 228, 238);
+      pdf.rect(x, headerY, cellW, dayHeaderH, 'FD');
+
+      if (getPrimaryDayType(day) === 'descanso' || getPrimaryDayType(day) === 'fin') {
+        pdf.setTextColor(255, 255, 255);
+      } else {
+        pdf.setTextColor(31, 41, 55);
+      }
       pdf.setFont('helvetica', 'bold');
       pdf.setFontSize(5.3);
       pdf.text(String(dayName).toUpperCase(), x + cellW / 2, headerY + 0.9, {
@@ -433,50 +751,96 @@ function drawMonthPage(
         baseline: 'top',
       });
 
-      pdf.setFillColor(255, 255, 255);
+      if (rest) {
+        pdf.setFillColor(...typePalette.fill);
+      } else {
+        pdf.setFillColor(255, 255, 255);
+      }
       pdf.setDrawColor(221, 228, 238);
       pdf.rect(x, bodyY, cellW, bodyHLocal, 'FD');
 
       const padX = x + 0.9;
       const innerW = cellW - 1.8;
       const gapY = 0.7;
+      const bottomPadding = 0.8;
       let currentY = bodyY + 0.9;
+      const availableInnerHeight = Math.max(7.2, bodyHLocal - 1.7);
+      const baseBandH = availableInnerHeight >= 18 ? 3.6 : availableInnerHeight >= 14 ? 3.2 : 2.8;
+      const bandH = Math.max(2.8, Math.min(3.6, baseBandH));
 
-      const bandH = Math.max(3.2, Math.min(3.8, bodyHLocal * 0.22));
-
-      pdf.setFillColor(rest ? 254 : 255, rest ? 226 : 243, rest ? 226 : 244);
-      pdf.setDrawColor(rest ? 239 : 255, rest ? 68 : 214, rest ? 68 : 153);
+      pdf.setFillColor(...typePalette.fill);
+      pdf.setDrawColor(...typePalette.stroke);
       pdf.roundedRect(padX, currentY, innerW, bandH, 0.9, 0.9, 'FD');
-      pdf.setTextColor(rest ? 185 : 14, rest ? 28 : 116, rest ? 28 : 144);
+      pdf.setTextColor(...typePalette.text);
       pdf.setFont('helvetica', 'bold');
-      pdf.setFontSize(5.8);
-      drawClampedText(
-        pdf,
-        rest ? i18n.t('planning.rest', { defaultValue: 'Descanso' }) : (schedule || i18n.t('planning.shooting', { defaultValue: 'Rodaje' })),
-        padX + 0.7,
-        currentY + 0.45,
-        innerW - 1.4
-      );
+      pdf.setFontSize(5.5);
+      drawClampedText(pdf, typeLabel, padX + 0.7, currentY + 0.45, innerW - 1.4);
 
       if (!rest) {
         currentY += bandH + gapY;
-        pdf.setFillColor(255, 251, 235);
-        pdf.setDrawColor(253, 230, 138);
-        pdf.roundedRect(padX, currentY, innerW, bandH, 0.9, 0.9, 'FD');
-        pdf.setTextColor(146, 64, 14);
-        pdf.setFont('helvetica', 'normal');
-        pdf.setFontSize(5.3);
-        drawClampedText(pdf, location || ' ', padX + 0.7, currentY + 0.55, innerW - 1.4);
+        if (schedule) {
+          pdf.setFillColor(255, 251, 235);
+          pdf.setDrawColor(253, 230, 138);
+          pdf.roundedRect(padX, currentY, innerW, bandH, 0.9, 0.9, 'FD');
+          pdf.setTextColor(146, 64, 14);
+          pdf.setFont('helvetica', 'bold');
+          pdf.setFontSize(5.1);
+          const scheduleLabel = i18n.t('planning.schedulePrefix', { defaultValue: 'Horario' });
+          drawClampedText(pdf, `${scheduleLabel}: ${schedule}`, padX + 0.7, currentY + 0.55, innerW - 1.4);
+          currentY += bandH + gapY;
+        }
 
-        currentY += bandH + gapY;
-        const teamH = Math.max(3.8, bodyY + bodyHLocal - currentY - 0.9);
-        pdf.setFillColor(239, 246, 255);
-        pdf.setDrawColor(147, 197, 253);
-        pdf.roundedRect(padX, currentY, innerW, teamH, 0.9, 0.9, 'FD');
-        pdf.setTextColor(30, 64, 175);
-        pdf.setFont('helvetica', 'bold');
-        pdf.setFontSize(5.4);
-        drawClampedText(pdf, team || ' ', padX + 0.7, currentY + 0.6, innerW - 1.4);
+        if (detail) {
+          pdf.setFillColor(248, 250, 252);
+          pdf.setDrawColor(203, 213, 225);
+          pdf.roundedRect(padX, currentY, innerW, bandH, 0.9, 0.9, 'FD');
+          pdf.setTextColor(71, 85, 105);
+          pdf.setFont('helvetica', 'normal');
+          pdf.setFontSize(4.9);
+          drawClampedText(pdf, detail, padX + 0.7, currentY + 0.55, innerW - 1.4);
+          currentY += bandH + gapY;
+        }
+
+        const remainingHeight = Math.max(0, bodyY + bodyHLocal - currentY - bottomPadding);
+        const visibleBlocks = teamBlocks.length > 0 ? teamBlocks : [];
+
+        if (visibleBlocks.length > 0 && remainingHeight > 3.5) {
+          const teamGap = 0.55;
+          const minBlockHeight = 4.2;
+          const maxVisibleBlocks = Math.max(
+            1,
+            Math.min(visibleBlocks.length, Math.floor((remainingHeight + teamGap) / (minBlockHeight + teamGap)))
+          );
+          const blocksToRender = visibleBlocks.slice(0, maxVisibleBlocks);
+          const totalGap = teamGap * Math.max(0, blocksToRender.length - 1);
+          const usableHeight = Math.max(0, remainingHeight - totalGap);
+          const blockHeight = Math.max(3.6, usableHeight / blocksToRender.length);
+
+          blocksToRender.forEach((block, blockIndex) => {
+            const blockY = currentY + blockIndex * (blockHeight + teamGap);
+            const safeBlockHeight = Math.max(
+              3.4,
+              Math.min(blockHeight, bodyY + bodyHLocal - blockY - bottomPadding)
+            );
+            if (safeBlockHeight <= 0.6) return;
+
+            pdf.setFillColor(...block.palette.fill);
+            pdf.setDrawColor(...block.palette.stroke);
+            pdf.roundedRect(padX, blockY, innerW, safeBlockHeight, 0.9, 0.9, 'FD');
+
+            const headerText = block.schedule ? `${block.label} · ${block.schedule}` : block.label;
+            pdf.setTextColor(...block.palette.text);
+            pdf.setFont('helvetica', 'bold');
+            pdf.setFontSize(4.8);
+            drawClampedText(pdf, headerText, padX + 0.65, blockY + 0.45, innerW - 1.3);
+
+            pdf.setFont('helvetica', 'normal');
+            pdf.setFontSize(4.55);
+            drawWrappedText(pdf, block.members, padX + 0.65, blockY + 2.65, innerW - 1.3, safeBlockHeight - 3.05, {
+              lineHeight: 2.2,
+            });
+          });
+        }
       }
     });
   });
