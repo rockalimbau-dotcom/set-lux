@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { AnyRecord } from '@shared/types/common';
 import { PRICE_ROLES } from '../shared.constants';
 import { computeFromMonthly } from './mensualUtils';
@@ -38,8 +38,14 @@ export function useMensualRoles({ project, model, setModel }: UseMensualRolesPro
       pick: extract(model.pricesPickup),
     });
   }, [model.prices, model.pricesPrelight, model.pricesPickup]);
+  const lastDerivedSignatureRef = useRef<string | null>(null);
 
   useEffect(() => {
+    const signature = JSON.stringify({ params: paramsKey, monthly: monthlyKey });
+    const isFirstRun = lastDerivedSignatureRef.current === null;
+    const shouldOverwriteDerived = !isFirstRun && lastDerivedSignatureRef.current !== signature;
+    lastDerivedSignatureRef.current = signature;
+
     setModel((m: AnyRecord) => {
       const applyDerived = (prices: AnyRecord | undefined) => {
         if (!prices) return { next: prices, changed: false };
@@ -60,6 +66,9 @@ export function useMensualRoles({ project, model, setModel }: UseMensualRolesPro
           ];
           let rowChanged = false;
           for (const key of keys) {
+            if (!shouldOverwriteDerived && row[key] !== undefined && row[key] !== '') {
+              continue;
+            }
             if (row[key] !== derived[key]) {
               row[key] = derived[key];
               rowChanged = true;
