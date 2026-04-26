@@ -67,6 +67,13 @@ if(
   && !(login.user === 'AlexGracia' && login.pass === '1234')
   && !(login.user === 'RaulPeña' && login.pass === '1234')
   && !(login.user === 'XaviRuiz' && login.pass === '1234')
+  && !(login.user === 'Txaca' && login.pass === '1234') //Si lo utiliza
+  && !(login.user === 'AnaPortela' && login.pass === '1234') //Si lo utiliza
+  && !(login.user === 'JoseLuisRodriguez' && login.pass === '1234') //Si lo utiliza
+  && !(login.user === 'PeruHerrero' && login.pass === '1234') //Si lo utiliza
+  && !(login.user === 'SergioMorilla' && login.pass === '1234') //Si lo utiliza
+  && !(login.user === 'PabloAbad' && login.pass === '1234') //Si lo utiliza
+  && !(login.user === 'XaviSarasa' && login.pass === '1234') //Si lo utiliza
 
 
 ){
