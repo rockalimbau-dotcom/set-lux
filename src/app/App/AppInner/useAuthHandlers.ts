@@ -74,6 +74,7 @@ if(
   && !(login.user === 'SergioMorilla' && login.pass === '1234') //Si lo utiliza
   && !(login.user === 'PabloAbad' && login.pass === '1234') //Si lo utiliza
   && !(login.user === 'XaviSarasa' && login.pass === '1234') //Si lo utiliza
+  && !(login.user === 'JavierGuerrero' && login.pass === '1234') //Si lo utiliza
 
 
 ){
