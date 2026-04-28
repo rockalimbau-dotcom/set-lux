@@ -30,7 +30,10 @@ export function preserveOrRecalculateHorasExtra({
   isManual: boolean;
 } {
   if (off) {
-    // Si no está trabajando en este bloque, vaciar
+    // Evitar borrar en bucle un valor manual cuando hay desajustes temporales de bloque.
+    if (currExtra !== undefined && currExtra !== null && String(currExtra).trim() !== '') {
+      return { value: String(currExtra), isManual: true };
+    }
     return { value: '', isManual: false };
   }
 
@@ -73,7 +76,12 @@ export function preserveOrUseAuto({
   manual,
   off,
 }: PreserveValueParams): string {
-  if (off) return '';
+  if (off) {
+    if (currValue !== undefined && currValue !== null && String(currValue).trim() !== '') {
+      return String(currValue);
+    }
+    return '';
+  }
   return manual ? currValue : autoValue !== currValue ? autoValue : currValue;
 }
 

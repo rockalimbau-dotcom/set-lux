@@ -312,19 +312,8 @@ export default function useAutoCalculations({
             if (off) setManualFlag(pk, 'Material propio', iso, false);
           }
 
-          // Si no trabaja, limpiar valores manuales que no son auto-calculados
-          if (off) {
-            const clearConcept = (concepto: string) => {
-              setConceptValue(pk, concepto, iso, '');
-              setManualFlag(pk, concepto, iso, false);
-            };
-
-            clearConcept('Kilometraje');
-            clearConcept('Transporte');
-            clearConcept('Penalty lunch');
-            clearConcept('Dietas');
-            clearConcept('Material propio');
-          }
+          // No limpiar de forma agresiva cuando una fila cae temporalmente en "off":
+          // en bloques dinámicos (+añadir) puede producir borrados en bucle mientras se edita.
         }
       }
 

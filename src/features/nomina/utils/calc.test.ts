@@ -312,6 +312,142 @@ describe('nomina/utils/calc', () => {
 
       expect(result[0].extras).toBe(1); // penalty lunch adds 1
     });
+
+    it('does not double count extra-hours when same worker exists in base and extra blocks', async () => {
+      const mockProject = { id: 'test' };
+      const mockWeeks = [
+        {
+          startDate: '2023-01-01',
+          days: [
+            {
+              team: [{ role: 'G', name: 'Jordi Planas', personId: 'p1', roleId: 'r1' }],
+              prelight: [],
+              pickup: [],
+              refList: [],
+              refBlocks: [],
+            },
+            {
+              team: [],
+              prelight: [],
+              pickup: [],
+              refList: [{ role: 'G', name: 'Jordi Planas', personId: 'p1', roleId: 'r1' }],
+              refBlocks: [
+                {
+                  list: [{ role: 'G', name: 'Jordi Planas', personId: 'p1', roleId: 'r1' }],
+                  start: '17:00',
+                  end: '23:00',
+                },
+              ],
+            },
+          ],
+        },
+      ];
+
+      const mockData = {
+        'r1__Jordi Planas': {
+          'Horas extra': { '2023-01-02': '2' },
+        },
+        'r1.extra:0__Jordi Planas': {
+          'Horas extra': { '2023-01-02': '2' },
+        },
+      };
+
+      localStorageMock.getItem.mockReturnValue(JSON.stringify(mockData));
+
+      const { weekISOdays, weekAllPeopleActive, buildRefuerzoIndex, stripPR } =
+        await import('./plan.ts');
+      weekISOdays.mockReturnValue(['2023-01-01', '2023-01-02']);
+      weekAllPeopleActive.mockReturnValue([
+        { role: 'G', name: 'Jordi Planas', personId: 'p1', roleId: 'r1', source: 'base' },
+        {
+          role: 'G',
+          name: 'Jordi Planas',
+          personId: 'p1',
+          roleId: 'r1',
+          source: 'extra',
+          block: 'extra:0',
+        },
+      ]);
+      buildRefuerzoIndex.mockReturnValue(new Set());
+      stripPR.mockImplementation(role => role.replace(/[PR]$/, ''));
+
+      const { parseNum, parseDietasValue, parseHorasExtra } = await import('./parse.ts');
+      parseNum.mockImplementation(val => Number(val) || 0);
+      parseDietasValue.mockReturnValue({ labels: [], ticket: 0, other: 0 });
+      parseHorasExtra.mockImplementation(val => Number(val) || 0);
+
+      const result = aggregateReports(mockProject, mockWeeks);
+      const row = result.find((item: any) => item.name === 'Jordi Planas');
+
+      expect(row).toBeDefined();
+      expect(row.horasExtra).toBe(2);
+    });
+
+    it('deduplicates person/day when same worker has duplicate keys', async () => {
+      const mockProject = { id: 'test' };
+      const mockWeeks = [
+        {
+          startDate: '2023-01-01',
+          days: [
+            {
+              team: [{ role: 'E', name: 'ricard', personId: 'p-ricard', roleId: 'role-e' }],
+              prelight: [],
+              pickup: [],
+              refList: [{ role: 'E', name: 'ricard', personId: 'p-ricard', roleId: 'role-e' }],
+              refBlocks: [
+                {
+                  list: [{ role: 'E', name: 'ricard', personId: 'p-ricard', roleId: 'role-e' }],
+                },
+              ],
+            },
+          ],
+        },
+      ];
+      const mockData = {
+        'role-e__ricard': {
+          'Horas extra': { '2023-01-01': '2' },
+          Nocturnidad: { '2023-01-01': 'SI' },
+          'Penalty lunch': { '2023-01-01': 'SI' },
+        },
+        'role-e.extra:0__ricard': {
+          'Horas extra': { '2023-01-01': '2' },
+          Nocturnidad: { '2023-01-01': 'SI' },
+          'Penalty lunch': { '2023-01-01': 'SI' },
+        },
+      };
+
+      localStorageMock.getItem.mockReturnValue(JSON.stringify(mockData));
+
+      const { weekISOdays, weekAllPeopleActive, buildRefuerzoIndex, stripPR } =
+        await import('./plan.ts');
+      weekISOdays.mockReturnValue(['2023-01-01']);
+      weekAllPeopleActive.mockReturnValue([
+        { role: 'E', name: 'ricard', personId: 'p-ricard', roleId: 'role-e', source: 'base' },
+        {
+          role: 'E',
+          name: 'ricard',
+          personId: 'p-ricard',
+          roleId: 'role-e',
+          source: 'extra',
+          block: 'extra:0',
+        },
+      ]);
+      buildRefuerzoIndex.mockReturnValue(new Set());
+      stripPR.mockImplementation(role => role.replace(/[PR]$/, ''));
+
+      const { parseNum, parseDietasValue, parseHorasExtra } = await import('./parse.ts');
+      parseNum.mockImplementation(val => Number(val) || 0);
+      parseDietasValue.mockReturnValue({ labels: [], ticket: 0, other: 0 });
+      parseHorasExtra.mockImplementation(val => Number(val) || 0);
+
+      const result = aggregateReports(mockProject, mockWeeks);
+      const row = result.find((item: any) => item.name === 'ricard');
+
+      expect(row).toBeDefined();
+      expect(row.horasExtra).toBe(2);
+      expect(row.nocturnidad).toBe(1);
+      expect(row.penaltyLunch).toBe(1);
+    });
   });
 
   describe('getCondParams', () => {

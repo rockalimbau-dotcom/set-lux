@@ -191,7 +191,7 @@ export function useEnrichedRows({
           : 'base');
 
       // Obtener override de ventana contable si existe
-      const pKey = `${r.role}__${r.name}`;
+      const pKey = String((r as any)._rowKey || `${r.role}__${r.name}`);
       const ov =
         windowOverrideMap && 'get' in windowOverrideMap
           ? (windowOverrideMap as WindowOverride).get(pKey)

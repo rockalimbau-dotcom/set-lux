@@ -184,7 +184,14 @@ export function getKeysToUse(
     return [storageKey, storageKey.replace('_pick__', '.pick__')];
   }
   if (/\.extra(?::\d+)?__/.test(storageKey)) {
-    return [storageKey];
+    const [rolePart, name = ''] = String(storageKey || '').split('__');
+    const baseRolePart = String(rolePart || '').replace(/\.extra(?::\d+)?$/i, '');
+    return Array.from(
+      new Set([
+        storageKey,
+        `${baseRolePart}__${name}`,
+      ])
+    );
   }
 
   // Para filas base, usar solo variantes base (sin pre/pick/extra)
