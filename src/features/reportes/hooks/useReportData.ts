@@ -155,9 +155,8 @@ export default function useReportData(
   // La persistencia se maneja automáticamente con useLocalStorage
 
   const setCell = (pKey: string, concepto: string, fecha: string, valor: string) => {
-    // Leer el valor anterior ANTES de actualizar (para detectar eliminaciones)
     const previousVal = data?.[pKey]?.[concepto]?.[fecha] || '';
-    
+
     setData((d: ReportData) => {
       const next = { ...d };
       next[pKey] = { ...(next[pKey] || {}) };
@@ -171,33 +170,24 @@ export default function useReportData(
     });
 
     if (concepto === 'Dietas' && valor !== '') {
-      // Parsear el valor de dietas para separar items del precio del ticket
-      const parsed = parseDietas(valor);
-      
-      // Si solo se añadió o modificó "Ticket" u "Otros", NO sincronizar con otras personas
-      // Ticket/Otros son completamente individuales
-      const itemsWithoutIndividual = new Set(parsed.items);
-      itemsWithoutIndividual.delete('Ticket');
-      itemsWithoutIndividual.delete('Otros');
-      const onlyIndividualChanged = itemsWithoutIndividual.size === 0;
-      
-      // Detectar si es una eliminación comparando con el valor anterior
+      const currentParsed = parseDietas(valor);
       const previousParsed = parseDietas(previousVal);
-      // Es una eliminación si el nuevo valor tiene menos items (excluyendo Ticket) que el anterior
-      const previousItemsWithoutIndividual = new Set(previousParsed.items);
-      previousItemsWithoutIndividual.delete('Ticket');
-      previousItemsWithoutIndividual.delete('Otros');
-      const currentItemsWithoutIndividual = new Set(parsed.items);
-      currentItemsWithoutIndividual.delete('Ticket');
-      currentItemsWithoutIndividual.delete('Otros');
-      const isRemoval = currentItemsWithoutIndividual.size < previousItemsWithoutIndividual.size;
-      
-      // NO sincronizar si es una eliminación (solo sincronizar adiciones)
-      if (isRemoval) {
-        // No hacer nada, la eliminación es individual
-        return;
-      }
-      
+
+      const currentSharedItems = new Set(currentParsed.items);
+      const previousSharedItems = new Set(previousParsed.items);
+      currentSharedItems.delete('Ticket');
+      currentSharedItems.delete('Otros');
+      previousSharedItems.delete('Ticket');
+      previousSharedItems.delete('Otros');
+
+      // Sync only for initial assignment from empty -> has items.
+      // Any later edits/removals must stay local to avoid cross-row overwrites.
+      const shouldSyncInitialAdd =
+        previousSharedItems.size === 0 &&
+        currentSharedItems.size > 0;
+
+      if (!shouldSyncInitialAdd) return;
+
       const who: { [key: string]: { role: string; name: string; roleId?: string } } = {};
       for (const p of safePersonas) {
         const k = personaKey(p);
@@ -207,9 +197,9 @@ export default function useReportData(
           roleId: String((p as any)?.roleId || '').trim() || undefined,
         };
       }
+
       setData((prev: ReportData) => {
         const copy = { ...(prev || {}) };
-        // Determinar bloque del originador para propagar sólo en su bloque
         const srcBlock: 'base' | 'pre' | 'pick' | 'extra' =
           /\.pre__/.test(pKey) || /REF\.pre__/.test(pKey)
             ? 'pre'
@@ -222,6 +212,7 @@ export default function useReportData(
             : (/\.pick__/.test(key) || /REF\.pick__/.test(key)
               ? 'pick'
               : (/\.extra__/.test(key) || /REF\.extra__/.test(key) ? 'extra' : 'base'));
+
         for (const p of safePersonas) {
           const k = personaKey(p);
           if (k === pKey) continue;
@@ -229,9 +220,8 @@ export default function useReportData(
           const n = who[k]?.name || '';
           const roleId = who[k]?.roleId;
           const tgtBlock = blockOf(k);
-          if (tgtBlock !== srcBlock) continue; // sólo mismo bloque
-          // Para no-REF, ajustar role con sufijo para que busque en la lista correcta
-          // Si el rol es REF o empieza con REF (REFG, REFBB, etc.), usar 'REF'
+          if (tgtBlock !== srcBlock) continue;
+
           const isRefRole = r === 'REF' || (r && r.startsWith('REF') && r.length > 3);
           const roleForCheck = isRefRole
             ? 'REF'
@@ -239,38 +229,18 @@ export default function useReportData(
           const blockForRef: 'base' | 'pre' | 'pick' | 'extra' | undefined =
             isRefRole ? tgtBlock : (tgtBlock === 'extra' ? 'extra' : undefined);
           const isScheduled = isPersonScheduledOn(fecha, roleForCheck, n, findWeekAndDay, blockForRef, { roleId });
-          if (isScheduled) {
-            copy[k] = { ...(copy[k] || {}) };
-            copy[k]['Dietas'] = { ...(copy[k]['Dietas'] || {}) };
-            
-            const existingVal = copy[k]['Dietas'][fecha] || '';
-            const existingParsed = parseDietas(existingVal);
-            
-            // Si solo se cambió Ticket, NO sincronizar nada (Ticket es individual)
-            if (onlyIndividualChanged) {
-              // No hacer nada, mantener el valor existente de la otra persona
-              continue;
-            }
-            
-            // Sincronizar solo los items de dietas (Comida, Cena, etc.), pero NO Ticket
-            // Cada persona debe tener su propio ticket (individual)
-            const syncedItems = new Set(parsed.items);
-            // Excluir Ticket y Otros del sincronizado - cada persona mantiene los suyos
-            syncedItems.delete('Ticket');
-            syncedItems.delete('Otros');
-            // Si la persona destino ya tenía Ticket/Otros, mantenerlos
-            if (existingParsed.items.has('Ticket')) {
-              syncedItems.add('Ticket');
-            }
-            if (existingParsed.items.has('Otros')) {
-              syncedItems.add('Otros');
-            }
-            // Mantener precios existentes de Ticket/Otros (individuales)
-            const ticketPrice = existingParsed.ticket;
-            const otherPrice = existingParsed.other;
-            const syncedValue = formatDietas(syncedItems, ticketPrice, otherPrice);
-            copy[k]['Dietas'][fecha] = syncedValue;
-          }
+          if (!isScheduled) continue;
+
+          copy[k] = { ...(copy[k] || {}) };
+          copy[k]['Dietas'] = { ...(copy[k]['Dietas'] || {}) };
+          const existingVal = copy[k]['Dietas'][fecha] || '';
+          const existingParsed = parseDietas(existingVal);
+
+          // Add-only propagation: never remove or replace peer items.
+          const syncedItems = new Set(existingParsed.items);
+          for (const item of currentSharedItems) syncedItems.add(item);
+          const syncedValue = formatDietas(syncedItems, existingParsed.ticket, existingParsed.other);
+          copy[k]['Dietas'][fecha] = syncedValue;
         }
         return copy;
       });

@@ -1220,7 +1220,8 @@ html input[style*="borderWidth"] {
 }
 
 .report-week-table .report-week-col-total {
-  width: 84px;
+  width: var(--report-total-col-width, 132px);
+  min-width: var(--report-total-col-width, 132px);
 }
 
 .report-week-table .report-schedule-input {

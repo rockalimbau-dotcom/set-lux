@@ -228,7 +228,7 @@ export function ConceptRow({
         );
       })}
       
-      <Td className='text-center align-middle whitespace-nowrap'>
+      <Td className='text-center align-middle whitespace-normal min-w-[120px] sm:min-w-[132px]'>
         <TotalCell
           pKey={pKey}
           concepto={concepto}
@@ -264,14 +264,14 @@ function TotalCell({ pKey, concepto, semana, data, parseDietas, horasExtraTipo, 
     if (breakdown.size === 0) return null;
     
     return (
-      <div className='flex flex-wrap gap-0.5 sm:gap-1 justify-center'>
+      <div className='flex max-w-full flex-wrap gap-0.5 sm:gap-1 justify-center'>
         {Array.from(breakdown.entries()).map(([item, count]) => (
           <span
             key={item}
-            className='inline-flex items-center gap-0.5 sm:gap-1 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded sm:rounded-md md:rounded-lg border border-neutral-border bg-black/40 text-[9px] sm:text-[10px] md:text-xs'
+            className='inline-flex max-w-full items-center gap-0.5 sm:gap-1 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded sm:rounded-md md:rounded-lg border border-neutral-border bg-black/40 text-[9px] sm:text-[10px] md:text-xs min-w-0'
           >
             <span className='text-zinc-400'>x{count}</span>
-            <span className='text-zinc-200'>{translateDietItem(item, t)}</span>
+            <span className='text-zinc-200 whitespace-normal'>{translateDietItem(item, t)}</span>
           </span>
         ))}
       </div>
