@@ -130,8 +130,7 @@ function processDayWindowed(
   slot.km += parseNum(getCellValueCandidates(data, keysToUse, COL_CANDIDATES.km, iso));
   slot.gasolina += parseNum(getCellValueCandidates(data, keysToUse, COL_CANDIDATES.gasolina, iso));
 
-  const dietasKeys = Array.from(new Set([storageKey, ...keysToUse]));
-  const dVal = getCellValueCandidates(data, dietasKeys, COL_CANDIDATES.dietas, iso) || '';
+  const dVal = getCellValueCandidates(data, [storageKey], COL_CANDIDATES.dietas, iso) || '';
   const { labels, ticket, other } = parseDietasValue(dVal);
   slot.ticketTotal += ticket;
   slot.otherTotal += other;

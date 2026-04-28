@@ -74,7 +74,7 @@ function appearsInNonBaseBlocks(day: any, info: any): boolean {
 function isScheduledForRowOnDay(day: any, info: any, storageKey: string): boolean {
   if (!day) return true;
   const list = membersForBlock(day, info.displayBlock, storageKey);
-  if (!Array.isArray(list) || list.length === 0) return true;
+  if (!Array.isArray(list) || list.length === 0) return info?.displayBlock === 'base';
   const matchedInOwnBlock = list.some(member => memberMatchesInfo(member, info));
   if (!matchedInOwnBlock) return false;
   if (info?.displayBlock === 'base' && appearsInNonBaseBlocks(day, info)) return false;
@@ -175,9 +175,8 @@ function processDay(
   slot.km += parseNum(getCellValueCandidates(data, keysToUse, COL_CANDIDATES.km, iso));
   slot.gasolina += parseNum(getCellValueCandidates(data, keysToUse, COL_CANDIDATES.gasolina, iso));
 
-  // Dietas: try original key first, then same-row variants.
-  const dietasKeys = Array.from(new Set([originalKey, ...keysToUse]));
-  const dVal = getCellValueCandidates(data, dietasKeys, COL_CANDIDATES.dietas, iso) || '';
+  // Dietas: use original key only so explicit clears stay cleared.
+  const dVal = getCellValueCandidates(data, [originalKey], COL_CANDIDATES.dietas, iso) || '';
   const { labels, ticket, other } = parseDietasValue(dVal);
   slot.ticketTotal += ticket;
   slot.otherTotal += other;

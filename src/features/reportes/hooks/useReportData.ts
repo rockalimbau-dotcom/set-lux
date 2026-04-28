@@ -127,6 +127,9 @@ export default function useReportData(
     setData((prev: ReportData) => {
       const current = prev || {};
       const next = { ...current };
+      const allowedKeys = new Set(
+        (safePersonas || []).map(p => personaKey(p))
+      );
       let changed = false;
       for (const p of safePersonas) {
         const key = personaKey(p);
@@ -145,6 +148,13 @@ export default function useReportData(
               changed = true;
             }
           }
+        }
+      }
+      for (const key of Object.keys(next)) {
+        if (key.startsWith('__')) continue;
+        if (!allowedKeys.has(key)) {
+          delete next[key];
+          changed = true;
         }
       }
       return changed ? next : prev;

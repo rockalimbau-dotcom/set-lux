@@ -179,9 +179,8 @@ function processDay(
   slot.km += parseNum(getCellValueCandidates(data, keysToUse, COL_CANDIDATES.km, iso));
   slot.gasolina += parseNum(getCellValueCandidates(data, keysToUse, COL_CANDIDATES.gasolina, iso));
 
-  // Dietas: try original key first, then same-row variants.
-  const dietasKeys = Array.from(new Set([originalKey, ...keysToUse]));
-  const dVal = getCellValueCandidates(data, dietasKeys, COL_CANDIDATES.dietas, iso) || '';
+  // Dietas: use original key only so explicit clears stay cleared.
+  const dVal = getCellValueCandidates(data, [originalKey], COL_CANDIDATES.dietas, iso) || '';
   const { labels, ticket, other } = parseDietasValue(dVal);
   slot.ticketTotal += ticket;
   slot.otherTotal += other;
