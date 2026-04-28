@@ -1,16 +1,15 @@
 import { storage } from '@shared/services/localStorage.service';
+import { normalizeExtraBlocks } from '@shared/utils/extraBlocks';
 import { parseNum, parseDietasValue, parseHorasExtra } from '../parse';
-import { weekISOdays, weekAllPeopleActive } from '../plan';
+import { weekISOdays, stripPR } from '../plan';
 import { buildRefuerzoIndex } from '../plan';
 import {
-  storageKeyFor,
-  visibleRoleFor,
+  buildUniqueStorageKeys,
+  getKeysToUse,
 } from './aggregationHelpers';
 import {
   getCellValueCandidates,
   valIsYes,
-  dbgLog,
-  storageKeyVariants,
   COL_CANDIDATES,
 } from './helpers';
 
@@ -19,10 +18,11 @@ import {
  */
 function ensureSlotWindowed(
   totals: Map<string, any>,
-  visibleKey: string
+  rowKey: string
 ) {
-  if (!totals.has(visibleKey)) {
-    totals.set(visibleKey, {
+  if (!totals.has(rowKey)) {
+    totals.set(rowKey, {
+      _rowKey: rowKey,
       extras: 0,
       horasExtra: 0,
       turnAround: 0,
@@ -38,7 +38,58 @@ function ensureSlotWindowed(
       otherTotal: 0,
     });
   }
-  return totals.get(visibleKey);
+  return totals.get(rowKey);
+}
+
+const normText = (value: unknown): string =>
+  String(value || '')
+    .trim()
+    .toLowerCase();
+
+function membersForBlock(day: any, displayBlock: 'base' | 'pre' | 'pick' | 'extra', storageKey: string): any[] {
+  if (!day) return [];
+  if (displayBlock === 'base') return Array.isArray(day?.team) ? day.team : [];
+  if (displayBlock === 'pre') return Array.isArray(day?.prelight) ? day.prelight : [];
+  if (displayBlock === 'pick') return Array.isArray(day?.pickup) ? day.pickup : [];
+
+  const indexedExtraMatch = String(storageKey || '').match(/\.extra:(\d+)__/);
+  if (indexedExtraMatch) {
+    const idx = Number(indexedExtraMatch[1]);
+    if (Number.isFinite(idx) && idx >= 0) {
+      const block = normalizeExtraBlocks(day)[idx];
+      return Array.isArray(block?.list) ? block.list : [];
+    }
+  }
+  return Array.isArray(day?.refList) ? day.refList : [];
+}
+
+function memberMatchesInfo(member: any, info: any): boolean {
+  const wantedPersonId = String(info?.personId || '').trim();
+  const wantedRoleId = String(info?.roleId || '').trim();
+  const wantedName = normText(info?.name);
+  const wantedBaseRole = normText(stripPR(String(info?.matchRole || info?.roleVisible || '')));
+
+  const memberPersonId = String(member?.personId || '').trim();
+  if (wantedPersonId && memberPersonId && memberPersonId !== wantedPersonId) return false;
+
+  const memberRoleId = String(member?.roleId || '').trim();
+  if (wantedRoleId && memberRoleId && memberRoleId !== wantedRoleId) return false;
+
+  if (wantedName && normText(member?.name) !== wantedName) return false;
+
+  if (wantedBaseRole) {
+    const memberBaseRole = normText(stripPR(String(member?.role || '')));
+    if (memberBaseRole && memberBaseRole !== wantedBaseRole) return false;
+  }
+
+  return true;
+}
+
+function isScheduledForRowOnDay(day: any, info: any, storageKey: string): boolean {
+  if (!day) return true;
+  const list = membersForBlock(day, info.displayBlock, storageKey);
+  if (!Array.isArray(list) || list.length === 0) return true;
+  return list.some(member => memberMatchesInfo(member, info));
 }
 
 /**
@@ -118,31 +169,30 @@ export function aggregateWindowedReport(
       if (obj) data = obj;
     } catch {}
 
-    const rawPeople = weekAllPeopleActive(w);
-    const uniqStorage = new Map<string, string>();
-    for (const p of rawPeople) {
-      const r = p.role || '';
-      const n = p.name || '';
-      const vk = visibleRoleFor(r, n, refuerzoSet);
-      if (vk === 'REF') {
-        // Claves posibles en Reportes por bloque
-        for (const sk of [`REF__${n}`, `REF.pre__${n}`, `REF.pick__${n}`]) {
-          if (!uniqStorage.has(sk)) uniqStorage.set(sk, vk);
-        }
-      } else {
-        const sk = storageKeyFor(r, n, refuerzoSet);
-        if (!uniqStorage.has(sk)) uniqStorage.set(sk, vk);
-      }
-    }
+    const uniqStorageKeys = buildUniqueStorageKeys(w, refuerzoSet);
+    const sortedEntries = Array.from(uniqStorageKeys.entries()).sort((a, b) => {
+      const priority = { extra: 0, pre: 1, pick: 2, base: 3 } as const;
+      return (priority[a[1].displayBlock] ?? 9) - (priority[b[1].displayBlock] ?? 9);
+    });
+    const processedByPersonAndDay = new Set<string>();
 
-    for (const [storageKey, visibleKey] of uniqStorage) {
-      const slot = ensureSlotWindowed(totals, visibleKey);
+    for (const [storageKey, info] of sortedEntries) {
+      const slot = ensureSlotWindowed(totals, info.rowKey);
       let usedMaterialPropioWeek = false;
       for (const iso of isoDays) {
-        // Variantes para todos los NO-REF; REF solo su clave original
-        const keysToUse = visibleKey === 'REF' ? [storageKey] : storageKeyVariants(storageKey);
+        const dayIdx = isoDaysFull.indexOf(iso);
+        const day = dayIdx >= 0 ? w?.days?.[dayIdx] : null;
+        if (!isScheduledForRowOnDay(day, info, storageKey)) continue;
+        const personToken =
+          String(info?.roleId || '').trim() ||
+          `${normText(info?.name)}__${normText(stripPR(String(info?.matchRole || info?.roleVisible || '')))}`;
+        const personDayToken = `${personToken}::${iso}`;
+        if (processedByPersonAndDay.has(personDayToken)) continue;
+
+        const keysToUse = getKeysToUse(storageKey, info.roleVisible);
         const { materialPropioUsed } = processDayWindowed(slot, data, keysToUse, storageKey, iso);
         if (materialPropioUsed) usedMaterialPropioWeek = true;
+        processedByPersonAndDay.add(personDayToken);
       }
       if (usedMaterialPropioWeek) slot.materialPropioWeeks += 1;
     }

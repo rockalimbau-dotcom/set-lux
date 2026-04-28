@@ -166,5 +166,37 @@ export function getKeysToUse(
 ): string[] {
   // Verificar si es un refuerzo (REF o REFG, REFBB, etc.)
   const isRef = roleVisible === 'REF' || (roleVisible && roleVisible.startsWith('REF') && roleVisible.length > 3);
-  return isRef ? [storageKey] : storageKeyVariants(storageKey);
+  if (isRef) return [storageKey];
+
+  if (storageKey.includes('.pre__')) {
+    return [storageKey, storageKey.replace('.pre__', '_pre__')];
+  }
+  if (storageKey.includes('.pick__')) {
+    return [storageKey, storageKey.replace('.pick__', '_pick__')];
+  }
+  if (storageKey.includes('_pre__')) {
+    return [storageKey, storageKey.replace('_pre__', '.pre__')];
+  }
+  if (storageKey.includes('_pick__')) {
+    return [storageKey, storageKey.replace('_pick__', '.pick__')];
+  }
+  if (/\.extra(?::\d+)?__/.test(storageKey)) {
+    const [rolePart, name = ''] = String(storageKey || '').split('__');
+    const baseRolePart = String(rolePart || '').replace(/\.extra(?::\d+)?$/i, '');
+    return Array.from(
+      new Set([
+        storageKey,
+        `${baseRolePart}__${name}`,
+      ])
+    );
+  }
+
+  const [rolePart, name = ''] = String(storageKey || '').split('__');
+  const baseRole = stripPR(rolePart || '');
+  return Array.from(
+    new Set([
+      `${rolePart}__${name}`,
+      `${baseRole}__${name}`,
+    ])
+  );
 }
