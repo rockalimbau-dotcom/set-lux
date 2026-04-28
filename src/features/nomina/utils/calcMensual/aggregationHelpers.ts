@@ -170,6 +170,7 @@ export function getKeysToUse(
 
   // Mantener lookup estricto por bloque para evitar dobles conteos
   // cuando una misma persona existe en más de una fila/bloque.
+  // Nota: este aislamiento también evita cruces entre filas visibles y filas filtradas.
   if (storageKey.includes('.pre__')) {
     return [storageKey, storageKey.replace('.pre__', '_pre__')];
   }
