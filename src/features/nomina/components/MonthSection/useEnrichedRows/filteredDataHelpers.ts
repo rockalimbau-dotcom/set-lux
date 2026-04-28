@@ -29,6 +29,11 @@ export function getFilteredRowData(
   refuerzoSet: Set<string>,
   stripPR: (r: string) => string
 ): any | null {
+  const rowKey = String((r as any)?._rowKey || '').trim();
+  if (rowKey) {
+    return filteredData?.get(rowKey) || null;
+  }
+
   const keyNoPRForFilter = `${stripPR(r.role)}__${r.name}`;
   const visibleRoleForFilter = getVisibleRoleForFilter(r.role, refuerzoSet, keyNoPRForFilter, stripPR);
   const filteredKey = `${visibleRoleForFilter}__${r.name}`;

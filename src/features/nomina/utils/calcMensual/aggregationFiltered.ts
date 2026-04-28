@@ -20,12 +20,14 @@ import {
  */
 function ensureSlot(
   totals: Map<string, any>,
+  rowKey: string,
   role: string,
   name: string
 ) {
-  const k = `${role}__${name}`;
+  const k = rowKey;
   if (!totals.has(k)) {
     totals.set(k, {
+      _rowKey: rowKey,
       role,
       name,
       horasExtra: 0,
@@ -137,7 +139,7 @@ export function aggregateFilteredConcepts(
     const uniqStorageKeys = buildUniqueStorageKeys(w, refuerzoSet);
 
     for (const [pk, info] of uniqStorageKeys) {
-      const slot = ensureSlot(totals, info.roleVisible, info.name);
+      const slot = ensureSlot(totals, info.rowKey, info.roleVisible, info.name);
       let usedMaterialPropioWeek = false;
       for (const iso of days) {
         // Solo procesar días dentro del rango de fechas
