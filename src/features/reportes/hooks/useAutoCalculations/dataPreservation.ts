@@ -29,9 +29,14 @@ export function preserveOrRecalculateHorasExtra({
   value: string;
   isManual: boolean;
 } {
+  const hasCurrentValue =
+    currExtra !== undefined &&
+    currExtra !== null &&
+    String(currExtra).trim() !== '';
+
   if (off) {
     // Evitar borrar en bucle un valor manual cuando hay desajustes temporales de bloque.
-    if (currExtra !== undefined && currExtra !== null && String(currExtra).trim() !== '') {
+    if (hasCurrentValue) {
       return { value: String(currExtra), isManual: true };
     }
     return { value: '', isManual: false };
@@ -39,7 +44,7 @@ export function preserveOrRecalculateHorasExtra({
 
   // Si el valor es MANUAL (el usuario lo editó), preservarlo y convertirlo al nuevo formato
   if (manualExtra) {
-    if (currExtra !== undefined && currExtra !== null && String(currExtra).trim() !== '') {
+    if (hasCurrentValue) {
       const convertedValue = convertHorasExtraToNewFormat(currExtra, horasExtraTipo);
       const finalValue = convertedValue && convertedValue !== '' ? convertedValue : String(currExtra);
 
@@ -53,6 +58,12 @@ export function preserveOrRecalculateHorasExtra({
   // Cuando cambia horasExtraTipo, recalcular desde el horario solo para valores automáticos
   if (horasExtraTipoChanged) {
     return { value: autoExtra, isManual: false };
+  }
+
+  // Si el autocalculado viene vacío pero la celda ya tiene valor, preservar para evitar
+  // carreras entre escritura manual y reconciliación automática.
+  if (!manualExtra && hasCurrentValue && String(autoExtra || '').trim() === '') {
+    return { value: String(currExtra), isManual: true };
   }
 
   // Si el valor NO es manual Y NO cambió el tipo, usar el nuevo autoExtra
