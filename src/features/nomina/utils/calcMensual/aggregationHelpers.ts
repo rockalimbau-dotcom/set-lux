@@ -166,5 +166,33 @@ export function getKeysToUse(
 ): string[] {
   // Verificar si es un refuerzo (REF o REFG, REFBB, etc.)
   const isRef = roleVisible === 'REF' || (roleVisible && roleVisible.startsWith('REF') && roleVisible.length > 3);
-  return isRef ? [storageKey] : storageKeyVariants(storageKey);
+  if (isRef) return [storageKey];
+
+  // Mantener lookup estricto por bloque para evitar dobles conteos
+  // cuando una misma persona existe en más de una fila/bloque.
+  if (storageKey.includes('.pre__')) {
+    return [storageKey, storageKey.replace('.pre__', '_pre__')];
+  }
+  if (storageKey.includes('.pick__')) {
+    return [storageKey, storageKey.replace('.pick__', '_pick__')];
+  }
+  if (storageKey.includes('_pre__')) {
+    return [storageKey, storageKey.replace('_pre__', '.pre__')];
+  }
+  if (storageKey.includes('_pick__')) {
+    return [storageKey, storageKey.replace('_pick__', '.pick__')];
+  }
+  if (/\.extra(?::\d+)?__/.test(storageKey)) {
+    return [storageKey];
+  }
+
+  // Para filas base, usar solo variantes base (sin pre/pick/extra)
+  const [rolePart, name = ''] = String(storageKey || '').split('__');
+  const baseRole = stripPR(rolePart || '');
+  return Array.from(
+    new Set([
+      `${rolePart}__${name}`,
+      `${baseRole}__${name}`,
+    ])
+  );
 }
