@@ -19,7 +19,6 @@ export function storageKeyVariants(storageKey: string): string[] {
     variants.add(`${baseRole}.${extraBlock}__${name}`);
     variants.add(`${baseRole}.extra__${name}`);
     variants.add(`${rawRole}.extra__${name}`);
-    variants.add(`${baseRole}__${name}`);
   } else {
     variants.add(`${baseRole}__${name}`);
     variants.add(`${baseRole}P__${name}`);
