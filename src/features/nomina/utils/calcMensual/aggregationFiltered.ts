@@ -154,7 +154,8 @@ function processDayFiltered(
   slot.km += parseNum(getCellValueCandidates(data, keysToUse, COL_CANDIDATES.km, iso));
   slot.gasolina += parseNum(getCellValueCandidates(data, keysToUse, COL_CANDIDATES.gasolina, iso));
 
-  const dVal = getCellValueCandidates(data, [originalKey], COL_CANDIDATES.dietas, iso) || '';
+  const dietasKeys = Array.from(new Set([originalKey, ...keysToUse]));
+  const dVal = getCellValueCandidates(data, dietasKeys, COL_CANDIDATES.dietas, iso) || '';
   const { labels, ticket, other } = parseDietasValue(dVal);
   slot.ticketTotal += ticket;
   slot.otherTotal += other;
@@ -221,16 +222,18 @@ export function aggregateFilteredConcepts(
         const dayIdx = isoDays.indexOf(iso);
         const day = dayIdx >= 0 ? w?.days?.[dayIdx] : null;
         if (!isScheduledForRowOnDay(day, info, pk)) continue;
-        const personToken =
-          String(info?.roleId || '').trim() ||
-          `${normText(info?.name)}__${normText(stripPR(String(info?.matchRole || info?.roleVisible || '')))}`;
-        const personDayToken = `${personToken}::${iso}`;
-        if (processedByPersonAndDay.has(personDayToken)) continue;
+        const nameRoleToken = `${normText(info?.name)}__${normText(stripPR(String(info?.matchRole || info?.roleVisible || '')))}`;
+        const personIdToken = String(info?.personId || '').trim();
+        const personDayTokens = [
+          `${nameRoleToken}::${iso}`,
+          ...(personIdToken ? [`pid:${personIdToken}::${iso}`] : []),
+        ];
+        if (personDayTokens.some(token => processedByPersonAndDay.has(token))) continue;
 
         const keysToUse = getKeysToUse(pk, info.roleVisible);
         const { materialPropioUsed } = processDayFiltered(slot, data, keysToUse, pk, iso);
         if (materialPropioUsed) usedMaterialPropioWeek = true;
-        processedByPersonAndDay.add(personDayToken);
+        personDayTokens.forEach(token => processedByPersonAndDay.add(token));
       }
       if (usedMaterialPropioWeek) slot.materialPropioWeeks += 1;
     }

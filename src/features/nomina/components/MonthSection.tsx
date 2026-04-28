@@ -165,6 +165,11 @@ function MonthSection({
 
   const visibleEnriched = useMemo(() => {
     return enriched.filter((r: any) => {
+      const hasDietasData =
+        (r._totalDietas || 0) > 0 ||
+        (r.ticketTotal || 0) > 0 ||
+        (r.otherTotal || 0) > 0 ||
+        (r.dietasCount instanceof Map && r.dietasCount.size > 0);
       const hasActivity =
         (r._worked || 0) > 0 ||
         (r._halfDays || 0) > 0 ||
@@ -177,7 +182,7 @@ function MonthSection({
         (r.transporte || 0) > 0 ||
         (r.km || 0) > 0 ||
         (r.gasolina || 0) > 0 ||
-        (r._totalDietas || 0) > 0 ||
+        hasDietasData ||
         (r._materialPropioDays || 0) > 0 ||
         (r._materialPropioWeeks || 0) > 0 ||
         (r._materialPropioUnique || 0) > 0 ||

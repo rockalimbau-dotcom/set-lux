@@ -6,13 +6,19 @@ interface UseColumnVisibilityProps {
 
 export function useColumnVisibility({ enriched }: UseColumnVisibilityProps) {
   const columnVisibility = useMemo(() => {
+    const hasDietasData = (row: any) =>
+      (row?._totalDietas || 0) > 0 ||
+      (row?.ticketTotal || 0) > 0 ||
+      (row?.otherTotal || 0) > 0 ||
+      (row?.dietasCount instanceof Map && row.dietasCount.size > 0);
+
     const hasHolidays = enriched.some(r => r._holidays > 0);
     const hasTravel = enriched.some(r => r._travel > 0);
     const hasExtras = enriched.some(r => r.extras > 0);
     const hasTransporte = enriched.some(r => r.transporte > 0);
     const hasKm = enriched.some(r => r.km > 0);
     const hasGasolina = enriched.some(r => (r.gasolina || 0) > 0 || (r._totalGasolina || 0) > 0);
-    const hasDietas = enriched.some(r => r._totalDietas > 0);
+    const hasDietas = enriched.some(hasDietasData);
     const hasMaterialPropio = enriched.some(
       r =>
         (r._materialPropioDays || 0) > 0 ||

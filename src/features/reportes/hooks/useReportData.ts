@@ -155,9 +155,8 @@ export default function useReportData(
   // La persistencia se maneja automáticamente con useLocalStorage
 
   const setCell = (pKey: string, concepto: string, fecha: string, valor: string) => {
-    const previousVal = data?.[pKey]?.[concepto]?.[fecha] || '';
-
     setData((d: ReportData) => {
+      const previousVal = d?.[pKey]?.[concepto]?.[fecha] || '';
       const next = { ...d };
       next[pKey] = { ...(next[pKey] || {}) };
       next[pKey][concepto] = { ...(next[pKey][concepto] || {}) };
@@ -166,10 +165,8 @@ export default function useReportData(
       next[pKey].__manual__ = { ...(next[pKey].__manual__ || {}) };
       next[pKey].__manual__[concepto] = { ...(next[pKey].__manual__?.[concepto] || {}) } as any;
       (next[pKey].__manual__ as any)[concepto][fecha] = true;
-      return next;
-    });
+      if (concepto !== 'Dietas' || valor === '') return next;
 
-    if (concepto === 'Dietas' && valor !== '') {
       const currentParsed = parseDietas(valor);
       const previousParsed = parseDietas(previousVal);
 
@@ -182,11 +179,8 @@ export default function useReportData(
 
       // Sync only for initial assignment from empty -> has items.
       // Any later edits/removals must stay local to avoid cross-row overwrites.
-      const shouldSyncInitialAdd =
-        previousSharedItems.size === 0 &&
-        currentSharedItems.size > 0;
-
-      if (!shouldSyncInitialAdd) return;
+      const shouldSyncInitialAdd = previousSharedItems.size === 0 && currentSharedItems.size > 0;
+      if (!shouldSyncInitialAdd) return next;
 
       const who: { [key: string]: { role: string; name: string; roleId?: string } } = {};
       for (const p of safePersonas) {
@@ -198,53 +192,51 @@ export default function useReportData(
         };
       }
 
-      setData((prev: ReportData) => {
-        const copy = { ...(prev || {}) };
-        const srcBlock: 'base' | 'pre' | 'pick' | 'extra' =
-          /\.pre__/.test(pKey) || /REF\.pre__/.test(pKey)
-            ? 'pre'
-            : (/\.pick__/.test(pKey) || /REF\.pick__/.test(pKey)
-              ? 'pick'
-              : (/\.extra__/.test(pKey) || /REF\.extra__/.test(pKey) ? 'extra' : 'base'));
-        const blockOf = (key: string): 'base' | 'pre' | 'pick' | 'extra' =>
-          /\.pre__/.test(key) || /REF\.pre__/.test(key)
-            ? 'pre'
-            : (/\.pick__/.test(key) || /REF\.pick__/.test(key)
-              ? 'pick'
-              : (/\.extra__/.test(key) || /REF\.extra__/.test(key) ? 'extra' : 'base'));
+      const srcBlock: 'base' | 'pre' | 'pick' | 'extra' =
+        /\.pre__/.test(pKey) || /REF\.pre__/.test(pKey)
+          ? 'pre'
+          : (/\.pick__/.test(pKey) || /REF\.pick__/.test(pKey)
+            ? 'pick'
+            : (/\.extra__/.test(pKey) || /REF\.extra__/.test(pKey) ? 'extra' : 'base'));
+      const blockOf = (key: string): 'base' | 'pre' | 'pick' | 'extra' =>
+        /\.pre__/.test(key) || /REF\.pre__/.test(key)
+          ? 'pre'
+          : (/\.pick__/.test(key) || /REF\.pick__/.test(key)
+            ? 'pick'
+            : (/\.extra__/.test(key) || /REF\.extra__/.test(key) ? 'extra' : 'base'));
 
-        for (const p of safePersonas) {
-          const k = personaKey(p);
-          if (k === pKey) continue;
-          const r = who[k]?.role || '';
-          const n = who[k]?.name || '';
-          const roleId = who[k]?.roleId;
-          const tgtBlock = blockOf(k);
-          if (tgtBlock !== srcBlock) continue;
+      for (const p of safePersonas) {
+        const k = personaKey(p);
+        if (k === pKey) continue;
+        const r = who[k]?.role || '';
+        const n = who[k]?.name || '';
+        const roleId = who[k]?.roleId;
+        const tgtBlock = blockOf(k);
+        if (tgtBlock !== srcBlock) continue;
 
-          const isRefRole = r === 'REF' || (r && r.startsWith('REF') && r.length > 3);
-          const roleForCheck = isRefRole
-            ? 'REF'
-            : (tgtBlock === 'pre' ? `${r}P` : (tgtBlock === 'pick' ? `${r}R` : r));
-          const blockForRef: 'base' | 'pre' | 'pick' | 'extra' | undefined =
-            isRefRole ? tgtBlock : (tgtBlock === 'extra' ? 'extra' : undefined);
-          const isScheduled = isPersonScheduledOn(fecha, roleForCheck, n, findWeekAndDay, blockForRef, { roleId });
-          if (!isScheduled) continue;
+        const isRefRole = r === 'REF' || (r && r.startsWith('REF') && r.length > 3);
+        const roleForCheck = isRefRole
+          ? 'REF'
+          : (tgtBlock === 'pre' ? `${r}P` : (tgtBlock === 'pick' ? `${r}R` : r));
+        const blockForRef: 'base' | 'pre' | 'pick' | 'extra' | undefined =
+          isRefRole ? tgtBlock : (tgtBlock === 'extra' ? 'extra' : undefined);
+        const isScheduled = isPersonScheduledOn(fecha, roleForCheck, n, findWeekAndDay, blockForRef, { roleId });
+        if (!isScheduled) continue;
 
-          copy[k] = { ...(copy[k] || {}) };
-          copy[k]['Dietas'] = { ...(copy[k]['Dietas'] || {}) };
-          const existingVal = copy[k]['Dietas'][fecha] || '';
-          const existingParsed = parseDietas(existingVal);
+        next[k] = { ...(next[k] || {}) };
+        next[k]['Dietas'] = { ...(next[k]['Dietas'] || {}) };
+        const existingVal = next[k]['Dietas'][fecha] || '';
+        const existingParsed = parseDietas(existingVal);
 
-          // Add-only propagation: never remove or replace peer items.
-          const syncedItems = new Set(existingParsed.items);
-          for (const item of currentSharedItems) syncedItems.add(item);
-          const syncedValue = formatDietas(syncedItems, existingParsed.ticket, existingParsed.other);
-          copy[k]['Dietas'][fecha] = syncedValue;
-        }
-        return copy;
-      });
-    }
+        // Add-only propagation: never remove or replace peer items.
+        const syncedItems = new Set(existingParsed.items);
+        for (const item of currentSharedItems) syncedItems.add(item);
+        const syncedValue = formatDietas(syncedItems, existingParsed.ticket, existingParsed.other);
+        next[k]['Dietas'][fecha] = syncedValue;
+      }
+
+      return next;
+    });
   };
 
   return { data, setData, setCell };

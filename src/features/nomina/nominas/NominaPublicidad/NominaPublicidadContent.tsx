@@ -14,6 +14,7 @@ import { buildNominaMonthHTML, openPrintWindow, exportToPDF } from '../../utils/
 import { stripPR, buildRefuerzoIndex } from '../../utils/plan';
 import { ProjectLike } from './NominaPublicidadTypes';
 import { useMonthGrouping } from './useMonthGrouping';
+import { STORAGE_CHANGE_EVENT } from '@shared/services/localStorage.service';
 
 interface NominaPublicidadContentProps {
   project: ProjectLike;
@@ -33,6 +34,29 @@ export function NominaPublicidadContent({
   readOnly,
 }: NominaPublicidadContentProps) {
   const { monthMap, monthKeys } = useMonthGrouping(allWeeks);
+  const [reportsVersion, setReportsVersion] = React.useState(0);
+  const reportsKeyPrefix = `reportes_${projectWithMode?.id || projectWithMode?.nombre || 'tmp'}_`;
+
+  React.useEffect(() => {
+    const bumpIfReportsKey = (key?: string | null) => {
+      if (!key || typeof key !== 'string') return;
+      if (!key.startsWith(reportsKeyPrefix)) return;
+      setReportsVersion(v => v + 1);
+    };
+
+    const onStorage = (e: StorageEvent) => bumpIfReportsKey(e.key);
+    const onLocalStorageChange = (e: Event) => {
+      const detail = (e as CustomEvent<{ key?: string }>).detail;
+      bumpIfReportsKey(detail?.key || null);
+    };
+
+    window.addEventListener('storage', onStorage);
+    window.addEventListener(STORAGE_CHANGE_EVENT, onLocalStorageChange as EventListener);
+    return () => {
+      window.removeEventListener('storage', onStorage);
+      window.removeEventListener(STORAGE_CHANGE_EVENT, onLocalStorageChange as EventListener);
+    };
+  }, [reportsKeyPrefix]);
 
   // Export por mes usando las filas enriquecidas que nos pasa MonthSection
   const exportMonth = (monthKey: string, enrichedRows: any[]) => {
@@ -91,7 +115,7 @@ export function NominaPublicidadContent({
 
         return (
           <MonthSection
-            key={mk}
+            key={`${mk}-${reportsVersion}`}
             monthKey={mk}
             rows={baseRows as any}
             weeksForMonth={weeks}

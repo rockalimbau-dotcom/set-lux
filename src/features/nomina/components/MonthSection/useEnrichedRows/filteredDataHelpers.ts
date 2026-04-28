@@ -68,28 +68,11 @@ export function getValueWithOverride<T>(
     return ov[key];
   }
   // Then check filtered data
-  // Si filteredRow tiene la clave y el valor no es undefined, usarlo
-  // Pero si el valor original no es 0 y filteredRow[key] es 0, usar el original
-  // (porque 0 en filteredRow podría significar "no hay datos filtrados" para ese concepto)
+  // If filteredRow has the key and value is defined, trust filtered value as source of truth.
+  // This allows explicit zero/empty values to clear stale totals.
   if (useFilteredData && filteredRow && typeof filteredRow === 'object' && key in filteredRow) {
     const filteredValue = filteredRow[key];
-    // Si filteredValue es undefined o null, usar el valor original
     if (filteredValue === undefined || filteredValue === null) {
-      return originalValue;
-    }
-    // Para Maps (como dietasCount), si el Map filtrado está vacío pero el original tiene datos, usar el original
-    if (originalValue instanceof Map && filteredValue instanceof Map) {
-      if (filteredValue.size === 0 && originalValue.size > 0) {
-        return originalValue;
-      }
-      // Si el Map filtrado tiene datos, usarlo
-      if (filteredValue.size > 0) {
-        return filteredValue as T;
-      }
-    }
-    // Si el valor original no es 0 y filteredValue es 0, usar el original
-    // (esto es especialmente importante para penaltyLunch y otros campos que pueden ser 0 en filteredRow)
-    if (originalValue !== 0 && filteredValue === 0 && typeof originalValue === 'number' && typeof filteredValue === 'number') {
       return originalValue;
     }
     return filteredValue;

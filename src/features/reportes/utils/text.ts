@@ -4,6 +4,34 @@ import { norm } from '@shared/utils/normalize';
 // Re-exportar norm para mantener compatibilidad con imports existentes
 export { norm };
 
+function normalizeDietaItem(item: string): string {
+  const cleaned = String(item || '').trim();
+  const n = norm(cleaned);
+  if (!n) return cleaned;
+
+  if (n === 'comida' || n === 'dinar' || n === 'lunch') return 'Comida';
+  if (n === 'cena' || n === 'sopar' || n === 'dinner') return 'Cena';
+  if (n === 'desayuno' || n === 'esmorzar' || n === 'breakfast') return 'Desayuno';
+  if (
+    n === 'dieta sin pernoctar' ||
+    n === 'dieta sense pernoctar' ||
+    n === 'diet without overnight'
+  ) return 'Dieta sin pernoctar';
+  if (
+    n === 'dieta con pernocta' ||
+    n === 'dieta amb pernocta' ||
+    n === 'dieta completa + desayuno' ||
+    n === 'full diet + breakfast'
+  ) return 'Dieta con pernocta';
+  if (
+    n === 'gastos de bolsillo' ||
+    n === 'despeses de butxaca' ||
+    n === 'pocket expenses'
+  ) return 'Gastos de bolsillo';
+
+  return cleaned;
+}
+
 export function parseDietas(val: any): { items: Set<string>; ticket: number | null; other: number | null } {
   const out = { items: new Set<string>(), ticket: null as number | null, other: null as number | null };
   if (!val) return out;
@@ -23,7 +51,7 @@ export function parseDietas(val: any): { items: Set<string>; ticket: number | nu
       out.items.add('Otros');
       out.other = Number(String(o[1]).replace(',', '.'));
     } else {
-      out.items.add(p);
+      out.items.add(normalizeDietaItem(p));
     }
   }
   return out;

@@ -30,9 +30,11 @@ export const useTranslateDietItem = () => {
       'Cena': t('reports.dietOptions.dinner'),
       'Desayuno': t('reports.dietOptions.breakfast'),
       'Dieta sin pernoctar': t('reports.dietOptions.dietNoOvernight'),
+      'Dieta con pernocta': t('reports.dietOptions.dietWithOvernight'),
       'Dieta completa + desayuno': t('reports.dietOptions.dietFullBreakfast'),
       'Gastos de bolsillo': t('reports.dietOptions.pocketExpenses'),
       'Ticket': t('reports.dietOptions.ticket'),
+      'Otros': t('reports.dietOptions.other'),
     };
     return itemMap[item] || item;
   };

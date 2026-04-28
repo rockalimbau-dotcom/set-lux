@@ -33,6 +33,11 @@ export const translateDietItem = (item: string, t: (key: string) => string): str
     'Gastos de bolsillo': t('reports.dietOptions.pocketExpenses'),
     'Ticket': t('reports.dietOptions.ticket'),
     'Otros': t('reports.dietOptions.other'),
+      'Dinar': t('reports.dietOptions.lunch'),
+      'Sopar': t('reports.dietOptions.dinner'),
+      'Esmorzar': t('reports.dietOptions.breakfast'),
+      'Dieta amb pernocta': t('reports.dietOptions.dietWithOvernight'),
+      'Dieta sense pernoctar': t('reports.dietOptions.dietNoOvernight'),
   };
   return itemMap[item] || item;
 };
