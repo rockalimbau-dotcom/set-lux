@@ -56,9 +56,7 @@ if(
   && !(login.user === 'JuanmaPerez' && login.pass === '1234')
   && !(login.user === 'NicolasGarrido' && login.pass === '1234')
   && !(login.user === 'RafaSuarez' && login.pass === '1234')
-  && !(login.user === 'DejuHoms' && login.pass === '1234')
   && !(login.user === 'PepZueras' && login.pass === '1234')
-  && !(login.user === 'JorgeAznar' && login.pass === '1234')
   && !(login.user === 'MartiPluma' && login.pass === '1234')
   && !(login.user === 'JamboLights' && login.pass === '1234')
   && !(login.user === 'OscarVallejo' && login.pass === '1234')
@@ -76,6 +74,8 @@ if(
   && !(login.user === 'XaviSarasa' && login.pass === '1234') //Si lo utiliza
   && !(login.user === 'JavierGuerrero' && login.pass === '1234') //Si lo utiliza
   && !(login.user === 'GonzaloAsturias' && login.pass === '1234') //Si lo utiliza
+  && !(login.user === 'MarcLlusia' && login.pass === '1234') //Si lo utiliza
+  && !(login.user === 'JordiBiosca' && login.pass === '1234') //Si lo utiliza
 
 
 ){
