@@ -82,6 +82,26 @@ export default function useReportData(
     }
     return merged;
   };
+  const parseKeyIdentity = (key: string): { role: string; name: string } => {
+    const str = String(key || '');
+    const idx = str.indexOf('__');
+    if (idx < 0) return { role: '', name: '' };
+    let rolePart = str.slice(0, idx);
+    const name = str.slice(idx + 2);
+    rolePart = rolePart
+      .replace(/\.pre$/i, '')
+      .replace(/\.pick$/i, '')
+      .replace(/\.extra(?::\d+)?$/i, '');
+    const role = normalizeRole(rolePart).replace(/[PR]$/i, '');
+    return { role, name: String(name || '').trim().toLowerCase() };
+  };
+  const areSetsEqual = (a: Set<string>, b: Set<string>) => {
+    if (a.size !== b.size) return false;
+    for (const item of a) {
+      if (!b.has(item)) return false;
+    }
+    return true;
+  };
   const migrateRiggerRoles = (prev: ReportData) => {
     const next: ReportData = {};
     let changed = false;
@@ -175,10 +195,14 @@ export default function useReportData(
       next[pKey].__manual__ = { ...(next[pKey].__manual__ || {}) };
       next[pKey].__manual__[concepto] = { ...(next[pKey].__manual__?.[concepto] || {}) } as any;
       (next[pKey].__manual__ as any)[concepto][fecha] = true;
-      if (concepto !== 'Dietas' || valor === '') return next;
+      if (concepto !== 'Dietas') return next;
 
       const currentParsed = parseDietas(valor);
       const previousParsed = parseDietas(previousVal);
+      const isClearingDietas =
+        currentParsed.items.size === 0 &&
+        currentParsed.ticket == null &&
+        currentParsed.other == null;
 
       const currentSharedItems = new Set(currentParsed.items);
       const previousSharedItems = new Set(previousParsed.items);
@@ -187,10 +211,8 @@ export default function useReportData(
       previousSharedItems.delete('Ticket');
       previousSharedItems.delete('Otros');
 
-      // Sync only for initial assignment from empty -> has items.
-      // Any later edits/removals must stay local to avoid cross-row overwrites.
-      const shouldSyncInitialAdd = previousSharedItems.size === 0 && currentSharedItems.size > 0;
-      if (!shouldSyncInitialAdd) return next;
+      const shouldSync = isClearingDietas || !areSetsEqual(previousSharedItems, currentSharedItems);
+      if (!shouldSync) return next;
 
       const who: { [key: string]: { role: string; name: string; roleId?: string } } = {};
       for (const p of safePersonas) {
@@ -208,6 +230,7 @@ export default function useReportData(
           : (/\.pick__/.test(pKey) || /REF\.pick__/.test(pKey)
             ? 'pick'
             : (/\.extra__/.test(pKey) || /REF\.extra__/.test(pKey) ? 'extra' : 'base'));
+      const srcIdentity = parseKeyIdentity(pKey);
       const blockOf = (key: string): 'base' | 'pre' | 'pick' | 'extra' =>
         /\.pre__/.test(key) || /REF\.pre__/.test(key)
           ? 'pre'
@@ -215,34 +238,52 @@ export default function useReportData(
             ? 'pick'
             : (/\.extra__/.test(key) || /REF\.extra__/.test(key) ? 'extra' : 'base'));
 
-      for (const p of safePersonas) {
-        const k = personaKey(p);
-        if (k === pKey) continue;
-        const r = who[k]?.role || '';
-        const n = who[k]?.name || '';
-        const roleId = who[k]?.roleId;
-        const tgtBlock = blockOf(k);
-        if (tgtBlock !== srcBlock) continue;
+      if (!isClearingDietas) {
+        for (const p of safePersonas) {
+          const k = personaKey(p);
+          if (k === pKey) continue;
+          const r = who[k]?.role || '';
+          const n = who[k]?.name || '';
+          const roleId = who[k]?.roleId;
+          const tgtBlock = blockOf(k);
+          if (tgtBlock !== srcBlock) continue;
 
-        const isRefRole = r === 'REF' || (r && r.startsWith('REF') && r.length > 3);
-        const roleForCheck = isRefRole
-          ? 'REF'
-          : (tgtBlock === 'pre' ? `${r}P` : (tgtBlock === 'pick' ? `${r}R` : r));
-        const blockForRef: 'base' | 'pre' | 'pick' | 'extra' | undefined =
-          isRefRole ? tgtBlock : (tgtBlock === 'extra' ? 'extra' : undefined);
-        const isScheduled = isPersonScheduledOn(fecha, roleForCheck, n, findWeekAndDay, blockForRef, { roleId });
-        if (!isScheduled) continue;
+          const isRefRole = r === 'REF' || (r && r.startsWith('REF') && r.length > 3);
+          const roleForCheck = isRefRole
+            ? 'REF'
+            : (tgtBlock === 'pre' ? `${r}P` : (tgtBlock === 'pick' ? `${r}R` : r));
+          const blockForRef: 'base' | 'pre' | 'pick' | 'extra' | undefined =
+            isRefRole ? tgtBlock : (tgtBlock === 'extra' ? 'extra' : undefined);
+          const isScheduled = isPersonScheduledOn(fecha, roleForCheck, n, findWeekAndDay, blockForRef, { roleId });
+          if (!isScheduled) continue;
 
-        next[k] = { ...(next[k] || {}) };
-        next[k]['Dietas'] = { ...(next[k]['Dietas'] || {}) };
-        const existingVal = next[k]['Dietas'][fecha] || '';
-        const existingParsed = parseDietas(existingVal);
+          next[k] = { ...(next[k] || {}) };
+          next[k]['Dietas'] = { ...(next[k]['Dietas'] || {}) };
+          const existingVal = next[k]['Dietas'][fecha] || '';
+          const existingParsed = parseDietas(existingVal);
 
-        // Add-only propagation: never remove or replace peer items.
-        const syncedItems = new Set(existingParsed.items);
-        for (const item of currentSharedItems) syncedItems.add(item);
-        const syncedValue = formatDietas(syncedItems, existingParsed.ticket, existingParsed.other);
-        next[k]['Dietas'][fecha] = syncedValue;
+          const existingSharedItems = new Set(existingParsed.items);
+          existingSharedItems.delete('Ticket');
+          existingSharedItems.delete('Otros');
+          const shouldUpdatePeer = areSetsEqual(existingSharedItems, previousSharedItems);
+          if (!shouldUpdatePeer) continue;
+
+          const syncedItems = new Set(currentSharedItems);
+          const syncedValue = formatDietas(syncedItems, existingParsed.ticket, existingParsed.other);
+          next[k]['Dietas'][fecha] = syncedValue;
+        }
+      }
+
+      if (isClearingDietas) {
+        for (const key of Object.keys(next)) {
+          if (key.startsWith('__')) continue;
+          const identity = parseKeyIdentity(key);
+          if (!identity.name || identity.name !== srcIdentity.name) continue;
+          if (!identity.role || identity.role !== srcIdentity.role) continue;
+          next[key] = { ...(next[key] || {}) };
+          next[key]['Dietas'] = { ...(next[key]['Dietas'] || {}) };
+          next[key]['Dietas'][fecha] = '';
+        }
       }
 
       return next;
