@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { AnyRecord } from '@shared/types/common';
-import { getConditionRoleLabel } from '../roleCatalog';
+import { getTranslatedConditionRoleLabel } from '../roleCatalog';
 
 export function useMensualTranslations(project?: AnyRecord | null) {
   const { t } = useTranslation();
@@ -24,7 +24,7 @@ export function useMensualTranslations(project?: AnyRecord | null) {
 
   // Función helper para traducir nombres de roles
   const translateRoleName = (roleName: string, sectionKey?: 'base' | 'prelight' | 'pickup'): string => {
-    return getConditionRoleLabel(project, roleName, sectionKey);
+    return getTranslatedConditionRoleLabel(project, roleName, sectionKey, t);
   };
 
   return { translateHeader, translateRoleName };
