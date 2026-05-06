@@ -323,6 +323,7 @@
     "priceTo": "Preu a",
     "priceToDays": "Preu a X dies",
     "days": "dies",
+    "weeks": "setmanes",
     "from": "Des de:",
     "to": "Fins a:",
     "dateFrom": "Data des de",
@@ -352,7 +353,9 @@
       "cameraTests": "Proves de càmera",
       "office": "Oficina",
       "unloading": "Descàrrega",
-      "halfDay": "1/2 jornada"
+      "halfDay": "1/2 jornada",
+      "prelight": "Prelight",
+      "pickup": "Recollida"
     },
     "assignPeopleToWeeks": "Assigna persones a les setmanes",
     "weeksWithoutTeam": "Tens {{count}} setmana{{plural}} a",

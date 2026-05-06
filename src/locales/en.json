@@ -323,6 +323,7 @@
     "priceTo": "Price to",
     "priceToDays": "Price to X days",
     "days": "days",
+    "weeks": "weeks",
     "from": "From:",
     "to": "To:",
     "dateFrom": "Date from",
@@ -352,7 +353,9 @@
       "cameraTests": "Camera tests",
       "office": "Office",
       "unloading": "Unloading",
-      "halfDay": "Half day"
+      "halfDay": "Half day",
+      "prelight": "Prelight",
+      "pickup": "Pickup"
     },
     "assignPeopleToWeeks": "Assign people to weeks",
     "weeksWithoutTeam": "You have {{count}} week{{plural}} in",

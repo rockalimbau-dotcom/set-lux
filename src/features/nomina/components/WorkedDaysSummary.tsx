@@ -28,7 +28,7 @@ export default function WorkedDaysSummary({
   const parts: string[] = [];
   
   if (showLocalizar && localizar > 0) {
-    parts.push(`${t('payroll.dayTypes.localizar', 'Localització tècnica')} x${localizar}`);
+    parts.push(`${t('payroll.dayTypes.location')} x${localizar}`);
   }
 
   if (oficina > 0) {
@@ -48,11 +48,11 @@ export default function WorkedDaysSummary({
   }
   
   if (prelight > 0) {
-    parts.push(`${t('payroll.dayTypes.prelight', 'Prelight')} x${prelight}`);
+    parts.push(`${t('payroll.dayTypes.prelight')} x${prelight}`);
   }
   
   if (recogida > 0) {
-    parts.push(`${t('payroll.dayTypes.pickup', 'Recogida')} x${recogida}`);
+    parts.push(`${t('payroll.dayTypes.pickup')} x${recogida}`);
   }
   
   if (descarga > 0) {
