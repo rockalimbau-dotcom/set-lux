@@ -187,7 +187,7 @@ describe('MonthSectionPersonRow', () => {
     );
 
     expect(getByText('payroll.dayTypes.shooting x3')).toBeInTheDocument();
-    expect(getByText('payroll.dayTypes.localizar x1')).toBeInTheDocument();
+    expect(getByText('payroll.dayTypes.location x1')).toBeInTheDocument();
     expect(getByText('4')).toBeInTheDocument();
   });
 
