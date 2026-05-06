@@ -5,11 +5,11 @@ import {
   WeekAndDay,
   Persona,
 } from './useAutoCalculations/useAutoCalculationsTypes';
+import { resolveReportPersonKeys } from '../utils/model';
 import {
   isDebugEnabled,
   generatePlanWindowsSignature,
   normalizeParams,
-  determineRowBlock,
   determineRoleForCheck,
 } from './useAutoCalculations/useAutoCalculationsUtils';
 import {
@@ -31,6 +31,7 @@ export default function useAutoCalculations({
   findWeekAndDay,
   getBlockWindow,
   getBlockWindowForPerson,
+  getScheduleWindowForReport,
   calcHorasExtraMin,
   buildDateTime,
   findPrevWorkingContext,
@@ -75,7 +76,23 @@ export default function useAutoCalculations({
         getBlockWindowForPerson
           ? getBlockWindowForPerson(person, targetDay, targetBlock)
           : getBlockWindow(targetDay, targetBlock);
-      const { start, end } = personBlockWindow(day, block);
+      let start: string | null = null;
+      let end: string | null = null;
+      if (getScheduleWindowForReport) {
+        const w = getScheduleWindowForReport(person, iso, block);
+        const s = String(w?.start ?? '').trim();
+        const e = String(w?.end ?? '').trim();
+        start = s || null;
+        end = e || null;
+      } else if (getBlockWindowForPerson) {
+        const w = getBlockWindowForPerson(person, day, block, iso);
+        start = w?.start ?? null;
+        end = w?.end ?? null;
+      } else {
+        const w = getBlockWindow(day, block);
+        start = w?.start ?? null;
+        end = w?.end ?? null;
+      }
       if (!start) return { extra: '', ta: '', noct: '' };
 
       // Calcular horas extra
@@ -204,7 +221,7 @@ export default function useAutoCalculations({
       };
 
       for (const p of safePersonas as Persona[]) {
-        const pk = personaKey(p);
+        const { pk, rowBlock } = resolveReportPersonKeys(p);
         const role = personaRole(p);
         const name = personaName(p);
         const roleId = String((p as any)?.roleId || '').trim() || undefined;
@@ -219,9 +236,7 @@ export default function useAutoCalculations({
         }
 
         for (const iso of safeSemana as string[]) {
-          // Determinar el bloque de la fila
-          const explicitBlock = ((p as any)?.__block as 'pre' | 'pick' | 'extra' | undefined) || undefined;
-          const rowBlock = determineRowBlock(pk, explicitBlock);
+          // rowBlock ya alineado con __block / columna (extra:N, pre, …)
           const auto = computeForISOAndBlock(p, iso, rowBlock);
 
           // Verificar si trabaja ese día en este bloque
@@ -235,8 +250,14 @@ export default function useAutoCalculations({
             { roleId }
           );
 
-
-          const off = !workedThisBlock;
+          // Igual que la cabecera de horario: si hay ventana start/end (plan o __schedule__), no bloquear fila por discrepancias del checker.
+          let off = !workedThisBlock;
+          if (getScheduleWindowForReport) {
+            const sw = getScheduleWindowForReport(p, iso, rowBlock);
+            const hasSlots =
+              String(sw?.start ?? '').trim() !== '' && String(sw?.end ?? '').trim() !== '';
+            off = !workedThisBlock && !hasSlots;
+          }
 
           // Procesar Horas extra
           next[pk]['Horas extra'] = next[pk]['Horas extra'] || {};
@@ -342,5 +363,6 @@ export default function useAutoCalculations({
     generatePlanWindowsSignature(safeSemana, findWeekAndDay, getBlockWindow),
     getMaterialPropioConfig,
     getBlockWindowForPerson,
+    getScheduleWindowForReport,
   ]);
 }

@@ -1,7 +1,7 @@
 import { useLocalStorage } from '@shared/hooks/useLocalStorage';
 import { useEffect } from 'react';
 
-import { personaKey } from '../utils/model';
+import { personaKeyForReportStorage } from '../utils/model';
 
 interface Persona {
   [key: string]: any;
@@ -39,7 +39,7 @@ export default function useCollapsedState(
   // Crear estado inicial basado en safePersonas
   const getInitialState = (): CollapsedState => {
     const obj: CollapsedState = {};
-    for (const p of safePersonas) obj[personaKey(p)] = false;
+    for (const p of safePersonas) obj[personaKeyForReportStorage(p)] = false;
     return obj;
   };
 
@@ -58,14 +58,14 @@ export default function useCollapsedState(
         next[nk] = v as boolean;
       }
       for (const p of safePersonas) {
-        const k = personaKey(p);
+        const k = personaKeyForReportStorage(p);
         if (!(k in next)) {
           next[k] = false;
           changed = true;
         }
       }
       for (const k of Object.keys(next)) {
-        const still = safePersonas.some(p => personaKey(p) === k);
+        const still = safePersonas.some(p => personaKeyForReportStorage(p) === k);
         if (!still) {
           delete next[k];
           changed = true;

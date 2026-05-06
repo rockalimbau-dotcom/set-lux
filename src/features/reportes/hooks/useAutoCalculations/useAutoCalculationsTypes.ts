@@ -35,7 +35,17 @@ export interface AutoCalculationsProps {
   safeSemana: readonly string[];
   findWeekAndDay: (iso: string) => WeekAndDay | any;
   getBlockWindow: (day: any, block: string) => BlockWindow;
-  getBlockWindowForPerson?: (person: Persona, day: any, block: string) => BlockWindow;
+  /** iso opcional: evita depender de la identidad del objeto `day` para leer __schedule__ */
+  getBlockWindowForPerson?: (person: Persona, day: any, block: string, iso?: string) => BlockWindow;
+  /**
+   * Misma fuente que la cabecera de horario (plan + __schedule__ + resolución de bloque).
+   * Si está definida, el autocalculador usa esto en lugar de getBlockWindow/getBlockWindowForPerson para HE/noct/TA de entrada.
+   */
+  getScheduleWindowForReport?: (
+    person: Persona,
+    iso: string,
+    rowBlock: string
+  ) => { start: string; end: string };
   calcHorasExtraMin: (workedMin: number, baseHours: number, cortes: number) => number;
   buildDateTime: (iso: string, time: string) => Date | null;
   findPrevWorkingContext: (iso: string) => PrevWorkingContext;

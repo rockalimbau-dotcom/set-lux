@@ -13,7 +13,7 @@ import { BLOCKS, findWeekAndDayFactory, getDayBlockList } from '../../utils/plan
 import { AnyRecord } from '@shared/types/common';
 import { needsDataToPlanData } from '@shared/utils/needsPlanAdapter';
 import { getExtraBlockCount, getExtraBlocks, hasExtraBlockContent } from '../../utils/extra';
-import { personaKey } from '../../utils/model';
+import { personaKeyForReportStorage } from '../../utils/model';
 import { norm } from '../../utils/text';
 
 const getMemberIdentityKey = (member: AnyRecord): string =>
@@ -51,10 +51,10 @@ export function useWeekData(
 
   const safeSemanaKey = useMemo(() => JSON.stringify(safeSemana), [safeSemana]);
 
-  const findWeekAndDay = findWeekAndDayFactory(
-    getPlanAllWeeks,
-    mondayOf,
-    toYYYYMMDD
+  /** Referencia estable salvo cuando cambia el plan (necesario para que offMap / efectos no queden con plan vacío del primer render). */
+  const findWeekAndDay = useMemo(
+    () => findWeekAndDayFactory(getPlanAllWeeks, mondayOf, toYYYYMMDD),
+    [getPlanAllWeeks]
   );
 
   const weekPrelightActive = useMemo(() => {
@@ -172,10 +172,10 @@ export function useWeekData(
       []
     );
     const merged = [...baseSafe];
-    const seen = new Set(merged.map(personaKey));
+    const seen = new Set(merged.map(personaKeyForReportStorage));
     extraGroups.forEach(group => {
       group.people.forEach(person => {
-        const key = personaKey(person);
+        const key = personaKeyForReportStorage(person);
         if (!seen.has(key)) {
           seen.add(key);
           merged.push(person);

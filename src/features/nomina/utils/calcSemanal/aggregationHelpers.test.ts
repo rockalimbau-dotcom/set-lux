@@ -51,7 +51,7 @@ describe('visibleRoleFor', () => {
     const [[storageKey, entry]] = Array.from(keys.entries());
 
     expect(storageKey).toBe('E.extra:0__Ricard Durany');
-    expect(entry.rowKey).toBe('E.extra__Ricard Durany');
+    expect(entry.rowKey).toBe('E.extra:0__Ricard Durany');
     expect(entry.displayBlock).toBe('extra');
     expect(entry.matchRole).toBe('E');
   });

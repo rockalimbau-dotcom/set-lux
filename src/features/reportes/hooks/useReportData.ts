@@ -1,7 +1,7 @@
 import { useLocalStorage } from '@shared/hooks/useLocalStorage';
 import { useEffect } from 'react';
 
-import { personaKey, personaRole, personaName } from '../utils/model';
+import { personaKeyForReportStorage, personaRole, personaName } from '../utils/model';
 import { parseDietas, formatDietas } from '../utils/text';
 
 interface Persona {
@@ -122,7 +122,7 @@ export default function useReportData(
   const getInitialData = (): ReportData => {
     const base: ReportData = {};
     for (const p of safePersonas) {
-      const key = personaKey(p);
+      const key = personaKeyForReportStorage(p);
       base[key] = {};
       for (const c of CONCEPTS) {
         base[key][c] = {};
@@ -148,11 +148,11 @@ export default function useReportData(
       const current = prev || {};
       const next = { ...current };
       const allowedKeys = new Set(
-        (safePersonas || []).map(p => personaKey(p))
+        (safePersonas || []).map(p => personaKeyForReportStorage(p))
       );
       let changed = false;
       for (const p of safePersonas) {
-        const key = personaKey(p);
+        const key = personaKeyForReportStorage(p);
         if (!next[key]) {
           next[key] = {};
           changed = true;
@@ -216,7 +216,7 @@ export default function useReportData(
 
       const who: { [key: string]: { role: string; name: string; roleId?: string } } = {};
       for (const p of safePersonas) {
-        const k = personaKey(p);
+        const k = personaKeyForReportStorage(p);
         who[k] = {
           role: personaRole(p),
           name: personaName(p),
@@ -240,7 +240,7 @@ export default function useReportData(
 
       if (!isClearingDietas) {
         for (const p of safePersonas) {
-          const k = personaKey(p);
+          const k = personaKeyForReportStorage(p);
           if (k === pKey) continue;
           const r = who[k]?.role || '';
           const n = who[k]?.name || '';

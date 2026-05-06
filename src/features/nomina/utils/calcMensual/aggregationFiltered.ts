@@ -221,18 +221,13 @@ export function aggregateFilteredConcepts(
         const dayIdx = isoDays.indexOf(iso);
         const day = dayIdx >= 0 ? w?.days?.[dayIdx] : null;
         if (!isScheduledForRowOnDay(day, info, pk)) continue;
-        const nameRoleToken = `${normText(info?.name)}__${normText(stripPR(String(info?.matchRole || info?.roleVisible || '')))}`;
-        const personIdToken = String(info?.personId || '').trim();
-        const personDayTokens = [
-          `${nameRoleToken}::${iso}`,
-          ...(personIdToken ? [`pid:${personIdToken}::${iso}`] : []),
-        ];
-        if (personDayTokens.some(token => processedByPersonAndDay.has(token))) continue;
+        const rowDayToken = `${pk}::${iso}`;
+        if (processedByPersonAndDay.has(rowDayToken)) continue;
 
         const keysToUse = getKeysToUse(pk, info.roleVisible);
         const { materialPropioUsed } = processDayFiltered(slot, data, keysToUse, pk, iso);
         if (materialPropioUsed) usedMaterialPropioWeek = true;
-        personDayTokens.forEach(token => processedByPersonAndDay.add(token));
+        processedByPersonAndDay.add(rowDayToken);
       }
       if (usedMaterialPropioWeek) slot.materialPropioWeeks += 1;
     }

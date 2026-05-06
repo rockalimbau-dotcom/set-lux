@@ -1,3 +1,4 @@
+import { normalizeExtraBlocks } from '@shared/utils/extraBlocks';
 import { WeekAndDay, BlockWindow, AutoCalculationsParams } from './useAutoCalculationsTypes';
 
 /**
@@ -29,6 +30,12 @@ export function generatePlanWindowsSignature(
     const p = getBlockWindow(ctx?.day, 'pre') || { start: null, end: null };
     const k = getBlockWindow(ctx?.day, 'pick') || { start: null, end: null };
     const e = getBlockWindow(ctx?.day, 'extra') || { start: null, end: null };
+    const extraDyn = normalizeExtraBlocks(ctx?.day || {}).map((blk, idx) => ({
+      i: idx,
+      s: String(blk?.start || '').trim(),
+      e: String(blk?.end || '').trim(),
+      t: String(blk?.tipo || '').trim(),
+    }));
     return {
       iso,
       bS: b.start || '',
@@ -39,6 +46,7 @@ export function generatePlanWindowsSignature(
       kE: k.end || '',
       eS: e.start || '',
       eE: e.end || '',
+      extraDyn,
     };
   }));
 }
@@ -84,22 +92,6 @@ export function findPrevISOForBlock(
     }
   } catch {}
   return null;
-}
-
-/**
- * Determina el bloque de una fila basado en la clave de persona
- */
-export function determineRowBlock(
-  pk: string,
-  explicitBlock?: 'pre' | 'pick' | 'extra' | string
-): 'base' | 'pre' | 'pick' | 'extra' | string {
-  if (explicitBlock) return explicitBlock;
-  if (/\.pre__/.test(pk) || /REF\.pre__/.test(pk)) return 'pre';
-  if (/\.pick__/.test(pk) || /REF\.pick__/.test(pk)) return 'pick';
-  const dynamicExtraMatch = pk.match(/\.(extra(?::\d+)?)__/);
-  if (dynamicExtraMatch?.[1]) return dynamicExtraMatch[1];
-  if (/\.extra__/.test(pk) || /REF\.extra__/.test(pk)) return 'extra';
-  return 'base';
 }
 
 /**

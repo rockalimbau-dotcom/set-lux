@@ -9,7 +9,7 @@ import { filterWeekDaysForExport, translateWeekLabel } from './weekProcessingHel
 import { prepareWeekData } from './weekDataHelpers';
 import { initializeExportHelpers } from './exportInitializationHelpers';
 import { storage } from '@shared/services/localStorage.service';
-import { personaKey, normalizePersonaKey } from '../model';
+import { personaKeyForReportStorage, normalizePersonaKey } from '../model';
 import { norm } from '../text';
 import html2canvas from 'html2canvas';
 import { shareOrSavePDF } from '@shared/utils/pdfShare';
@@ -136,7 +136,7 @@ export async function exportReportRangeToPDF(params: ExportReportRangeParams) {
       const providedPersonas = Array.from(allPersonasMap.values());
       const genderMap: Record<string, string> = {};
       providedPersonas.forEach(p => {
-        const key = normalizePersonaKey(personaKey(p));
+        const key = normalizePersonaKey(personaKeyForReportStorage(p));
         const gender = (p as any)?.gender;
         if (key && gender) {
           genderMap[key] = gender;
@@ -405,7 +405,7 @@ export async function exportReportRangeToPDF(params: ExportReportRangeParams) {
       // pero mantener la estructura completa para todas las personas
       const filteredWeekData: any = {};
       safePersonas.forEach(p => {
-        const key = personaKey(p);
+        const key = personaKeyForReportStorage(p);
         const normalizedKey = normalizePersonaKey(key);
         
         // Try to find data with normalized key first, then try original key

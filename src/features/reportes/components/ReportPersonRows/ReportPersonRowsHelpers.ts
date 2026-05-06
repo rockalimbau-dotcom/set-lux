@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { personaKey as buildPersonaKey } from '../../utils/model';
+import { personaKeyForReportStorage } from '../../utils/model';
 import { extractNumericValue, formatHorasExtraDecimal } from '../../utils/runtime';
 import { AnyRecord } from '@shared/types/common';
 
@@ -62,7 +62,7 @@ export const personaKeyFrom = (
     if (block === 'pick') pLike.__block = 'pick';
     if (String(block).startsWith('extra')) pLike.__block = block;
   }
-  return buildPersonaKey(pLike);
+  return personaKeyForReportStorage(pLike);
 };
 
 /**

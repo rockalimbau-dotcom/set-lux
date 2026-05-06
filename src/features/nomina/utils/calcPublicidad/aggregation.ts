@@ -116,13 +116,15 @@ export function aggregateReports(project: any, weeks: any[], filterISO: ((iso: s
       const sk = storageKeyFor(r, n, blockType === 'extra' ? block : blockType, roleId);
       const displayBlock = blockType === 'pre' ? 'pre' : blockType === 'pick' ? 'pick' : blockType === 'extra' ? 'extra' : 'base';
       const rowIdentity = String(roleId || vk || '').trim();
+      const extraSegment =
+        typeof block === 'string' && block.startsWith('extra:') ? block : 'extra';
       const rowKey =
         displayBlock === 'pre'
           ? `${rowIdentity}.pre__${n}`
           : displayBlock === 'pick'
           ? `${rowIdentity}.pick__${n}`
           : displayBlock === 'extra'
-          ? `${rowIdentity}.extra__${n}`
+          ? `${rowIdentity}.${extraSegment}__${n}`
           : `${rowIdentity}__${n}`;
       const matchRole =
         displayBlock === 'pre' ? `${stripPR(r)}P` : displayBlock === 'pick' ? `${stripPR(r)}R` : stripPR(r);

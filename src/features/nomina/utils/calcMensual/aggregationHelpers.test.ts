@@ -43,7 +43,7 @@ describe('payroll mensual visibleRoleFor', () => {
     const [[storageKey, entry]] = Array.from(keys.entries());
 
     expect(storageKey).toBe('E.extra:0__Oriol Monguilod');
-    expect(entry.rowKey).toBe('E.extra__Oriol Monguilod');
+    expect(entry.rowKey).toBe('E.extra:0__Oriol Monguilod');
     expect(entry.displayBlock).toBe('extra');
     expect(entry.matchRole).toBe('E');
   });

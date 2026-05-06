@@ -143,6 +143,46 @@ export function personaKey(p: any): string {
   return `${role}__${name}`;
 }
 
+/**
+ * Bloque de fila para reportes (pre/pick/extra legacy / extra:N / base).
+ */
+export function determineRowBlock(
+  pk: string,
+  explicitBlock?: 'pre' | 'pick' | 'extra' | string
+): 'base' | 'pre' | 'pick' | 'extra' | string {
+  if (explicitBlock) return explicitBlock;
+  if (/\.pre__/.test(pk) || /REF\.pre__/.test(pk)) return 'pre';
+  if (/\.pick__/.test(pk) || /REF\.pick__/.test(pk)) return 'pick';
+  const dynamicExtraMatch = pk.match(/\.(extra(?::\d+)?)__/);
+  if (dynamicExtraMatch?.[1]) return dynamicExtraMatch[1];
+  if (/\.extra__/.test(pk) || /REF\.extra__/.test(pk)) return 'extra';
+  return 'base';
+}
+
+/**
+ * pk + bloque coherentes con la fila visible (crítico para roleId + bloques extra:N del calendario).
+ */
+export function resolveReportPersonKeys(person: any): { pk: string; rowBlock: string } {
+  const explicit = String(person?.__block || person?.block || '').trim();
+  const provisionalPk = personaKey(person);
+  const rowBlock = determineRowBlock(provisionalPk, explicit || undefined);
+  const pk =
+    rowBlock === 'base'
+      ? personaKey({ ...(person || {}), __block: '', block: '' })
+      : personaKey({ ...(person || {}), __block: rowBlock, block: rowBlock });
+  return { pk, rowBlock };
+}
+
+/** Clave persistida alineada con la columna (permite blockHint si __block faltara en el objeto). */
+export function personaKeyForReportStorage(person: any, blockHint?: string): string {
+  const hint = String(blockHint || '').trim();
+  if (!hint) return resolveReportPersonKeys(person).pk;
+  const provisionalPk = personaKey(person);
+  const rowBlock = determineRowBlock(provisionalPk, hint);
+  if (rowBlock === 'base') return personaKey({ ...(person || {}), __block: '', block: '' });
+  return personaKey({ ...(person || {}), __block: rowBlock, block: rowBlock });
+}
+
 export function seedWeekData(personas: any[] = [], semana: string[] = []): {
   [personaKey: string]: {
     [concepto: string]: {
@@ -167,7 +207,7 @@ export function seedWeekData(personas: any[] = [], semana: string[] = []): {
     };
   } = {};
   for (const p of personas) {
-    const key = personaKey(p);
+    const key = personaKeyForReportStorage(p);
     base[key] = {};
     for (const c of CONCEPTS) {
       base[key][c] = {};

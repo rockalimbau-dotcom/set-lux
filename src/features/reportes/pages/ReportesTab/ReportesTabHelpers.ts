@@ -5,7 +5,7 @@ import {
   stripRefuerzoSuffix,
   stripRoleSuffix,
 } from '@shared/constants/roles';
-import { personaKey } from '../../utils/model';
+import { personaKeyForReportStorage } from '../../utils/model';
 
 /**
  * Convert a planning week to array of 7 ISO days
@@ -56,7 +56,7 @@ export function weekToPersonas(week: AnyRecord): AnyRecord[] {
           source: (m as AnyRecord)?.source,
           __block: block || undefined,
         };
-        const id = personaKey(persona);
+        const id = personaKeyForReportStorage(persona);
         if (!seen.has(id) && (role || name)) {
           seen.add(id);
           out.push({ ...persona, id });

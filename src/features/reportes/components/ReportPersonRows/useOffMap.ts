@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { AnyRecord } from '@shared/types/common';
+import { determineRoleForCheck } from '../../hooks/useAutoCalculations/useAutoCalculationsUtils';
 
 interface UseOffMapProps {
   list: AnyRecord[];
@@ -44,9 +45,13 @@ export function useOffMap({
               : isRef
               ? 'base'
               : undefined;
+          const roleForCheck =
+            String(block).startsWith('extra') || block === 'extra'
+              ? determineRoleForCheck(visualRole, block)
+              : visualRole;
           const workedThisBlock = isPersonScheduledOnBlock(
             fecha,
-            visualRole,
+            roleForCheck,
             name,
             findWeekAndDay,
             blockForCheck,
@@ -62,7 +67,6 @@ export function useOffMap({
       });
     });
     return map;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     // Serializar y ordenar list para comparación estable
     JSON.stringify(
@@ -74,10 +78,9 @@ export function useOffMap({
           return aKey.localeCompare(bKey);
         })
     ),
-    // Serializar semana para comparación estable
     JSON.stringify(semana),
-    // block es primitivo, comparación directa
     block,
-    // NO incluir: data, horasExtraTipo, findWeekAndDay, isPersonScheduledOnBlock
+    findWeekAndDay,
+    isPersonScheduledOnBlock,
   ]);
 }

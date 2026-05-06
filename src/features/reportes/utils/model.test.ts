@@ -5,6 +5,8 @@ import {
   personaRole,
   personaName,
   personaKey,
+  personaKeyForReportStorage,
+  resolveReportPersonKeys,
   seedWeekData,
 } from './model.ts';
 
@@ -140,6 +142,19 @@ describe('reportes/utils/model', () => {
       expect(personaKey({ role: 'E', roleId: 'electric_night', name: 'John', __block: 'pre' })).toBe(
         'electric_night.pre__John'
       );
+    });
+  });
+
+  describe('resolveReportPersonKeys / personaKeyForReportStorage', () => {
+    it('uses roleId.extra:N when __block marks dynamic extra from calendar', () => {
+      const p = { roleId: 'electric_default', role: 'E', name: 'Laura', __block: 'extra:0' };
+      expect(resolveReportPersonKeys(p).pk).toBe('electric_default.extra:0__Laura');
+      expect(resolveReportPersonKeys(p).rowBlock).toBe('extra:0');
+    });
+
+    it('personaKeyForReportStorage merges block hint when reading schedule by column', () => {
+      const person = { roleId: 'electric_default', role: 'E', name: 'Laura' };
+      expect(personaKeyForReportStorage(person, 'extra:0')).toBe('electric_default.extra:0__Laura');
     });
   });
 

@@ -44,13 +44,18 @@ function detectBlock(roleCode: string, source?: string, block?: string): 'base' 
 function buildRowKey(
   roleVisible: string,
   name: string,
-  block: 'base' | 'pre' | 'pick' | 'extra',
-  roleId?: string
+  displayBlock: 'base' | 'pre' | 'pick' | 'extra',
+  roleId?: string,
+  block?: string
 ): string {
   const rowIdentity = String(roleId || roleVisible || '').trim();
-  if (block === 'pre') return `${rowIdentity}.pre__${name || ''}`;
-  if (block === 'pick') return `${rowIdentity}.pick__${name || ''}`;
-  if (block === 'extra') return `${rowIdentity}.extra__${name || ''}`;
+  if (displayBlock === 'pre') return `${rowIdentity}.pre__${name || ''}`;
+  if (displayBlock === 'pick') return `${rowIdentity}.pick__${name || ''}`;
+  if (displayBlock === 'extra') {
+    const segment =
+      typeof block === 'string' && block.startsWith('extra:') ? block : 'extra';
+    return `${rowIdentity}.${segment}__${name || ''}`;
+  }
   return `${rowIdentity}__${name || ''}`;
 }
 
@@ -99,7 +104,7 @@ export function buildUniqueStorageKeys(
     const roleLabel = (p as any)?.roleLabel;
     const block = (p as any)?.block;
     const displayBlock = detectBlock(r, source, block);
-    const rowKey = buildRowKey(roleVisible, n, displayBlock, roleId);
+    const rowKey = buildRowKey(roleVisible, n, displayBlock, roleId, block);
     const matchRole =
       displayBlock === 'pre'
         ? `${stripPR(r)}P`
@@ -183,12 +188,8 @@ export function getKeysToUse(
   if (/\.extra(?::\d+)?__/.test(storageKey)) {
     const [rolePart, name = ''] = String(storageKey || '').split('__');
     const baseRolePart = String(rolePart || '').replace(/\.extra(?::\d+)?$/i, '');
-    return Array.from(
-      new Set([
-        storageKey,
-        `${baseRolePart}__${name}`,
-      ])
-    );
+    const core = [storageKey, `${baseRolePart}__${name}`];
+    return Array.from(new Set([...core, ...storageKeyVariants(storageKey)]));
   }
 
   const [rolePart, name = ''] = String(storageKey || '').split('__');

@@ -12,12 +12,7 @@ import { parseDietas, formatDietas } from '../utils/text';
 import { AnyRecord } from '@shared/types/common';
 import { storage } from '@shared/services/localStorage.service';
 import { btnExport } from '@shared/utils/tailwindClasses';
-import {
-  isPersonScheduledOnBlock,
-  blockKeyForPerson,
-  BLOCKS,
-  getDayBlockList,
-} from '../utils/plan';
+import { isPersonScheduledOnBlock, BLOCKS, getDayBlockList } from '../utils/plan';
 import {
   readCondParams,
   getBlockWindow,
@@ -25,7 +20,13 @@ import {
   calcHorasExtraMin,
   findPrevWorkingContextFactory,
 } from '../utils/runtime';
-import { personaKey, personaRole, personaName, stripPR } from '../utils/model';
+import {
+  personaKey,
+  personaKeyForReportStorage,
+  personaRole,
+  personaName,
+  stripPR,
+} from '../utils/model';
 import { addDays, mondayOf, toYYYYMMDD } from '@shared/utils/date';
 import { loadCondModel } from '@features/nomina/utils/cond';
 import { ROLE_CODE_TO_LABEL, stripRoleSuffix, stripRefuerzoSuffix } from '@shared/constants/roles';
@@ -399,6 +400,15 @@ export default function ReportesSemana({
     [data, findWeekAndDay]
   );
 
+  /** Misma lógica que la cabecera de horarios → mismo input que el autocalculador (equipo base / extras). */
+  const getScheduleWindowForReport = useCallback(
+    (person: AnyRecord, iso: string, rowBlock: string) => {
+      const pk = personaKeyForReportStorage(person, rowBlock);
+      return scheduleWindowForBlock(rowBlock as any, iso, pk);
+    },
+    [scheduleWindowForBlock]
+  );
+
   const resolveBlockForPersonISO = useCallback(
     (blockKey: 'base' | 'pre' | 'pick' | string, iso: string, personKey: string) =>
       scheduleWindowForBlock(blockKey, iso, personKey).blockKey || String(blockKey),
@@ -453,12 +463,13 @@ export default function ReportesSemana({
   }, [getPlanAllWeeks]);
 
   const reportGetBlockWindow = useCallback(
-    (person: AnyRecord, day: AnyRecord, block: string) => {
+    (person: AnyRecord, day: AnyRecord, block: string, isoHint?: string) => {
       const fallback = getBlockWindow(day, block as any);
       if (!day || typeof day !== 'object') return fallback;
-      const iso = reportDayIsoMap.get(day as object);
+      const iso =
+        String(isoHint || '').trim() || reportDayIsoMap.get(day as object);
       if (!iso) return fallback;
-      const personKey = personaKey(person);
+      const personKey = personaKeyForReportStorage(person, block);
 
       const saved =
         data?.__schedule__?.[personKey]?.[String(block)]?.[iso]
@@ -500,7 +511,7 @@ export default function ReportesSemana({
   const exportGenderMap = useMemo(() => {
     const map: Record<string, string> = {};
     (safePersonas || []).forEach(p => {
-      const key = personaKey(p);
+      const key = personaKeyForReportStorage(p);
       const gender = (p as AnyRecord)?.gender;
       if (key && gender) {
         map[key] = gender;
@@ -519,12 +530,12 @@ export default function ReportesSemana({
 
   const groupedPersonKeys = useMemo(
     () => ({
-      base: renderedPeopleGroups.base.map(personaKey),
-      pre: renderedPeopleGroups.pre.map(personaKey),
-      pick: renderedPeopleGroups.pick.map(personaKey),
+      base: renderedPeopleGroups.base.map(personaKeyForReportStorage),
+      pre: renderedPeopleGroups.pre.map(personaKeyForReportStorage),
+      pick: renderedPeopleGroups.pick.map(personaKeyForReportStorage),
       extraGroups: renderedPeopleGroups.extra.map(group => ({
         blockKey: group.blockKey,
-        people: group.people.map(personaKey),
+        people: group.people.map(personaKeyForReportStorage),
       })),
     }),
     [renderedPeopleGroups]
@@ -689,6 +700,7 @@ export default function ReportesSemana({
     findWeekAndDay: findWeekAndDay as any,
     getBlockWindow: getBlockWindow as any,
     getBlockWindowForPerson: reportGetBlockWindow as any,
+    getScheduleWindowForReport,
     calcHorasExtraMin,
     buildDateTime: buildDateTime as any,
     findPrevWorkingContext,
@@ -697,7 +709,6 @@ export default function ReportesSemana({
     personaKey,
     personaRole,
     personaName,
-    blockKeyForPerson,
     isPersonScheduledOnBlock: isPersonScheduledOnBlockFn,
     setData,
     horasExtraTipo,

@@ -1,5 +1,5 @@
 import { storage } from '@shared/services/localStorage.service';
-import { personaKey } from '../model';
+import { personaKeyForReportStorage } from '../model';
 import { CONCEPTS } from '../../constants';
 
 interface PrepareWeekDataParams {
@@ -28,7 +28,7 @@ export function prepareWeekData({
 
   // Ensure all personas have data structure
   safePersonas.forEach(p => {
-    const key = personaKey(p);
+    const key = personaKeyForReportStorage(p);
     if (!weekData[key]) {
       weekData[key] = {};
     }

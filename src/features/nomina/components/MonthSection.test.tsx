@@ -285,6 +285,7 @@ describe('MonthSection with holiday days and conditional columns', () => {
     expect(getAllByText('Pol Peitx')).toHaveLength(1);
     expect(getByText('Eléctrico/a: 350€')).toBeInTheDocument();
     expect(getByText('Eléctrico factura: 300€')).toBeInTheDocument();
-    expect(getByText('650€')).toBeInTheDocument();
+    // Modo semanal: "Total días" puede igualar TOTAL BRUTO si solo aplica jornada → varios nodos con el mismo importe.
+    expect(getAllByText('650€').length).toBeGreaterThanOrEqual(1);
   });
 });
