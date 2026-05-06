@@ -60,25 +60,27 @@ export const PDF_STYLES = `
       border: 1px solid #e2e8f0;
     }
 
-    .info-grid {
+    .info-panel-columns {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 6px 18px;
+      gap: 10px 36px;
+      align-items: start;
     }
 
-    .info-grid-secondary {
-      margin-top: 18px;
+    .info-panel-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      min-width: 0;
     }
 
-    .info-column {
-      display: grid;
-      gap: 4px;
-    }
-
-    .info-column-right {
+    .info-panel-stack--right {
       text-align: right;
-      align-items: flex-end;
-      justify-self: end;
+    }
+
+    .info-panel-stack--right .info-row {
+      justify-content: flex-end;
+      text-align: right;
     }
 
     .month-title {
