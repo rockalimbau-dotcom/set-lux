@@ -147,7 +147,7 @@ export const generateRowDataCells = (
   const roleDisplay = applyGenderToBadge(getRoleBadgeCode(String(roleForDisplay), i18n.language), (r as any).gender);
   const dataCells = [
     `<td class="text-left person-cell" style="font-weight:600;vertical-align:middle !important;"><div class="person-label"><span class="person-role">${esc(roleDisplay || '—')}</span><span class="person-name">${esc(r.name || '—')}</span></div></td>`,
-    `<td style="text-align:center !important;vertical-align:middle !important;"><div class="td-label td-label-center">${generateWorkedDaysText(r, { includeCargaDescarga: projectMode !== 'diario' }) || esc(displayValue(r._worked))}</div></td>`,
+    `<td style="text-align:center !important;vertical-align:middle !important;"><div class="td-label td-label-center">${generateWorkedDaysText(r, { includeCargaDescarga: projectMode !== 'diario', projectMode }) || esc(displayValue(r._worked))}</div></td>`,
     `<td style="text-align:center !important;vertical-align:middle !important;"><div class="td-label td-label-center">${esc(displayMoney(r._totalDias, 2))}</div></td>`,
   ];
 

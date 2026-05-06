@@ -63,12 +63,20 @@ const renderCompactSummary = (value: string | number, parts: string[]): string =
  */
 export const generateWorkedDaysText = (
   r: any,
-  options: { includeCargaDescarga?: boolean } = {}
+  options: {
+    includeCargaDescarga?: boolean;
+    /** En diario la localización técnica va en columnas propias; en semanal/mensual va en la píldora de jornadas (como en pantalla). */
+    projectMode?: 'semanal' | 'mensual' | 'diario';
+  } = {}
 ): string => {
-  const { includeCargaDescarga = true } = options;
+  const { includeCargaDescarga = true, projectMode = 'semanal' } = options;
   const parts: string[] = [];
-  
-  // Localizar no se repite aquí porque ya tiene su propia columna.
+
+  if (projectMode !== 'diario' && (r._localizar || 0) > 0) {
+    parts.push(`${i18n.t('payroll.dayTypes.location')} x${r._localizar}`);
+  }
+
+  // En modo diario la localización no se repite aquí: ya tiene columnas dedicadas (_localizarDays).
   if ((r._oficina || 0) > 0) {
     parts.push(`${i18n.t('payroll.dayTypes.office')} x${r._oficina}`);
   }

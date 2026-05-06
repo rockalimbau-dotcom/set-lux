@@ -23,6 +23,42 @@ describe('generateRowDataCells', () => {
     extraHoursPercent: false,
   };
 
+  it('includes tech recce/localización in worked shifts pill for semanal when column uses diario-only fields', () => {
+    const row = {
+      role: 'E',
+      name: 'Gaffer',
+      _worked: 5,
+      _localizar: 2,
+      _localizarDays: 0,
+      _rodaje: 3,
+      _totalDias: 1200,
+    };
+
+    const html = generateRowDataCells(row, { ...baseColumnVisibility, cargaDescarga: false }, { projectMode: 'semanal' }).join('');
+    const workedCell = getCellContents(html)[0] || '';
+
+    expect(workedCell).toContain(`${i18n.t('payroll.dayTypes.location')} x2`);
+    expect(workedCell).toContain(`${i18n.t('payroll.dayTypes.shooting')} x3`);
+  });
+
+  it('does not duplicate tech recce line in worked shifts pill for diario (dedicated columns)', () => {
+    const row = {
+      role: 'E',
+      name: 'Gaffer',
+      _worked: 3,
+      _localizar: 2,
+      _localizarDays: 2,
+      _rodaje: 1,
+      _totalDias: 600,
+    };
+
+    const html = generateRowDataCells(row, baseColumnVisibility, { projectMode: 'diario' }).join('');
+    const workedCell = getCellContents(html)[0] || '';
+
+    expect(workedCell).not.toContain(`${i18n.t('payroll.dayTypes.location')} x`);
+    expect(workedCell).toContain(`${i18n.t('payroll.dayTypes.shooting')} x1`);
+  });
+
   it('keeps carga/descarga out of worked shifts in diario exports', () => {
     const row = {
       role: 'E',
