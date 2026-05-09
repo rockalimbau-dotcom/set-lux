@@ -4,6 +4,8 @@ import { AnyRecord } from '@shared/types/common';
 import { translateConcept, translateDietItem, personaKeyFrom, calculateTotal } from './ReportPersonRowsHelpers';
 import DietasCell from './DietasCell';
 import SiNoCell from './SiNoCell';
+import { extractNumericValue } from '../../utils/runtime';
+import { isMinutageExtraHoursMode } from '../../utils/extraHoursType';
 
 interface ConceptRowProps {
   person: AnyRecord;
@@ -89,7 +91,15 @@ export function ConceptRow({
         const off = offMap.get(key) ?? false;
         const isRest = restDays.has(fecha);
         const isRestBlocked = isRest && concepto !== 'Dietas';
-        const hasValue = String(val ?? '').trim() !== '';
+        const normalizedVal = String(val ?? '').trim().toLowerCase();
+        const isSiNoConcept =
+          concepto === 'Transporte' ||
+          concepto === 'Nocturnidad' ||
+          concepto === 'Penalty lunch' ||
+          concepto === 'Material propio';
+        const hasValue = isSiNoConcept
+          ? (normalizedVal === 'sí' || normalizedVal === 'si')
+          : String(val ?? '').trim() !== '';
         const activeBlock = resolveBlockForISO?.(block, fecha, pKey) || block;
         const dayStyle = getDayStyle?.(fecha, activeBlock);
         const cellClasses = [
@@ -187,15 +197,19 @@ export function ConceptRow({
           );
         }
 
-        // Para "Horas extra" con formato decimal, usar type="text" para permitir valores formateados
-        const isHorasExtraFormatted = concepto === 'Horas extra' && 
-          (horasExtraTipo === 'Hora Extra - Minutaje desde corte' || 
-           horasExtraTipo === 'Hora Extra - Minutaje + Cortesía');
+        const isHorasExtraFormatted =
+          concepto === 'Horas extra' && isMinutageExtraHoursMode(horasExtraTipo);
+
+        const normalizedInputValue =
+          concepto === 'Horas extra' && !isHorasExtraFormatted && String(val ?? '').includes('(')
+            ? String(extractNumericValue(String(val ?? '')) || '')
+            : val;
         
         const numericProps =
           isHorasExtraFormatted
             ? {
                 type: 'text' as const,
+                inputMode: 'decimal' as const,
                 placeholder: '',
               }
             : concepto === 'Kilometraje'
@@ -217,7 +231,7 @@ export function ConceptRow({
             <input
               {...numericProps}
               className={`w-full px-1 py-0.5 sm:px-1.5 sm:py-1 md:px-2 md:py-1 rounded sm:rounded-md md:rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-[9px] sm:text-[10px] md:text-xs lg:text-sm text-left ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
-              value={val}
+              value={normalizedInputValue}
               onChange={e =>
                 !readOnly && setCell(pKey, concepto, fecha, (e.target as HTMLInputElement).value)
               }

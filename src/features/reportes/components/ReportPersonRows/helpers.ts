@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { isMinutageExtraHoursMode } from '../../utils/extraHoursType';
 
 /**
  * Translate concept names
@@ -89,9 +90,8 @@ export const calculateTotal = (
 
   // Para conceptos numéricos, sumar todos los valores
   // Si es "Horas extra" y el tipo es de minutaje, extraer el valor decimal del formato
-  const isHorasExtraFormatted = concepto === 'Horas extra' && 
-    (horasExtraTipo === 'Hora Extra - Minutaje desde corte' || 
-     horasExtraTipo === 'Hora Extra - Minutaje + Cortesía');
+  const isHorasExtraFormatted =
+    concepto === 'Horas extra' && isMinutageExtraHoursMode(horasExtraTipo);
   
   let total = 0;
   semana.forEach(fecha => {

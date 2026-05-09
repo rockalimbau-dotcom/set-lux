@@ -12,14 +12,21 @@ const DEBOUNCE_SAFETY_MS = 1200;
  * - Entras en la ruta de nómina (SPA): primera lectura puede ser anterior al debounce de useLocalStorage en Reportes
  * - Ticks retardados tras el máximo debounce (500 ms) para no leer JSON aún no guardado
  */
-export function usePayrollReportRevision(reportsKeyPrefix: string): number {
+export function usePayrollReportRevision(
+  reportsKeyPrefix: string,
+  extraWatchedPrefixes: string[] = []
+): number {
   const [reportsVersion, setReportsVersion] = useState(0);
   const location = useLocation();
 
   useEffect(() => {
     const bumpIfReportsKey = (key?: string | null) => {
       if (!key || typeof key !== 'string') return;
-      if (!key.startsWith(reportsKeyPrefix)) return;
+      const matchesReportPrefix = key.startsWith(reportsKeyPrefix);
+      const matchesExtraPrefix = extraWatchedPrefixes.some(prefix =>
+        prefix ? key.startsWith(prefix) : false
+      );
+      if (!matchesReportPrefix && !matchesExtraPrefix) return;
       setReportsVersion(v => v + 1);
     };
 
@@ -35,7 +42,7 @@ export function usePayrollReportRevision(reportsKeyPrefix: string): number {
       window.removeEventListener('storage', onStorage);
       window.removeEventListener(STORAGE_CHANGE_EVENT, onLocalStorageChange as EventListener);
     };
-  }, [reportsKeyPrefix]);
+  }, [reportsKeyPrefix, extraWatchedPrefixes]);
 
   useLayoutEffect(() => {
     if (!location.pathname.includes('/nomina')) return;

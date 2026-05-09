@@ -1,6 +1,7 @@
 import { parseNum, parseHHMM, diffMinutes, ceilHours } from './numbers';
 import { storage } from '@shared/services/localStorage.service';
 import { getExtraBlockWindowByIndex, getExtraWindow } from './extra';
+import { resolveExtraHoursMode } from './extraHoursType';
 
 interface Project {
   id?: string;
@@ -218,8 +219,10 @@ export function convertHorasExtraToNewFormat(
   const numValue = extractNumericValue(strValue);
   if (numValue <= 0 || isNaN(numValue)) return '';
   
+  const extraHoursMode = resolveExtraHoursMode(newTipo);
+
   // Si el nuevo tipo es "Normal", devolver como número entero si es posible, sino decimal
-  if (newTipo === 'Hora Extra - Normal') {
+  if (extraHoursMode === 'normal') {
     // Si es un número entero, devolver sin decimales
     if (numValue % 1 === 0) {
       return String(Math.round(numValue));
@@ -232,8 +235,7 @@ export function convertHorasExtraToNewFormat(
   // Para los otros tipos (Minutaje desde corte, Minutaje + Cortesía), convertir a formato decimal con paréntesis
   // Si ya está en formato con paréntesis y el número coincide con el tipo correcto, mantenerlo
   // Pero solo si el tipo actual también requiere formato con paréntesis
-  const needsParenthesesFormat = newTipo === 'Hora Extra - Minutaje desde corte' || 
-                                  newTipo === 'Hora Extra - Minutaje + Cortesía';
+  const needsParenthesesFormat = extraHoursMode !== 'normal';
   
   if (needsParenthesesFormat && typeof currentValue === 'string' && currentValue.includes('(')) {
     const existingNum = extractNumericValue(currentValue);

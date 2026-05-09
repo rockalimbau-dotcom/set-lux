@@ -4,6 +4,7 @@ import {
   calcHorasExtraMinutajeConCortesia,
   formatHorasExtraDecimal,
 } from '../../utils/runtime';
+import { resolveExtraHoursMode } from '../../utils/extraHoursType';
 
 interface HorasExtraParams {
   start: string | null;
@@ -42,11 +43,13 @@ export function calculateHorasExtra({
     workedMin = Number(diffMinutes(start!, end) || 0);
   }
 
+  const extraHoursMode = resolveExtraHoursMode(horasExtraTipo);
+
   // Calcular horas extra según el tipo seleccionado
-  if (horasExtraTipo === 'Hora Extra - Minutaje desde corte') {
+  if (extraHoursMode === 'minutage_from_cut') {
     const extraDecimal = calcHorasExtraMinutajeDesdeCorte(workedMin, baseHours);
     return extraDecimal > 0 ? formatHorasExtraDecimal(extraDecimal) : '';
-  } else if (horasExtraTipo === 'Hora Extra - Minutaje + Cortesía') {
+  } else if (extraHoursMode === 'minutage_courtesy') {
     const extraDecimal = calcHorasExtraMinutajeConCortesia(workedMin, baseHours, cortes);
     return extraDecimal > 0 ? formatHorasExtraDecimal(extraDecimal) : '';
   } else {

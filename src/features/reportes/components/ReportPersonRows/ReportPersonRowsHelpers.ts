@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { personaKeyForReportStorage } from '../../utils/model';
 import { extractNumericValue, formatHorasExtraDecimal } from '../../utils/runtime';
+import { isMinutageExtraHoursMode } from '../../utils/extraHoursType';
 import { AnyRecord } from '@shared/types/common';
 
 /**
@@ -129,17 +130,17 @@ export const calculateTotal = (
 
   // Para conceptos numéricos, sumar todos los valores
   // Si es "Horas extra" y el tipo es de minutaje, extraer el valor decimal del formato
-  const isHorasExtraFormatted = concepto === 'Horas extra' && 
-    (horasExtraTipo === 'Hora Extra - Minutaje desde corte' || 
-     horasExtraTipo === 'Hora Extra - Minutaje + Cortesía');
+  const isHorasExtraFormatted =
+    concepto === 'Horas extra' && isMinutageExtraHoursMode(String(horasExtraTipo || ''));
   
   let total = 0;
   semana.forEach(fecha => {
     const val = data?.[pKey]?.[concepto]?.[fecha] ?? '';
     if (val && val.toString().trim() !== '') {
       let num: number;
-      if (isHorasExtraFormatted) {
+      if (concepto === 'Horas extra') {
         // Para formato decimal, extraer el valor numérico del formato "0.58 (35 ')"
+        // y también cubrir casos mixtos cuando hay valores antiguos en modo normal.
         num = extractNumericValue(val);
       } else if (concepto === 'Gasolina') {
         num = parseNumericInput(val);

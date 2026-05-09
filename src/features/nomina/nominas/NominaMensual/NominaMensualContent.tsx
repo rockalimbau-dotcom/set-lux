@@ -36,8 +36,11 @@ export function NominaMensualContent({
   readOnly,
 }: NominaMensualContentProps) {
   const { monthMap, monthKeys, weeksWithPeople } = useMonthGrouping(allWeeks);
-  const reportsKeyPrefix = `reportes_${projectWithMode?.id || projectWithMode?.nombre || 'tmp'}_`;
-  const reportsVersion = usePayrollReportRevision(reportsKeyPrefix);
+  const baseKey = projectWithMode?.id || projectWithMode?.nombre || 'tmp';
+  const reportsKeyPrefix = `reportes_${baseKey}_`;
+  const reportsVersion = usePayrollReportRevision(reportsKeyPrefix, [
+    `reportes_horasExtra_${baseKey}_mensual_`,
+  ]);
 
   // Export por mes usando las filas enriquecidas que nos pasa MonthSection
   const exportMonth = (monthKey: string, enrichedRows: any[]) => {
