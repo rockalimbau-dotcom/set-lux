@@ -967,6 +967,8 @@
     "lightingDepartmentShort": "Il·luminació",
     "role": "Càrrec",
     "dni": "DNI",
+    "serviceId": "ID (Film Service)",
+    "serviceIdExport": "ID",
     "ss": "Núm. SS treballador",
     "day": "Dia",
     "date": "Data",

@@ -38,6 +38,7 @@ type Worker = {
 
 type WorkerProfile = {
   dni?: string;
+  serviceId?: string;
   ss?: string;
   department?: string;
 };
@@ -821,6 +822,7 @@ function renderPrintHTML(params: {
             <div class="meta-row"><strong>${e(t('timesheet.worker'))}</strong><span>${e(worker.name)}</span></div>
             <div class="meta-row"><strong>${e(t('timesheet.role'))}</strong><span>${e(roleLabel)}</span></div>
             <div class="meta-row"><strong>${e(t('timesheet.dni'))}</strong><span>${e(profile?.dni || '')}</span></div>
+            <div class="meta-row"><strong>${e(t('timesheet.serviceIdExport'))}</strong><span>${e(profile?.serviceId || '')}</span></div>
             <div class="meta-row"><strong>${e(t('timesheet.ss'))}</strong><span>${e(profile?.ss || '')}</span></div>
           </div>
         </div>
@@ -1210,7 +1212,7 @@ export default function TimesheetTab({ project, readOnly = false }: TimesheetTab
         </div>
 
         {selectedWorker && (
-          <div className='mt-4 grid gap-2 sm:grid-cols-2'>
+          <div className='mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3'>
             <label className='rounded-md border border-neutral-border p-2 text-xs min-w-0'>
               <strong>{t('timesheet.dni')}:</strong>
               <input
@@ -1222,6 +1224,21 @@ export default function TimesheetTab({ project, readOnly = false }: TimesheetTab
               />
             </label>
             <label className='rounded-md border border-neutral-border p-2 text-xs min-w-0'>
+              <strong>{t('timesheet.serviceId')}:</strong>
+              <input
+                type='text'
+                inputMode='numeric'
+                autoComplete='off'
+                value={selectedProfile?.serviceId || ''}
+                onChange={e => {
+                  const cleaned = e.target.value.replace(/\D/g, '');
+                  updateProfile('serviceId', cleaned);
+                }}
+                disabled={readOnly}
+                className='mt-1 block w-full min-w-0 rounded border border-neutral-border bg-transparent px-1.5 py-1 disabled:opacity-60'
+              />
+            </label>
+            <label className='rounded-md border border-neutral-border p-2 text-xs min-w-0 sm:col-span-2 lg:col-span-1'>
               <strong>{t('timesheet.ss')}:</strong>
               <input
                 type='text'
