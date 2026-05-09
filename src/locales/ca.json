@@ -903,7 +903,7 @@
       },
       "timesheetTable": {
         "title": "Taula de jornada",
-        "body": "Aquí revises i edites el detall diari: horari, total d'hores, càtering, ciutat i notes."
+        "body": "Aquí revises i edites el detall diari: horari, total d'hores, càtering, notes u observacions (del calendari) i afegits."
       },
       "reports": {
         "title": "Informes",
@@ -976,8 +976,8 @@
     "to": "Fins",
     "totalHours": "Total hores",
     "catering": "Àpat càtering (SI / NO)",
-    "city": "Ciutat",
-    "notes": "Notes",
+    "city": "Notes / observacions",
+    "notes": "Afegits",
     "total": "Total",
     "export": "Exportar",
     "employeeSignature": "Signatura de l'empleat",

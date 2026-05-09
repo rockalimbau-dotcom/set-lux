@@ -610,7 +610,7 @@ function hasDietasForDay(reportData: AnyRecord, worker: Worker, block: 'base' | 
 }
 
 function renderPrintHTML(params: {
-  projectName: string;
+  projectTitle: string;
   worker: Worker;
   weekLabel: string;
   roleLabel: string;
@@ -621,13 +621,28 @@ function renderPrintHTML(params: {
   total: string;
   t: (key: string) => string;
 }): string {
-  const { projectName, worker, weekLabel, roleLabel, department, profile, companyInfo, rows, total, t } = params;
+  const { projectTitle, worker, weekLabel, roleLabel, department, profile, companyInfo, rows, total, t } = params;
   const e = escapeHtml;
+  const dniVal = String(profile?.dni || '').trim();
+  const serviceIdVal = String(profile?.serviceId || '').trim();
+  const ssVal = String(profile?.ss || '').trim();
+  const companyNameVal = String(companyInfo?.companyName || '').trim();
+  const companyAddressVal = String(companyInfo?.companyAddress || '').trim();
+  const companyCifVal = String(companyInfo?.companyCif || '').trim();
+  const companySsVal = String(companyInfo?.companySs || '').trim();
+  const companyBoxParts: string[] = [];
+  if (companyNameVal) companyBoxParts.push(`<div class="company-line">${e(companyNameVal)}</div>`);
+  if (companyAddressVal) companyBoxParts.push(`<div>${e(companyAddressVal)}</div>`);
+  if (companyCifVal) companyBoxParts.push(`<div>${e(companyCifVal)}</div>`);
+  if (companySsVal) {
+    companyBoxParts.push(`<div class="company-ss">${e(t('timesheet.companySsLabel'))}: ${e(companySsVal)}</div>`);
+  }
+  const companyBoxHtml = companyBoxParts.length ? `<div class="company-box">${companyBoxParts.join('')}</div>` : '';
   return `<!doctype html>
 <html>
   <head>
     <meta charset="utf-8" />
-    <title>${e(t('timesheet.title'))} - ${e(worker.name)}</title>
+    <title>${e(t('timesheet.title'))}${projectTitle ? ` — ${e(projectTitle)}` : ''} - ${e(worker.name)}</title>
     <style>
       @page { size: A4 landscape; margin: 0; }
       * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -658,6 +673,15 @@ function renderPrintHTML(params: {
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.2px;
+      }
+      .title-project {
+        margin-top: 6px;
+        font-size: 13px;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        text-transform: none;
+        line-height: 1.25;
+        opacity: 0.98;
       }
       .content {
         padding: 12px 20px 8px;
@@ -812,6 +836,7 @@ function renderPrintHTML(params: {
       <div class="header">
         <div class="title-bar">
           <div class="title-text">${e(t('timesheet.pdfTitle'))}</div>
+          ${projectTitle.trim() ? `<div class="title-project">${e(projectTitle.trim())}</div>` : ''}
         </div>
       </div>
       <div class="content">
@@ -821,9 +846,9 @@ function renderPrintHTML(params: {
             <div class="meta-row"><strong>${e(t('timesheet.weekEnding'))}</strong><span>${e(weekLabel)}</span></div>
             <div class="meta-row"><strong>${e(t('timesheet.worker'))}</strong><span>${e(worker.name)}</span></div>
             <div class="meta-row"><strong>${e(t('timesheet.role'))}</strong><span>${e(roleLabel)}</span></div>
-            <div class="meta-row"><strong>${e(t('timesheet.dni'))}</strong><span>${e(profile?.dni || '')}</span></div>
-            <div class="meta-row"><strong>${e(t('timesheet.serviceIdExport'))}</strong><span>${e(profile?.serviceId || '')}</span></div>
-            <div class="meta-row"><strong>${e(t('timesheet.ss'))}</strong><span>${e(profile?.ss || '')}</span></div>
+            ${dniVal ? `<div class="meta-row"><strong>${e(t('timesheet.dni'))}</strong><span>${e(dniVal)}</span></div>` : ''}
+            ${serviceIdVal ? `<div class="meta-row"><strong>${e(t('timesheet.serviceIdExport'))}</strong><span>${e(serviceIdVal)}</span></div>` : ''}
+            ${ssVal ? `<div class="meta-row"><strong>${e(t('timesheet.ss'))}</strong><span>${e(ssVal)}</span></div>` : ''}
           </div>
         </div>
         <div class="table-wrap">
@@ -864,12 +889,7 @@ function renderPrintHTML(params: {
             <div class="sign-card-space"></div>
           </div>
         </div>
-        <div class="company-box">
-          <div class="company-line">${e(companyInfo.companyName || projectName)}</div>
-          <div>${e(companyInfo.companyAddress || '')}</div>
-          <div>${e(companyInfo.companyCif || '')}</div>
-          ${String(companyInfo.companySs || '').trim() ? `<div class="company-ss">${e(t('timesheet.companySsLabel'))}: ${e(companyInfo.companySs || '')}</div>` : ''}
-        </div>
+        ${companyBoxHtml}
         <div class="legal-box">${e(t('timesheet.legalNotice'))}</div>
         <div class="spacer"></div>
       </div>
@@ -1050,7 +1070,7 @@ export default function TimesheetTab({ project, readOnly = false }: TimesheetTab
   const handleExportPDF = useCallback(async () => {
     if (!selectedWorker || !selectedWeek) return;
     const html = renderPrintHTML({
-      projectName: String(project?.productora || project?.nombre || 'SetLux'),
+      projectTitle: String(project?.nombre || '').trim(),
       worker: selectedWorker,
       weekLabel,
       roleLabel,
@@ -1116,7 +1136,7 @@ export default function TimesheetTab({ project, readOnly = false }: TimesheetTab
     } catch (error) {
       console.error('Error exporting timesheet PDF:', error);
     }
-  }, [project?.nombre, project?.productora, roleLabel, selectedProfile, companyInfo, selectedWeek, selectedWorker, t, tableRows, totalWeekMinutes, weekLabel]);
+  }, [project?.nombre, roleLabel, selectedProfile, companyInfo, selectedWeek, selectedWorker, t, tableRows, totalWeekMinutes, weekLabel]);
 
   const updateCompanyInfo = (field: keyof CompanyInfo, value: string) => {
     if (readOnly) return;

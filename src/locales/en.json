@@ -895,7 +895,7 @@
       },
       "timesheetTable": {
         "title": "Working-time table",
-        "body": "Here you review and edit daily details: schedule, total hours, catering, city, and notes."
+        "body": "Here you review and edit daily details: schedule, total hours, catering, notes/observations (from the schedule), and additions."
       },
       "reports": {
         "title": "Reports",
@@ -968,8 +968,8 @@
     "to": "To",
     "totalHours": "Total hours",
     "catering": "Catering meal (YES / NO)",
-    "city": "City",
-    "notes": "Notes",
+    "city": "Notes / observations",
+    "notes": "Additions",
     "total": "Total",
     "export": "Export",
     "employeeSignature": "Employee signature",

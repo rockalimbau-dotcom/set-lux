@@ -895,7 +895,7 @@
       },
       "timesheetTable": {
         "title": "Tabla de jornada",
-        "body": "Revisa y edita el detalle diario de la jornada: horario, total de horas, cátering, ciudad y observaciones."
+        "body": "Revisa y edita el detalle diario: horario, total de horas, cátering, notas u observaciones (del calendario) y añadidos."
       },
       "reports": {
         "title": "Reportes",
@@ -968,8 +968,8 @@
     "to": "Hasta",
     "totalHours": "Total horas",
     "catering": "Comida cátering (SI / NO)",
-    "city": "Ciudad",
-    "notes": "Notas",
+    "city": "Notas / observaciones",
+    "notes": "Añadidos",
     "total": "Total",
     "export": "Exportar",
     "employeeSignature": "Firma del empleado",
