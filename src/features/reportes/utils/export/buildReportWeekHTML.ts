@@ -57,6 +57,7 @@ export function buildReportWeekHTML({
   reportLabels,
   groupedPersonKeys,
   CONCEPTS,
+  adjustConceptsForExport,
   data,
 }: BuildReportWeekHTMLParams): string {
   // Debug removed to improve performance
@@ -146,7 +147,11 @@ export function buildReportWeekHTML({
           <td style="border:1px solid #999;padding:6px;">&nbsp;</td>
         </tr>`;
 
-      const rows = conceptosConDatos
+      const conceptsForPerson = adjustConceptsForExport
+        ? adjustConceptsForExport(pk, conceptosConDatos)
+        : conceptosConDatos;
+
+      const rows = conceptsForPerson
         .filter(c => {
           // Only show concepts that have meaningful data for this person
           return safeSemanaWithData.some(iso => {

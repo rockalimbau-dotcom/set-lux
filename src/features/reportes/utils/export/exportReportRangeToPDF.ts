@@ -21,6 +21,8 @@ import {
   PDF_RENDER_SCALE,
   canvasToPdfImage,
 } from '@shared/lib/pdf/raster';
+import { createAdjustConceptsForMaterialPropioExport } from '../materialPropioExportAdjust';
+import type { AnyRecord } from '@shared/types/common';
 
 export async function exportReportRangeToPDF(params: ExportReportRangeParams) {
   const {
@@ -34,7 +36,11 @@ export async function exportReportRangeToPDF(params: ExportReportRangeParams) {
     weeks,
     horarioPrelight,
     horarioPickup,
+    adjustConceptsForExport: adjustConceptsParam,
   } = params;
+
+  const adjustConceptsForExport =
+    adjustConceptsParam ?? createAdjustConceptsForMaterialPropioExport(project as AnyRecord | undefined, mode);
 
   try {
     const { toDisplayDate, dayNameFromISO, mondayOf, toYYYYMMDD } = await import('@shared/utils/date');
@@ -486,6 +492,7 @@ export async function exportReportRangeToPDF(params: ExportReportRangeParams) {
           jornadaTipoPersonaTexto,
           resolvePersonaBlockKey,
           CONCEPTS: [...CONCEPTS],
+          adjustConceptsForExport,
           data: pageData,
         });
 

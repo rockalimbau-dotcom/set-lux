@@ -29,6 +29,7 @@ export async function exportReportWeekToPDF(params: BuildPdfParams) {
     reportLabels,
     groupedPersonKeys,
     CONCEPTS,
+    adjustConceptsForExport,
     data,
     filename,
   } = params;
@@ -99,6 +100,7 @@ export async function exportReportWeekToPDF(params: BuildPdfParams) {
         reportLabels,
         groupedPersonKeys: pageGroupedPersonKeys,
         CONCEPTS,
+        adjustConceptsForExport,
         data: pageData,
       });
       

@@ -28,6 +28,7 @@ interface UseReportExportProps {
     extraGroups: Array<{ blockKey: string; people: string[] }>;
   };
   data: AnyRecord;
+  adjustConceptsForExport?: (personKey: string, baseConcepts: readonly string[]) => string[];
   onExportWeekHTML?: () => void;
   onExportWeekPDF?: () => void;
 }
@@ -54,6 +55,7 @@ export function useReportExport({
   reportLabels,
   groupedPersonKeys,
   data,
+  adjustConceptsForExport,
   onExportWeekHTML,
   onExportWeekPDF,
 }: UseReportExportProps): UseReportExportReturn {
@@ -78,7 +80,8 @@ export function useReportExport({
       horarioExtraByBlock,
       reportLabels,
       groupedPersonKeys,
-      data
+      data,
+      adjustConceptsForExport
     );
   };
 
@@ -98,6 +101,7 @@ export function useReportExport({
       reportLabels,
       groupedPersonKeys,
       data,
+      adjustConceptsForExport,
       onExportWeekPDF,
       () => defaultExportWeek(
         project,
@@ -113,7 +117,8 @@ export function useReportExport({
         horarioExtraByBlock,
         reportLabels,
         groupedPersonKeys,
-        data
+        data,
+        adjustConceptsForExport
       )
     );
   };

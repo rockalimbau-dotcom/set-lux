@@ -27,6 +27,7 @@ import {
   personaName,
   stripPR,
 } from '../utils/model';
+import { parsePersonKey } from '../utils/export/dataHelpers';
 import { addDays, mondayOf, toYYYYMMDD } from '@shared/utils/date';
 import { loadCondModel } from '@features/nomina/utils/cond';
 import { ROLE_CODE_TO_LABEL, stripRoleSuffix, stripRefuerzoSuffix } from '@shared/constants/roles';
@@ -664,6 +665,28 @@ export default function ReportesSemana({
     [materialPropioConfig]
   );
 
+  const adjustConceptsForExport = useCallback(
+    (pk: string, baseConcepts: readonly string[]) => {
+      const { role, name, block: rawBlock } = parsePersonKey(pk);
+      const block: 'base' | 'pre' | 'pick' | 'extra' = String(rawBlock).startsWith('extra')
+        ? 'extra'
+        : rawBlock === 'pre'
+          ? 'pre'
+          : rawBlock === 'pick'
+            ? 'pick'
+            : 'base';
+      const roleSegmentLooksLikeCatalogId =
+        role.includes('_') ||
+        role.includes('-') ||
+        (role.length > 0 && role.toLowerCase() === role && /[a-z]/.test(role));
+      const cfg = getMaterialPropioConfig(role, name, block, {
+        roleId: roleSegmentLooksLikeCatalogId ? role : undefined,
+      });
+      return cfg ? [...baseConcepts] : baseConcepts.filter(c => c !== 'Material propio');
+    },
+    [getMaterialPropioConfig]
+  );
+
   const findPrevWorkingContext = findPrevWorkingContextFactory(
     getPlanAllWeeks,
     mondayOf,
@@ -739,6 +762,7 @@ export default function ReportesSemana({
     reportLabels,
     groupedPersonKeys,
     data: exportData,
+    adjustConceptsForExport,
     onExportWeekHTML,
     onExportWeekPDF,
   });

@@ -351,7 +351,8 @@ export function generatePersonHTML(
   horarioPrelight?: (iso: string) => string,
   horarioPickup?: (iso: string) => string,
   horarioExtraByBlock?: (blockKey: string, iso: string) => string,
-  blockKey?: string
+  blockKey?: string,
+  adjustConceptsForExport?: (personKey: string, baseConcepts: readonly string[]) => string[]
 ): string {
   const header = generatePersonHeader(
     pk,
@@ -370,6 +371,10 @@ export function generatePersonHTML(
   );
   if (!header) return ''; // Skip invalid entries
 
-  const rows = generatePersonConceptRows(pk, conceptosConDatos, safeSemanaWithData, finalData, blockKey);
+  const conceptsForPerson = adjustConceptsForExport
+    ? adjustConceptsForExport(pk, conceptosConDatos)
+    : conceptosConDatos;
+
+  const rows = generatePersonConceptRows(pk, conceptsForPerson, safeSemanaWithData, finalData, blockKey);
   return header + rows;
 }

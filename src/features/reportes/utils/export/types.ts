@@ -31,6 +31,10 @@ export interface BuildReportWeekHTMLParams {
     extraGroups: Array<{ blockKey: string; people: string[] }>;
   };
   CONCEPTS: string[];
+  /**
+   * Restringe qué conceptos puede mostrar la export por persona (p. ej. quitar «Material propio» si no está en condiciones).
+   */
+  adjustConceptsForExport?: (personKey: string, baseConcepts: readonly string[]) => string[];
   data: {
     [personaKey: string]: {
       [concepto: string]: {
@@ -59,4 +63,5 @@ export interface ExportReportRangeParams {
   weeks: any[];
   horarioPrelight?: (iso: string) => string;
   horarioPickup?: (iso: string) => string;
+  adjustConceptsForExport?: (personKey: string, baseConcepts: readonly string[]) => string[];
 }
