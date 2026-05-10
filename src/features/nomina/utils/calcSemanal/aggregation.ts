@@ -1,4 +1,4 @@
-import { storage } from '@shared/services/localStorage.service';
+import { getReportWeekStoredJSON } from '@shared/utils/reportStorageKeys';
 import { normalizeExtraBlocks } from '@shared/utils/extraBlocks';
 import { parseNum, parseDietasValue, parseHorasExtra } from '../parse';
 import { weekISOdays, stripPR } from '../plan';
@@ -195,7 +195,6 @@ export function aggregateReports(
   weeks: any[],
   filterISO: ((iso: string) => boolean) | null = null
 ) {
-  const base = project?.id || project?.nombre || 'tmp';
   const totals = new Map<string, any>();
   const refuerzoSet = buildRefuerzoIndex(weeks);
 
@@ -204,12 +203,7 @@ export function aggregateReports(
     const days = filterISO ? isoDays.filter(filterISO) : isoDays;
     if (days.length === 0) continue;
 
-    const weekKey = `reportes_${base}_${isoDays.join('_')}`;
-    let data: any = {};
-    try {
-      const obj = storage.getJSON<any>(weekKey);
-      if (obj) data = obj;
-    } catch {}
+    const data: any = getReportWeekStoredJSON(project, isoDays);
 
     const uniqStorageKeys = buildUniqueStorageKeys(w, refuerzoSet);
     const sortedEntries = Array.from(uniqStorageKeys.entries()).sort((a, b) => {

@@ -1,5 +1,5 @@
-import { useMemo } from 'react';
-import { storage } from '@shared/services/localStorage.service';
+import { useMemo, useState, useEffect } from 'react';
+import { storage, STORAGE_CHANGE_EVENT } from '@shared/services/localStorage.service';
 import { parseYYYYMMDD, toYYYYMMDD, addDays } from '@shared/utils/date';
 import { stripRoleSuffix } from '@shared/constants/roles';
 import { needsDataToPlanData } from '@shared/utils/needsPlanAdapter';
@@ -11,6 +11,27 @@ export function usePlanWeeks(project: { id?: string; nombre?: string } | null) {
     return `needs_${base}`;
   }, [project?.id, project?.nombre]);
 
+  /** Sin esto, el plan queda “congelado” en el primer render y la nómina no ve semanas/personas nuevas hasta recargar. */
+  const [needsRevision, setNeedsRevision] = useState(0);
+
+  useEffect(() => {
+    const bump = () => setNeedsRevision(v => v + 1);
+    const onCustom = (e: Event) => {
+      const d = (e as CustomEvent<{ key?: string }>).detail;
+      if (d?.key === storageKey) bump();
+    };
+    const onStorage = (e: StorageEvent) => {
+      if (e.storageArea !== window.localStorage) return;
+      if (e.key === storageKey) bump();
+    };
+    window.addEventListener(STORAGE_CHANGE_EVENT, onCustom as EventListener);
+    window.addEventListener('storage', onStorage);
+    return () => {
+      window.removeEventListener(STORAGE_CHANGE_EVENT, onCustom as EventListener);
+      window.removeEventListener('storage', onStorage);
+    };
+  }, [storageKey]);
+
   return useMemo(() => {
     try {
       const data = storage.getJSON<any>(storageKey) || {};
@@ -18,7 +39,7 @@ export function usePlanWeeks(project: { id?: string; nombre?: string } | null) {
     } catch {
       return { pre: [], pro: [] } as { pre: any[]; pro: any[] };
     }
-  }, [storageKey]);
+  }, [storageKey, needsRevision]);
 }
 
 export const stripPR = (r: string): string => {

@@ -1,4 +1,5 @@
 import { parseNum, parseHHMM, diffMinutes, ceilHours } from './numbers';
+import { parseHorasExtra as parseHorasExtraLeading } from '@shared/utils/numericParse';
 import { storage } from '@shared/services/localStorage.service';
 import { getExtraBlockWindowByIndex, getExtraWindow } from './extra';
 import { resolveExtraHoursMode } from './extraHoursType';
@@ -187,21 +188,9 @@ export function formatHorasExtraDecimal(value: number): string {
   }
 }
 
-// Función para extraer el valor numérico de un string formateado
+/** Misma lógica que nómina (`parseHorasExtra`) para que totales semana en reportes cuadren con nómina. */
 export function extractNumericValue(value: string | number): number {
-  if (typeof value === 'number') return value;
-  if (!value || value === '') return 0;
-  
-  // Si tiene formato "1.5 (1 h y 30 minutos)" o similar, extraer el número decimal
-  const match = value.match(/^([\d.]+)/);
-  if (match) {
-    const num = parseFloat(match[1]);
-    return isNaN(num) ? 0 : num;
-  }
-  
-  // Si es solo un número
-  const num = parseFloat(value);
-  return isNaN(num) ? 0 : num;
+  return parseHorasExtraLeading(value);
 }
 
 // Función para convertir un valor de horas extra al formato del nuevo tipo

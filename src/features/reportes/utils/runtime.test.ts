@@ -538,6 +538,11 @@ describe('runtime utils', () => {
       expect(extractNumericValue("10")).toBe(10);
     });
 
+    it('should parse European decimal comma like payroll aggregation', () => {
+      expect(extractNumericValue("1,5 (1h 30')")).toBe(1.5);
+      expect(extractNumericValue("0,58 (35 ')")).toBe(0.58);
+    });
+
     it('should return 0 for empty or invalid values', () => {
       expect(extractNumericValue("")).toBe(0);
       expect(extractNumericValue("invalid")).toBe(0);

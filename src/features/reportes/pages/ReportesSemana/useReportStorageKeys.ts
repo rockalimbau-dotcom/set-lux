@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { primaryReportStorageBase } from '@shared/utils/reportStorageKeys';
 
 interface UseReportStorageKeysProps {
   project: { id?: string; nombre?: string } | undefined;
@@ -18,13 +19,13 @@ export function useReportStorageKeys({
   safeSemana,
 }: UseReportStorageKeysProps): UseReportStorageKeysReturn {
   const storageKey = useMemo(() => {
-    const base = project?.id || project?.nombre || 'tmp';
+    const base = primaryReportStorageBase(project);
     const wk = safeSemana.join('_');
     return `reportes_${base}_${wk}`;
   }, [project?.id, project?.nombre, safeSemana]);
 
   const persistBase = useMemo(() => {
-    const base = project?.id || project?.nombre || 'tmp';
+    const base = primaryReportStorageBase(project);
     const wk = safeSemana.join('_');
     return `repstate_${base}_${wk}`;
   }, [project?.id, project?.nombre, safeSemana]);

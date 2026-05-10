@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { STORAGE_CHANGE_EVENT } from '@shared/services/localStorage.service';
 
@@ -7,33 +7,29 @@ const AFTER_DEBOUNCE_MS = 650;
 const DEBOUNCE_SAFETY_MS = 1200;
 
 /**
- * Invalida la “versión” de lectura de reportes para nómina cuando:
- * - Cambia el JSON de reportes en localStorage (misma pestaña u otra)
- * - Entras en la ruta de nómina (SPA): primera lectura puede ser anterior al debounce de useLocalStorage en Reportes
- * - Ticks retardados tras el máximo debounce (500 ms) para no leer JSON aún no guardado
+ * Invalida la “versión” de lectura de reportes para nómina cuando cambian claves relevantes en localStorage.
+ * Vigila todos los prefijos dados (p. ej. `reportes_<id>_` y `reportes_<nombre>_` si ambos existen).
  */
-export function usePayrollReportRevision(
-  reportsKeyPrefix: string,
-  extraWatchedPrefixes: string[] = []
-): number {
+export function usePayrollReportRevision(watchedPrefixes: string[]): number {
   const [reportsVersion, setReportsVersion] = useState(0);
   const location = useLocation();
+  const prefixesRef = useRef(watchedPrefixes);
+  prefixesRef.current = watchedPrefixes;
 
   useEffect(() => {
-    const bumpIfReportsKey = (key?: string | null) => {
+    const bumpIfMatch = (key?: string | null) => {
       if (!key || typeof key !== 'string') return;
-      const matchesReportPrefix = key.startsWith(reportsKeyPrefix);
-      const matchesExtraPrefix = extraWatchedPrefixes.some(prefix =>
-        prefix ? key.startsWith(prefix) : false
-      );
-      if (!matchesReportPrefix && !matchesExtraPrefix) return;
-      setReportsVersion(v => v + 1);
+      const prefs = prefixesRef.current.filter(p => typeof p === 'string' && p.length > 0);
+      if (prefs.length === 0) return;
+      if (prefs.some(prefix => key.startsWith(prefix))) {
+        setReportsVersion(v => v + 1);
+      }
     };
 
-    const onStorage = (e: StorageEvent) => bumpIfReportsKey(e.key);
+    const onStorage = (e: StorageEvent) => bumpIfMatch(e.key);
     const onLocalStorageChange = (e: Event) => {
       const detail = (e as CustomEvent<{ key?: string }>).detail;
-      bumpIfReportsKey(detail?.key || null);
+      bumpIfMatch(detail?.key || null);
     };
 
     window.addEventListener('storage', onStorage);
@@ -42,7 +38,7 @@ export function usePayrollReportRevision(
       window.removeEventListener('storage', onStorage);
       window.removeEventListener(STORAGE_CHANGE_EVENT, onLocalStorageChange as EventListener);
     };
-  }, [reportsKeyPrefix, extraWatchedPrefixes]);
+  }, []);
 
   useLayoutEffect(() => {
     if (!location.pathname.includes('/nomina')) return;
@@ -58,6 +54,17 @@ export function usePayrollReportRevision(
       window.clearTimeout(b);
     };
   }, [location.pathname]);
+
+  /** Otra pestaña guardó reportes o volviste a la ventana antes de que terminara el debounce. */
+  useEffect(() => {
+    const onVis = () => {
+      if (document.visibilityState !== 'visible') return;
+      if (!window.location.pathname.includes('/nomina')) return;
+      setReportsVersion(v => v + 1);
+    };
+    document.addEventListener('visibilitychange', onVis);
+    return () => document.removeEventListener('visibilitychange', onVis);
+  }, []);
 
   return reportsVersion;
 }

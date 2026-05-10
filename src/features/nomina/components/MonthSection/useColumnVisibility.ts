@@ -19,13 +19,9 @@ export function useColumnVisibility({ enriched }: UseColumnVisibilityProps) {
     const hasKm = enriched.some(r => r.km > 0);
     const hasGasolina = enriched.some(r => (r.gasolina || 0) > 0 || (r._totalGasolina || 0) > 0);
     const hasDietas = enriched.some(hasDietasData);
-    const hasMaterialPropio = enriched.some(
-      r =>
-        (r._materialPropioDays || 0) > 0 ||
-        (r._materialPropioWeeks || 0) > 0 ||
-        (r._materialPropioUnique || 0) > 0 ||
-        (r._totalMaterialPropio || 0) > 0
-    );
+    // Solo si hay importe: los reportes pueden seguir marcando «Sí» en celdas antiguas; si en condiciones
+    // quitaste material propio o precio 0, el total es 0 y no debe mostrarse la columna.
+    const hasMaterialPropio = enriched.some(r => (r._totalMaterialPropio || 0) > 0);
 
     return {
       holidays: hasHolidays,

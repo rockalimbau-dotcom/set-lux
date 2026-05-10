@@ -1,4 +1,4 @@
-import { storage } from '@shared/services/localStorage.service';
+import { getReportWeekStoredJSON } from '@shared/utils/reportStorageKeys';
 import { parseNum, parseDietasValue, parseHorasExtra } from '../parse';
 import { buildRefuerzoIndex, weekISOdays, weekAllPeopleActive } from '../plan';
 import { stripPR } from '../plan';
@@ -15,7 +15,6 @@ import { storageKeyFor, storageKeyVariants, getCellValueCandidates, valIsYes } f
  * Aggregate reports for diario mode
  */
 export function aggregateReports(project: any, weeks: any[], filterISO: ((iso: string) => boolean) | null = null) {
-  const base = project?.id || project?.nombre || 'tmp';
   const totals = new Map<string, any>();
   const refuerzoSet = buildRefuerzoIndex(weeks);
   const rolesInCondiciones = getRolesInCondiciones(project);
@@ -73,14 +72,7 @@ export function aggregateReports(project: any, weeks: any[], filterISO: ((iso: s
     const filteredDays = filterISO ? isoDays.filter(filterISO) : isoDays;
     if (filteredDays.length === 0) continue;
 
-    // Usar la misma lógica que los reportes para generar la clave
-    const weekKey = `reportes_${base}_${isoDays.join('_')}`;
-    let data: any = {};
-    try {
-      const obj = storage.getJSON<any>(weekKey);
-      if (obj) data = obj;
-    } catch {}
-    
+    const data: any = getReportWeekStoredJSON(project, isoDays);
 
     const rawPeople = weekAllPeopleActive(w);
     const uniqStorage = new Map<string, { roleVisible: string; personId?: string; gender?: 'male' | 'female' | 'neutral'; source?: string; rowKey: string; matchRole: string; displayBlock: 'base' | 'pre' | 'pick' | 'extra'; roleId?: string; roleLabel?: string }>();
@@ -200,7 +192,6 @@ export function aggregateReports(project: any, weeks: any[], filterISO: ((iso: s
  * Aggregate windowed report for diario mode
  */
 export function aggregateWindowedReport(project: any, weeks: any[], filterISO: (iso: string) => boolean) {
-  const base = project?.id || project?.nombre || 'tmp';
   const totals = new Map<string, any>();
   const refuerzoSet = buildRefuerzoIndex(weeks);
   const rolesInCondiciones = getRolesInCondiciones(project);
@@ -231,14 +222,7 @@ export function aggregateWindowedReport(project: any, weeks: any[], filterISO: (
     const isoDays = filterISO ? isoDaysFull.filter(filterISO) : isoDaysFull;
     if (isoDays.length === 0) continue;
 
-    // Usar la misma lógica que los reportes para generar la clave
-    const weekKey = `reportes_${base}_${isoDaysFull.join('_')}`;
-    let data: any = {};
-    try {
-      const obj = storage.getJSON<any>(weekKey);
-      if (obj) data = obj;
-    } catch {}
-    
+    const data: any = getReportWeekStoredJSON(project, isoDaysFull);
 
     const rawPeople = weekAllPeopleActive(w);
     const uniqStorage = new Map<string, string>();

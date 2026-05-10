@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import MonthSection from '../../components/MonthSection.jsx';
 import { ROLE_COLORS, roleLabelFromCode } from '@shared/constants/roles';
 import {
@@ -15,6 +15,7 @@ import { stripPR, buildRefuerzoIndex } from '../../utils/plan';
 import { ProjectLike } from './NominaPublicidadTypes';
 import { useMonthGrouping } from './useMonthGrouping';
 import { usePayrollReportRevision } from '../../hooks/usePayrollReportRevision';
+import { reportStorageBaseCandidates } from '@shared/utils/reportStorageKeys';
 
 interface NominaPublicidadContentProps {
   project: ProjectLike;
@@ -34,11 +35,14 @@ export function NominaPublicidadContent({
   readOnly,
 }: NominaPublicidadContentProps) {
   const { monthMap, monthKeys } = useMonthGrouping(allWeeks);
-  const baseKey = projectWithMode?.id || projectWithMode?.nombre || 'tmp';
-  const reportsKeyPrefix = `reportes_${baseKey}_`;
-  const reportsVersion = usePayrollReportRevision(reportsKeyPrefix, [
-    `reportes_horasExtra_${baseKey}_diario_`,
-  ]);
+  const payrollWatchPrefixes = useMemo(() => {
+    const bases = reportStorageBaseCandidates(projectWithMode);
+    return [
+      ...bases.map(b => `reportes_${b}_`),
+      ...bases.map(b => `reportes_horasExtra_${b}_diario_`),
+    ];
+  }, [projectWithMode?.id, projectWithMode?.nombre]);
+  const reportsVersion = usePayrollReportRevision(payrollWatchPrefixes);
 
   // Export por mes usando las filas enriquecidas que nos pasa MonthSection
   const exportMonth = (monthKey: string, enrichedRows: any[]) => {
