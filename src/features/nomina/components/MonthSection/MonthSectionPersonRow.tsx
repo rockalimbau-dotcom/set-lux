@@ -4,7 +4,11 @@ import { useTranslation } from 'react-i18next';
 import { getRoleBadgeCode, applyGenderToBadge } from '@shared/constants/roles';
 import { stripRoleSuffix } from '@shared/constants/roles';
 import { displayValue, displayMoney } from '../../utils/displayHelpers';
-import { retentionBaseIrpfEstado } from '../../utils/payrollRetentionBase';
+import {
+  baseEstadoPercentApplied,
+  DEFAULT_ESTADO_SOCIAL_PERCENT,
+  retentionBaseIrpfEstado,
+} from '../../utils/payrollRetentionBase';
 import WorkedDaysSummary from '../WorkedDaysSummary.tsx';
 import CargaDescargaSummary from '../CargaDescargaSummary.tsx';
 import ExtrasSummary from '../ExtrasSummary.jsx';
@@ -78,7 +82,7 @@ export function MonthSectionPersonRow({
       : Number(rc.irpf);
   const estadoPercent =
     rc.estado === undefined || rc.estado === null || rc.estado === ''
-      ? 6.6
+      ? DEFAULT_ESTADO_SOCIAL_PERCENT
       : Number(rc.estado);
   const extraHoursPercent =
     rc.extraHoursPercent === undefined || rc.extraHoursPercent === null || rc.extraHoursPercent === ''
@@ -88,11 +92,12 @@ export function MonthSectionPersonRow({
   const totalDietas = Number(r._totalDietas || 0);
   const totalExtras = Number(r._totalExtras || 0);
   const dietasExentasIRPF = !!rc.dietasExentasIRPF;
-  const baseRetencion = retentionBaseIrpfEstado(totalBruto, totalDietas, dietasExentasIRPF);
+  const baseIrpf = retentionBaseIrpfEstado(totalBruto, totalDietas, dietasExentasIRPF);
+  const baseEstado = baseEstadoPercentApplied(totalBruto);
   const totalNeto =
     totalBruto -
-    baseRetencion * irpfPercent / 100 -
-    baseRetencion * estadoPercent / 100 -
+    baseIrpf * irpfPercent / 100 -
+    baseEstado * estadoPercent / 100 -
     totalExtras * extraHoursPercent / 100;
 
   // Detectar el tema actual
@@ -451,12 +456,12 @@ export function MonthSectionPersonRow({
               min='0'
               max='100'
               step='0.1'
-              value={rc.estado ?? 6.6}
+              value={rc.estado ?? DEFAULT_ESTADO_SOCIAL_PERCENT}
               onChange={e => !readOnly && setRcv(pKey, { estado: e.target.value === '' ? 0 : Number(e.target.value) })}
               disabled={readOnly}
               readOnly={readOnly}
               className={`w-14 sm:w-16 md:w-20 px-1 py-0.5 sm:px-1.5 sm:py-1 md:px-2 md:py-1 rounded sm:rounded-md md:rounded-lg bg-black/40 border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand text-[9px] sm:text-[10px] md:text-xs text-right ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
-              title={readOnly ? t('conditions.projectClosed') : t('payroll.statePercent')}
+              title={readOnly ? t('conditions.projectClosed') : t('payroll.statePercentTitle')}
             />
             <span className='text-[9px] sm:text-[10px] md:text-xs text-zinc-400'>%</span>
           </div>

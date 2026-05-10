@@ -9,7 +9,11 @@ import { useFilteredData } from './MonthSection/useFilteredData';
 import { useEnrichedRows } from './MonthSection/useEnrichedRows';
 import { useRowSelection } from './MonthSection/useRowSelection';
 import { useColumnVisibility } from './MonthSection/useColumnVisibility';
-import { retentionBaseIrpfEstado } from '../utils/payrollRetentionBase';
+import {
+  baseEstadoPercentApplied,
+  DEFAULT_ESTADO_SOCIAL_PERCENT,
+  retentionBaseIrpfEstado,
+} from '../utils/payrollRetentionBase';
 
 interface MonthSectionProps extends Omit<MonthSectionPropsBase, 'monthKey' | 'rows' | 'weeksForMonth' | 'filterISO' | 'rolePrices' | 'persistKeyBase'> {
   monthKey: string;
@@ -224,22 +228,23 @@ function MonthSection({
         const totalDietas = Number(r._totalDietas || 0);
         const totalExtras = Number(r._totalExtras || 0);
         const dietasExentasIRPF = !!rc.dietasExentasIRPF;
-        const baseRetencion = retentionBaseIrpfEstado(totalBruto, totalDietas, dietasExentasIRPF);
+        const baseIrpf = retentionBaseIrpfEstado(totalBruto, totalDietas, dietasExentasIRPF);
+        const baseEstado = baseEstadoPercentApplied(totalBruto);
         const irpfPercent =
           rc.irpf === undefined || rc.irpf === null || rc.irpf === ''
             ? Number(irpfByPerson[pKey] || 0)
             : Number(rc.irpf);
         const estadoPercent =
           rc.estado === undefined || rc.estado === null || rc.estado === ''
-            ? 6.6
+            ? DEFAULT_ESTADO_SOCIAL_PERCENT
             : Number(rc.estado);
         const extraHoursPercent =
           rc.extraHoursPercent === undefined || rc.extraHoursPercent === null || rc.extraHoursPercent === ''
             ? 4.7
             : Number(rc.extraHoursPercent);
         const hasEffectiveExtraHoursPercent = totalExtras > 0 && Number(extraHoursPercent || 0) > 0;
-        const irpfAmount = baseRetencion * irpfPercent / 100;
-        const estadoAmount = baseRetencion * estadoPercent / 100;
+        const irpfAmount = baseIrpf * irpfPercent / 100;
+        const estadoAmount = baseEstado * estadoPercent / 100;
         const extraHoursAmount = totalExtras * extraHoursPercent / 100;
         const totalNeto = totalBruto - irpfAmount - estadoAmount - extraHoursAmount;
 
