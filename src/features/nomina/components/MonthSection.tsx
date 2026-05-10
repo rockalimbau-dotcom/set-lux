@@ -9,6 +9,7 @@ import { useFilteredData } from './MonthSection/useFilteredData';
 import { useEnrichedRows } from './MonthSection/useEnrichedRows';
 import { useRowSelection } from './MonthSection/useRowSelection';
 import { useColumnVisibility } from './MonthSection/useColumnVisibility';
+import { retentionBaseIrpfEstado } from '../utils/payrollRetentionBase';
 
 interface MonthSectionProps extends Omit<MonthSectionPropsBase, 'monthKey' | 'rows' | 'weeksForMonth' | 'filterISO' | 'rolePrices' | 'persistKeyBase'> {
   monthKey: string;
@@ -100,13 +101,15 @@ function MonthSection({
   const [priceDays, setPriceDays] = useLocalStorage<number>(daysInMonthKey, daysInMonth);
 
   const persistKey = `${persistKeyBase}_${monthKey}_rcvd`;
-  const [received, setReceived] = useLocalStorage<Record<string, { ok?: boolean; note?: string; irpf?: number; estado?: number; extraHoursPercent?: number }>>(
-    persistKey,
-    {}
-  );
+  const [received, setReceived] = useLocalStorage<
+    Record<string, { ok?: boolean; note?: string; irpf?: number; estado?: number; extraHoursPercent?: number; dietasExentasIRPF?: boolean }>
+  >(persistKey, {});
   const irpfByPersonKey = `${persistKeyBase}_irpfByPerson`;
   const [irpfByPerson, setIrpfByPerson] = useLocalStorage<Record<string, number>>(irpfByPersonKey, {});
-  const setRcv = (personKey: string, patch: { ok?: boolean; note?: string; irpf?: number; estado?: number; extraHoursPercent?: number }) => {
+  const setRcv = (
+    personKey: string,
+    patch: { ok?: boolean; note?: string; irpf?: number; estado?: number; extraHoursPercent?: number; dietasExentasIRPF?: boolean }
+  ) => {
     setReceived(prev => {
       const next = {
         ...prev,
@@ -218,7 +221,10 @@ function MonthSection({
         const pKey = r._rowKey || `${r.role}__${r.name}`;
         const rc = received[pKey] || {};
         const totalBruto = Number(r._totalBruto || 0);
+        const totalDietas = Number(r._totalDietas || 0);
         const totalExtras = Number(r._totalExtras || 0);
+        const dietasExentasIRPF = !!rc.dietasExentasIRPF;
+        const baseRetencion = retentionBaseIrpfEstado(totalBruto, totalDietas, dietasExentasIRPF);
         const irpfPercent =
           rc.irpf === undefined || rc.irpf === null || rc.irpf === ''
             ? Number(irpfByPerson[pKey] || 0)
@@ -232,8 +238,8 @@ function MonthSection({
             ? 4.7
             : Number(rc.extraHoursPercent);
         const hasEffectiveExtraHoursPercent = totalExtras > 0 && Number(extraHoursPercent || 0) > 0;
-        const irpfAmount = totalBruto * irpfPercent / 100;
-        const estadoAmount = totalBruto * estadoPercent / 100;
+        const irpfAmount = baseRetencion * irpfPercent / 100;
+        const estadoAmount = baseRetencion * estadoPercent / 100;
         const extraHoursAmount = totalExtras * extraHoursPercent / 100;
         const totalNeto = totalBruto - irpfAmount - estadoAmount - extraHoursAmount;
 
@@ -248,6 +254,7 @@ function MonthSection({
               rc.extraHoursPercent === '' ||
               Number(rc.extraHoursPercent) === 0
             ),
+          _dietasExentasIRPF: dietasExentasIRPF,
           _irpfPercent: irpfPercent,
           _estadoPercent: estadoPercent,
           _extraHoursPercent: extraHoursPercent,

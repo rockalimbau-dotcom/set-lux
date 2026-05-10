@@ -25,9 +25,12 @@ type MonthSectionTableProps = {
   showNetColumns: boolean;
   isRowSelected: (key: string) => boolean;
   toggleRowSelection: (key: string) => void;
-  received: Record<string, { ok?: boolean; note?: string; irpf?: number; estado?: number; extraHoursPercent?: number }>;
+  received: Record<string, { ok?: boolean; note?: string; irpf?: number; estado?: number; extraHoursPercent?: number; dietasExentasIRPF?: boolean }>;
   irpfByPerson: Record<string, number>;
-  setRcv: (key: string, patch: { ok?: boolean; note?: string; irpf?: number; estado?: number; extraHoursPercent?: number }) => void;
+  setRcv: (
+    key: string,
+    patch: { ok?: boolean; note?: string; irpf?: number; estado?: number; extraHoursPercent?: number; dietasExentasIRPF?: boolean }
+  ) => void;
   ROLE_COLORS: Record<string, { bg: string; fg: string }>;
   roleLabelFromCode: (code: string) => string;
   readOnly?: boolean;
@@ -67,6 +70,7 @@ export function MonthSectionTable({
   const localizacionHeaderClass = projectMode === 'diario' ? 'min-w-[210px] whitespace-normal break-words' : '';
   const totalLocalizacionHeaderClass = projectMode === 'diario' ? 'min-w-[230px] whitespace-normal break-words' : '';
   const showExtraHoursPercentColumn = showNetColumns && columnVisibility.extras;
+  const showDietasIrpfExemptionColumn = showNetColumns && columnVisibility.dietas;
 
   // Calcular número de columnas para colSpan
   const colSpanCount =
@@ -85,7 +89,8 @@ export function MonthSectionTable({
     (columnVisibility.gasolina ? 1 : 0) + // Total gasolina
     1 + // TOTAL BRUTO
     (showNetColumns ? 3 : 0) + // IRPF, Estado, Total neto
-    (showExtraHoursPercentColumn ? 1 : 0) + // Horas extras %
+    (showExtraHoursPercentColumn ? 1 : 0) + // Horas extras % (IRPF)
+    (showDietasIrpfExemptionColumn ? 1 : 0) + // Dietas exentas (junto a % horas extras IRPF)
     1; // Nómina recibida
 
   // Función para determinar el tipo de equipo de una fila
@@ -177,6 +182,7 @@ export function MonthSectionTable({
           {showNetColumns && <col className='payroll-month-col-standard' />}
           {showNetColumns && <col className='payroll-month-col-standard' />}
           {showExtraHoursPercentColumn && <col className='payroll-month-col-standard' />}
+          {showDietasIrpfExemptionColumn && <col className='payroll-month-col-narrow' />}
           {showNetColumns && <col className='payroll-month-col-total' />}
           <col className='payroll-month-col-received' />
         </colgroup>
@@ -254,6 +260,13 @@ export function MonthSectionTable({
             {showNetColumns && <Th align='center' className='payroll-extra-col payroll-extra-col--header'>{t('payroll.irpf')}</Th>}
             {showNetColumns && <Th align='center' className='payroll-extra-col payroll-extra-col--header'>{t('payroll.stateTax')}</Th>}
             {showExtraHoursPercentColumn && <Th align='center' className='payroll-extra-col payroll-extra-col--header'>{t('payroll.extraHoursPercentColumn')}</Th>}
+            {showDietasIrpfExemptionColumn && (
+              <Th align='center' className='payroll-extra-col payroll-extra-col--header max-w-[88px]'>
+                <span className='inline-block leading-tight' title={t('payroll.dietasExentaIRPFTitle')}>
+                  {t('payroll.dietasExentaIRPF')}
+                </span>
+              </Th>
+            )}
             {showNetColumns && <Th align='center'>{t('payroll.totalNet')}</Th>}
             <Th align='center'>{t('payroll.received')}</Th>
           </tr>
@@ -297,6 +310,7 @@ export function MonthSectionTable({
                     showRowSelection={showRowSelection}
                     showNetColumns={showNetColumns}
                     showExtraHoursPercentColumn={showExtraHoursPercentColumn}
+                    showDietasIrpfExemptionColumn={showDietasIrpfExemptionColumn}
                     readOnly={readOnly}
                   />
                 );
@@ -317,7 +331,8 @@ export function MonthSectionTable({
                 (columnVisibility.km ? 2 : 0) + // Kilometraje + Total kilometraje
                 (columnVisibility.gasolina ? 1 : 0) + // Total gasolina
                 (showNetColumns ? 3 : 0) + // IRPF + Estado + Total neto
-                (showExtraHoursPercentColumn ? 1 : 0) + // Horas extras %
+                (showExtraHoursPercentColumn ? 1 : 0) + // Horas extras % (IRPF)
+                (showDietasIrpfExemptionColumn ? 1 : 0) + // Dietas exentas
                 (hasLocalizacionData ? 2 : 0) + // Localización técnica + Total
                 (hasCargaDescargaData ? 2 : 0) // Carga/Descarga + Total
               } align='center' className='text-center'>

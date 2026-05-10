@@ -116,6 +116,11 @@ export const generateHeaderCells = (
     if (columnVisibility.extraHoursPercent && showExtraHoursNetColumn) {
       headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;"><div class="th-label">${i18n.t('payroll.extraHoursPercentColumn')}</div></th>`);
     }
+    if (columnVisibility.dietas) {
+      headerCells.push(
+        `<th style="text-align:center !important;vertical-align:middle !important;"><div class="th-label" title="${esc(i18n.t('payroll.dietasExentaIRPFTitle'))}">${esc(i18n.t('payroll.dietasExentaIRPF'))}</div></th>`
+      );
+    }
     headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;"><div class="th-label">${i18n.t('payroll.totalNet')}</div></th>`);
   }
 
@@ -239,6 +244,11 @@ export const generateRowDataCells = (
         `<td style="text-align:center !important;vertical-align:middle !important;"><div class="td-label td-label-center">${
           esc(displayMoney(r._extraHoursAmount, 2))
         }</div></td>`
+      );
+    }
+    if (columnVisibility.dietas) {
+      dataCells.push(
+        `<td style="text-align:center !important;vertical-align:middle !important;"><div class="td-label td-label-center">${r._dietasExentasIRPF ? '✓' : ''}</div></td>`
       );
     }
     dataCells.push(`<td class="total-cell" style="text-align:center !important;vertical-align:middle !important;"><div class="td-label td-label-center">${esc(displayMoney(r._totalNeto, 2))}</div></td>`);

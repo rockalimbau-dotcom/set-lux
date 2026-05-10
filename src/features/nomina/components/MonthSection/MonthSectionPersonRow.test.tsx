@@ -88,6 +88,7 @@ describe('MonthSectionPersonRow', () => {
             showRowSelection={false}
             showNetColumns={false}
             showExtraHoursPercentColumn={false}
+            showDietasIrpfExemptionColumn={false}
           />
         </tbody>
       </table>
@@ -181,6 +182,7 @@ describe('MonthSectionPersonRow', () => {
             showRowSelection={false}
             showNetColumns={false}
             showExtraHoursPercentColumn={false}
+            showDietasIrpfExemptionColumn={false}
           />
         </tbody>
       </table>
@@ -265,6 +267,7 @@ describe('MonthSectionPersonRow', () => {
             showRowSelection={false}
             showNetColumns={false}
             showExtraHoursPercentColumn={false}
+            showDietasIrpfExemptionColumn={false}
           />
         </tbody>
       </table>

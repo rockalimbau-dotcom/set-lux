@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { getRoleBadgeCode, applyGenderToBadge } from '@shared/constants/roles';
 import { stripRoleSuffix } from '@shared/constants/roles';
 import { displayValue, displayMoney } from '../../utils/displayHelpers';
+import { retentionBaseIrpfEstado } from '../../utils/payrollRetentionBase';
 import WorkedDaysSummary from '../WorkedDaysSummary.tsx';
 import CargaDescargaSummary from '../CargaDescargaSummary.tsx';
 import ExtrasSummary from '../ExtrasSummary.jsx';
@@ -15,11 +16,14 @@ type MonthSectionPersonRowProps = {
   roleForColor: string;
   col: { bg: string; fg: string };
   roleLabelFromCode: (code: string) => string;
-  received: Record<string, { ok?: boolean; note?: string; irpf?: number; estado?: number; extraHoursPercent?: number }>;
+  received: Record<string, { ok?: boolean; note?: string; irpf?: number; estado?: number; extraHoursPercent?: number; dietasExentasIRPF?: boolean }>;
   irpfByPerson: Record<string, number>;
   isSelected: boolean;
   toggleRowSelection: (key: string) => void;
-  setRcv: (key: string, patch: { ok?: boolean; note?: string; irpf?: number; estado?: number; extraHoursPercent?: number }) => void;
+  setRcv: (
+    key: string,
+    patch: { ok?: boolean; note?: string; irpf?: number; estado?: number; extraHoursPercent?: number; dietasExentasIRPF?: boolean }
+  ) => void;
   projectMode?: 'semanal' | 'mensual' | 'diario';
   hasWorkedDaysData: boolean;
   hasHalfDaysData: boolean;
@@ -38,6 +42,8 @@ type MonthSectionPersonRowProps = {
   showRowSelection: boolean;
   showNetColumns: boolean;
   showExtraHoursPercentColumn: boolean;
+  /** Junto a la columna «Horas extras» del bloque IRPF (% sobre extras) */
+  showDietasIrpfExemptionColumn: boolean;
   readOnly?: boolean;
 };
 
@@ -61,6 +67,7 @@ export function MonthSectionPersonRow({
   showRowSelection,
   showNetColumns,
   showExtraHoursPercentColumn,
+  showDietasIrpfExemptionColumn,
   readOnly = false,
 }: MonthSectionPersonRowProps) {
   const { t, i18n } = useTranslation();
@@ -78,11 +85,14 @@ export function MonthSectionPersonRow({
       ? 4.7
       : Number(rc.extraHoursPercent);
   const totalBruto = Number(r._totalBruto || 0);
+  const totalDietas = Number(r._totalDietas || 0);
   const totalExtras = Number(r._totalExtras || 0);
+  const dietasExentasIRPF = !!rc.dietasExentasIRPF;
+  const baseRetencion = retentionBaseIrpfEstado(totalBruto, totalDietas, dietasExentasIRPF);
   const totalNeto =
     totalBruto -
-    totalBruto * irpfPercent / 100 -
-    totalBruto * estadoPercent / 100 -
+    baseRetencion * irpfPercent / 100 -
+    baseRetencion * estadoPercent / 100 -
     totalExtras * extraHoursPercent / 100;
 
   // Detectar el tema actual
@@ -469,6 +479,31 @@ export function MonthSectionPersonRow({
               title={readOnly ? t('conditions.projectClosed') : t('payroll.extraHoursPercentTitle')}
             />
             <span className='text-[9px] sm:text-[10px] md:text-xs text-zinc-400'>%</span>
+          </div>
+        </Td>
+      )}
+
+      {showDietasIrpfExemptionColumn && (
+        <Td align='middle' className='text-center payroll-extra-col'>
+          <div className='flex items-center justify-center'>
+            <input
+              type='checkbox'
+              checked={!!rc.dietasExentasIRPF}
+              onChange={e =>
+                !readOnly &&
+                totalDietas > 0 &&
+                setRcv(pKey, { dietasExentasIRPF: e.target.checked })
+              }
+              disabled={readOnly || totalDietas <= 0}
+              className={`w-3 h-3 sm:w-4 sm:h-4 accent-[var(--brand)] ${readOnly || totalDietas <= 0 ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}`}
+              title={
+                readOnly
+                  ? t('conditions.projectClosed')
+                  : totalDietas <= 0
+                    ? t('payroll.dietasExentaIRPFTitleNoAmount')
+                    : t('payroll.dietasExentaIRPFTitle')
+              }
+            />
           </div>
         </Td>
       )}
