@@ -296,7 +296,8 @@ function generatePersonConceptRows(
   conceptosConDatos: string[],
   safeSemanaWithData: string[],
   finalData: any,
-  blockKey?: string
+  blockKey?: string,
+  horasExtraTipo?: string
 ): string {
   const colors = getBlockColors(blockKey);
   return conceptosConDatos
@@ -308,7 +309,7 @@ function generatePersonConceptRows(
       });
     })
     .map(c => {
-      const total = calculateTotalForExport(finalData, pk, c, safeSemanaWithData, true);
+      const total = calculateTotalForExport(finalData, pk, c, safeSemanaWithData, true, horasExtraTipo);
       const totalDisplay = formatTotalDisplay(total, c);
 
       return `
@@ -352,7 +353,8 @@ export function generatePersonHTML(
   horarioPickup?: (iso: string) => string,
   horarioExtraByBlock?: (blockKey: string, iso: string) => string,
   blockKey?: string,
-  adjustConceptsForExport?: (personKey: string, baseConcepts: readonly string[]) => string[]
+  adjustConceptsForExport?: (personKey: string, baseConcepts: readonly string[]) => string[],
+  horasExtraTipo?: string
 ): string {
   const header = generatePersonHeader(
     pk,
@@ -375,6 +377,6 @@ export function generatePersonHTML(
     ? adjustConceptsForExport(pk, conceptosConDatos)
     : conceptosConDatos;
 
-  const rows = generatePersonConceptRows(pk, conceptsForPerson, safeSemanaWithData, finalData, blockKey);
+  const rows = generatePersonConceptRows(pk, conceptsForPerson, safeSemanaWithData, finalData, blockKey, horasExtraTipo);
   return header + rows;
 }

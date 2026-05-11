@@ -11,6 +11,7 @@ interface UseExportPDFParams {
   weekToSemanasISO: (week: AnyRecord) => string[];
   weekToPersonas: (week: AnyRecord) => AnyRecord[];
   mode: 'semanal' | 'mensual' | 'diario';
+  horasExtraTipo?: string;
 }
 
 /**
@@ -24,6 +25,7 @@ export function useExportPDF({
   weekToSemanasISO,
   weekToPersonas,
   mode,
+  horasExtraTipo,
 }: UseExportPDFParams) {
   const { t } = useTranslation();
 
@@ -88,6 +90,7 @@ export function useExportPDF({
       weekToSemanasISO,
       weekToPersonas,
       weeks: weeksInRange,
+      horasExtraTipo,
     });
   };
 

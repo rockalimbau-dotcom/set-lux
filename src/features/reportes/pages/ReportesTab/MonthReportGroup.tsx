@@ -52,6 +52,7 @@ function MonthReportGroup({
     weekToSemanasISO,
     weekToPersonas,
     mode,
+    horasExtraTipo: horasExtraSelector.displayedHorasExtraTipo,
   });
 
   return (

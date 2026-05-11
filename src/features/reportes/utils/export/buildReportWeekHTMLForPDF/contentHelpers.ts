@@ -20,7 +20,8 @@ export function generateBodyByBlocks(
   horarioPrelight?: (iso: string) => string,
   horarioPickup?: (iso: string) => string,
   horarioExtraByBlock?: (blockKey: string, iso: string) => string,
-  adjustConceptsForExport?: (personKey: string, baseConcepts: readonly string[]) => string[]
+  adjustConceptsForExport?: (personKey: string, baseConcepts: readonly string[]) => string[],
+  horasExtraTipo?: string
 ): string {
   const bodyParts: string[] = [];
   bodyParts.push(
@@ -40,7 +41,8 @@ export function generateBodyByBlocks(
         horarioPickup,
         horarioExtraByBlock,
         'base',
-        adjustConceptsForExport
+        adjustConceptsForExport,
+        horasExtraTipo
       )
     )
   );
@@ -63,7 +65,8 @@ export function generateBodyByBlocks(
           horarioPickup,
           horarioExtraByBlock,
           group.blockKey,
-          adjustConceptsForExport
+          adjustConceptsForExport,
+          horasExtraTipo
         )
       )
     );
@@ -86,7 +89,8 @@ export function generateBodyByBlocks(
         horarioPickup,
         horarioExtraByBlock,
         'pre',
-        adjustConceptsForExport
+        adjustConceptsForExport,
+        horasExtraTipo
       )
     )
   );
@@ -108,7 +112,8 @@ export function generateBodyByBlocks(
         horarioPickup,
         horarioExtraByBlock,
         'pick',
-        adjustConceptsForExport
+        adjustConceptsForExport,
+        horasExtraTipo
       )
     )
   );

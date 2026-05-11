@@ -26,6 +26,7 @@ export function buildReportWeekHTMLForPDF({
   CONCEPTS,
   adjustConceptsForExport,
   data,
+  horasExtraTipo,
 }: Omit<BuildReportWeekHTMLParams, 'personaKey' | 'personaRole' | 'personaName'>): string {
   // Debug removed to improve performance
 
@@ -113,7 +114,8 @@ export function buildReportWeekHTMLForPDF({
     horarioPrelight,
     horarioPickup,
     horarioExtraByBlock,
-    adjustConceptsForExport
+    adjustConceptsForExport,
+    horasExtraTipo
   );
 
   // Generate HTML

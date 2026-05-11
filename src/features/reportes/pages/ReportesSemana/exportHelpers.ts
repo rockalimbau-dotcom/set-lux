@@ -34,7 +34,8 @@ export const defaultExportWeek = (
   reportLabels: ReportLabels,
   groupedPersonKeys: GroupedPersonKeys,
   data: any,
-  adjustConceptsForExport?: (personKey: string, baseConcepts: readonly string[]) => string[]
+  adjustConceptsForExport?: (personKey: string, baseConcepts: readonly string[]) => string[],
+  horasExtraTipo?: string
 ) => {
   const css = `body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif;color:#111;padding:20px} table{width:100%;border-collapse:collapse;font-size:12px;margin:8px 0} th,td{border:1px solid #222;padding:6px;vertical-align:top} thead th{background:#eee}`;
   const inner = buildReportWeekHTML({
@@ -58,6 +59,7 @@ export const defaultExportWeek = (
     personaKey,
     personaRole,
     personaName,
+    horasExtraTipo,
   });
   const w = window.open('', '_blank');
   if (w) {
@@ -83,6 +85,7 @@ export const handleExportPDF = async (
   groupedPersonKeys: GroupedPersonKeys,
   data: any,
   adjustConceptsForExport?: (personKey: string, baseConcepts: readonly string[]) => string[],
+  horasExtraTipo?: string,
   onExportWeekPDF?: () => void,
   defaultExport?: () => void
 ) => {
@@ -109,6 +112,7 @@ export const handleExportPDF = async (
     personaRole,
     personaName,
     orientation: 'landscape',
+    horasExtraTipo,
   });
   if (!ok && defaultExport) defaultExport();
 };

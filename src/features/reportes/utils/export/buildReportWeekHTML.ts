@@ -59,6 +59,7 @@ export function buildReportWeekHTML({
   CONCEPTS,
   adjustConceptsForExport,
   data,
+  horasExtraTipo,
 }: BuildReportWeekHTMLParams): string {
   // Debug removed to improve performance
 
@@ -160,7 +161,7 @@ export function buildReportWeekHTML({
           });
         })
         .map(c => {
-          const total = calculateTotalForExport(finalData, pk, c, safeSemanaWithData, false);
+          const total = calculateTotalForExport(finalData, pk, c, safeSemanaWithData, false, horasExtraTipo);
           let totalDisplay = '';
           if (total === '') {
             totalDisplay = '';

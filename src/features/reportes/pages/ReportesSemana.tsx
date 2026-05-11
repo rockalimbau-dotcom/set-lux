@@ -765,6 +765,7 @@ export default function ReportesSemana({
     adjustConceptsForExport,
     onExportWeekHTML,
     onExportWeekPDF,
+    horasExtraTipo,
   });
 
   const dayNameTranslator = useDayNameTranslator();

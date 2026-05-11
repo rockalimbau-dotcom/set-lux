@@ -31,6 +31,7 @@ interface UseReportExportProps {
   adjustConceptsForExport?: (personKey: string, baseConcepts: readonly string[]) => string[];
   onExportWeekHTML?: () => void;
   onExportWeekPDF?: () => void;
+  horasExtraTipo?: string;
 }
 
 interface UseReportExportReturn {
@@ -58,6 +59,7 @@ export function useReportExport({
   adjustConceptsForExport,
   onExportWeekHTML,
   onExportWeekPDF,
+  horasExtraTipo,
 }: UseReportExportProps): UseReportExportReturn {
   const dayNameFromISOFn = useMemo(
     () => (iso: string, index: number) => dayNameFromISO(iso, index, [...DAY_NAMES] as any),
@@ -81,7 +83,8 @@ export function useReportExport({
       reportLabels,
       groupedPersonKeys,
       data,
-      adjustConceptsForExport
+      adjustConceptsForExport,
+      horasExtraTipo
     );
   };
 
@@ -102,6 +105,7 @@ export function useReportExport({
       groupedPersonKeys,
       data,
       adjustConceptsForExport,
+      horasExtraTipo,
       onExportWeekPDF,
       () => defaultExportWeek(
         project,
@@ -118,7 +122,8 @@ export function useReportExport({
         reportLabels,
         groupedPersonKeys,
         data,
-        adjustConceptsForExport
+        adjustConceptsForExport,
+        horasExtraTipo
       )
     );
   };

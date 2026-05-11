@@ -2,6 +2,7 @@ import { parseDietas } from '../text';
 import { norm } from '../text';
 import { resolveProjectRole } from '@shared/utils/projectRoles';
 import { extractNumericValue, formatHorasExtraDecimal } from '../runtime';
+import { isMinutageExtraHoursMode } from '../extraHoursType';
 
 /**
  * Helper function to calculate total for a concept
@@ -11,7 +12,8 @@ export const calculateTotalForExport = (
   pKey: string,
   concepto: string,
   semana: string[],
-  forPDF: boolean = false
+  forPDF: boolean = false,
+  horasExtraTipo?: string
 ): number | string | { breakdown: Map<string, number> } => {
   const parseNumericInput = (raw: string): number => {
     const cleaned = String(raw)
@@ -95,8 +97,12 @@ export const calculateTotalForExport = (
     }
   });
   if (total <= 0) return '';
-  if (concepto === 'Horas extra' && (forPDF || horasExtraWasFormatted)) {
-    // Mantener consistencia visual con el modo minutaje (formato con paréntesis).
+  if (
+    concepto === 'Horas extra' &&
+    (isMinutageExtraHoursMode(String(horasExtraTipo || '')) || forPDF || horasExtraWasFormatted)
+  ) {
+    // Mantener consistencia visual con el modo minutaje (formato con paréntesis),
+    // incluso si el valor guardado no incluye paréntesis.
     return formatHorasExtraDecimal(total);
   }
   return total;

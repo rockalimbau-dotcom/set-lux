@@ -45,6 +45,11 @@ export interface BuildReportWeekHTMLParams {
   personaKey?: (persona: any) => string;
   personaRole?: (persona: any) => string;
   personaName?: (persona: any) => string;
+  /**
+   * Tipo de cálculo/visualización de horas extra (p. ej. "Minutaje", "Minutaje + corte").
+   * Se usa en export para formatear el total de "Horas extra" igual que en Reportes.
+   */
+  horasExtraTipo?: string;
 }
 
 export interface BuildPdfParams extends BuildReportWeekHTMLParams {
@@ -64,4 +69,5 @@ export interface ExportReportRangeParams {
   horarioPrelight?: (iso: string) => string;
   horarioPickup?: (iso: string) => string;
   adjustConceptsForExport?: (personKey: string, baseConcepts: readonly string[]) => string[];
+  horasExtraTipo?: string;
 }

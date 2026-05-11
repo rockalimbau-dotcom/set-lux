@@ -37,6 +37,7 @@ export async function exportReportRangeToPDF(params: ExportReportRangeParams) {
     horarioPrelight,
     horarioPickup,
     adjustConceptsForExport: adjustConceptsParam,
+    horasExtraTipo,
   } = params;
 
   const adjustConceptsForExport =
@@ -494,6 +495,7 @@ export async function exportReportRangeToPDF(params: ExportReportRangeParams) {
           CONCEPTS: [...CONCEPTS],
           adjustConceptsForExport,
           data: pageData,
+          horasExtraTipo,
         });
 
         // Crear contenedor temporal igual que exportReportWeekToPDF
