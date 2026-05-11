@@ -10,7 +10,6 @@ import {
   resolveExportRoleMeta,
 } from '../dataHelpers';
 import { extractNumericValue } from '../../runtime';
-import { isMinutageExtraHoursMode } from '../../extraHoursType';
 
 function scheduleForPerson(
   pk: string,
@@ -296,7 +295,7 @@ function shouldHighlightCell(
   horasExtraTipo?: string
 ): boolean {
   if (isNumericLike(cellValue)) return true;
-  if (concept === 'Horas extra' && isMinutageExtraHoursMode(String(horasExtraTipo || ''))) {
+  if (concept === 'Horas extra') {
     const num = extractNumericValue(String(cellValue ?? ''));
     return !isNaN(num) && num > 0;
   }
