@@ -9,6 +9,8 @@ import {
   parsePersonKey,
   resolveExportRoleMeta,
 } from '../dataHelpers';
+import { extractNumericValue } from '../../runtime';
+import { isMinutageExtraHoursMode } from '../../extraHoursType';
 
 function scheduleForPerson(
   pk: string,
@@ -288,6 +290,19 @@ function hasVisibleValue(value: any): boolean {
   return String(value ?? '').trim() !== '';
 }
 
+function shouldHighlightCell(
+  concept: string,
+  cellValue: any,
+  horasExtraTipo?: string
+): boolean {
+  if (isNumericLike(cellValue)) return true;
+  if (concept === 'Horas extra' && isMinutageExtraHoursMode(String(horasExtraTipo || ''))) {
+    const num = extractNumericValue(String(cellValue ?? ''));
+    return !isNaN(num) && num > 0;
+  }
+  return false;
+}
+
 /**
  * Generate HTML for a person's concept rows
  */
@@ -318,7 +333,7 @@ function generatePersonConceptRows(
           ${safeSemanaWithData
             .map(iso => {
               const cellValue = formatCellValue(finalData?.[pk]?.[c]?.[iso], c);
-              const highlight = isNumericLike(cellValue);
+              const highlight = shouldHighlightCell(c, cellValue, horasExtraTipo);
               const dietHighlight = c === 'Dietas' && hasVisibleValue(cellValue);
               const background = colors.conceptBg;
               const textStyle = highlight

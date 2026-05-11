@@ -12,6 +12,8 @@ import {
   isMeaningfulValue,
 } from './dataHelpers';
 import { groupAndSortPersonsByBlock } from './buildReportWeekHTMLForPDF/sortingHelpers';
+import { extractNumericValue } from '../runtime';
+import { isMinutageExtraHoursMode } from '../extraHoursType';
 
 function scheduleForPerson(
   pk: string,
@@ -206,7 +208,16 @@ export function buildReportWeekHTML({
                   // If parsing fails, use original value
                 }
               }
-              return `<td style="border:1px solid #999;padding:6px;">${esc(cellValue)}</td>`;
+              const isNumeric = /^-?\\d+([.,]\\d+)?$/.test(String(cellValue ?? '').trim());
+              const isMinutageHorasExtra =
+                c === 'Horas extra' && isMinutageExtraHoursMode(String(horasExtraTipo || ''));
+              const shouldHighlight =
+                isNumeric || (isMinutageHorasExtra && (() => {
+                  const num = extractNumericValue(String(cellValue ?? ''));
+                  return !isNaN(num) && num > 0;
+                })());
+              const style = shouldHighlight ? 'font-weight:700;color:#c2410c;' : '';
+              return `<td style="border:1px solid #999;padding:6px;${style}">${esc(cellValue)}</td>`;
             })
             .join('')}
           <td style="border:1px solid #999;padding:6px;text-align:left;font-weight:bold;">${esc(totalDisplay)}</td>
