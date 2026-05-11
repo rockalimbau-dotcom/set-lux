@@ -1,6 +1,7 @@
 import { parseDietas } from '../text';
 import { norm } from '../text';
 import { resolveProjectRole } from '@shared/utils/projectRoles';
+import { extractNumericValue, formatHorasExtraDecimal } from '../runtime';
 
 /**
  * Helper function to calculate total for a concept
@@ -74,16 +75,31 @@ export const calculateTotalForExport = (
 
   // Para conceptos numéricos, sumar todos los valores
   let total = 0;
+  let horasExtraWasFormatted = false;
   semana.forEach(fecha => {
     const val = data?.[pKey]?.[concepto]?.[fecha] ?? '';
     if (val && val.toString().trim() !== '') {
-      const num = concepto === 'Gasolina' ? parseNumericInput(val) : Number(val);
+      let num: number;
+      if (concepto === 'Horas extra') {
+        const strVal = String(val);
+        if (strVal.includes('(')) horasExtraWasFormatted = true;
+        num = extractNumericValue(strVal);
+      } else if (concepto === 'Gasolina') {
+        num = parseNumericInput(val);
+      } else {
+        num = Number(val);
+      }
       if (!isNaN(num)) {
         total += num;
       }
     }
   });
-  return total > 0 ? total : '';
+  if (total <= 0) return '';
+  if (concepto === 'Horas extra' && (forPDF || horasExtraWasFormatted)) {
+    // Mantener consistencia visual con el modo minutaje (formato con paréntesis).
+    return formatHorasExtraDecimal(total);
+  }
+  return total;
 };
 
 /**
@@ -484,6 +500,12 @@ export const isMeaningfulValue = (value: any): boolean => {
   if (!value) return false;
   const trimmedValue = value.toString().trim();
   if (trimmedValue === '') return false;
+  // En modos de minutaje de horas extra guardamos strings con paréntesis (p.ej. "0.58 (35 ')").
+  // Si el valor numérico es 0, no lo consideramos "dato" para evitar que la exportación muestre filas fantasma.
+  if (trimmedValue.includes('(') && /[0-9]/.test(trimmedValue)) {
+    const num = extractNumericValue(trimmedValue);
+    if (!isNaN(num) && num <= 0) return false;
+  }
   if (trimmedValue === '0') return false;
   if (trimmedValue === '0.0') return false;
   if (trimmedValue === '0,0') return false;
