@@ -321,6 +321,7 @@ export function useNeedsActions({
           const nextDay: AnyRecord = {
             ...day,
             [fieldKey]: nextTipo,
+            manualTipo: true,
           };
 
           if (normalized === 'descanso' || normalized === 'fin') {
