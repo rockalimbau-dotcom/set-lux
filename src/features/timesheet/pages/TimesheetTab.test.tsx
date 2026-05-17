@@ -20,7 +20,30 @@ vi.mock('@shared/hooks/useLocalStorage', () => ({
   useLocalStorage: vi.fn((_: string, initialValue: unknown) => [initialValue, vi.fn()]),
 }));
 
-import { extractWorkersFromWeek, getTimesheetRoleLabel } from './TimesheetTab';
+import { diffMinutes, extractWorkersFromWeek, getTimesheetRoleLabel } from './TimesheetTab';
+
+describe('diffMinutes', () => {
+  it('calculates same-day duration', () => {
+    expect(diffMinutes('10:00', '22:00')).toBe(12 * 60);
+  });
+
+  it('treats 00:00 end as midnight (not empty)', () => {
+    expect(diffMinutes('10:30', '00:00')).toBe(13 * 60 + 30);
+  });
+
+  it('calculates overnight when end is after midnight but before start', () => {
+    expect(diffMinutes('16:15', '06:00')).toBe(13 * 60 + 45);
+  });
+
+  it('returns 0 when times are missing', () => {
+    expect(diffMinutes('', '22:00')).toBe(0);
+    expect(diffMinutes('10:00', '')).toBe(0);
+  });
+
+  it('allows start at 00:00', () => {
+    expect(diffMinutes('00:00', '17:00')).toBe(17 * 60);
+  });
+});
 
 describe('TimesheetTab helpers', () => {
   const t = (key: string) => {

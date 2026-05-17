@@ -193,12 +193,25 @@ const parseMinutes = (hhmm: string): number => {
   return h * 60 + min;
 };
 
-const diffMinutes = (from: string, to: string): number => {
-  const start = parseMinutes(from);
-  const end = parseMinutes(to);
-  if (!start || !end) return 0;
+const HHMM_RE = /^(\d{1,2}):(\d{2})$/;
+
+const isValidHHMM = (hhmm: string): boolean => HHMM_RE.test(String(hhmm || '').trim());
+
+/** Minutes between from/to; 00:00 as end means midnight (end of day). Overnight if to < from. */
+export const diffMinutes = (from: string, to: string): number => {
+  const fromNorm = String(from || '').trim();
+  const toNorm = String(to || '').trim();
+  if (!isValidHHMM(fromNorm) || !isValidHHMM(toNorm)) return 0;
+
+  const start = parseMinutes(fromNorm);
+  let end = parseMinutes(toNorm);
+
+  if (end === 0 && start > 0 && /^0{1,2}:00$/.test(toNorm)) {
+    end = 24 * 60;
+  }
+
   if (end >= start) return end - start;
-  return (24 * 60 - start) + end;
+  return 24 * 60 - start + end;
 };
 
 const formatDuration = (minutes: number): string => {
