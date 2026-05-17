@@ -55,6 +55,7 @@ interface NecesidadesTabContentProps {
   setImportDecisions: (next: Record<string, WeekDecision>) => void;
   onCloseImportPreview: () => void;
   onConfirmImport: () => void;
+  conditionsMode?: string | null;
 }
 
 export function NecesidadesTabContent({
@@ -98,6 +99,7 @@ export function NecesidadesTabContent({
   setImportDecisions,
   onCloseImportPreview,
   onConfirmImport,
+  conditionsMode,
 }: NecesidadesTabContentProps) {
   const { t } = useTranslation();
   const [calendarScopeOpen, setCalendarScopeOpen] = useState(false);
@@ -209,6 +211,7 @@ export function NecesidadesTabContent({
                 updateRowLabel={updateRowLabel}
                 removeCustomRow={removeCustomRow}
                 tutorialId={scope === 'pro' && index === 0 ? 'planning-week' : undefined}
+                conditionsMode={conditionsMode}
               />
             );
           } catch (error) {

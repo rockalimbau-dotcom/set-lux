@@ -5,6 +5,12 @@ import { PRICE_HEADERS } from '../shared.constants';
 import MaterialPropioTypeDropdown from '../shared/MaterialPropioTypeDropdown';
 import { AnyRecord } from '@shared/types/common';
 import { getConditionRoleOptions, getDefaultConditionRoleKeys, getTranslatedConditionRoleLabel, sortConditionRoleKeys } from '../roleCatalog';
+import {
+  CONDITIONS_PRICE_HEADER_CELL_CLASS,
+  CONDITIONS_PRICE_INPUT_CLASS,
+  CONDITIONS_PRICE_TABLE_CLASS,
+  CONDITIONS_PRICE_VALUE_CELL_CLASS,
+} from '../shared/conditionsPriceTableUi';
 
 interface PriceSectionProps {
   project?: AnyRecord | null;
@@ -198,12 +204,14 @@ export function PriceSection({
       {/* Tabla de precios */}
       <section className='rounded sm:rounded-md md:rounded-lg lg:rounded-xl xl:rounded-2xl border border-neutral-border bg-neutral-panel/90 relative overflow-visible'>
         <div className='overflow-x-auto overflow-y-visible'>
-        <table className='min-w-[600px] sm:min-w-[720px] md:min-w-[920px] w-full border-collapse text-[9px] sm:text-[10px] md:text-xs lg:text-sm'>
+        <table className={CONDITIONS_PRICE_TABLE_CLASS}>
           <thead>
             <tr>
               <Th align='left'>{t('conditions.rolePrice')}</Th>
               {visibleHeaders.map(col => (
-                <Th key={col} align='center'>{translateHeader(col)}</Th>
+                <Th key={col} align='center' className={CONDITIONS_PRICE_HEADER_CELL_CLASS}>
+                  {translateHeader(col)}
+                </Th>
               ))}
             </tr>
           </thead>
@@ -251,7 +259,7 @@ export function PriceSection({
                       const canEdit = isSemanal || isRefuerzo || isMaterialPropio || hasSemanalValue;
                       
                       return (
-                        <Td key={h} align='center' className='align-middle'>
+                        <Td key={h} align='center' className={CONDITIONS_PRICE_VALUE_CELL_CLASS}>
                           {isMaterialPropio ? (
                             <div className='flex h-full flex-col items-center justify-center gap-0.5 sm:gap-1'>
                               <input
@@ -262,7 +270,7 @@ export function PriceSection({
                                 step='0.01'
                                 disabled={readOnly || (!canEdit)}
                                 readOnly={readOnly}
-                                className={`w-full px-1 py-0.5 sm:px-1.5 sm:py-1 md:px-2 md:py-1 rounded sm:rounded-md md:rounded-lg border border-neutral-border focus:outline-none focus:ring-1 text-center text-[9px] sm:text-[10px] md:text-xs ${
+                                className={`${CONDITIONS_PRICE_INPUT_CLASS} ${
                                   readOnly || !canEdit
                                     ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 cursor-not-allowed opacity-50' 
                                     : 'dark:bg-transparent'
@@ -285,7 +293,7 @@ export function PriceSection({
                                 step='0.01'
                                 disabled={readOnly || (!canEdit)}
                                 readOnly={readOnly}
-                                className={`w-full px-1 py-0.5 sm:px-1.5 sm:py-1 md:px-2 md:py-1 rounded sm:rounded-md md:rounded-lg border border-neutral-border focus:outline-none focus:ring-1 text-center text-[9px] sm:text-[10px] md:text-xs ${
+                                className={`${CONDITIONS_PRICE_INPUT_CLASS} ${
                                   readOnly || !canEdit
                                     ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 cursor-not-allowed opacity-50' 
                                     : 'dark:bg-transparent'

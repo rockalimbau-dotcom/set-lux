@@ -14,7 +14,9 @@ type JornadaType =
   | '1/2 jornada'
   | 'Prelight' 
   | 'Recogida' 
-  | 'Rodaje Festivo' 
+  | 'Rodaje Festivo'
+  | 'Sexto día'
+  | 'Sexto día 1/2 jornada'
   | 'Fin' 
   | 'Descanso';
 
@@ -58,6 +60,14 @@ export function normalizeJornadaType(tipo: string | null | undefined): string {
     'rodaje festivo': 'Rodaje Festivo',
     'holiday filming': 'Rodaje Festivo',
     'rodatge festiu': 'Rodaje Festivo',
+    'sexto día': 'Sexto día',
+    'sexto dia': 'Sexto día',
+    'sixth day': 'Sexto día',
+    'sisè dia': 'Sexto día',
+    'sexto día 1/2 jornada': 'Sexto día 1/2 jornada',
+    'sexto dia 1/2 jornada': 'Sexto día 1/2 jornada',
+    'sixth day half': 'Sexto día 1/2 jornada',
+    'sisè dia 1/2 jornada': 'Sexto día 1/2 jornada',
     'fin': 'Fin',
     'end': 'Fin',
     'fi': 'Fin',
@@ -95,6 +105,8 @@ export function translateJornadaType(
     'Prelight': translateFn('planning.prelight', 'Prelight'),
     'Recogida': translateFn('planning.pickup', 'Recogida'),
     'Rodaje Festivo': translateFn('planning.holidayShooting', 'Rodaje Festivo'),
+    'Sexto día': translateFn('planning.sixthDay', 'Sexto día'),
+    'Sexto día 1/2 jornada': translateFn('planning.sixthDayHalf', 'Sexto día 1/2 jornada'),
     'Fin': translateFn('planning.end', 'Fin'),
     'Descanso': translateFn('planning.rest', 'Descanso'),
   };

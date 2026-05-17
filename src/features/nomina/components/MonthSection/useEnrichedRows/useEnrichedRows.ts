@@ -85,19 +85,35 @@ export function useEnrichedRows({
       const visibleKey = mergeKeyFor(r);
       const siblingBlocks = visibleBlocksByKey.get(visibleKey) || new Set<string>();
       const rowDisplayBlock = (r as any)._displayBlock || 'base';
-      const sourceForBreakdown =
+      const keyNoPR = `${stripPR(roleForBreakdown)}__${r.name}`;
+      const baseRoleCode = stripPR(roleForBreakdown);
+      const isRefuerzo =
+        (r.role && r.role.startsWith('REF') && r.role.length > 3) || refuerzoSet.has(keyNoPR);
+
+      let breakdownRole = roleForBreakdown;
+      let breakdownSource: string | undefined =
         rowDisplayBlock === 'extra'
           ? 'ref'
           : rowDisplayBlock === 'base' &&
+            !isRefuerzo &&
             (siblingBlocks.has('pre') || siblingBlocks.has('pick') || siblingBlocks.has('extra'))
             ? 'base-strict'
-          : r.source;
+            : r.source;
+
+      if (isRefuerzo) {
+        const roleStartsWithRef = breakdownRole.startsWith('REF') && breakdownRole.length > 3;
+        if (!roleStartsWithRef) {
+          breakdownRole = baseRoleCode ? `REF${baseRoleCode}` : 'REF';
+        }
+        breakdownSource = rowDisplayBlock === 'extra' ? 'ref' : undefined;
+      }
+
       const person = {
-        role: roleForBreakdown,
+        role: breakdownRole,
         roleId: (r as any).roleId,
         personId: (r as any).personId,
         name: r.name,
-        source: sourceForBreakdown,
+        source: breakdownSource,
       };
       const breakdown = calcWorkedBreakdown(weeksForMonth, filterISO, person);
       const {
@@ -116,13 +132,12 @@ export function useEnrichedRows({
         descarga,
         localizar,
         rodajeFestivo,
+        sextoDia,
+        sextoDiaHalf,
         prelight,
         recogida,
       } = breakdown;
 
-      // Obtener precios del rol
-      const keyNoPR = `${stripPR(roleForBreakdown)}__${r.name}`;
-      const baseRoleCode = stripPR(roleForBreakdown);
       const baseRoleLabel = roleLabelFromCode(baseRoleCode);
       
       // Preservar el sufijo P/R del rol original para determinar qué tabla de precios usar
@@ -131,9 +146,6 @@ export function useEnrichedRows({
       const hasR = originalRole.endsWith('R') || originalRole.endsWith('r');
       const needsPrelightPrice = !hasP && !hasR && workedPre > 0 && workedBase === 0 && workedPick === 0;
       const needsPickupPrice = !hasP && !hasR && workedPick > 0 && workedBase === 0 && workedPre === 0;
-      
-      // Si el rol empieza con "REF" (REFG, REFBB, etc.) o está en refuerzoSet, usar lógica de refuerzo
-      const isRefuerzo = (r.role && r.role.startsWith('REF') && r.role.length > 3) || refuerzoSet.has(keyNoPR);
 
       // Calcular total días trabajados según el modo
       // Para refuerzos en mensual, usar solo los días específicos donde están marcados
@@ -268,6 +280,8 @@ export function useEnrichedRows({
           halfDays || 0,
           travelDays,
           holidayDays,
+          sextoDia || 0,
+          sextoDiaHalf || 0,
           horasExtraValue,
           turnAroundValue,
           nocturnidadValue,
@@ -292,6 +306,8 @@ export function useEnrichedRows({
           halfDays || 0,
           travelDays,
           holidayDays,
+          sextoDia || 0,
+          sextoDiaHalf || 0,
           horasExtraValue,
           turnAroundValue,
           nocturnidadValue,
@@ -317,6 +333,8 @@ export function useEnrichedRows({
           halfDays,
           travelDays,
           holidayDays,
+          sextoDia: sextoDia || 0,
+          sextoDiaHalf: sextoDiaHalf || 0,
           horasExtra: horasExtraValue,
           turnAround: turnAroundValue,
           nocturnidad: nocturnidadValue,
@@ -342,13 +360,14 @@ export function useEnrichedRows({
       const dietasLabel = buildDietasLabel(dietasMap, ticketValue, otherValue);
 
       const displayWorkedDays =
-        projectMode === 'mensual' ? workedDays : totalDiasTrabajados;
+        isRefuerzo || projectMode === 'mensual' ? workedDays : totalDiasTrabajados;
 
       return {
         ...r,
         _rowKey: (r as any)._rowKey || mergeKeyFor(r),
         role: roleDisplay,
         _originalRole: roleForBadge, // Mostrar sufijo P/R cuando aplique
+        _isRefuerzo: isRefuerzo,
         _displayBlock: displayBlock,
         extras: extrasValue,
         horasExtra: horasExtraValue,
@@ -376,12 +395,16 @@ export function useEnrichedRows({
         _descarga: descarga,
         _localizar: localizar,
         _rodajeFestivo: rodajeFestivo,
+        _sextoDia: sextoDia || 0,
+        _sextoDiaHalf: sextoDiaHalf || 0,
         _prelight: prelight,
         _recogida: recogida,
         _totalDias: totals.totalDias,
         _totalHalfDays: totals.totalHalfDays || 0,
         _totalTravel: totals.totalTravel,
         _totalHolidays: totals.totalHolidays,
+        _totalSextoDia: (totals as any).totalSextoDia || 0,
+        _totalSextoDiaHalf: (totals as any).totalSextoDiaHalf || 0,
         _totalExtras: totals.totalExtras,
         _totalDietas: totalDietas,
         _totalTrans: totals.totalTrans,
@@ -470,6 +493,10 @@ export function useEnrichedRows({
       existing._descarga += row._descarga || 0;
       existing._localizar += row._localizar || 0;
       existing._rodajeFestivo += row._rodajeFestivo || 0;
+      existing._sextoDia += row._sextoDia || 0;
+      existing._sextoDiaHalf += row._sextoDiaHalf || 0;
+      existing._totalSextoDia += row._totalSextoDia || 0;
+      existing._totalSextoDiaHalf += row._totalSextoDiaHalf || 0;
       existing._prelight += row._prelight || 0;
       existing._recogida += row._recogida || 0;
       existing._totalDias += row._totalDias || 0;

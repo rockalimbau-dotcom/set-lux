@@ -71,6 +71,16 @@ export const generateHeaderCells = (
     headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;"><div class="th-label">${i18n.t('payroll.totalHolidayDays')}</div></th>`);
   }
 
+  if (columnVisibility.sextoDia) {
+    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;"><div class="th-label">${i18n.t('payroll.sextoDays')}</div></th>`);
+    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;"><div class="th-label">${i18n.t('payroll.totalSextoDays')}</div></th>`);
+  }
+
+  if (columnVisibility.sextoDiaHalf) {
+    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;"><div class="th-label">${i18n.t('payroll.sextoHalfDays')}</div></th>`);
+    headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;"><div class="th-label">${i18n.t('payroll.totalSextoHalfDays')}</div></th>`);
+  }
+
   if (columnVisibility.travel) {
     headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;"><div class="th-label">${i18n.t('payroll.travelDays')}</div></th>`);
     headerCells.push(`<th style="text-align:center !important;vertical-align:middle !important;"><div class="th-label">${i18n.t('payroll.totalTravelDays')}</div></th>`);
@@ -152,7 +162,7 @@ export const generateRowDataCells = (
   const roleDisplay = applyGenderToBadge(getRoleBadgeCode(String(roleForDisplay), i18n.language), (r as any).gender);
   const dataCells = [
     `<td class="text-left person-cell" style="font-weight:600;vertical-align:middle !important;"><div class="person-label"><span class="person-role">${esc(roleDisplay || '—')}</span><span class="person-name">${esc(r.name || '—')}</span></div></td>`,
-    `<td style="text-align:center !important;vertical-align:middle !important;"><div class="td-label td-label-center">${generateWorkedDaysText(r, { includeCargaDescarga: projectMode !== 'diario', projectMode }) || esc(displayValue(r._worked))}</div></td>`,
+    `<td style="text-align:center !important;vertical-align:middle !important;"><div class="td-label td-label-center">${generateWorkedDaysText(r, { includeCargaDescarga: projectMode !== 'diario', projectMode, columnVisibility: { sextoDia: columnVisibility.sextoDia, sextoDiaHalf: columnVisibility.sextoDiaHalf } }) || esc(displayValue(r._worked))}</div></td>`,
     `<td style="text-align:center !important;vertical-align:middle !important;"><div class="td-label td-label-center">${esc(displayMoney(r._totalDias, 2))}</div></td>`,
   ];
 
@@ -174,6 +184,16 @@ export const generateRowDataCells = (
   if (columnVisibility.holidays) {
     dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;"><div class="td-label td-label-center">${esc(displayValue(r._holidays))}</div></td>`);
     dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;"><div class="td-label td-label-center">${esc(displayMoney(r._totalHolidays, 2))}</div></td>`);
+  }
+
+  if (columnVisibility.sextoDia) {
+    dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;"><div class="td-label td-label-center">${esc(displayValue(r._sextoDia))}</div></td>`);
+    dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;"><div class="td-label td-label-center">${esc(displayMoney(r._totalSextoDia, 2))}</div></td>`);
+  }
+
+  if (columnVisibility.sextoDiaHalf) {
+    dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;"><div class="td-label td-label-center">${esc(displayValue(r._sextoDiaHalf))}</div></td>`);
+    dataCells.push(`<td style="text-align:center !important;vertical-align:middle !important;"><div class="td-label td-label-center">${esc(displayMoney(r._totalSextoDiaHalf, 2))}</div></td>`);
   }
 
   if (columnVisibility.travel) {

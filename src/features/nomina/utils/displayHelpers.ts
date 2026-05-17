@@ -20,3 +20,15 @@ export const displayMoney = (value: number | undefined | null, decimals: number 
   return `${cleaned}€`;
 };
 
+/** Días mostrados en la columna Jornadas cuando sexto día tiene columna propia. */
+export function jornadasColumnDayCount(
+  row: { _worked?: number; _sextoDia?: number; _sextoDiaHalf?: number; _isRefuerzo?: boolean },
+  columnVisibility?: { sextoDia?: boolean; sextoDiaHalf?: boolean }
+): number {
+  let count = row._worked || 0;
+  if (row._isRefuerzo) return count;
+  if (columnVisibility?.sextoDia) count -= row._sextoDia || 0;
+  if (columnVisibility?.sextoDiaHalf) count -= row._sextoDiaHalf || 0;
+  return Math.max(0, count);
+}
+

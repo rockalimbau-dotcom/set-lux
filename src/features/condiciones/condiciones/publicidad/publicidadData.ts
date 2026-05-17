@@ -3,6 +3,7 @@ import { loadJSON, normalizeCustomSections } from '../shared';
 import { storage } from '@shared/services/localStorage.service';
 import { DEFAULT_FESTIVOS_TEXT } from '@shared/constants/festivos';
 import { getDefaultsDiario } from '../../utils/translationHelpers';
+import { migrateConditionsPrices, PRICE_KEY_FESTIVO } from '../shared/priceKeys';
 
 // Variable global para festivos dinámicos
 let globalDynamicFestivosText = DEFAULT_FESTIVOS_TEXT;
@@ -32,7 +33,7 @@ export function loadOrSeedDiario(storageKey: string): AnyRecord {
     prices: {
       'Gaffer': {
         'Precio jornada': '510',
-        'Precio Día extra/Festivo': '892.5',
+        [PRICE_KEY_FESTIVO]: '892.5',
         'Travel day': '510',
         'Horas extras': '75',
         'Carga/descarga': '225',
@@ -40,7 +41,7 @@ export function loadOrSeedDiario(storageKey: string): AnyRecord {
       },
       'Best boy': {
         'Precio jornada': '410',
-        'Precio Día extra/Festivo': '717.5',
+        [PRICE_KEY_FESTIVO]: '717.5',
         'Travel day': '410',
         'Horas extras': '60',
         'Carga/descarga': '180',
@@ -48,28 +49,28 @@ export function loadOrSeedDiario(storageKey: string): AnyRecord {
       },
       'Eléctrico': {
         'Precio jornada': '310',
-        'Precio Día extra/Festivo': '542.5',
+        [PRICE_KEY_FESTIVO]: '542.5',
         'Travel day': '310',
         'Horas extras': '45',
         'Carga/descarga': '135',
       },
       'Auxiliar': {
         'Precio jornada': '250',
-        'Precio Día extra/Festivo': '437.5',
+        [PRICE_KEY_FESTIVO]: '437.5',
         'Travel day': '250',
         'Horas extras': '35',
         'Carga/descarga': '105',
       },
       'Técnico de mesa': {
         'Precio jornada': '350',
-        'Precio Día extra/Festivo': '612.5',
+        [PRICE_KEY_FESTIVO]: '612.5',
         'Travel day': '350',
         'Horas extras': '50',
         'Carga/descarga': '150',
       },
       'Finger boy': {
         'Precio jornada': '350',
-        'Precio Día extra/Festivo': '612.5',
+        [PRICE_KEY_FESTIVO]: '612.5',
         'Travel day': '350',
         'Horas extras': '50',
         'Carga/descarga': '150',
@@ -257,7 +258,7 @@ export function loadOrSeedDiario(storageKey: string): AnyRecord {
         } catch {}
       }
 
-      return parsed;
+      return migrateConditionsPrices(parsed);
     }
 
     // Sincronizar roles con prices en el fallback también

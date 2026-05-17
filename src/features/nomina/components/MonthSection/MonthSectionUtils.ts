@@ -146,6 +146,8 @@ export function detectMissingPrices(
     cargaDescarga?: boolean;
     travelDay?: boolean;
     holidayDay?: boolean;
+    sextoDia?: boolean;
+    sextoDiaHalf?: boolean;
     horaExtra?: boolean;
     transporte?: boolean;
     km?: boolean;
@@ -231,6 +233,12 @@ export function detectMissingPrices(
     }
     if (data.holidayDays && data.holidayDays > 0 && (effectivePr.holidayDay || 0) === 0) {
       missingPrices.holidayDay = true;
+    }
+    if ((data.sextoDia || 0) > 0 && (effectivePr.sextoDia || 0) === 0) {
+      missingPrices.sextoDia = true;
+    }
+    if ((data.sextoDiaHalf || 0) > 0 && (effectivePr.sextoDiaHalf || 0) === 0) {
+      missingPrices.sextoDiaHalf = true;
     }
     
     const totalExtrasCount = (data.horasExtra || 0) + (data.turnAround || 0) + (data.nocturnidad || 0) + (data.penaltyLunch || 0);

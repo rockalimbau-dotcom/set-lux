@@ -13,6 +13,7 @@ import Chip from './Chip';
 import { ConfirmModal } from './ConfirmModal';
 import EditableRowLabel from './EditableRowLabel';
 import TextAreaAuto from './TextAreaAuto';
+import { getNecesidadesJornadaOptions } from '@shared/constants/jornadaTypes';
 import { JornadaDropdownCell, MemberDropdown } from './MembersRow';
 import { getNeedsDayTypePalette } from '../utils/dayTypeColors';
 
@@ -30,6 +31,7 @@ type ExtraBlocksRowProps = {
   collapsible?: boolean;
   defaultCollapsed?: boolean;
   onLabelChange?: (label: string) => void;
+  conditionsMode?: string | null;
 };
 
 const createBlockId = () =>
@@ -60,8 +62,13 @@ export function ExtraBlocksRow({
   collapsible = false,
   defaultCollapsed = false,
   onLabelChange,
+  conditionsMode,
 }: ExtraBlocksRowProps) {
   const { t } = useTranslation();
+  const jornadaOptions = useMemo(
+    () => [...getNecesidadesJornadaOptions(conditionsMode)],
+    [conditionsMode]
+  );
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
     if (typeof document !== 'undefined') {
       return (document.documentElement.getAttribute('data-theme') || 'light') as 'dark' | 'light';
@@ -270,6 +277,7 @@ export function ExtraBlocksRow({
                             theme={theme}
                             focusColor={theme === 'light' ? '#0476D9' : '#F27405'}
                             translateJornadaType={translateJornadaType}
+                            jornadaOptions={jornadaOptions}
                           />
                         </div>
                         {index > 0 && (

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { AnyRecord } from '@shared/types/common';
 import { PRICE_ROLES } from '../shared.constants';
+import { SEMANAL_DERIVED_PRICE_KEYS } from '../shared/priceKeys';
 import { computeFromWeekly } from './semanalUtils';
 import { normalizeConditionRoleKey, sortConditionRoleKeys } from '../roleCatalog';
 
@@ -98,22 +99,14 @@ export function useSemanalHandlers({ project, model: _model, setModel }: UseSema
         const row = { ...(next[priceKey][role] || {}) } as Record<string, string>;
         row['Precio semanal'] = value;
         if (value == null || String(value).trim() === '') {
-          row['Precio mensual'] = '';
-          row['Precio diario'] = '';
-          row['Precio jornada'] = '';
-          row['Precio 1/2 jornada'] = '';
-          row['Precio Día extra/Festivo'] = '';
-          row['Travel day'] = '';
-          row['Horas extras'] = '';
+          SEMANAL_DERIVED_PRICE_KEYS.forEach(key => {
+            row[key] = '';
+          });
         } else {
           const derived = computeFromWeekly(value, m.params);
-          row['Precio mensual'] = derived['Precio mensual'];
-          row['Precio diario'] = derived['Precio diario'];
-          row['Precio jornada'] = derived['Precio jornada'];
-          row['Precio 1/2 jornada'] = derived['Precio 1/2 jornada'];
-          row['Precio Día extra/Festivo'] = derived['Precio Día extra/Festivo'];
-          row['Travel day'] = derived['Travel day'];
-          row['Horas extras'] = derived['Horas extras'];
+          SEMANAL_DERIVED_PRICE_KEYS.forEach(key => {
+            row[key] = derived[key as keyof typeof derived] ?? '';
+          });
         }
         next[priceKey][role] = row;
         return next;

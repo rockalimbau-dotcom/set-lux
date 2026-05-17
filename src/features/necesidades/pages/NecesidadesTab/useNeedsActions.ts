@@ -7,6 +7,7 @@ import { mdKey } from '@shared/utils/dateKey';
 import { relabelNeedsWeekByCalendar } from '../../utils/calendar';
 import { sortTeam } from '@features/equipo/pages/EquipoTab/EquipoTabUtils';
 import { applyExtraBlocksToDay } from '@shared/utils/extraBlocks';
+import { NECESIDADES_FULL_TEAM_JORNADA_TYPES } from '@shared/constants/jornadaTypes';
 import { normalizeJornadaType } from '@shared/utils/jornadaTranslations';
 
 interface UseNeedsActionsProps {
@@ -308,15 +309,7 @@ export function useNeedsActions({
           }
           const wasOfficeOrLocation = prevTipo === 'Oficina' || prevTipo === 'Localizar';
           const isOfficeOrLocation = nextTipo === 'Oficina' || nextTipo === 'Localizar';
-          const needsFullTeam = [
-            'Rodaje',
-            'Pruebas de cámara',
-            'Carga',
-            'Descarga',
-            'Travel Day',
-            'Prelight',
-            'Rodaje Festivo',
-          ].includes(nextTipo);
+          const needsFullTeam = (NECESIDADES_FULL_TEAM_JORNADA_TYPES as readonly string[]).includes(nextTipo);
 
           const nextDay: AnyRecord = {
             ...day,

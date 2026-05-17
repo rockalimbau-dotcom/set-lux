@@ -11,6 +11,8 @@ export function calculateDiarioTotals(
   halfDays: number,
   travelDays: number,
   holidayDays: number,
+  sextoDiaDays: number,
+  sextoDiaHalfDays: number,
   horasExtraValue: number,
   turnAroundValue: number,
   nocturnidadValue: number,
@@ -30,6 +32,8 @@ export function calculateDiarioTotals(
   totalHalfDays: number;
   totalTravel: number;
   totalHolidays: number;
+  totalSextoDia: number;
+  totalSextoDiaHalf: number;
   totalExtras: number;
   totalTrans: number;
   totalKm: number;
@@ -52,6 +56,8 @@ export function calculateDiarioTotals(
 
   const totalTravel = travelDays * (effectivePr.travelDay || 0);
   const totalHolidays = holidayDays * (effectivePr.holidayDay || 0);
+  const totalSextoDia = (sextoDiaDays || 0) * (effectivePr.sextoDia || 0);
+  const totalSextoDiaHalf = (sextoDiaHalfDays || 0) * (effectivePr.sextoDiaHalf || 0);
 
   // Total horas extras = horas extras + turn around + nocturnidad + penalty lunch + horas extras festivas
   const horasExtrasFestivas = 0; // TODO: Necesitamos datos de horas extras festivas
@@ -82,6 +88,8 @@ export function calculateDiarioTotals(
     totalCargaDescarga +
     totalTravel +
     totalHolidays +
+    totalSextoDia +
+    totalSextoDiaHalf +
     totalExtras +
     totalDietas +
     totalTrans +
@@ -94,6 +102,8 @@ export function calculateDiarioTotals(
     totalHalfDays,
     totalTravel,
     totalHolidays,
+    totalSextoDia,
+    totalSextoDiaHalf,
     totalExtras,
     totalTrans,
     totalKm,
@@ -115,6 +125,8 @@ export function calculateStandardTotals(
   halfDays: number,
   travelDays: number,
   holidayDays: number,
+  sextoDiaDays: number,
+  sextoDiaHalfDays: number,
   horasExtraValue: number,
   turnAroundValue: number,
   nocturnidadValue: number,
@@ -133,6 +145,8 @@ export function calculateStandardTotals(
   totalHalfDays: number;
   totalTravel: number;
   totalHolidays: number;
+  totalSextoDia: number;
+  totalSextoDiaHalf: number;
   totalExtras: number;
   totalTrans: number;
   totalKm: number;
@@ -155,6 +169,8 @@ export function calculateStandardTotals(
 
   const totalTravel = travelDays * (effectivePr.travelDay || 0);
   const totalHolidays = holidayDays * (effectivePr.holidayDay || 0);
+  const totalSextoDia = (sextoDiaDays || 0) * (effectivePr.sextoDia || 0);
+  const totalSextoDiaHalf = (sextoDiaHalfDays || 0) * (effectivePr.sextoDiaHalf || 0);
   const totalExtras =
     (horasExtraValue + turnAroundValue + nocturnidadValue + penaltyLunchValue) *
     (effectivePr.horaExtra || 0);
@@ -176,6 +192,8 @@ export function calculateStandardTotals(
     totalHalfDays +
     totalTravel +
     totalHolidays +
+    totalSextoDia +
+    totalSextoDiaHalf +
     totalExtras +
     totalDietas +
     totalTrans +
@@ -188,6 +206,8 @@ export function calculateStandardTotals(
     totalHalfDays,
     totalTravel,
     totalHolidays,
+    totalSextoDia,
+    totalSextoDiaHalf,
     totalExtras,
     totalTrans,
     totalKm,

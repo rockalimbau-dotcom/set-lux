@@ -57,6 +57,17 @@ export function isMemberRefuerzo(m: { role?: string; name?: string; refuerzo?: b
   return !!(m?.refuerzo === true || /ref/i.test(r) || /ref/i.test(n));
 }
 
+/** Fila de nómina facturada a precio refuerzo (REF, REFG, o marcado en planificación). */
+export function isRefuerzoPayrollRow(row: {
+  role?: string;
+  _originalRole?: string;
+  _isRefuerzo?: boolean;
+}): boolean {
+  if (row._isRefuerzo) return true;
+  const role = String(row._originalRole || row.role || '');
+  return role === 'REF' || (role.startsWith('REF') && role.length > 3);
+}
+
 export function buildRefuerzoIndex(weeks: any[]): Set<string> {
   const set = new Set<string>();
   for (const w of weeks || []) {

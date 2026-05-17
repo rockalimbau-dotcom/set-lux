@@ -1,3 +1,10 @@
+import {
+  FACTOR_SEXTO_DIA,
+  PRICE_KEY_FESTIVO,
+  PRICE_KEY_SEXTO_DIA,
+  PRICE_KEY_SEXTO_DIA_HALF,
+} from '../shared/priceKeys';
+
 const parseNum = (x: any): number => {
   if (x == null) return NaN;
   let s = String(x)
@@ -34,7 +41,9 @@ export const computeFromWeekly = (weeklyStr: string, params: any) => {
       'Precio diario': '',
       'Precio jornada': '',
       'Precio 1/2 jornada': '',
-      'Precio Día extra/Festivo': '',
+      [PRICE_KEY_SEXTO_DIA_HALF]: '',
+      [PRICE_KEY_FESTIVO]: '',
+      [PRICE_KEY_SEXTO_DIA]: '',
       'Travel day': '',
       'Horas extras': '',
     };
@@ -52,6 +61,8 @@ export const computeFromWeekly = (weeklyStr: string, params: any) => {
   const jornada = diasJornada > 0 ? w / diasJornada : NaN;
   const mediaJornada = Number.isFinite(jornada) ? jornada / 2 : NaN;
   const festivo = Number.isFinite(jornada) && factorFestivo > 0 ? jornada * factorFestivo : NaN;
+  const sextoDia = Number.isFinite(jornada) ? jornada * FACTOR_SEXTO_DIA : NaN;
+  const sextoDiaMedia = Number.isFinite(mediaJornada) ? mediaJornada * FACTOR_SEXTO_DIA : NaN;
   const travel = Number.isFinite(jornada) && divTravel > 0 ? jornada / divTravel : NaN;
   const extra = horasSemana > 0 && factorHora > 0 ? (w / horasSemana) * factorHora : NaN;
 
@@ -60,7 +71,9 @@ export const computeFromWeekly = (weeklyStr: string, params: any) => {
     'Precio diario': fmt(diario),
     'Precio jornada': fmt(jornada),
     'Precio 1/2 jornada': fmt(mediaJornada),
-    'Precio Día extra/Festivo': fmt(festivo),
+    [PRICE_KEY_SEXTO_DIA_HALF]: fmt(sextoDiaMedia),
+    [PRICE_KEY_FESTIVO]: fmt(festivo),
+    [PRICE_KEY_SEXTO_DIA]: fmt(sextoDia),
     'Travel day': fmt(travel),
     'Horas extras': fmt(extra),
   };

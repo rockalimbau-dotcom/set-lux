@@ -1,13 +1,4 @@
-export const PRICE_HEADERS_DIARIO = [
-  'Precio jornada',
-  'Precio 1/2 jornada',
-  'Material propio',
-  'Precio Día extra/Festivo',
-  'Localización técnica',
-  'Carga/descarga',
-  'Travel day',
-  'Horas extras',
-];
+export { PRICE_HEADERS_DIARIO } from '../shared/priceKeys';
 
 export const PRICE_ROLES_DIARIO = [
   'Gaffer',

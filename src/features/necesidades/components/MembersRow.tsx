@@ -11,6 +11,11 @@ import Chip from './Chip';
 import { ConfirmModal } from './ConfirmModal';
 import EditableRowLabel from './EditableRowLabel';
 import TextAreaAuto from './TextAreaAuto';
+import {
+  getNecesidadesFullTeamJornadaTypes,
+  getNecesidadesJornadaOptions,
+  NECESIDADES_JORNADA_OPTIONS,
+} from '@shared/constants/jornadaTypes';
 import { getNeedsDayTypePalette } from '../utils/dayTypeColors';
 
 const normalizeMemberName = (value: unknown): string =>
@@ -131,6 +136,7 @@ type JornadaDropdownCellProps = {
   theme: 'dark' | 'light';
   focusColor: string;
   translateJornadaType: (value: string) => string;
+  jornadaOptions: readonly string[];
 };
 
 export function JornadaDropdownCell({
@@ -143,6 +149,7 @@ export function JornadaDropdownCell({
   theme,
   focusColor,
   translateJornadaType,
+  jornadaOptions,
 }: JornadaDropdownCellProps) {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const palette = getNeedsDayTypePalette(value, theme);
@@ -202,7 +209,7 @@ export function JornadaDropdownCell({
             theme === 'light' ? 'bg-white' : 'bg-neutral-panel'
           }`}
         >
-          {JORNADA_OPTIONS.map(opt => (
+          {jornadaOptions.map(opt => (
             <button
               key={opt}
               type='button'
@@ -383,23 +390,10 @@ type MembersRowProps = {
   collapsible?: boolean;
   defaultCollapsed?: boolean;
   onLabelChange?: (label: string) => void;
+  conditionsMode?: string | null;
 };
 
-export const JORNADA_OPTIONS = [
-  'Localizar',
-  'Oficina',
-  'Carga',
-  'Pruebas de cámara',
-  '1/2 jornada',
-  'Rodaje',
-  'Rodaje Festivo',
-  'Travel Day',
-  'Prelight',
-  'Recogida',
-  'Descarga',
-  'Descanso',
-  'Fin',
-];
+export const JORNADA_OPTIONS = [...NECESIDADES_JORNADA_OPTIONS];
 
 export function MembersRow({
   label,
@@ -421,7 +415,16 @@ export function MembersRow({
   collapsible = false,
   defaultCollapsed = false,
   onLabelChange,
+  conditionsMode,
 }: MembersRowProps) {
+  const jornadaOptions = useMemo(
+    () => [...getNecesidadesJornadaOptions(conditionsMode)],
+    [conditionsMode]
+  );
+  const fullTeamJornadaTypes = useMemo(
+    () => getNecesidadesFullTeamJornadaTypes(conditionsMode),
+    [conditionsMode]
+  );
   const { t } = useTranslation();
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
     if (typeof document !== 'undefined') {
@@ -673,15 +676,7 @@ export function MembersRow({
                           .filter(m => m.role || m.name);
                         const isOfficeOrLocationNext =
                           nextValue === 'Oficina' || nextValue === 'Localizar';
-                        const isBaseOnlyNext =
-                          nextValue === 'Carga' ||
-                          nextValue === 'Descarga' ||
-                          nextValue === 'Pruebas de cámara' ||
-                          nextValue === 'Prelight' ||
-                          nextValue === 'Recogida' ||
-                          nextValue === 'Rodaje' ||
-                          nextValue === 'Rodaje Festivo' ||
-                          nextValue === 'Travel Day';
+                        const isBaseOnlyNext = (fullTeamJornadaTypes as readonly string[]).includes(nextValue);
                         if (isOfficeOrLocationNext) {
                           const minimal = baseTeam.filter(m => m.role === 'G' || m.role === 'BB');
                           setCell(weekId, i, listKey, minimal);
@@ -696,6 +691,7 @@ export function MembersRow({
                       theme={theme}
                       focusColor={focusColor}
                       translateJornadaType={translateJornadaType}
+                      jornadaOptions={jornadaOptions}
                     />
                   )}
                 </div>

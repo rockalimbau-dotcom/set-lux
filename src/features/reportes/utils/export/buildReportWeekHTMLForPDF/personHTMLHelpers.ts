@@ -10,6 +10,8 @@ import {
   resolveExportRoleMeta,
 } from '../dataHelpers';
 import { extractNumericValue } from '../../runtime';
+import { normalizeJornadaType } from '@shared/utils/jornadaTranslations';
+import { getNeedsDayTypePalette } from '@features/necesidades/utils/dayTypeColors';
 
 function scheduleForPerson(
   pk: string,
@@ -62,47 +64,32 @@ function normalizeToneKey(value: string): string {
     .replace(/[\u0300-\u036f]/g, '');
 }
 
+function extractJornadaLabelForTone(value: string): string {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  return raw.split('|')[0]?.trim() || raw;
+}
+
 function getScheduleTone(schedule: string): {
   bg: string;
   text: string;
   border: string;
 } {
+  const canonical = normalizeJornadaType(extractJornadaLabelForTone(schedule));
+  const palette = getNeedsDayTypePalette(canonical, 'light');
+  if (palette) {
+    return {
+      bg: palette.bg,
+      text: palette.controlText,
+      border: palette.border,
+    };
+  }
+
   const normalized = normalizeToneKey(schedule);
 
   if (!normalized) return { bg: '#ffffff', text: '#475569', border: '#e2e8f0' };
   if (normalized.includes('descanso') || normalized.includes('descans') || normalized.includes('rest')) {
     return { bg: '#e2e8f0', text: '#334155', border: '#94a3b8' };
-  }
-  if (normalized.includes('rodaje festivo') || normalized.includes('holiday')) {
-    return { bg: '#ffe4e6', text: '#be123c', border: '#fda4af' };
-  }
-  if (normalized.includes('rodaje') || normalized.includes('filming') || normalized.includes('rodatge')) {
-    return { bg: '#dbeafe', text: '#1d4ed8', border: '#93c5fd' };
-  }
-  if (normalized.includes('prelight')) {
-    return { bg: '#fef3c7', text: '#92400e', border: '#fcd34d' };
-  }
-  if (normalized.includes('pickup') || normalized.includes('recogida') || normalized.includes('recollida')) {
-    return { bg: '#ede9fe', text: '#6d28d9', border: '#c4b5fd' };
-  }
-  if (normalized.includes('travel')) {
-    return { bg: '#ccfbf1', text: '#0f766e', border: '#5eead4' };
-  }
-  if (normalized.includes('1/2 jornada') || normalized.includes('mitja jornada') || normalized.includes('half day')) {
-    return { bg: '#ccfbf1', text: '#0f766e', border: '#5eead4' };
-  }
-  if (
-    normalized.includes('carga') ||
-    normalized.includes('carrega') ||
-    normalized.includes('descarga') ||
-    normalized.includes('descarrega') ||
-    normalized.includes('loading') ||
-    normalized.includes('unloading')
-  ) {
-    return { bg: '#ffedd5', text: '#c2410c', border: '#fdba74' };
-  }
-  if (normalized.includes('oficina') || normalized.includes('office') || normalized.includes('localizar') || normalized.includes('location')) {
-    return { bg: '#cffafe', text: '#0e7490', border: '#67e8f9' };
   }
 
   return { bg: '#f8fafc', text: '#334155', border: '#cbd5e1' };

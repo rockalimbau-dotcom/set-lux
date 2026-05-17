@@ -24,6 +24,8 @@ export function getEffectiveRolePrices(
       travelDay: 0,
       horaExtra: 0,
       holidayDay: 0,
+      sextoDia: 0,
+      sextoDiaHalf: 0,
       transporte: 0,
       km: 0,
       cargaDescarga: 0,

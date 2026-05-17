@@ -12,6 +12,10 @@ vi.mock('@features/nomina/utils/plan', () => ({
       return date.toISOString().split('T')[0];
     });
   }),
+  isMemberRefuerzo: vi.fn(
+    (m: { refuerzo?: boolean; role?: string; name?: string } | null) =>
+      !!(m?.refuerzo === true || /ref/i.test(String(m?.role || '')) || /ref/i.test(String(m?.name || '')))
+  ),
 }));
 
 describe('calcWorkedBreakdown', () => {
@@ -524,6 +528,57 @@ describe('calcWorkedBreakdown', () => {
 
       expect(result.workedDays).toBe(1);
       expect(result.rodaje).toBe(1);
+    });
+
+    it('does not count sexto día in workedDays for refuerzo (billed only via sexto día price)', () => {
+      const refDay = (tipo: string) => ({
+        tipo: 'Rodaje',
+        crewList: [],
+        team: [],
+        refBlocks: [
+          {
+            id: 'extra_1',
+            tipo,
+            start: '08:00',
+            end: '19:00',
+            list: [{ role: 'REFE', name: 'cacacaca', source: 'ref' }],
+            text: '',
+          },
+        ],
+      });
+
+      const weeks = [
+        {
+          days: [refDay('Carga'), refDay('Oficina'), refDay('Sexto día')],
+        },
+      ];
+
+      const result = calcWorkedBreakdown(
+        weeks,
+        () => true,
+        { role: 'REFE', name: 'cacacaca', source: 'ref' },
+        'semanal'
+      );
+
+      expect(result.workedDays).toBe(2);
+      expect(result.carga).toBe(1);
+      expect(result.oficina).toBe(1);
+      expect(result.sextoDia).toBe(1);
+    });
+
+    it('ignores sexto día types in diario/publicidad mode', () => {
+      const weeks = [
+        {
+          days: [{ tipo: 'Sexto día', crewList: [{ role: 'G', name: 'Test' }] }],
+        },
+      ];
+
+      const diario = calcWorkedBreakdown(weeks, () => true, { role: 'G', name: 'Test' }, 'diario');
+      expect(diario.sextoDia).toBe(0);
+      expect(diario.workedDays).toBe(0);
+
+      const publicidad = calcWorkedBreakdown(weeks, () => true, { role: 'G', name: 'Test' }, 'publicidad');
+      expect(publicidad.sextoDia).toBe(0);
     });
   });
 });

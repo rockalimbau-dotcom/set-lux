@@ -217,6 +217,7 @@ function MonthSection({
     hasHalfDaysData,
   } = useColumnVisibility({
     enriched: visibleEnriched,
+    projectMode,
   });
 
   const attachNetColumnsData = React.useCallback(

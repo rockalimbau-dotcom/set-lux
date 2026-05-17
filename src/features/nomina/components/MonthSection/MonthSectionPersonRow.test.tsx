@@ -77,6 +77,8 @@ describe('MonthSectionPersonRow', () => {
             hasCargaDescargaData={false}
             columnVisibility={{
               holidays: false,
+              sextoDia: false,
+              sextoDiaHalf: false,
               travel: false,
               extras: false,
               transporte: false,
@@ -171,6 +173,8 @@ describe('MonthSectionPersonRow', () => {
             hasCargaDescargaData={false}
             columnVisibility={{
               holidays: false,
+              sextoDia: false,
+              sextoDiaHalf: false,
               travel: false,
               extras: false,
               transporte: false,
@@ -191,6 +195,82 @@ describe('MonthSectionPersonRow', () => {
     expect(getByText('payroll.dayTypes.shooting x3')).toBeInTheDocument();
     expect(getByText('payroll.dayTypes.location x1')).toBeInTheDocument();
     expect(getByText('4')).toBeInTheDocument();
+  });
+
+  it('hides sexto dia from worked days pills when dedicated columns are visible', () => {
+    const row = {
+      role: 'G',
+      name: 'Ana',
+      _totalBruto: 500,
+      _worked: 2,
+      _rodaje: 1,
+      _sextoDia: 1,
+      _sextoDiaHalf: 0,
+      _halfDays: 0,
+      _travel: 0,
+      _holidays: 0,
+      _localizar: 0,
+      _carga: 0,
+      _descarga: 0,
+      _totalDias: 500,
+      _totalHalfDays: 0,
+      _totalTravel: 0,
+      _totalHolidays: 0,
+      _totalExtras: 0,
+      _totalDietas: 0,
+      _totalTrans: 0,
+      _totalKm: 0,
+      _totalGasolina: 0,
+      _totalMaterialPropio: 0,
+      _missingPrices: {},
+      dietasCount: new Map(),
+      ticketTotal: 0,
+      otherTotal: 0,
+      _roleVariants: [],
+    };
+
+    const { getByText, queryByText } = render(
+      <table>
+        <tbody>
+          <MonthSectionPersonRow
+            row={row}
+            personKey='person:ana'
+            roleForColor='G'
+            col={{ bg: '#60A5FA', fg: '#fff' }}
+            roleLabelFromCode={(code: string) => code}
+            received={{}}
+            irpfByPerson={{}}
+            isSelected={false}
+            toggleRowSelection={vi.fn()}
+            setRcv={vi.fn()}
+            projectMode='mensual'
+            hasWorkedDaysData
+            hasHalfDaysData={false}
+            hasLocalizacionData={false}
+            hasCargaDescargaData={false}
+            columnVisibility={{
+              holidays: false,
+              sextoDia: true,
+              sextoDiaHalf: false,
+              travel: false,
+              extras: false,
+              transporte: false,
+              km: false,
+              gasolina: false,
+              dietas: false,
+              materialPropio: false,
+            }}
+            showRowSelection={false}
+            showNetColumns={false}
+            showExtraHoursPercentColumn={false}
+            showDietasIrpfExemptionColumn={false}
+          />
+        </tbody>
+      </table>
+    );
+
+    expect(getByText('payroll.dayTypes.shooting x1')).toBeInTheDocument();
+    expect(queryByText('payroll.dayTypes.sixthDay x1')).not.toBeInTheDocument();
   });
 
   it('leaves empty own material cells blank instead of showing a dash', () => {
@@ -256,6 +336,8 @@ describe('MonthSectionPersonRow', () => {
             hasCargaDescargaData={false}
             columnVisibility={{
               holidays: false,
+              sextoDia: false,
+              sextoDiaHalf: false,
               travel: false,
               extras: false,
               transporte: false,

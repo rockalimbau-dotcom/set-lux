@@ -503,9 +503,12 @@ export default function NecesidadesTab({ project, readOnly = false }: Necesidade
     );
   }
 
+  const conditionsMode = (project as AnyRecord)?.conditions?.tipo || 'semanal';
+
   return (
     <div id='print-root' className='space-y-2 sm:space-y-3 md:space-y-4 lg:space-y-6'>
       <NecesidadesTabContent
+        conditionsMode={conditionsMode}
         preEntries={preEntries}
         proEntries={proEntries}
         DAYS={DAYS}

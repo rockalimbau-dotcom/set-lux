@@ -1,5 +1,9 @@
-// JSX runtime import not needed due to jsx: react-jsx
 import { useTranslation } from 'react-i18next';
+import {
+  JORNADA_SEXTO_DIA,
+  JORNADA_SEXTO_DIA_HALF,
+} from '@shared/constants/jornadaTypes';
+import { DayTypeSummaryLines, type DayTypeSummaryItem } from './DayTypeSummaryLines';
 
 interface WorkedDaysSummaryProps {
   carga: number;
@@ -10,7 +14,11 @@ interface WorkedDaysSummaryProps {
   oficina: number;
   prelight?: number;
   recogida?: number;
+  sextoDia?: number;
+  sextoDiaHalf?: number;
   showLocalizar?: boolean;
+  showSextoDiaInBreakdown?: boolean;
+  showSextoDiaHalfInBreakdown?: boolean;
 }
 
 export default function WorkedDaysSummary({
@@ -22,53 +30,58 @@ export default function WorkedDaysSummary({
   oficina,
   prelight = 0,
   recogida = 0,
+  sextoDia = 0,
+  sextoDiaHalf = 0,
   showLocalizar = false,
+  showSextoDiaInBreakdown = true,
+  showSextoDiaHalfInBreakdown = true,
 }: WorkedDaysSummaryProps) {
   const { t } = useTranslation();
-  const parts: string[] = [];
-  
-  if (showLocalizar && localizar > 0) {
-    parts.push(`${t('payroll.dayTypes.location')} x${localizar}`);
-  }
 
-  if (oficina > 0) {
-    parts.push(`${t('payroll.dayTypes.office')} x${oficina}`);
-  }
-  
-  if (carga > 0) {
-    parts.push(`${t('payroll.dayTypes.loading')} x${carga}`);
-  }
+  const items: DayTypeSummaryItem[] = [
+    ...(showLocalizar && localizar > 0
+      ? [{ canonicalType: 'Localizar', label: t('payroll.dayTypes.location'), count: localizar }]
+      : []),
+    ...(oficina > 0
+      ? [{ canonicalType: 'Oficina', label: t('payroll.dayTypes.office'), count: oficina }]
+      : []),
+    ...(carga > 0
+      ? [{ canonicalType: 'Carga', label: t('payroll.dayTypes.loading'), count: carga }]
+      : []),
+    ...(pruebasCamara > 0
+      ? [
+          {
+            canonicalType: 'Pruebas de cámara',
+            label: t('payroll.dayTypes.cameraTests'),
+            count: pruebasCamara,
+          },
+        ]
+      : []),
+    ...(rodaje > 0
+      ? [{ canonicalType: 'Rodaje', label: t('payroll.dayTypes.shooting'), count: rodaje }]
+      : []),
+    ...(showSextoDiaInBreakdown && sextoDia > 0
+      ? [{ canonicalType: JORNADA_SEXTO_DIA, label: t('payroll.dayTypes.sixthDay'), count: sextoDia }]
+      : []),
+    ...(showSextoDiaHalfInBreakdown && sextoDiaHalf > 0
+      ? [
+          {
+            canonicalType: JORNADA_SEXTO_DIA_HALF,
+            label: t('payroll.dayTypes.sixthDayHalf'),
+            count: sextoDiaHalf,
+          },
+        ]
+      : []),
+    ...(prelight > 0
+      ? [{ canonicalType: 'Prelight', label: t('payroll.dayTypes.prelight'), count: prelight }]
+      : []),
+    ...(recogida > 0
+      ? [{ canonicalType: 'Recogida', label: t('payroll.dayTypes.pickup'), count: recogida }]
+      : []),
+    ...(descarga > 0
+      ? [{ canonicalType: 'Descarga', label: t('payroll.dayTypes.unloading'), count: descarga }]
+      : []),
+  ];
 
-  if (pruebasCamara > 0) {
-    parts.push(`${t('payroll.dayTypes.cameraTests')} x${pruebasCamara}`);
-  }
-  
-  if (rodaje > 0) {
-    parts.push(`${t('payroll.dayTypes.shooting')} x${rodaje}`);
-  }
-  
-  if (prelight > 0) {
-    parts.push(`${t('payroll.dayTypes.prelight')} x${prelight}`);
-  }
-  
-  if (recogida > 0) {
-    parts.push(`${t('payroll.dayTypes.pickup')} x${recogida}`);
-  }
-  
-  if (descarga > 0) {
-    parts.push(`${t('payroll.dayTypes.unloading')} x${descarga}`);
-  }
-  
-  // Si no hay ningún tipo de día, no mostrar nada
-  if (parts.length === 0) {
-    return null;
-  }
-  
-  return (
-    <div className='text-[8px] sm:text-[9px] md:text-[10px] text-zinc-200 space-y-0.5'>
-      {parts.map((part, index) => (
-        <div key={index}>{part}</div>
-      ))}
-    </div>
-  );
+  return <DayTypeSummaryLines items={items} />;
 }

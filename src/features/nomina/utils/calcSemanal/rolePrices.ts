@@ -1,3 +1,8 @@
+import {
+  FESTIVO_PRICE_FIELD_ALIASES,
+  SEXTO_DIA_HALF_PRICE_FIELD_ALIASES,
+  SEXTO_DIA_PRICE_FIELD_ALIASES,
+} from '@features/condiciones/condiciones/shared/priceKeys';
 import { loadCondModel } from '../cond';
 import { ROLE_CODES_WITH_PR_SUFFIX, roleLabelFromCode, stripRoleSuffix } from '@shared/constants/roles';
 import {
@@ -266,7 +271,7 @@ export function makeRolePrices(project: any) {
 
     const divTravel = num(p.divTravel) || 2;
 
-    let jornada, halfJornada, travelDay, horaExtra, holidayDay, materialPropioValue;
+    let jornada, halfJornada, travelDay, horaExtra, holidayDay, sextoDia, sextoDiaHalf, materialPropioValue;
     let materialPropioType = '';
     if (normalized === 'REF' || (normalized.startsWith('REF') && normalized.length > 3)) {
       // Si es REF o REF + rol base (REFG, REFBB, etc.), buscar "Precio refuerzo" en la fila correspondiente
@@ -310,10 +315,13 @@ export function makeRolePrices(project: any) {
         getNumField(elecRow, ['Horas extras', 'Horas Extras', 'Hora extra', 'Horas extra', 'HE', 'Hora Extra']) ||
         getNumField(targetRow, ['Horas extras', 'Horas Extras', 'Hora extra', 'Horas extra', 'HE', 'Hora Extra']) ||
         0;
-      holidayDay = 
-        getNumField(elecRow, ['Precio Día extra/Festivo', 'Precio Día extra/festivo', 'Día extra/Festivo', 'Día festivo', 'Festivo']) ||
-        getNumField(targetRow, ['Precio Día extra/Festivo', 'Precio Día extra/festivo', 'Día extra/Festivo', 'Día festivo', 'Festivo']) ||
+      holidayDay =
+        getNumField(elecRow, [...FESTIVO_PRICE_FIELD_ALIASES]) ||
+        getNumField(targetRow, [...FESTIVO_PRICE_FIELD_ALIASES]) ||
         0;
+      // Refuerzo: sexto día y sexto día 1/2 usan precio refuerzo, no «Precio sexto día» del rol base
+      sextoDia = jornada;
+      sextoDiaHalf = halfJornada || jornada;
       materialPropioValue =
         getNumField(targetRow, ['Material propio', 'Material Propio']) ||
         getNumField(baseRow, ['Material propio', 'Material Propio']) ||
@@ -329,7 +337,9 @@ export function makeRolePrices(project: any) {
         0;
       travelDay = getNumField(row, ['Travel day', 'Travel Day', 'Travel', 'Día de viaje', 'Dia de viaje', 'Día travel', 'Dia travel', 'TD']) || (jornada ? jornada / divTravel : 0);
       horaExtra = getNumField(row, ['Horas extras', 'Horas Extras', 'Hora extra', 'Horas extra', 'HE', 'Hora Extra']) || 0;
-      holidayDay = getNumField(row, ['Precio Día extra/Festivo', 'Precio Día extra/festivo', 'Día extra/Festivo', 'Día festivo', 'Festivo']) || 0;
+      holidayDay = getNumField(row, [...FESTIVO_PRICE_FIELD_ALIASES]) || 0;
+      sextoDia = getNumField(row, [...SEXTO_DIA_PRICE_FIELD_ALIASES]) || 0;
+      sextoDiaHalf = getNumField(row, [...SEXTO_DIA_HALF_PRICE_FIELD_ALIASES]) || 0;
       materialPropioValue = getNumField(row, ['Material propio', 'Material Propio']) || 0;
       materialPropioType = getStringField(row, ['Material propio tipo', 'Material Propio tipo']) || '';
     }
@@ -340,6 +350,8 @@ export function makeRolePrices(project: any) {
       travelDay,
       horaExtra,
       holidayDay,
+      sextoDia,
+      sextoDiaHalf,
       materialPropioValue: materialPropioValue || 0,
       materialPropioType: materialPropioType === 'unico' ? 'unico' : materialPropioType === 'diario' ? 'diario' : 'semanal',
       transporte: num(p.transporteDia),

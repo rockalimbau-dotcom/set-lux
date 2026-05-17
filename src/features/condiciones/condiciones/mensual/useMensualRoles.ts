@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { AnyRecord } from '@shared/types/common';
 import { PRICE_ROLES } from '../shared.constants';
+import { MENSUAL_DERIVED_PRICE_KEYS } from '../shared/priceKeys';
 import { computeFromMonthly } from './mensualUtils';
 import { normalizeConditionRoleKey, sortConditionRoleKeys } from '../roleCatalog';
 
@@ -56,14 +57,7 @@ export function useMensualRoles({ project, model, setModel }: UseMensualRolesPro
           const monthlyVal = row['Precio mensual'];
           if (!monthlyVal) return;
           const derived = computeFromMonthly(monthlyVal, m.params);
-          const keys = [
-            'Precio semanal',
-            'Precio diario',
-            'Precio jornada',
-            'Precio Día extra/Festivo',
-            'Travel day',
-            'Horas extras',
-          ];
+          const keys = [...MENSUAL_DERIVED_PRICE_KEYS];
           let rowChanged = false;
           for (const key of keys) {
             if (!shouldOverwriteDerived && row[key] !== undefined && row[key] !== '') {
@@ -155,13 +149,9 @@ export function useMensualRoles({ project, model, setModel }: UseMensualRolesPro
 
       if (header === 'Precio mensual') {
         const derived = computeFromMonthly(val, m.params);
-        row['Precio semanal'] = derived['Precio semanal'];
-        row['Precio diario'] = derived['Precio diario'];
-        row['Precio jornada'] = derived['Precio jornada'];
-        row['Precio 1/2 jornada'] = derived['Precio 1/2 jornada'];
-        row['Precio Día extra/Festivo'] = derived['Precio Día extra/Festivo'];
-        row['Travel day'] = derived['Travel day'];
-        row['Horas extras'] = derived['Horas extras'];
+        MENSUAL_DERIVED_PRICE_KEYS.forEach(key => {
+          row[key] = derived[key as keyof typeof derived] ?? '';
+        });
       }
 
       next[priceKey][role] = row;

@@ -1,5 +1,13 @@
 import i18n from '../../../../i18n/config';
 import { hasRoleGroupSuffix, stripRoleSuffix } from '@shared/constants/roles';
+import {
+  JORNADA_SEXTO_DIA,
+  JORNADA_SEXTO_DIA_HALF,
+  supportsSextoDiaJornada,
+} from '@shared/constants/jornadaTypes';
+import type { DayTypeSummaryItem } from '../../components/DayTypeSummaryLines';
+import { jornadasColumnDayCount } from '../displayHelpers';
+import { renderDayTypeSummaryDetails } from './dayTypeSummaryExport';
 
 /**
  * Escape HTML special characters
@@ -61,56 +69,106 @@ const renderCompactSummary = (value: string | number, parts: string[]): string =
 /**
  * Generate worked days summary text for export
  */
+function buildWorkedDaysSummaryItems(
+  r: any,
+  options: {
+    includeCargaDescarga?: boolean;
+    projectMode?: 'semanal' | 'mensual' | 'diario';
+    columnVisibility?: { sextoDia?: boolean; sextoDiaHalf?: boolean };
+  } = {}
+): DayTypeSummaryItem[] {
+  const { includeCargaDescarga = true, projectMode = 'semanal', columnVisibility = {} } = options;
+
+  const items: DayTypeSummaryItem[] = [];
+
+  if (projectMode !== 'diario' && (r._localizar || 0) > 0) {
+    items.push({
+      canonicalType: 'Localizar',
+      label: i18n.t('payroll.dayTypes.location'),
+      count: r._localizar,
+    });
+  }
+  if ((r._oficina || 0) > 0) {
+    items.push({
+      canonicalType: 'Oficina',
+      label: i18n.t('payroll.dayTypes.office'),
+      count: r._oficina,
+    });
+  }
+  if (includeCargaDescarga && (r._carga || 0) > 0) {
+    items.push({
+      canonicalType: 'Carga',
+      label: i18n.t('payroll.dayTypes.loading'),
+      count: r._carga,
+    });
+  }
+  if ((r._pruebasCamara || 0) > 0) {
+    items.push({
+      canonicalType: 'Pruebas de cámara',
+      label: i18n.t('payroll.dayTypes.cameraTests'),
+      count: r._pruebasCamara,
+    });
+  }
+  if ((r._rodaje || 0) > 0) {
+    items.push({
+      canonicalType: 'Rodaje',
+      label: i18n.t('payroll.dayTypes.shooting'),
+      count: r._rodaje,
+    });
+  }
+  if (!columnVisibility.sextoDia && (r._sextoDia || 0) > 0) {
+    items.push({
+      canonicalType: JORNADA_SEXTO_DIA,
+      label: i18n.t('payroll.dayTypes.sixthDay'),
+      count: r._sextoDia,
+    });
+  }
+  if (!columnVisibility.sextoDiaHalf && (r._sextoDiaHalf || 0) > 0) {
+    items.push({
+      canonicalType: JORNADA_SEXTO_DIA_HALF,
+      label: i18n.t('payroll.dayTypes.sixthDayHalf'),
+      count: r._sextoDiaHalf,
+    });
+  }
+  if ((r._prelight || 0) > 0) {
+    items.push({
+      canonicalType: 'Prelight',
+      label: i18n.t('payroll.dayTypes.prelight', 'Prelight'),
+      count: r._prelight,
+    });
+  }
+  if ((r._recogida || 0) > 0) {
+    items.push({
+      canonicalType: 'Recogida',
+      label: i18n.t('payroll.dayTypes.pickup', 'Recogida'),
+      count: r._recogida,
+    });
+  }
+  if (includeCargaDescarga && (r._descarga || 0) > 0) {
+    items.push({
+      canonicalType: 'Descarga',
+      label: i18n.t('payroll.dayTypes.unloading'),
+      count: r._descarga,
+    });
+  }
+
+  return items;
+}
+
 export const generateWorkedDaysText = (
   r: any,
   options: {
     includeCargaDescarga?: boolean;
-    /** En diario la localización técnica va en columnas propias; en semanal/mensual va en la píldora de jornadas (como en pantalla). */
     projectMode?: 'semanal' | 'mensual' | 'diario';
+    columnVisibility?: { sextoDia?: boolean; sextoDiaHalf?: boolean };
   } = {}
 ): string => {
-  const { includeCargaDescarga = true, projectMode = 'semanal' } = options;
-  const parts: string[] = [];
+  const items = buildWorkedDaysSummaryItems(r, options);
+  if (items.length === 0) return '';
 
-  if (projectMode !== 'diario' && (r._localizar || 0) > 0) {
-    parts.push(`${i18n.t('payroll.dayTypes.location')} x${r._localizar}`);
-  }
-
-  // En modo diario la localización no se repite aquí: ya tiene columnas dedicadas (_localizarDays).
-  if ((r._oficina || 0) > 0) {
-    parts.push(`${i18n.t('payroll.dayTypes.office')} x${r._oficina}`);
-  }
-  
-  if (includeCargaDescarga && (r._carga || 0) > 0) {
-    parts.push(`${i18n.t('payroll.dayTypes.loading')} x${r._carga}`);
-  }
-  
-  if ((r._rodaje || 0) > 0) {
-    parts.push(`${i18n.t('payroll.dayTypes.shooting')} x${r._rodaje}`);
-  }
-  if ((r._pruebasCamara || 0) > 0) {
-    parts.push(`${i18n.t('payroll.dayTypes.cameraTests')} x${r._pruebasCamara}`);
-  }
-
-  
-  if ((r._prelight || 0) > 0) {
-    parts.push(`${i18n.t('payroll.dayTypes.prelight', 'Prelight')} x${r._prelight}`);
-  }
-  
-  if ((r._recogida || 0) > 0) {
-    parts.push(`${i18n.t('payroll.dayTypes.pickup', 'Recogida')} x${r._recogida}`);
-  }
-  
-  if (includeCargaDescarga && (r._descarga || 0) > 0) {
-    parts.push(`${i18n.t('payroll.dayTypes.unloading')} x${r._descarga}`);
-  }
-  
-  if (parts.length === 0) {
-    return '';
-  }
-  
-  const totalWorked = r._worked || 0;
-  return renderCompactSummary(totalWorked, parts);
+  const detailsHtml = renderDayTypeSummaryDetails(items);
+  const totalWorked = jornadasColumnDayCount(r, options.columnVisibility);
+  return `<div class="summary-worked-days"><div class="summary-value">${totalWorked}</div><div class="summary-details">${detailsHtml}</div></div>`;
 };
 
 /**
@@ -203,12 +261,22 @@ export const generateExtrasText = (r: any): string => {
 /**
  * Get column visibility based on data
  */
-export const getColumnVisibility = (enrichedRows: any[]) => {
+export const getColumnVisibility = (
+  enrichedRows: any[],
+  projectMode?: 'semanal' | 'mensual' | 'diario'
+) => {
+  const showSextoDia = supportsSextoDiaJornada(projectMode);
+  const hasSextoDia = enrichedRows.some(r => (r._sextoDia || 0) > 0 || (r._totalSextoDia || 0) > 0);
+  const hasSextoDiaHalf = enrichedRows.some(
+    r => (r._sextoDiaHalf || 0) > 0 || (r._totalSextoDiaHalf || 0) > 0
+  );
   return {
     halfDays: enrichedRows.some(r => (r._halfDays || 0) > 0 || (r._totalHalfDays || 0) > 0),
     localizacion: enrichedRows.some(r => (r._localizarDays || 0) > 0 || (r._totalLocalizacion || 0) > 0),
     cargaDescarga: enrichedRows.some(r => (r._cargaDays || 0) > 0 || (r._descargaDays || 0) > 0 || (r._totalCargaDescarga || 0) > 0),
     holidays: enrichedRows.some(r => (r._holidays || 0) > 0),
+    sextoDia: showSextoDia && hasSextoDia,
+    sextoDiaHalf: showSextoDia && hasSextoDiaHalf,
     travel: enrichedRows.some(r => (r._travel || 0) > 0),
     extras: enrichedRows.some(r => (r.extras || 0) > 0),
     materialPropio: enrichedRows.some(r => (r._totalMaterialPropio || 0) > 0),

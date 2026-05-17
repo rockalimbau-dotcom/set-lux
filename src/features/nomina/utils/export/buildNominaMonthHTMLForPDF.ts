@@ -14,8 +14,9 @@ export function buildNominaMonthHTMLForPDF({
   hideSecondaryInfo,
 }: BuildNominaMonthHTMLParams & { _currentPage?: number; _totalPages?: number }): string {
   const isIndividualExport = enrichedRows.length === 1;
+  const projectMode = project?.conditions?.tipo === 'mensual' ? 'mensual' : project?.conditions?.tipo === 'diario' ? 'diario' : 'semanal';
   const columnVisibility = {
-    ...getColumnVisibility(enrichedRows),
+    ...getColumnVisibility(enrichedRows, projectMode),
     netColumns: isIndividualExport && enrichedRows.some(r => !!r._showNetColumns),
     extraHoursPercent: isIndividualExport && enrichedRows.some(r => !!r._showExtraHoursPercent),
   };
@@ -25,7 +26,6 @@ export function buildNominaMonthHTMLForPDF({
     !isIndividualExport ||
     !columnVisibility.extraHoursPercent ||
     enrichedRows.some(r => !!r?._showExtraHoursPercent);
-  const projectMode = project?.conditions?.tipo === 'mensual' ? 'mensual' : project?.conditions?.tipo === 'diario' ? 'diario' : 'semanal';
   const headerCells = generateHeaderCells(columnVisibility, projectMode, {
     forPDF: true,
     useNetAmounts: isIndividualExport,

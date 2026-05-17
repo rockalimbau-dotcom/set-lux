@@ -1,8 +1,9 @@
 import { Td } from '@shared/components';
 import { AnyRecord } from '@shared/types/common';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { translateJornadaType as translateJornadaTypeUtil } from '@shared/utils/jornadaTranslations';
+import { getNecesidadesJornadaOptions } from '@shared/constants/jornadaTypes';
 import { getNeedsDayTypePalette } from '../utils/dayTypeColors';
 
 type JornadaRowProps = {
@@ -16,22 +17,8 @@ type JornadaRowProps = {
   isSelected?: boolean;
   toggleRowSelection?: (rowKey: string) => void;
   showSelection?: boolean;
+  conditionsMode?: string | null;
 };
-
-const JORNADA_OPTIONS = [
-  'Localizar',
-  'Oficina',
-  'Carga',
-  'Pruebas de cámara',
-  'Rodaje',
-  'Rodaje Festivo',
-  'Travel Day',
-  'Prelight',
-  'Recogida',
-  'Descarga',
-  'Descanso',
-  'Fin',
-];
 
 type DropdownState = { isOpen: boolean; hoveredOption: string | null; isButtonHovered: boolean };
 
@@ -45,6 +32,7 @@ type JornadaDropdownCellProps = {
   theme: 'dark' | 'light';
   focusColor: string;
   translateJornadaType: (value: string) => string;
+  jornadaOptions: readonly string[];
 };
 
 function JornadaDropdownCell({
@@ -57,6 +45,7 @@ function JornadaDropdownCell({
   theme,
   focusColor,
   translateJornadaType,
+  jornadaOptions,
 }: JornadaDropdownCellProps) {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const palette = getNeedsDayTypePalette(value, theme);
@@ -116,7 +105,7 @@ function JornadaDropdownCell({
             theme === 'light' ? 'bg-white' : 'bg-neutral-panel'
           }`}
         >
-          {JORNADA_OPTIONS.map(opt => (
+          {jornadaOptions.map(opt => (
             <button
               key={opt}
               type='button'
@@ -162,8 +151,13 @@ export function JornadaRow({
   isSelected,
   toggleRowSelection,
   showSelection = true,
+  conditionsMode,
 }: JornadaRowProps) {
   const { t } = useTranslation();
+  const jornadaOptions = useMemo(
+    () => [...getNecesidadesJornadaOptions(conditionsMode)],
+    [conditionsMode]
+  );
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
     if (typeof document !== 'undefined') {
       return (document.documentElement.getAttribute('data-theme') || 'light') as 'dark' | 'light';
@@ -259,6 +253,7 @@ export function JornadaRow({
               theme={theme}
               focusColor={focusColor}
               translateJornadaType={translateJornadaType}
+              jornadaOptions={jornadaOptions}
             />
           </Td>
         );

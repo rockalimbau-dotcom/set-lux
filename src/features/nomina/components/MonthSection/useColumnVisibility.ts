@@ -1,11 +1,14 @@
 import { useMemo } from 'react';
+import { supportsSextoDiaJornada } from '@shared/constants/jornadaTypes';
 
 interface UseColumnVisibilityProps {
   enriched: any[];
+  projectMode?: 'semanal' | 'mensual' | 'diario';
 }
 
-export function useColumnVisibility({ enriched }: UseColumnVisibilityProps) {
+export function useColumnVisibility({ enriched, projectMode }: UseColumnVisibilityProps) {
   const columnVisibility = useMemo(() => {
+    const showSextoDiaColumns = supportsSextoDiaJornada(projectMode);
     const hasDietasData = (row: any) =>
       (row?._totalDietas || 0) > 0 ||
       (row?.ticketTotal || 0) > 0 ||
@@ -13,6 +16,8 @@ export function useColumnVisibility({ enriched }: UseColumnVisibilityProps) {
       (row?.dietasCount instanceof Map && row.dietasCount.size > 0);
 
     const hasHolidays = enriched.some(r => r._holidays > 0);
+    const hasSextoDia = enriched.some(r => (r._sextoDia || 0) > 0 || (r._totalSextoDia || 0) > 0);
+    const hasSextoDiaHalf = enriched.some(r => (r._sextoDiaHalf || 0) > 0 || (r._totalSextoDiaHalf || 0) > 0);
     const hasTravel = enriched.some(r => r._travel > 0);
     const hasExtras = enriched.some(r => r.extras > 0);
     const hasTransporte = enriched.some(r => r.transporte > 0);
@@ -25,6 +30,8 @@ export function useColumnVisibility({ enriched }: UseColumnVisibilityProps) {
 
     return {
       holidays: hasHolidays,
+      sextoDia: showSextoDiaColumns && hasSextoDia,
+      sextoDiaHalf: showSextoDiaColumns && hasSextoDiaHalf,
       travel: hasTravel,
       extras: hasExtras,
       transporte: hasTransporte,
@@ -33,7 +40,7 @@ export function useColumnVisibility({ enriched }: UseColumnVisibilityProps) {
       dietas: hasDietas,
       materialPropio: hasMaterialPropio,
     };
-  }, [enriched]);
+  }, [enriched, projectMode]);
 
   // Verificar si hay datos de localización o carga/descarga para mostrar columnas solo cuando haya datos
   const hasLocalizacionData = useMemo(() => {

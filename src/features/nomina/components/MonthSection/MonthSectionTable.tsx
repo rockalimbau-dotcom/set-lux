@@ -13,6 +13,8 @@ type MonthSectionTableProps = {
   hasCargaDescargaData: boolean;
   columnVisibility: {
     holidays: boolean;
+    sextoDia: boolean;
+    sextoDiaHalf: boolean;
     travel: boolean;
     extras: boolean;
     transporte: boolean;
@@ -80,6 +82,8 @@ export function MonthSectionTable({
     (hasLocalizacionData ? 2 : 0) + // Localización técnica, Total
     (hasCargaDescargaData ? 2 : 0) + // Carga/Descarga, Total
     (columnVisibility.holidays ? 2 : 0) + // Días festivos, Total
+    (columnVisibility.sextoDia ? 2 : 0) + // Sexto día, Total
+    (columnVisibility.sextoDiaHalf ? 2 : 0) + // Sexto día 1/2, Total
     (columnVisibility.travel ? 2 : 0) + // Travel Day, Total
     (columnVisibility.extras ? 2 : 0) + // Horas extra, Total
     (columnVisibility.materialPropio ? 2 : 0) + // Material propio, Total
@@ -165,6 +169,10 @@ export function MonthSectionTable({
           {hasCargaDescargaData && <col className='payroll-month-col-standard' />}
           {columnVisibility.holidays && <col className='payroll-month-col-standard' />}
           {columnVisibility.holidays && <col className='payroll-month-col-standard' />}
+          {columnVisibility.sextoDia && <col className='payroll-month-col-standard' />}
+          {columnVisibility.sextoDia && <col className='payroll-month-col-standard' />}
+          {columnVisibility.sextoDiaHalf && <col className='payroll-month-col-standard' />}
+          {columnVisibility.sextoDiaHalf && <col className='payroll-month-col-standard' />}
           {columnVisibility.travel && <col className='payroll-month-col-standard' />}
           {columnVisibility.travel && <col className='payroll-month-col-standard' />}
           {columnVisibility.extras && <col className='payroll-month-col-standard' />}
@@ -243,6 +251,10 @@ export function MonthSectionTable({
             {hasCargaDescargaData && <Th align='center'>{t('payroll.totalCargaDescarga')}</Th>}
             {columnVisibility.holidays && <Th align='center'>{t('payroll.holidayDays')}</Th>}
             {columnVisibility.holidays && <Th align='center'>{t('payroll.totalHolidayDays')}</Th>}
+            {columnVisibility.sextoDia && <Th align='center'>{t('payroll.sextoDays')}</Th>}
+            {columnVisibility.sextoDia && <Th align='center'>{t('payroll.totalSextoDays')}</Th>}
+            {columnVisibility.sextoDiaHalf && <Th align='center'>{t('payroll.sextoHalfDays')}</Th>}
+            {columnVisibility.sextoDiaHalf && <Th align='center'>{t('payroll.totalSextoHalfDays')}</Th>}
             {columnVisibility.travel && <Th align='center'>{t('payroll.travelDays')}</Th>}
             {columnVisibility.travel && <Th align='center'>{t('payroll.totalTravelDays')}</Th>}
             {columnVisibility.extras && <Th align='center'>{t('payroll.extraHours')}</Th>}
@@ -322,8 +334,10 @@ export function MonthSectionTable({
             <tr>
               <Td colSpan={
                 ((showRowSelection ? 1 : 0) + 3 + (hasWorkedDaysData ? 4 : 0)) + // selection + person/total/received + worked/half cols
-                (columnVisibility.holidays ? 2 : 0) + // Días festivos + Total días festivos
-                (columnVisibility.travel ? 2 : 0) + // Travel Day + Total travel days
+                (columnVisibility.holidays ? 2 : 0) +
+                (columnVisibility.sextoDia ? 2 : 0) +
+                (columnVisibility.sextoDiaHalf ? 2 : 0) +
+                (columnVisibility.travel ? 2 : 0) +
                 (columnVisibility.extras ? 2 : 0) + // Horas extra + Total horas extra
                 (columnVisibility.materialPropio ? 2 : 0) + // Material propio + Total
                 (columnVisibility.dietas ? 2 : 0) + // Dietas + Total dietas

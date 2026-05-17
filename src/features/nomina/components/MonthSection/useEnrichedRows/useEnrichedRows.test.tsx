@@ -366,4 +366,85 @@ describe('useEnrichedRows', () => {
     expect(result.current[0]?._totalBruto).toBe(650);
     expect(result.current[0]?._roleVariants).toHaveLength(2);
   });
+
+  it('bills refuerzo jornadas and sexto día separately from conditions prices', () => {
+    const calcWorkedBreakdown = vi.fn(() => ({
+      workedDays: 2,
+      travelDays: 0,
+      workedBase: 0,
+      workedPre: 0,
+      workedPick: 0,
+      holidayDays: 0,
+      halfDays: 0,
+      rodaje: 0,
+      pruebasCamara: 0,
+      oficina: 1,
+      travelDay: 0,
+      carga: 1,
+      descarga: 0,
+      localizar: 0,
+      rodajeFestivo: 0,
+      sextoDia: 1,
+      sextoDiaHalf: 0,
+      prelight: 0,
+      recogida: 0,
+    }));
+    const getForRole = vi.fn(() => ({
+      jornada: 300,
+      halfJornada: 0,
+      travelDay: 0,
+      horaExtra: 0,
+      holidayDay: 0,
+      sextoDia: 300,
+      sextoDiaHalf: 150,
+      transporte: 0,
+      km: 0,
+      dietas: {},
+    }));
+
+    const { result } = renderHook(() =>
+      useEnrichedRows({
+        rows: [
+          {
+            role: 'REFE',
+            name: 'cacacaca',
+            source: 'ref',
+            _displayBlock: 'extra',
+            _matchRole: 'REFE',
+            extras: 0,
+            horasExtra: 0,
+            turnAround: 0,
+            nocturnidad: 0,
+            penaltyLunch: 0,
+            transporte: 0,
+            km: 0,
+            gasolina: 0,
+            dietasCount: new Map(),
+            ticketTotal: 0,
+            otherTotal: 0,
+          },
+        ],
+        weeksForMonth: [],
+        filterISO: () => true,
+        rolePrices: { getForRole },
+        windowOverrideMap: null,
+        refuerzoSet: new Set(),
+        stripPR: (role: string) => role.replace(/^REF/, ''),
+        calcWorkedBreakdown,
+        filteredData: null,
+        dateFrom: '',
+        dateTo: '',
+        projectMode: 'semanal',
+        calculateWorkingDaysInMonthValue: 0,
+        priceDays: 0,
+        roleLabelFromCode: (role: string) => role,
+        isFirstProjectMonth: true,
+      })
+    );
+
+    expect(result.current[0]?._worked).toBe(2);
+    expect(result.current[0]?._totalDias).toBe(600);
+    expect(result.current[0]?._totalSextoDia).toBe(300);
+    expect(result.current[0]?._totalBruto).toBe(900);
+  });
 });

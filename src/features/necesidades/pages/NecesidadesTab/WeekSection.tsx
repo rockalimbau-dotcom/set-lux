@@ -61,6 +61,7 @@ interface WeekSectionProps {
   updateRowLabel: (weekId: string, rowKey: string, label: string) => void;
   removeCustomRow: (weekId: string, rowId: string) => void;
   tutorialId?: string;
+  conditionsMode?: string | null;
 }
 
 export function WeekSection({
@@ -92,6 +93,7 @@ export function WeekSection({
   updateRowLabel,
   removeCustomRow,
   tutorialId,
+  conditionsMode,
 }: WeekSectionProps) {
   const { t } = useTranslation();
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
@@ -927,6 +929,7 @@ export function WeekSection({
 	                  startKey='crewStart'
 	                  endKey='crewEnd'
 	                  onLabelChange={label => updateRowLabel(wid, 'crewList', label)}
+	                  conditionsMode={conditionsMode}
 	                />
 	              )}
 	              {!isBlockCollapsed('team') && (!hideEmptyRows || hasAnyExtraBlocks() || hasAnyList('refList') || hasAnyValue(['refStart', 'refEnd', 'refTipo'])) && (
@@ -944,6 +947,7 @@ export function WeekSection({
 	                  collapsible
 	                  defaultCollapsed
 	                  onLabelChange={label => updateRowLabel(wid, 'refList', label)}
+	                  conditionsMode={conditionsMode}
 	                />
 	              )}
 	              <tr>
@@ -1155,6 +1159,7 @@ export function WeekSection({
 	                  collapsible
 	                  defaultCollapsed
 	                  onLabelChange={label => updateRowLabel(wid, 'preList', label)}
+	                  conditionsMode={conditionsMode}
 	                />
 	              )}
 	              {!isBlockCollapsed('extraCrew') && (!hideEmptyRows || hasAnyList('pickList') || hasAnyValue(['pickStart', 'pickEnd', 'pickupTipo'])) && (
@@ -1178,6 +1183,7 @@ export function WeekSection({
 	                  collapsible
 	                  defaultCollapsed
 	                  onLabelChange={label => updateRowLabel(wid, 'pickList', label)}
+	                  conditionsMode={conditionsMode}
 	                />
 	              )}
 	              <tr>

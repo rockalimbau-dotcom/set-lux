@@ -1,3 +1,10 @@
+import {
+  FACTOR_SEXTO_DIA,
+  PRICE_KEY_FESTIVO,
+  PRICE_KEY_SEXTO_DIA,
+  PRICE_KEY_SEXTO_DIA_HALF,
+} from '../shared/priceKeys';
+
 function parseNum(input: unknown): number {
   if (input == null) return NaN;
   let s = String(input)
@@ -35,7 +42,9 @@ export function computeFromMonthly(monthlyStr: string, params: any) {
       'Precio diario': '',
       'Precio jornada': '',
       'Precio 1/2 jornada': '',
-      'Precio Día extra/Festivo': '',
+      [PRICE_KEY_SEXTO_DIA_HALF]: '',
+      [PRICE_KEY_FESTIVO]: '',
+      [PRICE_KEY_SEXTO_DIA]: '',
       'Travel day': '',
       'Horas extras': '',
     };
@@ -60,13 +69,12 @@ export function computeFromMonthly(monthlyStr: string, params: any) {
 
   const semanal = isFinite(mensualOk / semOk) ? mensualOk / semOk : NaN;
   const diario = isFinite(semanal / ddOk) ? semanal / ddOk : NaN;
-  const jornada = isFinite(semanal / djOk) ? semanal / djOk
-    : NaN;
+  const jornada = isFinite(semanal / djOk) ? semanal / djOk : NaN;
   const mediaJornada = isFinite(jornada) ? jornada / 2 : NaN;
   const festivo = isFinite(jornada * ffOk) ? jornada * ffOk : NaN;
-  const travel = isFinite(jornada / divTravelOk)
-    ? jornada / divTravelOk
-    : NaN;
+  const sextoDia = isFinite(jornada) ? jornada * FACTOR_SEXTO_DIA : NaN;
+  const sextoDiaMedia = isFinite(mediaJornada) ? mediaJornada * FACTOR_SEXTO_DIA : NaN;
+  const travel = isFinite(jornada / divTravelOk) ? jornada / divTravelOk : NaN;
   const baseHora = isFinite(mensualOk / (hsOk * semOk)) ? mensualOk / (hsOk * semOk) : NaN;
   const horaExtra = isFinite(baseHora * fheOk) ? baseHora * fheOk : NaN;
 
@@ -75,7 +83,9 @@ export function computeFromMonthly(monthlyStr: string, params: any) {
     'Precio diario': isFinite(diario) ? fmtMoney(diario) : '',
     'Precio jornada': isFinite(jornada) ? fmtMoney(jornada) : '',
     'Precio 1/2 jornada': isFinite(mediaJornada) ? fmtMoney(mediaJornada) : '',
-    'Precio Día extra/Festivo': isFinite(festivo) ? fmtMoney(festivo) : '',
+    [PRICE_KEY_SEXTO_DIA_HALF]: isFinite(sextoDiaMedia) ? fmtMoney(sextoDiaMedia) : '',
+    [PRICE_KEY_FESTIVO]: isFinite(festivo) ? fmtMoney(festivo) : '',
+    [PRICE_KEY_SEXTO_DIA]: isFinite(sextoDia) ? fmtMoney(sextoDia) : '',
     'Travel day': isFinite(travel) ? fmtMoney(travel) : '',
     'Horas extras': isFinite(horaExtra) ? fmtMoney(horaExtra) : '',
   };

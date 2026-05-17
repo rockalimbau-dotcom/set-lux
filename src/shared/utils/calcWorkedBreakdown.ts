@@ -1,4 +1,4 @@
-import { weekISOdays } from '@features/nomina/utils/plan';
+import { isMemberRefuerzo, weekISOdays } from '@features/nomina/utils/plan';
 import { hasRoleGroupSuffix, stripRoleSuffix } from '@shared/constants/roles';
 import { norm, nameEq as nameEqUtil } from './normalize';
 import { normalizeExtraBlocks } from './extraBlocks';
@@ -19,6 +19,8 @@ export interface WorkedBreakdownResult {
   descarga?: number;
   localizar?: number;
   rodajeFestivo?: number;
+  sextoDia?: number;
+  sextoDiaHalf?: number;
   prelight?: number;
   recogida?: number;
 }
@@ -51,6 +53,11 @@ export function calcWorkedBreakdown(
   const wantedSource = String(person.source || '').trim().toLowerCase();
   const wantedNameNorm = norm(person.name || '');
 
+  const isRefuerzoBreakdown =
+    wantedSource === 'ref' ||
+    wantedRole === 'REF' ||
+    (wantedRole.startsWith('REF') && wantedRole.length > 3);
+
   let workedBase = 0;
   let workedPre = 0;
   let workedPick = 0;
@@ -67,6 +74,8 @@ export function calcWorkedBreakdown(
   let descarga = 0;
   let localizar = 0;
   let rodajeFestivo = 0;
+  let sextoDia = 0;
+  let sextoDiaHalf = 0;
   let prelight = 0;
   let recogida = 0;
 
@@ -176,10 +185,12 @@ export function calcWorkedBreakdown(
 
       const anyRefInLists = (arr: any[]) =>
         (arr || []).some((m: any) => {
+          if (!nameEq(m?.name)) return false;
+          if (isMemberRefuerzo(m)) return matchesScheduledMember(m);
           const role = String(m?.role || '');
           const isRefRole =
             role === 'REF' || (role.startsWith('REF') && role.length > 3) || /ref/i.test(role);
-          if (!nameEq(m?.name) || !isRefRole) return false;
+          if (!isRefRole) return false;
           return matchesScheduledMember(m);
         });
 
@@ -292,6 +303,7 @@ export function calcWorkedBreakdown(
           holidayDays += 1;
           // Rodaje Festivo no cuenta en workedDays (tiene su propia columna)
         }
+        // Sexto día / 1/2 jornada: solo en condiciones semanal y mensual (ignorar en diario/publicidad)
       } else {
         // En semanal y mensual: todos los tipos cuentan en workedDays excepto Travel Day
         if (dayType === '1/2 jornada') {
@@ -331,6 +343,12 @@ export function calcWorkedBreakdown(
         } else if (dayType === 'Rodaje Festivo') {
           rodajeFestivo += 1;
           holidayDays += 1;
+        } else if (dayType === 'Sexto día') {
+          sextoDia += 1;
+          if (!isRefuerzoBreakdown) workedDays += 1;
+        } else if (dayType === 'Sexto día 1/2 jornada') {
+          sextoDiaHalf += 1;
+          if (!isRefuerzoBreakdown) workedDays += 1;
         }
       }
       
@@ -358,7 +376,9 @@ export function calcWorkedBreakdown(
       carga,
       descarga,
       prelight,
-      recogida
+      recogida,
+      sextoDia,
+      sextoDiaHalf,
     };
   } else {
     return { 
@@ -377,6 +397,8 @@ export function calcWorkedBreakdown(
       descarga,
       localizar,
       rodajeFestivo,
+      sextoDia,
+      sextoDiaHalf,
       prelight,
       recogida
     };

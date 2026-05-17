@@ -1,15 +1,18 @@
-export const PRICE_HEADERS: string[] = [
-  'Precio mensual',
-  'Precio semanal',
-  'Precio diario',
-  'Precio jornada',
-  'Precio 1/2 jornada',
-  'Precio refuerzo',
-  'Material propio',
-  'Precio Día extra/Festivo',
-  'Travel day',
-  'Horas extras',
-];
+export {
+  PRICE_HEADERS,
+  PRICE_HEADERS_DIARIO,
+  PRICE_KEY_FESTIVO,
+  PRICE_KEY_LEGACY_FESTIVO,
+  PRICE_KEY_SEXTO_DIA,
+  PRICE_KEY_SEXTO_DIA_HALF,
+  FACTOR_SEXTO_DIA,
+  FESTIVO_PRICE_FIELD_ALIASES,
+  SEXTO_DIA_PRICE_FIELD_ALIASES,
+  SEXTO_DIA_HALF_PRICE_FIELD_ALIASES,
+  migrateConditionsPrices,
+  migratePriceRow,
+  migratePricesMap,
+} from './shared/priceKeys';
 
 export const PRICE_ROLES: string[] = [
   'Gaffer',
@@ -27,4 +30,3 @@ export const PRICE_ROLES: string[] = [
   'Eléctrico de potencia',
   'Técnico de prácticos',
 ];
-

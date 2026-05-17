@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getRoleBadgeCode, applyGenderToBadge } from '@shared/constants/roles';
 import { stripRoleSuffix } from '@shared/constants/roles';
-import { displayValue, displayMoney } from '../../utils/displayHelpers';
+import { displayValue, displayMoney, jornadasColumnDayCount } from '../../utils/displayHelpers';
 import {
   baseEstadoPercentApplied,
   DEFAULT_ESTADO_SOCIAL_PERCENT,
@@ -35,6 +35,8 @@ type MonthSectionPersonRowProps = {
   hasCargaDescargaData: boolean;
   columnVisibility: {
     holidays: boolean;
+    sextoDia: boolean;
+    sextoDiaHalf: boolean;
     travel: boolean;
     extras: boolean;
     transporte: boolean;
@@ -146,6 +148,8 @@ export function MonthSectionPersonRow({
     ? 'min-w-[32px] sm:min-w-[36px] md:min-w-[40px] px-2 sm:px-2.5 md:px-3'
     : 'w-4 sm:w-5 md:w-6';
 
+  const jornadasDisplayCount = jornadasColumnDayCount(r, columnVisibility);
+
   const materialPropioType =
     (r as any)._materialPropioType === 'unico'
       ? 'unico'
@@ -239,8 +243,10 @@ export function MonthSectionPersonRow({
       {hasWorkedDaysData && (
         <Td align='middle' className='text-center'>
           <div className='flex flex-col items-center'>
-            {r._worked > 0 && (
-              <div className='text-right font-medium text-zinc-100 mb-0.5 sm:mb-1 text-[9px] sm:text-[10px] md:text-xs'>{r._worked}</div>
+            {jornadasDisplayCount > 0 && (
+              <div className='text-right font-medium text-zinc-100 mb-0.5 sm:mb-1 text-[9px] sm:text-[10px] md:text-xs'>
+                {jornadasDisplayCount}
+              </div>
             )}
             <WorkedDaysSummary
               carga={projectMode === 'diario' ? 0 : (r._carga || 0)}
@@ -252,6 +258,10 @@ export function MonthSectionPersonRow({
               oficina={r._oficina || 0}
               prelight={r._prelight || 0}
               recogida={r._recogida || 0}
+              sextoDia={r._sextoDia || 0}
+              sextoDiaHalf={r._sextoDiaHalf || 0}
+              showSextoDiaInBreakdown={!columnVisibility.sextoDia}
+              showSextoDiaHalfInBreakdown={!columnVisibility.sextoDiaHalf}
             />
           </div>
         </Td>
@@ -327,6 +337,28 @@ export function MonthSectionPersonRow({
             <span className='text-[9px] sm:text-[10px] md:text-xs text-zinc-400 italic'>{t('payroll.addPriceInConditions')}</span>
           ) : (
             <span className='text-[9px] sm:text-[10px] md:text-xs'>{displayMoney(r._totalHolidays, 2)}</span>
+          )}
+        </Td>
+      )}
+
+      {columnVisibility.sextoDia && <Td align='middle' className='text-center'><span className='text-[9px] sm:text-[10px] md:text-xs'>{displayValue(r._sextoDia)}</span></Td>}
+      {columnVisibility.sextoDia && (
+        <Td align='middle' className='text-center'>
+          {r._missingPrices?.sextoDia ? (
+            <span className='text-[9px] sm:text-[10px] md:text-xs text-zinc-400 italic'>{t('payroll.addPriceInConditions')}</span>
+          ) : (
+            <span className='text-[9px] sm:text-[10px] md:text-xs'>{displayMoney(r._totalSextoDia, 2)}</span>
+          )}
+        </Td>
+      )}
+
+      {columnVisibility.sextoDiaHalf && <Td align='middle' className='text-center'><span className='text-[9px] sm:text-[10px] md:text-xs'>{displayValue(r._sextoDiaHalf)}</span></Td>}
+      {columnVisibility.sextoDiaHalf && (
+        <Td align='middle' className='text-center'>
+          {r._missingPrices?.sextoDiaHalf ? (
+            <span className='text-[9px] sm:text-[10px] md:text-xs text-zinc-400 italic'>{t('payroll.addPriceInConditions')}</span>
+          ) : (
+            <span className='text-[9px] sm:text-[10px] md:text-xs'>{displayMoney(r._totalSextoDiaHalf, 2)}</span>
           )}
         </Td>
       )}

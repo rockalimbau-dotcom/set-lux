@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { AnyRecord } from '@shared/types/common';
 import { getTranslatedConditionRoleLabel } from '../roleCatalog';
+import { PRICE_KEY_FESTIVO } from '../shared/priceKeys';
 
 export function useDiarioTranslations(project?: AnyRecord | null) {
   const { t } = useTranslation();
@@ -11,7 +12,7 @@ export function useDiarioTranslations(project?: AnyRecord | null) {
       'Precio jornada': t('conditions.priceWorkDay'),
       'Precio 1/2 jornada': t('conditions.priceHalfDay'),
       'Material propio': t('conditions.priceOwnMaterial'),
-      'Precio Día extra/Festivo': t('conditions.priceExtraDayHoliday'),
+      [PRICE_KEY_FESTIVO]: t('conditions.priceHoliday'),
       'Travel day': t('conditions.travelDay'),
       'Localización técnica': t('conditions.technicalLocation'),
       'Carga/descarga': t('conditions.loadingUnloading'),

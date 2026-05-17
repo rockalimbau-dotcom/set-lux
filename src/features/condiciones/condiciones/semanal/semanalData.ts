@@ -2,6 +2,7 @@ import { loadJSON } from '../shared';
 import { normalizeCustomSections } from '../shared';
 import { storage } from '@shared/services/localStorage.service';
 import { DEFAULT_FESTIVOS_TEXT } from '@shared/constants/festivos';
+import { migrateConditionsPrices } from '../shared/priceKeys';
 import { getDefaultsSemanal } from '../../utils/translationHelpers';
 
 // Variable global para festivos dinámicos
@@ -195,7 +196,7 @@ export function loadOrSeed(storageKey: string) {
       } catch {}
     }
 
-    return parsed;
+    return migrateConditionsPrices(parsed);
   }
 
   // Sincronizar roles con prices en el fallback también

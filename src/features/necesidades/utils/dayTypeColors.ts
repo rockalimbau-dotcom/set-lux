@@ -34,6 +34,24 @@ const LIGHT_PALETTE: Record<string, DayTypePalette> = {
     controlBorder: '#FB7185',
     controlText: '#BE123C',
   },
+  sixthDay: {
+    key: 'sixthDay',
+    bg: '#EDE9FE',
+    headerBg: '#C4B5FD',
+    border: '#8B5CF6',
+    controlBg: '#EDE9FE',
+    controlBorder: '#8B5CF6',
+    controlText: '#5B21B6',
+  },
+  sixthDayHalf: {
+    key: 'sixthDayHalf',
+    bg: '#F3E8FF',
+    headerBg: '#D8B4FE',
+    border: '#A855F7',
+    controlBg: '#F3E8FF',
+    controlBorder: '#A855F7',
+    controlText: '#7E22CE',
+  },
   logistics: {
     key: 'logistics',
     bg: '#FFF7ED',
@@ -118,6 +136,24 @@ const DARK_PALETTE: Record<string, DayTypePalette> = {
     controlBorder: '#FB7185',
     controlText: '#FFE4E6',
   },
+  sixthDay: {
+    key: 'sixthDay',
+    bg: 'rgba(139, 92, 246, 0.18)',
+    headerBg: 'rgba(139, 92, 246, 0.52)',
+    border: '#A78BFA',
+    controlBg: 'rgba(139, 92, 246, 0.30)',
+    controlBorder: '#A78BFA',
+    controlText: '#EDE9FE',
+  },
+  sixthDayHalf: {
+    key: 'sixthDayHalf',
+    bg: 'rgba(168, 85, 247, 0.16)',
+    headerBg: 'rgba(168, 85, 247, 0.48)',
+    border: '#C084FC',
+    controlBg: 'rgba(168, 85, 247, 0.28)',
+    controlBorder: '#C084FC',
+    controlText: '#F3E8FF',
+  },
   logistics: {
     key: 'logistics',
     bg: 'rgba(249, 115, 22, 0.18)',
@@ -189,6 +225,10 @@ function getPaletteKey(tipo: string | null | undefined): string {
       return 'shooting';
     case 'Rodaje Festivo':
       return 'holidayShooting';
+    case 'Sexto día':
+      return 'sixthDay';
+    case 'Sexto día 1/2 jornada':
+      return 'sixthDayHalf';
     case 'Carga':
     case 'Descarga':
       return 'logistics';

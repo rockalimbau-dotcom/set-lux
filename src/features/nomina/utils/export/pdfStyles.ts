@@ -296,7 +296,8 @@ export const PDF_STYLES = `
       color: #1e293b;
     }
 
-    .summary-pill {
+    .summary-pill,
+    .summary-worked-days {
       display: inline-block;
       text-align: center;
       line-height: 1.1;
@@ -324,6 +325,7 @@ export const PDF_STYLES = `
     .summary-detail-item {
       display: block;
       margin-top: 1px;
+      font-weight: 500;
     }
     
     .total-cell {

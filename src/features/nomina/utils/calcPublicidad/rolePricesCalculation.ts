@@ -1,3 +1,8 @@
+import {
+  FESTIVO_PRICE_FIELD_ALIASES,
+  SEXTO_DIA_HALF_PRICE_FIELD_ALIASES,
+  SEXTO_DIA_PRICE_FIELD_ALIASES,
+} from '@features/condiciones/condiciones/shared/priceKeys';
 import { num, getNumField, findPriceRow } from './rolePricesHelpers';
 
 interface RolePriceCalculationParams {
@@ -127,7 +132,7 @@ export function calculateRolePrices({
     return candidates;
   };
 
-  let jornada, halfJornada, travelDay, horaExtra, holidayDay;
+  let jornada, halfJornada, travelDay, horaExtra, holidayDay, sextoDia, sextoDiaHalf;
   if (normalized === 'REF' || (normalized.startsWith('REF') && normalized.length > 3)) {
     // Si es REF o REF + rol base (REFG, REFBB, etc.), buscar "Precio refuerzo" en la fila correspondiente
     // Para refuerzos, SIEMPRE buscar directamente en rowsForRefuerzo (basePriceRows), ignorar prelight/pickup
@@ -163,8 +168,12 @@ export function calculateRolePrices({
     travelDay = jornada / divTravel;
     horaExtra = getNumField(targetRow, ['Horas extras', 'Horas Extras', 'Hora extra', 'Horas extra', 'HE', 'Hora Extra']) ||
                 getNumField(elecRow, ['Horas extras', 'Horas Extras', 'Hora extra', 'Horas extra', 'HE', 'Hora Extra']) || 0;
-    holidayDay = getNumField(targetRow, ['Precio Día extra/Festivo', 'Precio Día extra/festivo', 'Día extra/Festivo', 'Día festivo', 'Festivo']) ||
-                 getNumField(elecRow, ['Precio Día extra/Festivo', 'Precio Día extra/festivo', 'Día extra/Festivo', 'Día festivo', 'Festivo']) || 0;
+    holidayDay =
+      getNumField(targetRow, [...FESTIVO_PRICE_FIELD_ALIASES]) ||
+      getNumField(elecRow, [...FESTIVO_PRICE_FIELD_ALIASES]) ||
+      0;
+    sextoDia = jornada;
+    sextoDiaHalf = halfJornada || jornada;
   } else {
     // Fallback: si no encontramos fila directa para el rol, usar la de Eléctrico
     if (!row || Object.keys(row).length === 0) {
@@ -177,7 +186,9 @@ export function calculateRolePrices({
     travelDay = getNumField(row, ['Travel day', 'Travel Day', 'Travel', 'Día de viaje', 'Dia de viaje', 'Día travel', 'Dia travel', 'TD']) ||
                 (jornada > 0 ? jornada / divTravel : 0);
     horaExtra = getNumField(row, ['Horas extras', 'Horas Extras', 'Hora extra', 'Horas extra', 'HE', 'Hora Extra']);
-    holidayDay = getNumField(row, ['Precio Día extra/Festivo', 'Precio Día extra/festivo', 'Día extra/Festivo', 'Día festivo', 'Festivo']) || 0;
+    holidayDay = getNumField(row, [...FESTIVO_PRICE_FIELD_ALIASES]) || 0;
+    sextoDia = getNumField(row, [...SEXTO_DIA_PRICE_FIELD_ALIASES]) || 0;
+    sextoDiaHalf = getNumField(row, [...SEXTO_DIA_HALF_PRICE_FIELD_ALIASES]) || 0;
   }
 
 
@@ -187,6 +198,8 @@ export function calculateRolePrices({
     travelDay,
     horaExtra,
     holidayDay,
+    sextoDia,
+    sextoDiaHalf,
     row,
   };
 }

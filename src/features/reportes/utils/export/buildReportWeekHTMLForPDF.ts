@@ -6,6 +6,7 @@ import { groupAndSortPersonsByBlock } from './buildReportWeekHTMLForPDF/sortingH
 import { generateDaysHeader } from './buildReportWeekHTMLForPDF/tableHelpers';
 import { generateBodyByBlocks, generateInfoPanel, generateFooter, generateHeaderTitle } from './buildReportWeekHTMLForPDF/contentHelpers';
 import { baseStyles } from './buildReportWeekHTMLForPDF/styles';
+import { normalizeJornadaType } from '@shared/utils/jornadaTranslations';
 import { getNeedsDayTypePalette } from '@features/necesidades/utils/dayTypeColors';
 
 export function buildReportWeekHTMLForPDF({
@@ -88,8 +89,8 @@ export function buildReportWeekHTMLForPDF({
     dayNameFromISO,
     toDisplayDate,
     iso => {
-      const tipo = typeof jornadaTipoTexto === 'function' ? jornadaTipoTexto(iso, 'base') : '';
-      const palette = getNeedsDayTypePalette(tipo, 'light');
+      const tipoLabel = typeof jornadaTipoTexto === 'function' ? jornadaTipoTexto(iso, 'base') : '';
+      const palette = getNeedsDayTypePalette(normalizeJornadaType(tipoLabel), 'light');
       if (!palette) return null;
       return {
         headerBg: palette.headerBg,

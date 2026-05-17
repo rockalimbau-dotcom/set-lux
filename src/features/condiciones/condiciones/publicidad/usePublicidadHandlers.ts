@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { AnyRecord } from '@shared/types/common';
 import { PRICE_ROLES_DIARIO } from './publicidadConstants';
+import { PUBLICIDAD_DERIVED_PRICE_KEYS } from '../shared/priceKeys';
 import { computeFromDaily } from './publicidadUtils';
 import { loadOrSeedDiario } from './publicidadData';
 import { normalizeConditionRoleKey, sortConditionRoleKeys } from '../roleCatalog';
@@ -111,14 +112,14 @@ export function useDiarioHandlers({ project, model: _model, setModel }: UseDiari
         row['Precio jornada'] = value;
 
         if (value == null || String(value).trim() === '') {
-          row['Precio 1/2 jornada'] = '';
-          row['Precio Día extra/Festivo'] = '';
-          row['Travel day'] = '';
+          PUBLICIDAD_DERIVED_PRICE_KEYS.forEach(key => {
+            row[key] = '';
+          });
         } else {
           const derived = computeFromDaily(value, m.params);
-          row['Precio 1/2 jornada'] = derived['Precio 1/2 jornada'];
-          row['Precio Día extra/Festivo'] = derived['Precio Día extra/Festivo'];
-          row['Travel day'] = derived['Travel day'];
+          PUBLICIDAD_DERIVED_PRICE_KEYS.forEach(key => {
+            row[key] = derived[key] ?? '';
+          });
         }
         next[priceKey][role] = row;
         return next;
