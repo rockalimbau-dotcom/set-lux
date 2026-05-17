@@ -483,5 +483,47 @@ describe('calcWorkedBreakdown', () => {
 
       expect(customRow.workedDays).toBe(1);
     });
+
+    it('counts refuerzo with REF* role only on days scheduled in extra blocks', () => {
+      const rodajeDay = (name: string | null) => ({
+        tipo: 'Rodaje',
+        crewList: [],
+        team: [],
+        refBlocks: name
+          ? [
+              {
+                id: 'extra_1',
+                tipo: 'Rodaje',
+                start: '08:00',
+                end: '19:00',
+                list: [{ role: 'REFE', name, source: 'ref' }],
+                text: '',
+              },
+            ]
+          : [{ id: 'extra_empty', tipo: '', start: '', end: '', list: [], text: '' }],
+      });
+
+      const weeks = [
+        {
+          days: [
+            rodajeDay(null),
+            rodajeDay('cacacaca'),
+            rodajeDay(null),
+            rodajeDay(null),
+            rodajeDay(null),
+          ],
+        },
+      ];
+
+      const result = calcWorkedBreakdown(
+        weeks,
+        () => true,
+        { role: 'REFE', name: 'cacacaca', source: 'ref' },
+        'mensual'
+      );
+
+      expect(result.workedDays).toBe(1);
+      expect(result.rodaje).toBe(1);
+    });
   });
 });

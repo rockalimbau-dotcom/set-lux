@@ -69,7 +69,12 @@ export function buildRefuerzoIndex(weeks: any[]): Set<string> {
           set.add(key);
         }
       };
-      (d?.team || []).forEach((m: any) => mark(m));
+      const baseTeam = Array.isArray(d?.crewList)
+        ? d.crewList
+        : (d?.team || []).filter(
+            (m: any) => String(m?.source || '').trim().toLowerCase() !== 'ref'
+          );
+      baseTeam.forEach((m: any) => mark(m));
       (d?.prelight || []).forEach((m: any) => mark(m));
       (d?.pickup || []).forEach((m: any) => mark(m));
       normalizeExtraBlocks(d).forEach(block => {
@@ -108,7 +113,13 @@ export function weekAllPeopleActive(week: any): { personId?: string; role: strin
   };
 
   for (const d of week?.days || []) {
-    for (const m of d?.team || []) push(m.personId, m.role || '', m.name || '', m.gender, m.source, undefined, m.roleId, m.roleLabel);
+    const baseTeam = Array.isArray(d?.crewList)
+      ? d.crewList
+      : (d?.team || []).filter(
+          (m: any) => String(m?.source || '').trim().toLowerCase() !== 'ref'
+        );
+    for (const m of baseTeam)
+      push(m.personId, m.role || '', m.name || '', m.gender, m.source, undefined, m.roleId, m.roleLabel);
     for (const m of d?.prelight || []) push(m.personId, m.role || '', m.name || '', m.gender, m.source, undefined, m.roleId, m.roleLabel);
     for (const m of d?.pickup || []) push(m.personId, m.role || '', m.name || '', m.gender, m.source, undefined, m.roleId, m.roleLabel);
     normalizeExtraBlocks(d).forEach((block, index) => {

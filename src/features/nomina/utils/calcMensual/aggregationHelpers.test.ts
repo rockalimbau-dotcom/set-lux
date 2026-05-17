@@ -122,6 +122,30 @@ describe('payroll mensual visibleRoleFor', () => {
     expect(entry.personId).toBe('person_pol');
   });
 
+  it('does not create a duplicate base row for refuerzos scheduled only in extra blocks', () => {
+    const refuerzoSet = new Set(['E__cacacaca']);
+    const week = {
+      days: [
+        {
+          crewList: [],
+          team: [{ role: 'REFE', name: 'cacacaca', source: 'ref' }],
+          refBlocks: [
+            {
+              list: [{ role: 'REFE', name: 'cacacaca', source: 'ref' }],
+            },
+          ],
+        },
+      ],
+    };
+
+    const keys = buildUniqueStorageKeys(week, refuerzoSet);
+    const entries = Array.from(keys.values());
+
+    expect(entries).toHaveLength(1);
+    expect(entries[0].displayBlock).toBe('extra');
+    expect(entries[0].name).toBe('cacacaca');
+  });
+
   it('creates separate internal row keys for base and custom roles with the same visible role and name', () => {
     const week = {
       days: [

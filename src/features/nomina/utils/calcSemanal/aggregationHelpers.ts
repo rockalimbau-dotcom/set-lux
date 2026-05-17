@@ -114,6 +114,7 @@ export function buildUniqueStorageKeys(
     // Verificar si es un refuerzo (REF o REFG, REFBB, etc.)
     const isRef = roleVisible === 'REF' || (roleVisible && roleVisible.startsWith('REF') && roleVisible.length > 3);
     if (isRef) {
+      if (displayBlock !== 'extra' && String(source || '').toLowerCase() === 'ref') continue;
       if (displayBlock === 'extra' && typeof block === 'string' && block.startsWith('extra:')) {
         const storageKey = buildStorageKey(r, n, refuerzoSet, block, source, roleId);
         if (!uniqStorageKeys.has(storageKey)) {

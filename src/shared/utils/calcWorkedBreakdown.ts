@@ -153,57 +153,67 @@ export function calcWorkedBreakdown(
       
       // Verificar si la persona está trabajando en este día (en team, prelight o pickup)
       let isWorking = false;
-      let activeSource: 'team' | 'prelight' | 'pickup' | null = null;
-      // Si el rol es REF o empieza con REF (REFG, REFBB, etc.), usar lógica de refuerzo
-      if (wantedRole === 'REF' || (wantedRole && wantedRole.startsWith('REF') && wantedRole.length > 3)) {
-        const anyRef = (arr: any[]) =>
-          (arr || []).some((m: any) => {
-            const role = String(m?.role || '');
-            const isRefRole = role === 'REF' || (role.startsWith('REF') && role.length > 3) || /ref/i.test(role);
-            if (!nameEq(m?.name) || !isRefRole) return false;
-            return matchesScheduledMember(m);
-          });
-        isWorking = anyRef(day?.team) || anyRef(day?.prelight) || anyRef(day?.pickup);
-        if (isWorking) activeSource = 'team';
-      } else {
-        const matches = (list: any[]) =>
-          (list || []).some((m: any) => matchesScheduledMember(m));
+      let activeSource: 'team' | 'prelight' | 'pickup' | 'extra' | null = null;
 
-        const extraBlocks = normalizeExtraBlocks(day);
-        const matchingExtraBlocks = extraBlocks.filter(block =>
-          (block?.list || []).some((m: any) => matchesScheduledMember(m))
-        );
+      const matches = (list: any[]) =>
+        (list || []).some((m: any) => matchesScheduledMember(m));
 
-        const inTeam = (day?.team || []).some((m: any) => {
-          if (String(m?.source || '').trim().toLowerCase() === 'ref') return false;
+      const extraBlocks = normalizeExtraBlocks(day);
+      const matchingExtraBlocks = extraBlocks.filter(block =>
+        (block?.list || []).some((m: any) => matchesScheduledMember(m))
+      );
+      const inExtra = matchingExtraBlocks.length > 0;
+      matchedExtraType =
+        String(matchingExtraBlocks[0]?.tipo || '').trim() ||
+        String(day?.refTipo || '').trim();
+
+      const inTeam = (day?.team || []).some((m: any) => {
+        if (String(m?.source || '').trim().toLowerCase() === 'ref') return false;
+        return matchesScheduledMember(m);
+      });
+      const inPre = matches(day?.prelight);
+      const inPick = matches(day?.pickup);
+
+      const anyRefInLists = (arr: any[]) =>
+        (arr || []).some((m: any) => {
+          const role = String(m?.role || '');
+          const isRefRole =
+            role === 'REF' || (role.startsWith('REF') && role.length > 3) || /ref/i.test(role);
+          if (!nameEq(m?.name) || !isRefRole) return false;
           return matchesScheduledMember(m);
         });
-        const inPre = matches(day?.prelight);
-        const inPick = matches(day?.pickup);
-        const inExtra = matchingExtraBlocks.length > 0;
-        matchedExtraType =
-          String(matchingExtraBlocks[0]?.tipo || '').trim() ||
-          String(day?.refTipo || '').trim();
 
-        if (wantedSuffix === 'P') {
-          isWorking = inPre;
-          activeSource = inPre ? 'prelight' : null;
-        } else if (wantedSuffix === 'R') {
-          isWorking = inPick;
-          activeSource = inPick ? 'pickup' : null;
-        } else if (wantedSource === 'ref') {
-          isWorking = inExtra;
-          activeSource = inExtra ? 'extra' : null;
-        } else if (wantedSource === 'base-strict') {
-          isWorking = inTeam;
-          activeSource = inTeam ? 'team' : null;
-        } else {
-          isWorking = inTeam || inPre || inPick || inExtra;
-          if (inPre) activeSource = 'prelight';
-          else if (inPick) activeSource = 'pickup';
-          else if (inExtra && !inTeam) activeSource = 'extra';
-          else if (inTeam) activeSource = 'team';
-        }
+      // Refuerzos en bloques extra: solo días donde están en refBlocks (no en crew base)
+      if (wantedSource === 'ref') {
+        isWorking = inExtra;
+        activeSource = inExtra ? 'extra' : null;
+      } else if (
+        wantedRole === 'REF' ||
+        (wantedRole && wantedRole.startsWith('REF') && wantedRole.length > 3)
+      ) {
+        // Refuerzo legacy en crew/pre/pickup (sin fila extra dedicada)
+        isWorking =
+          anyRefInLists(day?.team) ||
+          anyRefInLists(day?.prelight) ||
+          anyRefInLists(day?.pickup) ||
+          inExtra;
+        if (inExtra) activeSource = 'extra';
+        else if (isWorking) activeSource = 'team';
+      } else if (wantedSuffix === 'P') {
+        isWorking = inPre;
+        activeSource = inPre ? 'prelight' : null;
+      } else if (wantedSuffix === 'R') {
+        isWorking = inPick;
+        activeSource = inPick ? 'pickup' : null;
+      } else if (wantedSource === 'base-strict') {
+        isWorking = inTeam;
+        activeSource = inTeam ? 'team' : null;
+      } else {
+        isWorking = inTeam || inPre || inPick || inExtra;
+        if (inPre) activeSource = 'prelight';
+        else if (inPick) activeSource = 'pickup';
+        else if (inExtra && !inTeam) activeSource = 'extra';
+        else if (inTeam) activeSource = 'team';
       }
       
       if (!isWorking) continue;
