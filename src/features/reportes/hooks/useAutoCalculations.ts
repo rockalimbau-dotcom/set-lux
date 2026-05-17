@@ -24,6 +24,7 @@ import {
   preserveOrRecalculateHorasExtra,
   preserveOrUseAuto,
 } from './useAutoCalculations/dataPreservation';
+import { CONCEPTS } from '../constants';
 
 export default function useAutoCalculations({
   enabled = true,
@@ -220,6 +221,31 @@ export default function useAutoCalculations({
         }
       };
 
+      const clearOffDay = (pk: string, iso: string, block: string) => {
+        for (const concept of CONCEPTS) {
+          setConceptValue(pk, concept, iso, '');
+          setManualFlag(pk, concept, iso, false);
+        }
+        const scheduleRoot = next.__schedule__ as Record<string, any> | undefined;
+        if (scheduleRoot?.[pk]?.[block]?.[iso] !== undefined) {
+          if (!next.__schedule__) next.__schedule__ = {};
+          const personSchedule = { ...(next.__schedule__[pk] || {}) };
+          const blockSchedule = { ...(personSchedule[block] || {}) };
+          delete blockSchedule[iso];
+          if (Object.keys(blockSchedule).length > 0) {
+            personSchedule[block] = blockSchedule;
+          } else {
+            delete personSchedule[block];
+          }
+          if (Object.keys(personSchedule).length > 0) {
+            next.__schedule__[pk] = personSchedule;
+          } else {
+            delete next.__schedule__[pk];
+          }
+          changed = true;
+        }
+      };
+
       for (const p of safePersonas as Persona[]) {
         const { pk, rowBlock } = resolveReportPersonKeys(p);
         const role = personaRole(p);
@@ -250,13 +276,10 @@ export default function useAutoCalculations({
             { roleId }
           );
 
-          // Igual que la cabecera de horario: si hay ventana start/end (plan o __schedule__), no bloquear fila por discrepancias del checker.
-          let off = !workedThisBlock;
-          if (getScheduleWindowForReport) {
-            const sw = getScheduleWindowForReport(p, iso, rowBlock);
-            const hasSlots =
-              String(sw?.start ?? '').trim() !== '' && String(sw?.end ?? '').trim() !== '';
-            off = !workedThisBlock && !hasSlots;
+          const off = !workedThisBlock;
+          if (off) {
+            clearOffDay(pk, iso, rowBlock);
+            continue;
           }
 
           // Procesar Horas extra
@@ -278,16 +301,10 @@ export default function useAutoCalculations({
           });
 
           setConceptValue(pk, 'Horas extra', iso, horasExtraResult.value);
-          if (off) {
-            // Limpiar el flag manual si no está trabajando
-            setManualFlag(pk, 'Horas extra', iso, false);
+          if (horasExtraResult.isManual) {
+            setManualFlag(pk, 'Horas extra', iso, true);
           } else {
-            // Actualizar el flag manual
-            if (horasExtraResult.isManual) {
-              setManualFlag(pk, 'Horas extra', iso, true);
-            } else {
-              setManualFlag(pk, 'Horas extra', iso, false);
-            }
+            setManualFlag(pk, 'Horas extra', iso, false);
           }
 
           // Procesar Turn Around
@@ -330,11 +347,7 @@ export default function useAutoCalculations({
               manual: manualMaterial,
               off,
             }));
-            if (off) setManualFlag(pk, 'Material propio', iso, false);
           }
-
-          // No limpiar de forma agresiva cuando una fila cae temporalmente en "off":
-          // en bloques dinámicos (+añadir) puede producir borrados en bucle mientras se edita.
         }
       }
 

@@ -1,5 +1,13 @@
 import { normalizeExtraBlocks } from '@shared/utils/extraBlocks';
+import { getDayBlockList } from '../../utils/plan';
+import { norm } from '../../utils/text';
 import { WeekAndDay, BlockWindow, AutoCalculationsParams } from './useAutoCalculationsTypes';
+
+const rosterSignature = (members: Array<{ name?: string; role?: string; roleId?: string }>) =>
+  (members || [])
+    .map(m => `${String(m?.roleId || m?.role || '').trim()}:${norm(String(m?.name || ''))}`)
+    .sort()
+    .join('|');
 
 /**
  * Habilita logs de debug basado en query params o localStorage
@@ -36,6 +44,7 @@ export function generatePlanWindowsSignature(
       e: String(blk?.end || '').trim(),
       t: String(blk?.tipo || '').trim(),
     }));
+    const day = ctx?.day;
     return {
       iso,
       bS: b.start || '',
@@ -47,6 +56,15 @@ export function generatePlanWindowsSignature(
       eS: e.start || '',
       eE: e.end || '',
       extraDyn,
+      rB: rosterSignature(getDayBlockList(day, 'base')),
+      rP: rosterSignature(getDayBlockList(day, 'pre')),
+      rK: rosterSignature(getDayBlockList(day, 'pick')),
+      rE: rosterSignature(getDayBlockList(day, 'extra')),
+      rX: normalizeExtraBlocks(day || []).map((blk, idx) => ({
+        i: idx,
+        l: rosterSignature(Array.isArray(blk?.list) ? blk.list : []),
+        t: String(blk?.tipo || '').trim(),
+      })),
     };
   }));
 }

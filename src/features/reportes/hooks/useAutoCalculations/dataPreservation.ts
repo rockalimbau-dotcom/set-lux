@@ -35,10 +35,6 @@ export function preserveOrRecalculateHorasExtra({
     String(currExtra).trim() !== '';
 
   if (off) {
-    // Evitar borrar en bucle un valor manual cuando hay desajustes temporales de bloque.
-    if (hasCurrentValue) {
-      return { value: String(currExtra), isManual: true };
-    }
     return { value: '', isManual: false };
   }
 
@@ -88,9 +84,6 @@ export function preserveOrUseAuto({
   off,
 }: PreserveValueParams): string {
   if (off) {
-    if (currValue !== undefined && currValue !== null && String(currValue).trim() !== '') {
-      return String(currValue);
-    }
     return '';
   }
   return manual ? currValue : autoValue !== currValue ? autoValue : currValue;

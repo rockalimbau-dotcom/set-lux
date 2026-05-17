@@ -368,6 +368,9 @@ export default function ReportesSemana({
         return String(blockKey);
       };
       const resolvedBlockKey = resolvePersonBlock();
+      if (!personMatchesBlock(resolvedBlockKey)) {
+        return { start: '', end: '', isRest: true, blockKey: resolvedBlockKey };
+      }
       let baseStart = '';
       let baseEnd = '';
 
