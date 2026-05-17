@@ -1,16 +1,10 @@
-import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import i18n from '../../../../i18n/config';
 import { CustomRow, DayValues, RowLabelOverrides } from './types';
 import { buildNecesidadesHTMLForPDF } from './htmlBuilders';
 import { translateWeekLabel, getNeedsLabel } from './helpers';
 import { shareOrSavePDF } from '@shared/utils/pdfShare';
-import {
-  PDF_IMAGE_COMPRESSION,
-  PDF_IMAGE_FORMAT,
-  PDF_RENDER_SCALE,
-  canvasToPdfImage,
-} from '@shared/lib/pdf/raster';
+import { addLandscapeCanvasToPdf, captureLandscapeHtml } from '@shared/lib/pdf/landscapeCapture';
 
 /**
  * Export single week to PDF
@@ -42,68 +36,16 @@ export async function exportToPDF(
       shootingDayOffset,
       planFileName
     );
-    
-    const tempContainer = document.createElement('div');
-    tempContainer.innerHTML = html;
-    tempContainer.style.position = 'absolute';
-    tempContainer.style.left = '-9999px';
-    tempContainer.style.top = '0';
-    tempContainer.style.width = '1123px'; // A4 landscape width at 96 DPI
-    tempContainer.style.height = '794px'; // A4 landscape height at 96 DPI
-    tempContainer.style.overflow = 'hidden';
-    document.body.appendChild(tempContainer);
 
-    // Debug: Check if footer exists and is visible
-    const footer = tempContainer.querySelector('.footer') as HTMLElement;
-    if (footer) {
-      console.log(`📄 Necesidades PDF: Footer found, height: ${footer.offsetHeight}px, visible: ${footer.offsetHeight > 0}`);
-      console.log(`📄 Necesidades PDF: Footer content:`, footer.textContent);
-    } else {
-      console.log(`❌ Necesidades PDF: Footer NOT found!`);
-    }
-
-    const canvas = await html2canvas(tempContainer, {
-      scale: PDF_RENDER_SCALE,
-      useCORS: true,
-      allowTaint: true,
-      backgroundColor: '#ffffff',
-      width: 1123, // 297mm at 96 DPI
-      height: 794, // 210mm at 96 DPI
-      scrollX: 0,
-      scrollY: 0,
-      windowWidth: 1123,
-      windowHeight: 794, // 210mm at 96 DPI
-      ignoreElements: () => {
-        // Don't ignore footer elements
-        return false;
-      },
-      onclone: (clonedDoc) => {
-        // Ensure footer is visible in cloned document
-        const footer = clonedDoc.querySelector('.footer') as HTMLElement;
-        if (footer) {
-          footer.style.position = 'relative';
-          footer.style.display = 'flex';
-          footer.style.visibility = 'visible';
-          footer.style.opacity = '1';
-          console.log('🔧 Necesidades PDF: Footer styles applied in cloned document');
-        } else {
-          console.log('❌ Necesidades PDF: Footer not found in cloned document');
-        }
-      }
-    });
-
-    document.body.removeChild(tempContainer);
-
-    const imgData = canvasToPdfImage(canvas);
+    const canvas = await captureLandscapeHtml(html);
     const pdf = new jsPDF({
       orientation: 'landscape',
       unit: 'mm',
-      format: 'a4'
+      format: 'a4',
     });
 
-    pdf.addImage(imgData, PDF_IMAGE_FORMAT, 0, 0, 297, 210, undefined, PDF_IMAGE_COMPRESSION);
-    
-    // Generate translated filename
+    addLandscapeCanvasToPdf(pdf, canvas);
+
     const needsLabel = getNeedsLabel();
     const translatedWeekLabel = translateWeekLabel(weekLabel);
     const weekPart = translatedWeekLabel.replace(/\s+/g, '');

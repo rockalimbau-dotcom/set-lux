@@ -1,6 +1,9 @@
+import { AnyRecord } from '@shared/types/common';
+import { normalizeExtraBlocks } from '@shared/utils/extraBlocks';
 import { normalizeJornadaType } from '@shared/utils/jornadaTranslations';
 
 export type NeedsTheme = 'light' | 'dark';
+export type NeedsBlockKey = 'base' | 'pre' | 'pick' | string;
 
 type DayTypePalette = {
   key: string;
@@ -216,4 +219,29 @@ export function getNeedsDayTypePalette(
   const key = getPaletteKey(tipo);
   if (!key) return null;
   return (theme === 'dark' ? DARK_PALETTE : LIGHT_PALETTE)[key] || null;
+}
+
+export function getNeedsDayTypeForBlock(
+  day: AnyRecord | null | undefined,
+  block: NeedsBlockKey = 'base'
+): string {
+  if (!day) return '';
+  if (block === 'pre') return String(day?.prelightTipo || day?.crewTipo || day?.tipo || '');
+  if (block === 'pick') return String(day?.pickupTipo || day?.crewTipo || day?.tipo || '');
+
+  const extraMatch = String(block).match(/^extra:(\d+)$/);
+  if (extraMatch) {
+    const extraBlock = normalizeExtraBlocks(day)[Number(extraMatch[1])];
+    return String(extraBlock?.tipo || day?.refTipo || day?.crewTipo || day?.tipo || '');
+  }
+
+  return String(day?.crewTipo || day?.tipo || '');
+}
+
+export function getNeedsDayTypePaletteForBlock(
+  day: AnyRecord | null | undefined,
+  block: NeedsBlockKey = 'base',
+  theme: NeedsTheme = 'light'
+): DayTypePalette | null {
+  return getNeedsDayTypePalette(getNeedsDayTypeForBlock(day, block), theme);
 }

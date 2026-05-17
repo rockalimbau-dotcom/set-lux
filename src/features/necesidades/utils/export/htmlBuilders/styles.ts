@@ -117,12 +117,13 @@ export const baseStyles = `
   .table-container {
     background: white;
     border-radius: 6px;
-    overflow: hidden;
+    overflow: visible;
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
   }
   
   table {
     width: 100%;
+    table-layout: fixed;
     border-collapse: collapse;
     font-size: 10px;
     border: 2px solid #7dbfe8;
@@ -130,8 +131,16 @@ export const baseStyles = `
   
   th:first-child,
   td:first-child {
-    width: 1%;
+    width: 12%;
     white-space: nowrap;
+  }
+
+  th:not(:first-child),
+  td:not(:first-child) {
+    width: auto;
+    max-width: 0;
+    overflow-wrap: anywhere;
+    word-break: break-word;
   }
   
   th {
@@ -150,8 +159,10 @@ export const baseStyles = `
     padding: 4px 5px;
     border: 1px solid #e2e8f0;
     background: white;
-    vertical-align: middle;
+    vertical-align: top;
     color: #1e293b;
+    overflow-wrap: anywhere;
+    word-break: break-word;
   }
 
   .th-label {
@@ -165,6 +176,11 @@ export const baseStyles = `
     display: block;
     min-height: 24px;
     width: 100%;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    white-space: pre-wrap;
+    line-height: 1.25;
   }
 
   .td-label-role {
@@ -178,10 +194,7 @@ export const baseStyles = `
   }
 
   td:not(:first-child) .td-label {
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: center;
+    display: block;
     text-align: center;
   }
 
@@ -198,6 +211,10 @@ export const baseStyles = `
     font-size: 8px;
     line-height: 1.1;
     letter-spacing: 0.1px;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    white-space: pre-wrap;
   }
   
   .footer {
@@ -257,18 +274,90 @@ export const containerStyles = `
 export const containerPDFStyles = `
   .container-pdf {
     width: 1123px;
-    height: 794px;
+    min-height: 794px;
     background: white;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
+    overflow: visible;
+  }
+
+  .container-pdf .header {
+    flex-shrink: 0;
+  }
+
+  .container-pdf .info-panel {
+    margin-left: 8px;
+    margin-right: 8px;
+  }
+
+  .container-pdf .content {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
+  .container-pdf .week-title {
+    flex-shrink: 0;
+  }
+
+  .container-pdf .table-container {
+    flex: 1 1 auto;
+    min-height: 0;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .container-pdf table {
+    flex: 1 1 auto;
+    height: 100%;
+    min-height: 0;
+  }
+
+  .container-pdf tbody {
+    height: 100%;
+  }
+
+  .container-pdf tbody tr:not(.pdf-table-fill) {
+    height: auto;
+  }
+
+  .container-pdf tr.pdf-table-fill {
+    height: 99%;
+  }
+
+  .container-pdf tr.pdf-table-fill td {
+    border: none;
+    background: transparent;
+    padding: 0;
+    vertical-align: top;
+  }
+
+  .container-pdf td {
+    vertical-align: top !important;
+  }
+
+  .container-pdf .td-label {
+    min-height: 0;
+    height: auto;
+  }
+
+  .container-pdf .member-line {
+    margin: 1px 0;
+    line-height: 1.2;
+  }
+
+  .container-pdf .footer {
+    flex-shrink: 0;
+    margin-top: auto;
+    margin-bottom: 0;
   }
   
   .footer {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
+    position: relative;
     background: white;
   }
   

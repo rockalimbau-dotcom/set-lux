@@ -163,6 +163,9 @@ export function buildNecesidadesHTMLForPDF(
               </thead>
               <tbody>
                 ${body}
+                <tr class="pdf-table-fill">
+                  <td colspan="${filteredDays.length + 1}"></td>
+                </tr>
               </tbody>
             </table>
           </div>

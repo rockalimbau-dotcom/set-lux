@@ -11,6 +11,7 @@ import {
   translateLocationValue,
 } from '../helpers';
 import { normalizeExtraBlocks } from '@shared/utils/extraBlocks';
+import { getNeedsDayTypePalette } from '../../dayTypeColors';
 
 type HtmlDayPalette = {
   headerBg: string;
@@ -21,110 +22,54 @@ type HtmlDayPalette = {
   accentText: string;
 };
 
-function getDayPalette(day: DayValues | undefined): HtmlDayPalette {
-  const tipo = normalizeJornadaType(day?.crewTipo ?? day?.tipo ?? '').toLowerCase();
+const DEFAULT_HTML_PALETTE: HtmlDayPalette = {
+  headerBg: '#BFE4F8',
+  headerText: '#0f172a',
+  border: '#7DBFE8',
+  cellBg: '#ffffff',
+  accentBg: '#F8FAFC',
+  accentText: '#1E293B',
+};
 
-  switch (tipo) {
-    case 'rodaje':
-      return {
-        headerBg: '#60A5FA',
-        headerText: '#0f172a',
-        border: '#93C5FD',
-        cellBg: '#EFF6FF',
-        accentBg: '#DBEAFE',
-        accentText: '#1D4ED8',
-      };
-    case 'rodaje festivo':
-      return {
-        headerBg: '#FB7185',
-        headerText: '#ffffff',
-        border: '#FDA4AF',
-        cellBg: '#FFF1F2',
-        accentBg: '#FFE4E6',
-        accentText: '#BE123C',
-      };
-    case 'carga':
-    case 'descarga':
-      return {
-        headerBg: '#FB923C',
-        headerText: '#0f172a',
-        border: '#FDBA74',
-        cellBg: '#FFF7ED',
-        accentBg: '#FFEDD5',
-        accentText: '#C2410C',
-      };
-    case 'prelight':
-    case 'recogida':
-      return {
-        headerBg: '#F59E0B',
-        headerText: '#0f172a',
-        border: '#FCD34D',
-        cellBg: '#FFFBEB',
-        accentBg: '#FEF3C7',
-        accentText: '#92400E',
-      };
-    case 'oficina':
-    case 'localizar':
-      return {
-        headerBg: '#22D3EE',
-        headerText: '#0f172a',
-        border: '#67E8F9',
-        cellBg: '#ECFEFF',
-        accentBg: '#CFFAFE',
-        accentText: '#0E7490',
-      };
-    case 'travel day':
-    case '1/2 jornada':
-      return {
-        headerBg: '#2DD4BF',
-        headerText: '#0f172a',
-        border: '#5EEAD4',
-        cellBg: '#F0FDFA',
-        accentBg: '#CCFBF1',
-        accentText: '#0F766E',
-      };
-    case 'descanso':
-    case 'fin':
-      return {
-        headerBg: '#6B7280',
-        headerText: '#ffffff',
-        border: '#9CA3AF',
-        cellBg: '#E2E8F0',
-        accentBg: '#CBD5E1',
-        accentText: '#334155',
-      };
-    default:
-      return {
-        headerBg: '#BFE4F8',
-        headerText: '#0f172a',
-        border: '#7DBFE8',
-        cellBg: '#ffffff',
-        accentBg: '#F8FAFC',
-        accentText: '#1E293B',
-      };
-  }
+function getDayPalette(day: DayValues | undefined, tipo?: string | null): HtmlDayPalette {
+  const resolvedTipo = tipo ?? day?.crewTipo ?? day?.tipo;
+  const palette = getNeedsDayTypePalette(resolvedTipo, 'light');
+  if (!palette) return DEFAULT_HTML_PALETTE;
+
+  return {
+    headerBg: palette.headerBg,
+    headerText: palette.controlText,
+    border: palette.border,
+    cellBg: palette.bg,
+    accentBg: palette.controlBg,
+    accentText: palette.controlText,
+  };
 }
 
-function getCellStyle(day: DayValues | undefined): string {
-  const palette = getDayPalette(day);
-  return `border:1px solid ${palette.border};padding:6px;vertical-align:middle;background:${palette.cellBg};`;
+function getCellStyle(day: DayValues | undefined, tipo?: string | null): string {
+  const palette = getDayPalette(day, tipo);
+  return `border:1px solid ${palette.border};padding:6px;vertical-align:top;background:${palette.cellBg};`;
 }
 
 function getLabelCellStyle(): string {
   return 'border:1px solid #cbd5e1;padding:6px 8px;font-weight:600;background:#f8fafc;';
 }
 
-function getScheduleBadge(scheduleLine: string, day: DayValues | undefined): string {
+function getScheduleBadge(
+  scheduleLine: string,
+  day: DayValues | undefined,
+  tipo?: string | null
+): string {
   if (!scheduleLine) return '';
-  const palette = getDayPalette(day);
-  return `<div style="margin-bottom:6px;font-weight:700;color:${palette.accentText};text-align:center;line-height:1.15;">${esc(scheduleLine)}</div>`;
+  const palette = getDayPalette(day, tipo);
+  return `<div style="margin-bottom:6px;font-weight:700;color:${palette.accentText};text-align:center;line-height:1.15;max-width:100%;overflow-wrap:anywhere;word-break:break-word;">${esc(scheduleLine)}</div>`;
 }
 
 /**
  * Render cell content
  */
 function renderCell(text: any): string {
-  return `<div style="white-space:pre-wrap;line-height:1.35">${esc(text || '')}</div>`;
+  return `<div style="display:block;max-width:100%;white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word;line-height:1.35">${esc(text || '')}</div>`;
 }
 
 function normalizeSlashRoleLabel(label: string, gender?: 'male' | 'female' | 'neutral'): string {
@@ -190,11 +135,7 @@ function formatMemberLine(
 ): string {
   const customDisplay = formatMemberDisplay(project, member, suffix);
   const name = String(member?.name || '').trim();
-  return `
-    <div class="member-line">
-      ${esc(customDisplay || '—')}${name ? ` · ${esc(name)}` : ''}
-    </div>
-  `;
+  return `<div class="member-line">${esc(customDisplay || '—')}${name ? ` · ${esc(name)}` : ''}</div>`;
 }
 
 function translateScheduleType(tipo: string): string {
@@ -290,7 +231,8 @@ function listRowWithSchedule(
   const tds = DAYS.map((_, i) => {
     const list = Array.isArray(valuesByDay[i]?.[listKey]) ? valuesByDay[i][listKey] : [];
     const notes = valuesByDay[i]?.[notesKey] || '';
-    const tipo = translateScheduleType(valuesByDay[i]?.[tipoKey] || '');
+    const jornadaTipo = valuesByDay[i]?.[tipoKey];
+    const tipo = translateScheduleType(jornadaTipo || '');
     const start = valuesByDay[i]?.[startKey] || '';
     const end = valuesByDay[i]?.[endKey] || '';
     const scheduleLine = [tipo, start || end ? `${start}${start && end ? ' - ' : ''}${end}` : '']
@@ -304,11 +246,41 @@ function listRowWithSchedule(
         return formatMemberLine(project, m, isRefRole ? '' : suffix);
       })
       .join('');
-    const header = list.length > 0 ? getScheduleBadge(scheduleLine, valuesByDay[i]) : '';
+    const header = list.length > 0 ? getScheduleBadge(scheduleLine, valuesByDay[i], jornadaTipo) : '';
     const block = `${header}${chips}${notes ? `<hr style="margin:6px 0;border:none;border-top:1px solid #ddd;"/>` : ''}${renderCell(notes)}`;
-    return `<td style="${getCellStyle(valuesByDay[i])}"><div class="td-label">${block}</div></td>`;
+    return `<td style="${getCellStyle(valuesByDay[i], jornadaTipo)}"><div class="td-label">${block}</div></td>`;
   }).join('');
   return `<tr><td style="${getLabelCellStyle()}"><div class="td-label-role">${esc(label)}</div></td>${tds}</tr>`;
+}
+
+function renderExtraBlockCellContent(
+  project: any,
+  block: { tipo?: string; start?: string; end?: string; list?: unknown[]; text?: string },
+  day: DayValues | undefined
+): string {
+  const members = Array.isArray(block.list) ? block.list : [];
+  if (members.length === 0) return '';
+
+  const scheduleLine = [
+    translateScheduleType(block.tipo || ''),
+    block.start || block.end
+      ? `${block.start}${block.start && block.end ? ' - ' : ''}${block.end}`
+      : '',
+  ]
+    .filter(Boolean)
+    .join(' | ');
+  const header = getScheduleBadge(scheduleLine, day, block.tipo);
+  const chips = members
+    .map(m => {
+      const member = m as { role?: string };
+      const role = (member?.role || '').toUpperCase();
+      const isRefRole = role === 'REF' || (role && role.startsWith('REF') && role.length > 3);
+      return formatMemberLine(project, m as Parameters<typeof formatMemberLine>[1], isRefRole ? '' : '');
+    })
+    .join('');
+  const notes = block.text || '';
+
+  return `${header}${chips}${notes ? `<hr style="margin:6px 0;border:none;border-top:1px solid #cbd5e1;"/>${renderCell(notes)}` : ''}`;
 }
 
 function extraBlocksRow(
@@ -318,30 +290,33 @@ function extraBlocksRow(
   valuesByDay: DayValues[]
 ): string {
   const tds = DAYS.map((_, i) => {
-    const blocks = normalizeExtraBlocks(valuesByDay[i] || {});
-    const content = blocks
-      .map(block => {
-        const members = Array.isArray(block.list) ? block.list : [];
-        if (members.length === 0) return '';
-        const scheduleLine = [translateScheduleType(block.tipo || ''), block.start || block.end ? `${block.start}${block.start && block.end ? ' - ' : ''}${block.end}` : '']
-          .filter(Boolean)
-          .join(' | ');
-        const header = getScheduleBadge(scheduleLine, valuesByDay[i]);
-        const chips = members
-          .map(m => {
-            const role = (m?.role || '').toUpperCase();
-            const isRefRole = role === 'REF' || (role && role.startsWith('REF') && role.length > 3);
-            return formatMemberLine(project, m, isRefRole ? '' : '');
-          })
-          .join('');
-        const notes = block.text || '';
-        return `<div style="padding:6px 0;${header || chips || notes ? '' : 'min-height:18px;'}">
-          ${header}${chips}${notes ? `<hr style="margin:6px 0;border:none;border-top:1px solid #cbd5e1;"/>${renderCell(notes)}` : ''}
-        </div>`;
+    const day = valuesByDay[i];
+    const blocks = normalizeExtraBlocks(day || {});
+    const activeBlocks = blocks.filter(block => Array.isArray(block.list) && block.list.length > 0);
+
+    if (activeBlocks.length === 0) {
+      return `<td style="${getCellStyle(day)}"><div class="td-label">${renderCell('')}</div></td>`;
+    }
+
+    if (activeBlocks.length === 1) {
+      const block = activeBlocks[0];
+      const content = renderExtraBlockCellContent(project, block, day);
+      return `<td style="${getCellStyle(day, block.tipo)}"><div class="td-label">${content}</div></td>`;
+    }
+
+    const segments = activeBlocks
+      .map((block, index) => {
+        const palette = getNeedsDayTypePalette(block.tipo, 'light');
+        const bg = palette?.bg ?? '#ffffff';
+        const border = palette?.border ?? '#e2e8f0';
+        const segmentBorder = index > 0 ? `border-top:1px solid ${border};` : '';
+        const content = renderExtraBlockCellContent(project, block, day);
+        return `<div style="${segmentBorder}padding:6px;background:${bg};width:100%;box-sizing:border-box;">${content}</div>`;
       })
-      .filter(Boolean)
-      .join('<div style="border-top:1px dashed #ddd;"></div>');
-    return `<td style="${getCellStyle(valuesByDay[i])}"><div class="td-label">${content || renderCell('')}</div></td>`;
+      .join('');
+
+    const outerPalette = getDayPalette(day);
+    return `<td style="border:1px solid ${outerPalette.border};padding:0;vertical-align:top;background:#ffffff;"><div class="td-label" style="padding:0;">${segments}</div></td>`;
   }).join('');
   return `<tr><td style="${getLabelCellStyle()}"><div class="td-label-role">${esc(label)}</div></td>${tds}</tr>`;
 }
