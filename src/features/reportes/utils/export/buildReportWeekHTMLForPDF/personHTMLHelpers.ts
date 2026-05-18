@@ -370,5 +370,5 @@ export function generatePersonHTML(
     : conceptosConDatos;
 
   const rows = generatePersonConceptRows(pk, conceptsForPerson, safeSemanaWithData, finalData, blockKey, horasExtraTipo);
-  return header + rows;
+  return `<tbody class="person-block">${header}${rows}</tbody>`;
 }

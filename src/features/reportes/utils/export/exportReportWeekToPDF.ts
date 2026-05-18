@@ -1,8 +1,8 @@
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { BuildPdfParams } from './types';
-import { buildReportWeekHTMLForPDF } from './buildReportWeekHTMLForPDF';
-import { paginatePersonKeysForPDF } from './paginationHelpers';
+import { buildReportPageHtml } from './buildReportPageHtml';
+import { paginatePersonKeysMeasured } from './paginationHelpers';
 import { generateWeekFilename } from './filenameHelpers';
 import { shareOrSavePDF } from '@shared/utils/pdfShare';
 import {
@@ -44,9 +44,9 @@ export async function exportReportWeekToPDF(params: BuildPdfParams) {
         ]
       : Object.keys(data || {}).filter(key => !String(key).startsWith('__'));
 
-    // Calculate pagination
     const personKeys = orderedPersonKeys;
-    const pagedPersonKeys = paginatePersonKeysForPDF(personKeys, CONCEPTS, safeSemana, data);
+    const buildPageHtml = (keys: string[]) => buildReportPageHtml(keys, params);
+    const pagedPersonKeys = await paginatePersonKeysMeasured(personKeys, buildPageHtml);
     const totalPages = pagedPersonKeys.length;
 
     // Create PDF
@@ -59,50 +59,7 @@ export async function exportReportWeekToPDF(params: BuildPdfParams) {
     // Generate pages
     for (let pageIndex = 0; pageIndex < totalPages; pageIndex++) {
       const pagePersonKeys = pagedPersonKeys[pageIndex] || [];
-      
-      // Create data subset for this page
-      const pageData: any = {};
-      pagePersonKeys.forEach(pk => {
-        pageData[pk] = data[pk];
-      });
-      if ((data as any)?.__genderMap) {
-        pageData.__genderMap = (data as any).__genderMap;
-      }
-
-      const pageGroupedPersonKeys = groupedPersonKeys
-        ? {
-            base: (groupedPersonKeys.base || []).filter(pk => pagePersonKeys.includes(pk)),
-            pre: (groupedPersonKeys.pre || []).filter(pk => pagePersonKeys.includes(pk)),
-            pick: (groupedPersonKeys.pick || []).filter(pk => pagePersonKeys.includes(pk)),
-            extraGroups: (groupedPersonKeys.extraGroups || [])
-              .map(group => ({
-                blockKey: group.blockKey,
-                people: group.people.filter(pk => pagePersonKeys.includes(pk)),
-              }))
-              .filter(group => group.people.length > 0),
-          }
-        : undefined;
-      
-      // Generate HTML for this page
-      const html = buildReportWeekHTMLForPDF({
-        project,
-        title,
-        safeSemana,
-        dayNameFromISO,
-        toDisplayDate,
-        horarioTexto,
-        jornadaTipoTexto,
-        jornadaTipoPersonaTexto,
-        resolvePersonaBlockKey,
-        horarioPrelight,
-        horarioPickup,
-        horarioExtraByBlock,
-        reportLabels,
-        groupedPersonKeys: pageGroupedPersonKeys,
-        CONCEPTS,
-        adjustConceptsForExport,
-        data: pageData,
-      });
+      const html = buildReportPageHtml(pagePersonKeys, params);
       
       // Create a temporary container for this page
       const tempContainer = document.createElement('div');

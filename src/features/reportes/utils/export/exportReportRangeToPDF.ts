@@ -1,6 +1,6 @@
 import { ExportReportRangeParams } from './types';
-import { buildReportWeekHTMLForPDF } from './buildReportWeekHTMLForPDF';
-import { paginatePersonKeysForPDF } from './paginationHelpers';
+import { buildReportPageHtml } from './buildReportPageHtml';
+import { paginatePersonKeysMeasured } from './paginationHelpers';
 import { generateRangeFilename } from './filenameHelpers';
 import { sortPersonKeysByRole } from './dataHelpers';
 import { groupAndSortPersonsByBlock } from './buildReportWeekHTMLForPDF/sortingHelpers';
@@ -461,8 +461,24 @@ export async function exportReportRangeToPDF(params: ExportReportRangeParams) {
       // Agrupar personas por bloques solo para ordenar, pero paginar como en semana
       const { finalPersonKeys } = groupAndSortPersonsByBlock(finalWeekData, false, project);
       
-      // Calcular paginación igual que en exportReportWeekToPDF
-      const pagedPersonKeys = paginatePersonKeysForPDF(finalPersonKeys, CONCEPTS, filteredWeekDays, finalWeekData);
+      const weekPageBase = {
+        project,
+        title: weekTitle,
+        safeSemana: filteredWeekDays,
+        dayNameFromISO: (iso: string, index: number) =>
+          dayNameFromISO(iso, index, [...DAY_NAMES] as string[]),
+        toDisplayDate,
+        horarioTexto,
+        jornadaTipoTexto,
+        jornadaTipoPersonaTexto,
+        resolvePersonaBlockKey,
+        CONCEPTS: [...CONCEPTS] as string[],
+        adjustConceptsForExport,
+        data: finalWeekData,
+        horasExtraTipo,
+      };
+      const buildPageHtml = (keys: string[]) => buildReportPageHtml(keys, weekPageBase);
+      const pagedPersonKeys = await paginatePersonKeysMeasured(finalPersonKeys, buildPageHtml);
       const totalPages = pagedPersonKeys.length;
 
       // Generate pages for this week - igual que exportReportWeekToPDF
@@ -474,28 +490,9 @@ export async function exportReportRangeToPDF(params: ExportReportRangeParams) {
 
         // Crear datos solo para las personas de esta página (igual que exportReportWeekToPDF)
         const pagePersonKeys = pagedPersonKeys[pageIndex] || [];
-        
-        const pageData: any = {};
-        pagePersonKeys.forEach(pk => {
-          pageData[pk] = finalWeekData[pk] || {};
-        });
-        pageData.__genderMap = genderMap;
-
-        // Generate HTML for this page
-        const html = buildReportWeekHTMLForPDF({
-          project,
-          title: weekTitle,
-          safeSemana: filteredWeekDays,
-          dayNameFromISO: (iso: string, index: number) => dayNameFromISO(iso, index, [...DAY_NAMES] as any),
-          toDisplayDate,
-          horarioTexto,
-          jornadaTipoTexto,
-          jornadaTipoPersonaTexto,
-          resolvePersonaBlockKey,
-          CONCEPTS: [...CONCEPTS],
-          adjustConceptsForExport,
-          data: pageData,
-          horasExtraTipo,
+        const html = buildReportPageHtml(pagePersonKeys, {
+          ...weekPageBase,
+          data: { ...finalWeekData, __genderMap: genderMap },
         });
 
         // Crear contenedor temporal igual que exportReportWeekToPDF

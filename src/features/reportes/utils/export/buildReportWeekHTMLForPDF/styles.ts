@@ -109,6 +109,7 @@ export const baseStyles = `
   table { width: 100%; border-collapse: collapse; font-size: 9px; border: 2px solid #c9d8f0; }
   thead { display: table-header-group; }
   tr { break-inside: avoid; page-break-inside: avoid; }
+  tbody.person-block { break-inside: avoid; page-break-inside: avoid; }
   th {
     background: linear-gradient(180deg, #d9ecfb 0%, #bfe4f8 100%);
     color: #0f172a;
