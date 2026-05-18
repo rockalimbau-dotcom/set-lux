@@ -1,4 +1,4 @@
-import { parseDietas } from '../text';
+import { formatParsedDietasForExport, parseDietas } from '../text';
 import i18n from '../../../../i18n/config';
 import { getRoleBadgeCode, applyGenderToBadge, stripRefuerzoSuffix } from '@shared/constants/roles';
 import { BuildReportWeekHTMLParams } from './types';
@@ -192,19 +192,11 @@ export function buildReportWeekHTML({
                   cellValue = '1';
                 }
               }
-              // Translate diet items if concept is Dietas
               if (c === 'Dietas' && cellValue && cellValue.toString().trim() !== '') {
                 try {
-                  const parsed = parseDietas(cellValue);
-                  const translatedItems = parsed.items.size > 0 
-                    ? Array.from(parsed.items).map(item => translateDietItem(item))
-                    : [];
-                  cellValue = translatedItems.join(' + ');
-                  if (parsed.ticket !== null) {
-                    cellValue += (translatedItems.length > 0 ? ' + ' : '') + `Ticket(${parsed.ticket})`;
-                  }
-                } catch (e) {
-                  // If parsing fails, use original value
+                  cellValue = formatParsedDietasForExport(parseDietas(cellValue), translateDietItem);
+                } catch {
+                  // usar valor original
                 }
               }
               const isNumeric = /^-?\d+([.,]\d+)?$/.test(String(cellValue ?? '').trim());

@@ -1,4 +1,4 @@
-import { parseDietas } from '../../text';
+import { formatParsedDietasForExport, parseDietas } from '../../text';
 import i18n from '../../../../../i18n/config';
 import { getRoleBadgeCode, applyGenderToBadge, stripRefuerzoSuffix } from '@shared/constants/roles';
 import { esc } from '../htmlHelpers';
@@ -246,20 +246,11 @@ function formatCellValue(
     }
   }
 
-  // Translate diet items if concept is Dietas
   if (concept === 'Dietas' && value && value.toString().trim() !== '') {
     try {
-      const parsed = parseDietas(value);
-      const translatedItems =
-        parsed.items.size > 0
-          ? Array.from(parsed.items).map(item => translateDietItem(item))
-          : [];
-      value = translatedItems.join(' + ');
-      if (parsed.ticket !== null) {
-        value += (translatedItems.length > 0 ? ' + ' : '') + `Ticket(${parsed.ticket})`;
-      }
-    } catch (e) {
-      // If parsing fails, use original value
+      value = formatParsedDietasForExport(parseDietas(value), translateDietItem);
+    } catch {
+      // usar valor original
     }
   }
 

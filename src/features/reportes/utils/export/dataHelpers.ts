@@ -37,16 +37,8 @@ export const calculateTotalForExport = (
         if (val && val.toString().trim() !== '') {
           const parsed = parseDietas(val);
           parsed.items.forEach(item => {
-            if (item !== 'Ticket' && item !== 'Otros') {
-              breakdown.set(item, (breakdown.get(item) || 0) + 1);
-            }
+            breakdown.set(item, (breakdown.get(item) || 0) + 1);
           });
-          if (parsed.ticket !== null) {
-            breakdown.set('Ticket', (breakdown.get('Ticket') || 0) + 1);
-          }
-          if (parsed.other !== null) {
-            breakdown.set('Otros', (breakdown.get('Otros') || 0) + 1);
-          }
         }
       });
       return breakdown.size > 0 ? { breakdown } : '';

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-import { norm, parseDietas, formatDietas } from './text.ts';
+import { norm, parseDietas, formatDietas, formatParsedDietasForExport } from './text.ts';
 
 describe('text utils', () => {
   describe('norm', () => {
@@ -156,6 +156,41 @@ describe('text utils', () => {
 
       expect(result.items).toEqual(new Set(['Otros']));
       expect(result.other).toBe(7.25);
+    });
+
+    it('should parse plain Ticket and Otros without amount', () => {
+      const result = parseDietas('Comida + Ticket + Otros');
+
+      expect(result.items).toEqual(new Set(['Comida', 'Ticket', 'Otros']));
+      expect(result.ticket).toBeNull();
+      expect(result.other).toBeNull();
+    });
+
+    it('should parse English and Catalan ticket/other labels', () => {
+      const result = parseDietas('Other(12.5) + Bitllet(3) + altres');
+
+      expect(result.items).toEqual(new Set(['Otros', 'Ticket']));
+      expect(result.other).toBe(12.5);
+      expect(result.ticket).toBe(3);
+    });
+  });
+
+  describe('formatParsedDietasForExport', () => {
+    const tr = (item: string) =>
+      ({ Ticket: 'Tiquet', Otros: 'Altres', Comida: 'Dinar' }[item] ?? item);
+
+    it('should include ticket and otros without duplicating from items set', () => {
+      const parsed = parseDietas('Comida + Ticket(10) + Otros');
+      const out = formatParsedDietasForExport(parsed, tr);
+
+      expect(out).toBe('Dinar + Tiquet(10) + Altres');
+    });
+
+    it('should show plain ticket and otros labels when no amount', () => {
+      const parsed = parseDietas('Ticket + Otros');
+      const out = formatParsedDietasForExport(parsed, tr);
+
+      expect(out).toBe('Tiquet + Altres');
     });
   });
 

@@ -83,6 +83,7 @@ export const translateDietItem = (item: string): string => {
     'Dieta con pernocta': getTranslation('reports.dietOptions.dietWithOvernight', 'Dieta con pernocta'),
     'Gastos de bolsillo': getTranslation('reports.dietOptions.pocketExpenses', 'Gastos de bolsillo'),
     'Ticket': getTranslation('reports.dietOptions.ticket', 'Ticket'),
+    'Otros': getTranslation('reports.dietOptions.other', 'Otros'),
   };
   return itemMap[item] || item;
 };

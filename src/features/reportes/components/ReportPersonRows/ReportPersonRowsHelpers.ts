@@ -97,20 +97,9 @@ export const calculateTotal = (
       const val = data?.[pKey]?.[concepto]?.[fecha] ?? '';
       if (val && val.toString().trim() !== '') {
         const parsed = parseDietas(val);
-        // Contar cada item (excepto Ticket/Otros que se manejan por separado)
         parsed.items.forEach(item => {
-          if (item !== 'Ticket' && item !== 'Otros') {
-            breakdown.set(item, (breakdown.get(item) || 0) + 1);
-          }
+          breakdown.set(item, (breakdown.get(item) || 0) + 1);
         });
-        // Si hay ticket, contarlo también
-        if (parsed.ticket !== null) {
-          breakdown.set('Ticket', (breakdown.get('Ticket') || 0) + 1);
-        }
-        // Si hay otros, contarlo también
-        if (parsed.other !== null) {
-          breakdown.set('Otros', (breakdown.get('Otros') || 0) + 1);
-        }
       }
     });
     return breakdown.size > 0 ? { breakdown } : '';
