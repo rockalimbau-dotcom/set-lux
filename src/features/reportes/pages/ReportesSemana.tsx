@@ -338,7 +338,12 @@ export default function ReportesSemana({
   );
 
   const scheduleWindowForBlock = useCallback(
-    (blockKey: 'base' | 'pre' | 'pick' | string, iso: string, personKey: string) => {
+    (
+      blockKey: 'base' | 'pre' | 'pick' | string,
+      iso: string,
+      personKey: string,
+      personHint?: AnyRecord
+    ) => {
       const { day } = findWeekAndDay(iso);
       if (!day) return { start: '', end: '', isRest: false };
       if ((day.tipo || '') === 'Descanso') {
@@ -346,15 +351,26 @@ export default function ReportesSemana({
       }
       const personMatchesBlock = (candidateBlock: string) => {
         const parsed = parseReportPersonKey(personKey);
-        const wantedName = normalizeReportText(parsed.name);
-        const wantedRole = normalizeReportText(stripRoleSuffix(parsed.role));
+        const wantedName = normalizeReportText(personHint?.name || parsed.name);
+        const wantedRoleId = normalizeReportText(personHint?.roleId || '');
+        const wantedRoleLabel = normalizeReportText(
+          stripRoleSuffix(String(personHint?.role || parsed.role || ''))
+        );
         if (!wantedName) return false;
         return getDayBlockList(day, candidateBlock).some((member: AnyRecord) => {
           if (normalizeReportText(member?.name) !== wantedName) return false;
           const memberRoleId = normalizeReportText(member?.roleId);
-          if (memberRoleId && memberRoleId === normalizeReportText(parsed.role)) return true;
           const memberRole = normalizeReportText(stripRoleSuffix(String(member?.role || '')));
-          return !wantedRole || !memberRole || memberRole === wantedRole;
+          if (wantedRoleId && memberRoleId && memberRoleId === wantedRoleId) return true;
+          if (wantedRoleId && !memberRoleId && memberRole && wantedRoleLabel) {
+            return memberRole === wantedRoleLabel;
+          }
+          if (memberRoleId && memberRoleId === normalizeReportText(parsed.role)) return true;
+          return (
+            !wantedRoleLabel ||
+            !memberRole ||
+            memberRole === wantedRoleLabel
+          );
         });
       };
       const resolvePersonBlock = () => {
@@ -408,14 +424,19 @@ export default function ReportesSemana({
   const getScheduleWindowForReport = useCallback(
     (person: AnyRecord, iso: string, rowBlock: string) => {
       const pk = personaKeyForReportStorage(person, rowBlock);
-      return scheduleWindowForBlock(rowBlock as any, iso, pk);
+      return scheduleWindowForBlock(rowBlock as any, iso, pk, person);
     },
     [scheduleWindowForBlock]
   );
 
   const resolveBlockForPersonISO = useCallback(
-    (blockKey: 'base' | 'pre' | 'pick' | string, iso: string, personKey: string) =>
-      scheduleWindowForBlock(blockKey, iso, personKey).blockKey || String(blockKey),
+    (
+      blockKey: 'base' | 'pre' | 'pick' | string,
+      iso: string,
+      personKey: string,
+      personHint?: AnyRecord
+    ) =>
+      scheduleWindowForBlock(blockKey, iso, personKey, personHint).blockKey || String(blockKey),
     [scheduleWindowForBlock]
   );
 

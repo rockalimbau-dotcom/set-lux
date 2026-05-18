@@ -104,14 +104,11 @@ export function isPersonScheduledOnBlock(
       const normBase = norm(stripRoleSuffix(baseRole));
       return (
         norm(m?.name) === norm(name) &&
-        (
-          (roleId
-            ? (memberRoleId ? memberRoleId === roleId : false)
-            :
-          !memberRole ||
-          normMemberBase === normBase ||
-          !baseRole)
-        )
+        (roleId
+          ? memberRoleId
+            ? memberRoleId === roleId
+            : !memberRole || normMemberBase === normBase || !baseRole
+          : !memberRole || normMemberBase === normBase || !baseRole)
       );
     }
   );

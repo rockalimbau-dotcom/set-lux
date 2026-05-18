@@ -22,7 +22,8 @@ interface ConceptRowProps {
   resolveBlockForISO?: (
     block: 'base' | 'pre' | 'pick' | string,
     iso: string,
-    personKey: string
+    personKey: string,
+    personRow?: AnyRecord
   ) => string;
   readOnly: boolean;
   horasExtraTipo: string;
@@ -100,7 +101,7 @@ export function ConceptRow({
         const hasValue = isSiNoConcept
           ? (normalizedVal === 'sí' || normalizedVal === 'si')
           : String(val ?? '').trim() !== '';
-        const activeBlock = resolveBlockForISO?.(block, fecha, pKey) || block;
+        const activeBlock = resolveBlockForISO?.(block, fecha, pKey, person) || block;
         const dayStyle = getDayStyle?.(fecha, activeBlock);
         const cellClasses = [
           getDayStyle ? 'report-jornada-cell' : '',

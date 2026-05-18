@@ -41,12 +41,14 @@ export interface ReportPersonRowsProps {
   scheduleWindowForISO: (
     block: 'base' | 'pre' | 'pick' | string,
     iso: string,
-    personKey: string
+    personKey: string,
+    personRow?: AnyRecord
   ) => { start: string; end: string; isRest: boolean; blockKey?: string };
   resolveBlockForISO?: (
     block: 'base' | 'pre' | 'pick' | string,
     iso: string,
-    personKey: string
+    personKey: string,
+    personRow?: AnyRecord
   ) => string;
   getDayStyle?: (
     iso: string,

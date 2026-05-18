@@ -41,7 +41,8 @@ interface PersonRowHeaderProps {
   scheduleWindowForISO: (
     block: 'base' | 'pre' | 'pick' | string,
     iso: string,
-    personKey: string
+    personKey: string,
+    personRow?: AnyRecord
   ) => { start: string; end: string; isRest: boolean; blockKey?: string };
   getDayStyle?: (
     iso: string,
@@ -149,7 +150,7 @@ export function PersonRowHeader({
   useEffect(() => {
     const nextEntries: Array<[string, string]> = [];
     semana.forEach(iso => {
-      const schedule = scheduleWindowForISO(block, iso, pKey);
+      const schedule = scheduleWindowForISO(block, iso, pKey, person);
       const activeBlock = schedule.blockKey || block;
       nextEntries.push([`${pKey}_${String(activeBlock)}_${iso}_start`, schedule.start || '']);
       nextEntries.push([`${pKey}_${String(activeBlock)}_${iso}_end`, schedule.end || '']);
@@ -170,12 +171,12 @@ export function PersonRowHeader({
   }, [activeDraftKey, block, pKey, scheduleWindowForISO, semana]);
 
   const commitDraft = (iso: string, field: 'start' | 'end') => {
-    const activeBlock = scheduleWindowForISO(block, iso, pKey).blockKey || block;
+    const activeBlock = scheduleWindowForISO(block, iso, pKey, person).blockKey || block;
     const draftKey = `${pKey}_${String(activeBlock)}_${iso}_${field}`;
     const rawValue = drafts[draftKey] ?? '';
     const normalized = normalizeTimeValue(rawValue);
     if (normalized === null) {
-      const schedule = scheduleWindowForISO(activeBlock, iso, pKey);
+      const schedule = scheduleWindowForISO(activeBlock, iso, pKey, person);
       setDrafts(prev => ({
         ...prev,
         [draftKey]: schedule[field] || '',
@@ -247,7 +248,7 @@ export function PersonRowHeader({
       {semana.map(iso => {
         const key = `${person?.roleId || personId || visualRole}_${name}_${iso}_${block}`;
         const offHeader = offMap.get(key) ?? false;
-        const scheduleWindow = scheduleWindowForISO(block, iso, pKey);
+        const scheduleWindow = scheduleWindowForISO(block, iso, pKey, person);
         const activeBlock = scheduleWindow.blockKey || block;
         const isRest = scheduleWindow.isRest;
         const isOff = offHeader && !isRest;
