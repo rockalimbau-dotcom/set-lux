@@ -1,3 +1,4 @@
+import { AnyRecord } from '@shared/types/common';
 import { storage } from '@shared/services/localStorage.service';
 import { getTranslation } from './translationHelpers';
 import { translateJornadaType as translateJornadaTypeUtil } from '@shared/utils/jornadaTranslations';
@@ -6,6 +7,7 @@ import { getReportDayType } from '../dayTypePalette';
 import { isPersonScheduledOnBlock } from '../plan';
 import { parsePersonKey, resolveExportRoleMeta } from './dataHelpers';
 import { resolvePersonBlockKey } from '../resolvePersonBlockKey';
+import { buildPersonScheduleText } from '../personScheduleDisplay';
 import { createHorarioHelpers } from '../../pages/ReportesSemana/horarioHelpers';
 
 interface InitializeExportHelpersParams {
@@ -25,6 +27,7 @@ interface InitializeExportHelpersReturn {
   horarioPrelightFn: (iso: string) => string;
   horarioPickupFn: (iso: string) => string;
   horarioExtraByBlock: (blockKey: string, iso: string) => string;
+  bindWeekReportData: (data: AnyRecord) => void;
   getPlanAllWeeks: () => { pre: any[]; pro: any[] };
 }
 
@@ -89,9 +92,21 @@ export async function initializeExportHelpers({
     return horarioExtraByIndexFn(Number(match[1]))(iso);
   };
 
-  const horarioPersonaTexto = (pk: string, iso: string, blockKey?: string) => {
-    const resolvedBlockKey = resolvePersonaBlockKey(pk, iso, blockKey);
-    return horarioTimesForBlock(iso, resolvedBlockKey);
+  let weekReportData: AnyRecord = {};
+
+  const horarioPersonaTexto = (pk: string, iso: string, blockKey?: string) =>
+    buildPersonScheduleText({
+      data: weekReportData,
+      findWeekAndDay,
+      project,
+      personKey: pk,
+      iso,
+      rowBlockKey: blockKey,
+      planScheduleForBlock: horarioTimesForBlock,
+    });
+
+  const bindWeekReportData = (data: AnyRecord) => {
+    weekReportData = data || {};
   };
 
   const jornadaTipoPersonaTexto = (pk: string, iso: string, blockKey?: string) => {

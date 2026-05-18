@@ -28,6 +28,7 @@ import {
 } from '../utils/model';
 import { parsePersonKey } from '../utils/export/dataHelpers';
 import { resolvePersonBlockKey } from '../utils/resolvePersonBlockKey';
+import { buildPersonScheduleText, normalizeStoredTime } from '../utils/personScheduleDisplay';
 import { addDays, mondayOf, toYYYYMMDD } from '@shared/utils/date';
 import { loadCondModel } from '@features/nomina/utils/cond';
 import { ROLE_CODE_TO_LABEL, stripRoleSuffix, stripRefuerzoSuffix } from '@shared/constants/roles';
@@ -50,17 +51,6 @@ import { useReportCollapsible } from './ReportesSemana/useReportCollapsible';
 import { toDisplayDate } from './ReportesSemana/ReportTableHeadHelpers';
 import { getReportDayTypePalette } from '../utils/dayTypePalette';
 import { resolveExportRoleMeta } from '../utils/export/dataHelpers';
-
-const normalizeStoredTime = (value: unknown): string => {
-  const raw = String(value || '').trim();
-  if (!raw) return '';
-  const match = raw.match(/^(\d{1,2}):(\d{1,2})$/);
-  if (!match) return raw;
-  const hours = Number(match[1]);
-  const minutes = Number(match[2]);
-  if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) return raw;
-  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
-};
 
 const normalizeReportText = (value: unknown): string =>
   String(value || '')
@@ -304,14 +294,6 @@ export default function ReportesSemana({
     },
     [findWeekAndDay, jornadaTipoTexto, project, resolvePersonaBlockKey, t]
   );
-  const horarioPersonaTexto = useCallback(
-    (pk: string, iso: string, blockKey?: string) => {
-      const resolvedBlockKey = resolvePersonaBlockKey(pk, iso, blockKey);
-      return horarioTimesForBlock(iso, resolvedBlockKey);
-    },
-    [horarioTimesForBlock, resolvePersonaBlockKey]
-  );
-
   const { data, setData, setCell } = useReportData(
     storageKey,
     safePersonas,
@@ -402,6 +384,20 @@ export default function ReportesSemana({
       };
     },
     [data, findWeekAndDay]
+  );
+
+  const horarioPersonaTexto = useCallback(
+    (pk: string, iso: string, blockKey?: string) =>
+      buildPersonScheduleText({
+        data,
+        findWeekAndDay,
+        project,
+        personKey: pk,
+        iso,
+        rowBlockKey: blockKey,
+        planScheduleForBlock: horarioTimesForBlock,
+      }),
+    [data, findWeekAndDay, project, horarioTimesForBlock]
   );
 
   /** Misma lógica que la cabecera de horarios → mismo input que el autocalculador (equipo base / extras). */

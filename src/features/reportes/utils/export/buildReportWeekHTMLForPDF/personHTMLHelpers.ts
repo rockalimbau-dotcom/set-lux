@@ -178,24 +178,19 @@ function generatePersonHeader(
                 : typeof jornadaTipoTexto === 'function'
                 ? jornadaTipoTexto(iso, currentBlockKey)
                 : '';
-            const savedSchedule = finalData?.__schedule__?.[pk]?.[currentBlockKey]?.[iso];
-            let schedule = '';
-            if (savedSchedule?.start || savedSchedule?.end) {
-              schedule = `${savedSchedule?.start || ''} ${savedSchedule?.end || ''}`.trim();
-            } else if (typeof horarioPersonaTexto === 'function') {
-              schedule = horarioPersonaTexto(pk, iso, blockKey || parsed.block || 'base');
-            } else {
-              schedule = scheduleForPerson(
-                pk,
-                iso,
-                finalData,
-                horarioTexto,
-                horarioPrelight,
-                horarioPickup,
-                horarioExtraByBlock,
-                currentBlockKey
-              );
-            }
+            const schedule =
+              typeof horarioPersonaTexto === 'function'
+                ? horarioPersonaTexto(pk, iso, blockKey || parsed.block || 'base')
+                : scheduleForPerson(
+                    pk,
+                    iso,
+                    finalData,
+                    horarioTexto,
+                    horarioPrelight,
+                    horarioPickup,
+                    horarioExtraByBlock,
+                    currentBlockKey
+                  );
             const effectiveSchedule = isRestJornadaLabel(jornadaType) ? '' : schedule;
             const displayValue = formatJornadaCellForExport(jornadaType, effectiveSchedule);
             const tone = getScheduleTone(jornadaType || schedule);

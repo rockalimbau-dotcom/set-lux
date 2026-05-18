@@ -79,6 +79,7 @@ export async function exportReportRangeToPDF(params: ExportReportRangeParams) {
       jornadaTipoPersonaTexto,
       resolvePersonaBlockKey,
       horarioPersonaTexto,
+      bindWeekReportData,
       horarioExtraByBlock,
       horarioPrelightFn,
       horarioPickupFn,
@@ -462,7 +463,9 @@ export async function exportReportRangeToPDF(params: ExportReportRangeParams) {
       // IMPORTANTE: Usar la misma lógica que exportReportWeekToPDF - paginación simple por personas
       // Agrupar personas por bloques solo para ordenar, pero paginar como en semana
       const { finalPersonKeys } = groupAndSortPersonsByBlock(finalWeekData, false, project);
-      
+
+      bindWeekReportData(finalWeekData);
+
       const weekPageBase = {
         project,
         title: weekTitle,
