@@ -30,20 +30,36 @@ describe('dataPreservation preserveOrRecalculateHorasExtra', () => {
     ).toBe('');
   });
 
-  it('keeps current value when auto result is empty and manual flag has not arrived yet', () => {
+  it('applies auto when not manual even if cell had stale value', () => {
     const result = preserveOrRecalculateHorasExtra({
       sourceState: {},
       pk: 'BB__Test',
       iso: '2026-04-30',
       autoExtra: '',
-      currExtra: '2',
+      currExtra: '1',
       manualExtra: false,
       horasExtraTipo: 'Hora Extra - Normal',
       horasExtraTipoChanged: false,
       off: false,
     });
 
-    expect(result).toEqual({ value: '2', isManual: true });
+    expect(result).toEqual({ value: '', isManual: false });
+  });
+
+  it('clears stale 1h when condiciones or plan force recalc', () => {
+    const result = preserveOrRecalculateHorasExtra({
+      sourceState: {},
+      pk: 'BB__Test',
+      iso: '2026-04-30',
+      autoExtra: '',
+      currExtra: '1',
+      manualExtra: true,
+      horasExtraTipo: 'Hora Extra - Normal',
+      horasExtraTipoChanged: false,
+      forceRecalcAuto: true,
+      off: false,
+    });
+
+    expect(result).toEqual({ value: '', isManual: false });
   });
 });
-

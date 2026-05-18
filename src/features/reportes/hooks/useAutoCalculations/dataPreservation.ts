@@ -9,6 +9,8 @@ interface PreserveHorasExtraParams {
   manualExtra: boolean;
   horasExtraTipo: string;
   horasExtraTipoChanged: boolean;
+  /** Tras cambiar jornada en Condiciones o horarios en el plan: no conservar extras obsoletos. */
+  forceRecalcAuto?: boolean;
   off: boolean;
 }
 
@@ -16,14 +18,12 @@ interface PreserveHorasExtraParams {
  * Preserva o recalcula las horas extra según el estado manual/automático
  */
 export function preserveOrRecalculateHorasExtra({
-  sourceState,
-  pk,
-  iso,
-  autoExtra,
   currExtra,
+  autoExtra,
   manualExtra,
   horasExtraTipo,
   horasExtraTipoChanged,
+  forceRecalcAuto = false,
   off,
 }: PreserveHorasExtraParams): {
   value: string;
@@ -38,31 +38,18 @@ export function preserveOrRecalculateHorasExtra({
     return { value: '', isManual: false };
   }
 
-  // Si el valor es MANUAL (el usuario lo editó), preservarlo y convertirlo al nuevo formato
+  if (horasExtraTipoChanged || forceRecalcAuto) {
+    return { value: autoExtra, isManual: false };
+  }
+
   if (manualExtra) {
     if (hasCurrentValue) {
       const convertedValue = convertHorasExtraToNewFormat(currExtra, horasExtraTipo);
       const finalValue = convertedValue && convertedValue !== '' ? convertedValue : String(currExtra);
-
       return { value: finalValue, isManual: true };
-    } else {
-      // Si estaba marcado como manual pero ahora está vacío, preservar el vacío
-      return { value: '', isManual: true };
     }
+    return { value: '', isManual: true };
   }
-
-  // Cuando cambia horasExtraTipo, recalcular desde el horario solo para valores automáticos
-  if (horasExtraTipoChanged) {
-    return { value: autoExtra, isManual: false };
-  }
-
-  // Si el autocalculado viene vacío pero la celda ya tiene valor, preservar para evitar
-  // carreras entre escritura manual y reconciliación automática.
-  if (!manualExtra && hasCurrentValue && String(autoExtra || '').trim() === '') {
-    return { value: String(currExtra), isManual: true };
-  }
-
-  // Si el valor NO es manual Y NO cambió el tipo, usar el nuevo autoExtra
 
   return { value: autoExtra, isManual: false };
 }
@@ -88,4 +75,3 @@ export function preserveOrUseAuto({
   }
   return manual ? currValue : autoValue !== currValue ? autoValue : currValue;
 }
-

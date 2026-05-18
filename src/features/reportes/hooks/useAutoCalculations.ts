@@ -53,6 +53,9 @@ export default function useAutoCalculations({
   // Rastrear el tipo anterior para detectar cambios
   const prevHorasExtraTipoRef = useRef<string>(horasExtraTipo);
   const horasExtraTipoChangedRef = useRef<boolean>(false);
+  const paramsSigRef = useRef<string>('');
+  const planWindowsSigRef = useRef<string>('');
+  const didRunHorasExtraAutoRef = useRef<boolean>(false);
 
   // Actualizar el ref cuando cambia currentData
   useEffect(() => {
@@ -69,8 +72,23 @@ export default function useAutoCalculations({
   }, [horasExtraTipo]);
 
   useEffect(() => {
-    if (!enabled) return;
+    if (!enabled) {
+      didRunHorasExtraAutoRef.current = false;
+      return;
+    }
     const debugEnabled = isDebugEnabled();
+    const paramsSig = JSON.stringify(params);
+    const planSig = generatePlanWindowsSignature(safeSemana, findWeekAndDay, getBlockWindow);
+    const paramsChanged = Boolean(paramsSigRef.current) && paramsSigRef.current !== paramsSig;
+    const planChanged = Boolean(planWindowsSigRef.current) && planWindowsSigRef.current !== planSig;
+    const firstAutoRun = !didRunHorasExtraAutoRef.current;
+    const forceRecalcHorasExtra =
+      horasExtraTipoChangedRef.current || paramsChanged || planChanged || firstAutoRun;
+
+    paramsSigRef.current = paramsSig;
+    planWindowsSigRef.current = planSig;
+    didRunHorasExtraAutoRef.current = true;
+
     const { baseHours, cortes, taD, taF } = normalizeParams(params);
     const computeForISOAndBlock = (person: Persona, iso: string, block: string): AutoResult => {
       const { day } = findWeekAndDay(iso) as WeekAndDay;
@@ -308,9 +326,10 @@ export default function useAutoCalculations({
             iso,
             autoExtra,
             currExtra,
-            manualExtra,
+            manualExtra: forceRecalcHorasExtra ? false : manualExtra,
             horasExtraTipo,
             horasExtraTipoChanged: horasExtraTipoChangedRef.current,
+            forceRecalcAuto: forceRecalcHorasExtra,
             off,
           });
 
@@ -377,7 +396,6 @@ export default function useAutoCalculations({
       if (horasExtraTipoChangedRef.current) {
         horasExtraTipoChangedRef.current = false;
       }
-
       return changed ? next : prev;
     });
   }, [
