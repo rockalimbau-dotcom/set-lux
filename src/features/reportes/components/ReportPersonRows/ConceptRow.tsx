@@ -105,7 +105,7 @@ export function ConceptRow({
         const cellClasses = [
           getDayStyle ? 'report-jornada-cell' : '',
           isRestBlocked ? 'report-rest-cell' : '',
-          off && concepto === 'Dietas' ? 'report-off-cell' : '',
+          off && concepto === 'Dietas' && !isRest ? 'report-off-cell' : '',
           off && !isRestBlocked && concepto !== 'Dietas' ? 'report-off-cell' : '',
           !off && !isRestBlocked && hasValue ? 'report-filled-cell' : '',
         ]

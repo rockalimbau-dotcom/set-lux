@@ -32,9 +32,13 @@ vi.mock('../utils/runtime', () => ({
   })),
 }));
 
-vi.mock('../utils/plan', () => ({
-  isPersonScheduledOnBlock: vi.fn(() => true),
-}));
+vi.mock('../utils/plan', async importOriginal => {
+  const actual = await importOriginal<typeof import('../utils/plan')>();
+  return {
+    ...actual,
+    isPersonScheduledOnBlock: vi.fn(() => true),
+  };
+});
 
 describe('useAutoCalculations', () => {
   const mockSafeSemana = ['2024-01-15', '2024-01-16', '2024-01-17'];
@@ -445,5 +449,98 @@ describe('useAutoCalculations', () => {
     const nextState = updater(previousState);
     expect(nextState['E__Pol Peitx']['Nocturnidad']['2024-01-15']).toBe('Sí');
     expect(nextState['E__Pol Peitx'].__manual__.Nocturnidad['2024-01-15']).toBe(true);
+  });
+
+  it('preserves Dietas on calendar Descanso when person is off the block (no clear loop)', () => {
+    const mockSetData = vi.fn();
+
+    renderHook(() =>
+      useAutoCalculations({
+        safeSemana: ['2024-01-15'],
+        findWeekAndDay: vi.fn(() => ({
+          day: { tipo: 'Descanso' },
+        })),
+        getBlockWindow: vi.fn(() => ({ start: '', end: '' })),
+        calcHorasExtraMin: vi.fn(() => 0),
+        buildDateTime: vi.fn((iso, time) => new Date(`${iso}T${time}:00`)),
+        findPrevWorkingContext: vi.fn(() => ({
+          prevISO: null,
+          consecDesc: 0,
+        })),
+        params: {
+          jornadaTrabajo: 8,
+          jornadaComida: 1,
+          cortesiaMin: 15,
+          taDiario: 12,
+          taFinde: 48,
+          nocturnoIni: '22:00',
+          nocturnoFin: '06:00',
+        },
+        safePersonas: [{ role: 'E', name: 'Pol Peitx' }],
+        personaKey: vi.fn(() => 'E__Pol Peitx'),
+        personaRole: vi.fn(() => 'E'),
+        personaName: vi.fn(() => 'Pol Peitx'),
+        isPersonScheduledOnBlock: vi.fn(() => false),
+        setData: mockSetData,
+      })
+    );
+
+    expect(mockSetData).toHaveBeenCalled();
+    const updater = mockSetData.mock.calls.at(-1)?.[0];
+    expect(typeof updater).toBe('function');
+
+    const previousState = {
+      'E__Pol Peitx': {
+        Dietas: { '2024-01-15': 'Comida' },
+        'Horas extra': { '2024-01-15': '3' },
+      },
+    };
+
+    const nextState = (updater as (s: typeof previousState) => typeof previousState)(previousState);
+    expect(nextState['E__Pol Peitx'].Dietas['2024-01-15']).toBe('Comida');
+    expect(nextState['E__Pol Peitx']['Horas extra']['2024-01-15']).toBe('');
+  });
+
+  it('clears Dietas when off on a work day (not calendar Descanso)', () => {
+    const mockSetData = vi.fn();
+
+    renderHook(() =>
+      useAutoCalculations({
+        safeSemana: ['2024-01-15'],
+        findWeekAndDay: vi.fn(() => ({
+          day: { tipo: 'Rodaje', team: [] },
+        })),
+        getBlockWindow: vi.fn(() => ({ start: '09:00', end: '17:00' })),
+        calcHorasExtraMin: vi.fn(() => 0),
+        buildDateTime: vi.fn((iso, time) => new Date(`${iso}T${time}:00`)),
+        findPrevWorkingContext: vi.fn(() => ({
+          prevISO: null,
+          consecDesc: 0,
+        })),
+        params: {
+          jornadaTrabajo: 8,
+          jornadaComida: 1,
+          cortesiaMin: 15,
+          taDiario: 12,
+          taFinde: 48,
+          nocturnoIni: '22:00',
+          nocturnoFin: '06:00',
+        },
+        safePersonas: [{ role: 'E', name: 'Pol Peitx' }],
+        personaKey: vi.fn(() => 'E__Pol Peitx'),
+        personaRole: vi.fn(() => 'E'),
+        personaName: vi.fn(() => 'Pol Peitx'),
+        isPersonScheduledOnBlock: vi.fn(() => false),
+        setData: mockSetData,
+      })
+    );
+
+    const updater = mockSetData.mock.calls.at(-1)?.[0] as (s: any) => any;
+    const nextState = updater({
+      'E__Pol Peitx': {
+        Dietas: { '2024-01-15': 'Comida' },
+      },
+    });
+    expect(nextState['E__Pol Peitx'].Dietas['2024-01-15']).toBe('');
   });
 });

@@ -25,6 +25,7 @@ import {
   preserveOrUseAuto,
 } from './useAutoCalculations/dataPreservation';
 import { CONCEPTS } from '../constants';
+import { normalizeJornadaType } from '@shared/utils/jornadaTranslations';
 
 export default function useAutoCalculations({
   enabled = true,
@@ -221,8 +222,16 @@ export default function useAutoCalculations({
         }
       };
 
-      const clearOffDay = (pk: string, iso: string, block: string) => {
-        for (const concept of CONCEPTS) {
+      const clearOffDay = (
+        pk: string,
+        iso: string,
+        block: string,
+        opts?: { preserveDietas?: boolean }
+      ) => {
+        const conceptsToClear = opts?.preserveDietas
+          ? CONCEPTS.filter(c => c !== 'Dietas')
+          : CONCEPTS;
+        for (const concept of conceptsToClear) {
           setConceptValue(pk, concept, iso, '');
           setManualFlag(pk, concept, iso, false);
         }
@@ -262,6 +271,9 @@ export default function useAutoCalculations({
         }
 
         for (const iso of safeSemana as string[]) {
+          const { day } = findWeekAndDay(iso) as WeekAndDay;
+          const isCalendarRestDay = normalizeJornadaType(day?.tipo) === 'Descanso';
+
           // rowBlock ya alineado con __block / columna (extra:N, pre, …)
           const auto = computeForISOAndBlock(p, iso, rowBlock);
 
@@ -278,7 +290,9 @@ export default function useAutoCalculations({
 
           const off = !workedThisBlock;
           if (off) {
-            clearOffDay(pk, iso, rowBlock);
+            // Día Descanso en planificación: no trabaja el bloque pero pueden aplicar dietas (viaje, etc.).
+            // Si limpiamos Dietas aquí, el efecto entra en bucle con la edición del usuario.
+            clearOffDay(pk, iso, rowBlock, { preserveDietas: isCalendarRestDay });
             continue;
           }
 
