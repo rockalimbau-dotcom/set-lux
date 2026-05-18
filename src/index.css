@@ -739,6 +739,8 @@ html input[style*="borderWidth"] {
 [data-theme='light'] .report-week-table td.report-dietas-cell.report-off-cell [class*='bg-white'],
 [data-theme='light'] .report-week-table td.report-dietas-cell.report-off-cell [class*='bg-black'],
 [data-theme='light'] .report-week-table td.report-dietas-cell.report-rest-cell button,
+[data-theme='light'] .report-week-table td.report-dietas-cell.report-rest-cell button:hover,
+[data-theme='light'] .report-week-table td.report-dietas-cell.report-rest-cell button:focus,
 [data-theme='light'] .report-week-table td.report-dietas-cell.report-rest-cell [class*='bg-white'],
 [data-theme='light'] .report-week-table td.report-dietas-cell.report-rest-cell [class*='bg-black'] {
   background-color: #EEF2F6 !important;
@@ -747,6 +749,12 @@ html input[style*="borderWidth"] {
   color: #334155 !important;
   box-shadow: none !important;
   opacity: 1 !important;
+}
+
+[data-theme='dark'] .report-week-table td.report-dietas-cell.report-rest-cell button:hover,
+[data-theme='dark'] .report-week-table td.report-dietas-cell.report-rest-cell button:focus {
+  border-color: #CBD5E1 !important;
+  box-shadow: none !important;
 }
 
 [data-theme='dark'] .report-week-table td.report-off-cell input,
@@ -1260,8 +1268,8 @@ html input[style*="borderWidth"] {
   background-clip: border-box, border-box !important;
 }
 
-[data-theme='dark'] .report-week-table .report-sticky-row > th.report-jornada-cell,
-[data-theme='dark'] .report-week-table .report-sticky-row > td.report-jornada-cell {
+[data-theme='dark'] .report-week-table .report-sticky-row > th.report-jornada-cell:not(.report-rest-cell):not(.report-off-cell),
+[data-theme='dark'] .report-week-table .report-sticky-row > td.report-jornada-cell:not(.report-rest-cell):not(.report-off-cell) {
   background-image:
     linear-gradient(var(--report-jornada-bg), var(--report-jornada-bg)),
     linear-gradient(#2a4058, #2a4058) !important;
@@ -1274,8 +1282,8 @@ html input[style*="borderWidth"] {
   box-shadow: inset 0 4px 0 var(--report-jornada-border);
 }
 
-.report-week-table td.report-jornada-cell.report-jornada-cell:not(.report-off-cell):not(.report-filled-cell),
-.report-week-table th.report-jornada-cell.report-jornada-cell:not(.report-off-cell):not(.report-filled-cell) {
+.report-week-table td.report-jornada-cell.report-jornada-cell:not(.report-off-cell):not(.report-filled-cell):not(.report-rest-cell),
+.report-week-table th.report-jornada-cell.report-jornada-cell:not(.report-off-cell):not(.report-filled-cell):not(.report-rest-cell) {
   background-color: var(--report-jornada-bg) !important;
   border-color: var(--report-jornada-border) !important;
 }

@@ -103,11 +103,13 @@ export function ConceptRow({
           : String(val ?? '').trim() !== '';
         const activeBlock = resolveBlockForISO?.(block, fecha, pKey, person) || block;
         const dayStyle = getDayStyle?.(fecha, activeBlock);
+        const dietasPersonRest = concepto === 'Dietas' && (off || isRest);
         const cellClasses = [
-          getDayStyle ? 'report-jornada-cell' : '',
+          getDayStyle && !dietasPersonRest ? 'report-jornada-cell' : '',
           isRestBlocked ? 'report-rest-cell' : '',
+          dietasPersonRest ? 'report-rest-cell' : '',
           off && !isRestBlocked && concepto !== 'Dietas' ? 'report-off-cell' : '',
-          !off && !isRestBlocked && hasValue ? 'report-filled-cell' : '',
+          !off && !isRestBlocked && !dietasPersonRest && hasValue ? 'report-filled-cell' : '',
         ]
           .filter(Boolean)
           .join(' ');
@@ -123,7 +125,7 @@ export function ConceptRow({
               fecha={fecha}
               val={val}
               cellClasses={cellClasses}
-              dayStyle={dayStyle}
+              dayStyle={dietasPersonRest ? undefined : dayStyle}
               theme={theme}
               focusColor={focusColor}
               readOnly={readOnly}
