@@ -186,7 +186,7 @@ export default function ReportesSemana({
     peoplePre,
     peoplePick,
     peopleExtra,
-    extraGroups,
+    visibleExtraGroups,
     safePersonas,
   } = useWeekData(project, semana, personasWithGender);
 
@@ -523,7 +523,7 @@ export default function ReportesSemana({
     const base = takeList(peopleBase);
     const pre = takeList(peoplePre);
     const pick = takeList(peoplePick);
-    const extra = (extraGroups || [])
+    const extra = (visibleExtraGroups || [])
       .map(group => ({
         ...group,
         people: takeList(group.people || []),
@@ -531,7 +531,7 @@ export default function ReportesSemana({
       .filter(group => group.people.length > 0);
 
     return { base, pre, pick, extra };
-  }, [peopleBase, peoplePre, peoplePick, extraGroups]);
+  }, [peopleBase, peoplePre, peoplePick, visibleExtraGroups]);
 
   const exportGenderMap = useMemo(() => {
     const map: Record<string, string> = {};

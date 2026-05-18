@@ -246,25 +246,20 @@ export function useWeekData(
     JSON.stringify(extraPeople),
   ]);
 
-  const visiblePersonKeys = useMemo(
-    () => new Set([
+  /** Para la tabla: una fila por persona; quien ya está en base/pre/pick no repite en extra:N. */
+  const visibleExtraGroups = useMemo(() => {
+    const existingKeys = new Set([
       ...(peopleBase || []).map(getPersonIdentityKey),
       ...(peoplePre || []).map(getPersonIdentityKey),
       ...(peoplePick || []).map(getPersonIdentityKey),
-    ]),
-    [JSON.stringify(peopleBase), JSON.stringify(peoplePre), JSON.stringify(peoplePick)]
-  );
-
-  const visibleExtraGroups = useMemo(
-    () =>
-      extraGroups
-        .map(group => ({
-          ...group,
-          people: group.people.filter(person => !visiblePersonKeys.has(getPersonIdentityKey(person))),
-        }))
-        .filter(group => group.people.length > 0),
-    [JSON.stringify(extraGroups), visiblePersonKeys]
-  );
+    ]);
+    return extraGroups
+      .map(group => ({
+        ...group,
+        people: (group.people || []).filter(p => !existingKeys.has(getPersonIdentityKey(p))),
+      }))
+      .filter(group => group.people.length > 0);
+  }, [extraGroups, peopleBase, peoplePre, peoplePick]);
 
   return {
     safeSemana,
@@ -277,7 +272,8 @@ export function useWeekData(
     peoplePre,
     peoplePick,
     peopleExtra,
-    extraGroups: visibleExtraGroups,
+    extraGroups,
+    visibleExtraGroups,
     safePersonas,
   };
 }

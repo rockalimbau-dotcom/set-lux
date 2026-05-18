@@ -55,7 +55,7 @@ describe('useReportData', () => {
     expect(typeof result.current.setCell).toBe('function');
   });
 
-  it('clears dietas in related extra/base keys for current date only', () => {
+  it('clearing dietas on base row does not clear extra column for same person', () => {
     const safePersonas = [
       { role: 'BB', roleId: 'bb_default', name: 'Maria' },
       { role: 'BB', roleId: 'bb_default', name: 'Maria', __block: 'extra:0' },
@@ -101,7 +101,7 @@ describe('useReportData', () => {
     const next = updater(prevState);
 
     expect(next['bb_default__Maria'].Dietas['2024-01-16']).toBe('');
-    expect(next['bb_default.extra:0__Maria'].Dietas['2024-01-16']).toBe('');
+    expect(next['bb_default.extra:0__Maria'].Dietas['2024-01-16']).toBe('Comida');
     expect(next['bb_default.extra:0__Maria'].Dietas['2024-01-15']).toBe('Comida');
   });
 
@@ -140,7 +140,7 @@ describe('useReportData', () => {
     const next = updater(prevState);
 
     expect(next['bb_default__Maria'].Dietas['2024-01-16']).toBe('');
-    expect(next['bb_default.extra:0__Maria'].Dietas['2024-01-16']).toBe('');
+    expect(next['bb_default.extra:0__Maria'].Dietas['2024-01-16']).toBe('Comida');
     expect(next['bb_default__Ana'].Dietas['2024-01-16']).toBe('Comida');
   });
 });

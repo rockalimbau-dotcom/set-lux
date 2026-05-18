@@ -1,69 +1,50 @@
 import { useMemo } from 'react';
 import { AnyRecord } from '@shared/types/common';
-import { BLOCKS, getDayBlockList, isMemberRefuerzo } from '../../utils/plan';
-import { stripRoleSuffix } from '@shared/constants/roles';
-import { norm } from '../../utils/text';
+import { BLOCKS, isPersonScheduledOnBlock } from '../../utils/plan';
+import { getExtraBlockCount } from '../../utils/extra';
 
 interface UsePersonScheduledCheckerProps {
   findWeekAndDay: (iso: string) => AnyRecord;
 }
 
 /**
- * Hook to create a function that checks if a person is scheduled on a block
+ * Bloques a comprobar según la columna de reporte y el rol (P/R).
+ * Para columna base (o block undefined) incluye extra:N dinámicos: alguien puede estar solo en Carga ese día.
  */
-export function usePersonScheduledChecker({
-  findWeekAndDay,
-}: UsePersonScheduledCheckerProps) {
+function blocksToScan(day: AnyRecord | null | undefined, role: string, block?: string): string[] {
+  if (block && block !== 'base') {
+    return [block];
+  }
+  if (/P$/i.test(role || '')) return [BLOCKS.pre];
+  if (/R$/i.test(role || '')) return [BLOCKS.pick];
+  const out = [BLOCKS.base, BLOCKS.pre, BLOCKS.pick, BLOCKS.extra];
+  const n = getExtraBlockCount(day || {});
+  for (let i = 0; i < n; i++) {
+    out.push(`extra:${i}`);
+  }
+  return out;
+}
+
+/**
+ * Comprueba si la persona está en el plan en alguno de los bloques relevantes para esa fila.
+ */
+export function usePersonScheduledChecker({ findWeekAndDay }: UsePersonScheduledCheckerProps) {
   return useMemo(
-    () => (
-      iso: string,
-      role: string,
-      name: string,
-      findFn: any,
-      block?: 'base' | 'pre' | 'pick' | 'extra',
-      options?: { roleId?: string }
-    ) => {
-      const { day } = findFn(iso);
-      if (!day || day.tipo === 'Descanso') return false;
-      const roleId = String(options?.roleId || '').trim();
-      // Si el rol es REF o empieza con REF (REFG, REFBB, etc.), usar lógica de refuerzo
-      const roleStr = String(role || '');
-      if (roleStr === 'REF' || (roleStr.startsWith('REF') && roleStr.length > 3)) {
-        const matchesRef = (members: AnyRecord[]) =>
-          (members || []).some(
-            member =>
-              String(member?.name || '') === String(name || '') &&
-              isMemberRefuerzo(member)
-          );
-        if (block) return matchesRef(getDayBlockList(day, block));
-        return (
-          matchesRef(getDayBlockList(day, BLOCKS.base)) ||
-          matchesRef(getDayBlockList(day, BLOCKS.pre)) ||
-          matchesRef(getDayBlockList(day, BLOCKS.pick)) ||
-          matchesRef(getDayBlockList(day, BLOCKS.extra))
+    () =>
+      (
+        iso: string,
+        role: string,
+        name: string,
+        findFn: (arg: string) => AnyRecord,
+        block?: string,
+        options?: { roleId?: string }
+      ) => {
+        const { day } = findFn(iso);
+        if (!day || day.tipo === 'Descanso') return false;
+        return blocksToScan(day, role, block).some(b =>
+          isPersonScheduledOnBlock(iso, role, name, findFn as any, b, options)
         );
-      }
-      const blocksToCheck = block
-        ? [block]
-        : /P$/i.test(role || '')
-        ? [BLOCKS.pre]
-        : /R$/i.test(role || '')
-        ? [BLOCKS.pick]
-        : [BLOCKS.base, BLOCKS.pre, BLOCKS.pick, BLOCKS.extra];
-      const baseRole = stripRoleSuffix(String(role || ''));
-      return blocksToCheck.some(resolvedBlock => {
-        const list = getDayBlockList(day, resolvedBlock);
-        return list.some((m: AnyRecord) => {
-          if (norm(m?.name) !== norm(name)) return false;
-          const memberRoleId = String(m?.roleId || '').trim();
-          if (roleId) {
-            if (memberRoleId) return memberRoleId === roleId;
-            return true;
-          }
-          return !m?.role || norm(stripRoleSuffix(String(m?.role || ''))) === norm(baseRole) || !baseRole;
-        });
-      });
-    },
+      },
     [findWeekAndDay]
   );
 }

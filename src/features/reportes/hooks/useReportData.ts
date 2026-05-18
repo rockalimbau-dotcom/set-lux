@@ -102,6 +102,17 @@ export default function useReportData(
     }
     return true;
   };
+
+  /** Columna de reporte (base / pre / pick / extra / extra:N). Crítico para no mezclar la misma persona en base vs extra:0. */
+  const reportRowBlockBucket = (personKey: string): string => {
+    const k = String(personKey || '');
+    if (/\.pre__/.test(k) || /REF\.pre__/.test(k)) return 'pre';
+    if (/\.pick__/.test(k) || /REF\.pick__/.test(k)) return 'pick';
+    const extraMatch = k.match(/\.(extra(?::\d+)?)__/);
+    if (extraMatch?.[1]) return extraMatch[1];
+    return 'base';
+  };
+
   const migrateRiggerRoles = (prev: ReportData) => {
     const next: ReportData = {};
     let changed = false;
@@ -224,19 +235,8 @@ export default function useReportData(
         };
       }
 
-      const srcBlock: 'base' | 'pre' | 'pick' | 'extra' =
-        /\.pre__/.test(pKey) || /REF\.pre__/.test(pKey)
-          ? 'pre'
-          : (/\.pick__/.test(pKey) || /REF\.pick__/.test(pKey)
-            ? 'pick'
-            : (/\.extra__/.test(pKey) || /REF\.extra__/.test(pKey) ? 'extra' : 'base'));
+      const srcBucket = reportRowBlockBucket(pKey);
       const srcIdentity = parseKeyIdentity(pKey);
-      const blockOf = (key: string): 'base' | 'pre' | 'pick' | 'extra' =>
-        /\.pre__/.test(key) || /REF\.pre__/.test(key)
-          ? 'pre'
-          : (/\.pick__/.test(key) || /REF\.pick__/.test(key)
-            ? 'pick'
-            : (/\.extra__/.test(key) || /REF\.extra__/.test(key) ? 'extra' : 'base'));
 
       if (!isClearingDietas) {
         for (const p of safePersonas) {
@@ -245,16 +245,27 @@ export default function useReportData(
           const r = who[k]?.role || '';
           const n = who[k]?.name || '';
           const roleId = who[k]?.roleId;
-          const tgtBlock = blockOf(k);
-          if (tgtBlock !== srcBlock) continue;
+          if (reportRowBlockBucket(k) !== srcBucket) continue;
 
           const isRefRole = r === 'REF' || (r && r.startsWith('REF') && r.length > 3);
+          const tgtBucket = reportRowBlockBucket(k);
           const roleForCheck = isRefRole
             ? 'REF'
-            : (tgtBlock === 'pre' ? `${r}P` : (tgtBlock === 'pick' ? `${r}R` : r));
-          const blockForRef: 'base' | 'pre' | 'pick' | 'extra' | undefined =
-            isRefRole ? tgtBlock : (tgtBlock === 'extra' ? 'extra' : undefined);
-          const isScheduled = isPersonScheduledOn(fecha, roleForCheck, n, findWeekAndDay, blockForRef, { roleId });
+            : tgtBucket === 'pre'
+              ? `${r}P`
+              : tgtBucket === 'pick'
+                ? `${r}R`
+                : r;
+          const blockForRef: string | undefined = isRefRole
+            ? tgtBucket === 'base'
+              ? undefined
+              : tgtBucket
+            : tgtBucket === 'base'
+              ? undefined
+              : tgtBucket;
+          const isScheduled = isPersonScheduledOn(fecha, roleForCheck, n, findWeekAndDay, blockForRef as any, {
+            roleId,
+          });
           if (!isScheduled) continue;
 
           next[k] = { ...(next[k] || {}) };
@@ -277,6 +288,7 @@ export default function useReportData(
       if (isClearingDietas) {
         for (const key of Object.keys(next)) {
           if (key.startsWith('__')) continue;
+          if (reportRowBlockBucket(key) !== srcBucket) continue;
           const identity = parseKeyIdentity(key);
           if (!identity.name || identity.name !== srcIdentity.name) continue;
           if (!identity.role || identity.role !== srcIdentity.role) continue;
