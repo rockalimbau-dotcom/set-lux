@@ -501,7 +501,7 @@ describe('useAutoCalculations', () => {
     expect(nextState['E__Pol Peitx']['Horas extra']['2024-01-15']).toBe('');
   });
 
-  it('clears Dietas when off on a work day (not calendar Descanso)', () => {
+  it('preserves Dietas when off on a work day (person rests, day is Rodaje)', () => {
     const mockSetData = vi.fn();
 
     renderHook(() =>
@@ -541,6 +541,7 @@ describe('useAutoCalculations', () => {
         Dietas: { '2024-01-15': 'Comida' },
       },
     });
-    expect(nextState['E__Pol Peitx'].Dietas['2024-01-15']).toBe('');
+    expect(nextState['E__Pol Peitx'].Dietas['2024-01-15']).toBe('Comida');
+    expect(nextState['E__Pol Peitx']['Horas extra']?.['2024-01-15'] ?? '').toBe('');
   });
 });
