@@ -67,5 +67,28 @@ export const createHorarioHelpers = (
     return formatExtraScheduleByIndex(day, index, t('reports.addInPlanning'), t);
   };
 
-  return { horarioTexto, jornadaTipoTexto, horarioPrelight, horarioPickup, horarioExtra, horarioExtraByIndex };
+  /** Horario solo con franja horaria (sin repetir el tipo de jornada). */
+  const horarioTimesForBlock = (iso: string, blockKey: string = 'base') => {
+    const { day } = findWeekAndDay(iso);
+    if (!day || day.tipo === 'Descanso') return '';
+    if (blockKey === 'pre') return horarioPrelight(iso);
+    if (blockKey === 'pick') return horarioPickup(iso);
+    const extraMatch = String(blockKey).match(/^extra:(\d+)$/);
+    if (extraMatch) {
+      return formatExtraScheduleByIndex(day, Number(extraMatch[1]), t('reports.addInPlanning'), t);
+    }
+    if (blockKey === 'extra') return horarioExtra(iso);
+    if (!day.start || !day.end) return t('reports.addInPlanning');
+    return `${day.start}–${day.end}`;
+  };
+
+  return {
+    horarioTexto,
+    jornadaTipoTexto,
+    horarioPrelight,
+    horarioPickup,
+    horarioExtra,
+    horarioExtraByIndex,
+    horarioTimesForBlock,
+  };
 };

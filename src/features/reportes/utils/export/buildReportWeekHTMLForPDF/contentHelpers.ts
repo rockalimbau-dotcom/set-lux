@@ -20,103 +20,44 @@ export function generateBodyByBlocks(
   horarioPrelight?: (iso: string) => string,
   horarioPickup?: (iso: string) => string,
   horarioExtraByBlock?: (blockKey: string, iso: string) => string,
+  horarioPersonaTexto?: (pk: string, iso: string, blockKey?: string) => string,
   adjustConceptsForExport?: (personKey: string, baseConcepts: readonly string[]) => string[],
   horasExtraTipo?: string
 ): string {
+  const personArgs = (
+    pk: string,
+    rowBlock: string
+  ) =>
+    generatePersonHTML(
+      pk,
+      conceptosConDatos,
+      safeSemanaWithData,
+      finalData,
+      genderMap,
+      project,
+      horarioTexto,
+      jornadaTipoTexto,
+      jornadaTipoPersonaTexto,
+      resolvePersonaBlockKey,
+      horarioPrelight,
+      horarioPickup,
+      horarioExtraByBlock,
+      horarioPersonaTexto,
+      rowBlock,
+      adjustConceptsForExport,
+      horasExtraTipo
+    );
+
   const bodyParts: string[] = [];
-  bodyParts.push(
-    ...personsByBlock.base.map(pk =>
-      generatePersonHTML(
-        pk,
-        conceptosConDatos,
-        safeSemanaWithData,
-        finalData,
-        genderMap,
-        project,
-        horarioTexto,
-        jornadaTipoTexto,
-        jornadaTipoPersonaTexto,
-        resolvePersonaBlockKey,
-        horarioPrelight,
-        horarioPickup,
-        horarioExtraByBlock,
-        'base',
-        adjustConceptsForExport,
-        horasExtraTipo
-      )
-    )
-  );
+  bodyParts.push(...personsByBlock.base.map(pk => personArgs(pk, 'base')));
 
   extraGroups.forEach(group => {
-    bodyParts.push(
-      ...group.people.map(pk =>
-        generatePersonHTML(
-          pk,
-          conceptosConDatos,
-          safeSemanaWithData,
-          finalData,
-          genderMap,
-          project,
-          horarioTexto,
-          jornadaTipoTexto,
-          jornadaTipoPersonaTexto,
-          resolvePersonaBlockKey,
-          horarioPrelight,
-          horarioPickup,
-          horarioExtraByBlock,
-          group.blockKey,
-          adjustConceptsForExport,
-          horasExtraTipo
-        )
-      )
-    );
+    bodyParts.push(...group.people.map(pk => personArgs(pk, group.blockKey)));
   });
 
-  bodyParts.push(
-    ...personsByBlock.pre.map(pk =>
-      generatePersonHTML(
-        pk,
-        conceptosConDatos,
-        safeSemanaWithData,
-        finalData,
-        genderMap,
-        project,
-        horarioTexto,
-        jornadaTipoTexto,
-        jornadaTipoPersonaTexto,
-        resolvePersonaBlockKey,
-        horarioPrelight,
-        horarioPickup,
-        horarioExtraByBlock,
-        'pre',
-        adjustConceptsForExport,
-        horasExtraTipo
-      )
-    )
-  );
+  bodyParts.push(...personsByBlock.pre.map(pk => personArgs(pk, 'pre')));
 
-  bodyParts.push(
-    ...personsByBlock.pick.map(pk =>
-      generatePersonHTML(
-        pk,
-        conceptosConDatos,
-        safeSemanaWithData,
-        finalData,
-        genderMap,
-        project,
-        horarioTexto,
-        jornadaTipoTexto,
-        jornadaTipoPersonaTexto,
-        resolvePersonaBlockKey,
-        horarioPrelight,
-        horarioPickup,
-        horarioExtraByBlock,
-        'pick',
-        adjustConceptsForExport,
-        horasExtraTipo
-      )
-    )
-  );
+  bodyParts.push(...personsByBlock.pick.map(pk => personArgs(pk, 'pick')));
 
   return bodyParts.join('');
 }

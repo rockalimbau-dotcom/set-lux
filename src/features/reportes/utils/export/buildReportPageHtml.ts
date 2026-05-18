@@ -14,6 +14,7 @@ export function buildReportPageHtml(
     | 'horarioTexto'
     | 'jornadaTipoTexto'
     | 'jornadaTipoPersonaTexto'
+    | 'horarioPersonaTexto'
     | 'resolvePersonaBlockKey'
     | 'horarioPrelight'
     | 'horarioPickup'

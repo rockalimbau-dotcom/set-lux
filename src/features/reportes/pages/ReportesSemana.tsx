@@ -27,6 +27,7 @@ import {
   stripPR,
 } from '../utils/model';
 import { parsePersonKey } from '../utils/export/dataHelpers';
+import { resolvePersonBlockKey } from '../utils/resolvePersonBlockKey';
 import { addDays, mondayOf, toYYYYMMDD } from '@shared/utils/date';
 import { loadCondModel } from '@features/nomina/utils/cond';
 import { ROLE_CODE_TO_LABEL, stripRoleSuffix, stripRefuerzoSuffix } from '@shared/constants/roles';
@@ -192,7 +193,14 @@ export default function ReportesSemana({
 
   const dietasOpciones = useDietasOpciones(mode);
 
-  const { horarioTexto, jornadaTipoTexto, horarioPrelight, horarioPickup, horarioExtraByIndex } = createHorarioHelpers(findWeekAndDay, t);
+  const {
+    horarioTexto,
+    jornadaTipoTexto,
+    horarioPrelight,
+    horarioPickup,
+    horarioExtraByIndex,
+    horarioTimesForBlock,
+  } = createHorarioHelpers(findWeekAndDay, t);
   const reportLabels = useMemo(() => {
     const schedulePrefix = t('reports.schedulePrefix', 'Horario');
     const weekWithLabels = safeSemana
@@ -273,47 +281,16 @@ export default function ReportesSemana({
     findWeekAndDay,
   });
   const resolvePersonaBlockKey = useCallback(
-    (pk: string, iso: string, blockKey?: string) => {
-      const parsed = parseReportPersonKey(pk);
-      const preferredBlock = String(blockKey || 'base');
-      const { day } = findWeekAndDay(iso);
-      if (!day) return preferredBlock;
-
-      const resolvedRole = resolveExportRoleMeta(project, parsed.role);
-      const candidates = [
-        preferredBlock,
-        'base',
-        'pre',
-        'pick',
-        ...normalizeExtraBlocks(day).map((_, index) => `extra:${index}`),
-        'extra',
-      ].filter((candidate, index, list) => list.indexOf(candidate) === index);
-
-      for (const candidate of candidates) {
-        if (
-          isPersonScheduledOnBlockFn(
-            iso,
-            resolvedRole.displayRole || parsed.role,
-            parsed.name,
-            findWeekAndDay,
-            candidate as any,
-            { roleId: parsed.role }
-          )
-        ) {
-          return candidate;
-        }
-      }
-
-      return preferredBlock;
-    },
-    [findWeekAndDay, isPersonScheduledOnBlockFn, project]
+    (pk: string, iso: string, blockKey?: string) =>
+      resolvePersonBlockKey(pk, iso, findWeekAndDay, project, blockKey),
+    [findWeekAndDay, project]
   );
   const jornadaTipoPersonaTexto = useCallback(
     (pk: string, iso: string, blockKey?: string) => {
       const parsed = parseReportPersonKey(pk);
       const resolvedRole = resolveExportRoleMeta(project, parsed.role);
       const resolvedBlockKey = resolvePersonaBlockKey(pk, iso, blockKey);
-      const isScheduled = isPersonScheduledOnBlockFn(
+      const isScheduled = isPersonScheduledOnBlock(
         iso,
         resolvedRole.displayRole || parsed.role,
         parsed.name,
@@ -325,7 +302,14 @@ export default function ReportesSemana({
       if (!isScheduled) return t('reports.rest');
       return jornadaTipoTexto(iso, resolvedBlockKey);
     },
-    [findWeekAndDay, isPersonScheduledOnBlockFn, jornadaTipoTexto, project, resolvePersonaBlockKey, t]
+    [findWeekAndDay, jornadaTipoTexto, project, resolvePersonaBlockKey, t]
+  );
+  const horarioPersonaTexto = useCallback(
+    (pk: string, iso: string, blockKey?: string) => {
+      const resolvedBlockKey = resolvePersonaBlockKey(pk, iso, blockKey);
+      return horarioTimesForBlock(iso, resolvedBlockKey);
+    },
+    [horarioTimesForBlock, resolvePersonaBlockKey]
   );
 
   const { data, setData, setCell } = useReportData(
@@ -776,6 +760,7 @@ export default function ReportesSemana({
     horarioTexto,
     jornadaTipoTexto,
     jornadaTipoPersonaTexto,
+    horarioPersonaTexto,
     resolvePersonaBlockKey,
     horarioPrelight,
     horarioPickup,

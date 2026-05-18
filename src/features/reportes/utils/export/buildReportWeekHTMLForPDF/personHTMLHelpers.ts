@@ -132,6 +132,7 @@ function generatePersonHeader(
   horarioPrelight?: (iso: string) => string,
   horarioPickup?: (iso: string) => string,
   horarioExtraByBlock?: (blockKey: string, iso: string) => string,
+  horarioPersonaTexto?: (pk: string, iso: string, blockKey?: string) => string,
   blockKey?: string
 ): string {
   // El formato del pk es: "role.block__name" donde block puede ser "pre" o "pick"
@@ -177,7 +178,24 @@ function generatePersonHeader(
                 : typeof jornadaTipoTexto === 'function'
                 ? jornadaTipoTexto(iso, currentBlockKey)
                 : '';
-            const schedule = scheduleForPerson(pk, iso, finalData, horarioTexto, horarioPrelight, horarioPickup, horarioExtraByBlock, currentBlockKey);
+            const savedSchedule = finalData?.__schedule__?.[pk]?.[currentBlockKey]?.[iso];
+            let schedule = '';
+            if (savedSchedule?.start || savedSchedule?.end) {
+              schedule = `${savedSchedule?.start || ''} ${savedSchedule?.end || ''}`.trim();
+            } else if (typeof horarioPersonaTexto === 'function') {
+              schedule = horarioPersonaTexto(pk, iso, blockKey || parsed.block || 'base');
+            } else {
+              schedule = scheduleForPerson(
+                pk,
+                iso,
+                finalData,
+                horarioTexto,
+                horarioPrelight,
+                horarioPickup,
+                horarioExtraByBlock,
+                currentBlockKey
+              );
+            }
             const effectiveSchedule = isRestJornadaLabel(jornadaType) ? '' : schedule;
             const displayValue = formatJornadaCellForExport(jornadaType, effectiveSchedule);
             const tone = getScheduleTone(jornadaType || schedule);
@@ -326,6 +344,7 @@ export function generatePersonHTML(
   horarioPrelight?: (iso: string) => string,
   horarioPickup?: (iso: string) => string,
   horarioExtraByBlock?: (blockKey: string, iso: string) => string,
+  horarioPersonaTexto?: (pk: string, iso: string, blockKey?: string) => string,
   blockKey?: string,
   adjustConceptsForExport?: (personKey: string, baseConcepts: readonly string[]) => string[],
   horasExtraTipo?: string
@@ -343,6 +362,7 @@ export function generatePersonHTML(
     horarioPrelight,
     horarioPickup,
     horarioExtraByBlock,
+    horarioPersonaTexto,
     blockKey
   );
   if (!header) return ''; // Skip invalid entries

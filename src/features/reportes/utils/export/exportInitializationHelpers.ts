@@ -3,11 +3,10 @@ import { getTranslation } from './translationHelpers';
 import { translateJornadaType as translateJornadaTypeUtil } from '@shared/utils/jornadaTranslations';
 import { needsDataToPlanData } from '@shared/utils/needsPlanAdapter';
 import { getReportDayType } from '../dayTypePalette';
-import { getDayBlockList, isPersonScheduledOnBlock } from '../plan';
+import { isPersonScheduledOnBlock } from '../plan';
 import { parsePersonKey, resolveExportRoleMeta } from './dataHelpers';
-import { getExtraBlocks } from '../extra';
-import { norm } from '../text';
-import { stripRoleSuffix } from '@shared/constants/roles';
+import { resolvePersonBlockKey } from '../resolvePersonBlockKey';
+import { createHorarioHelpers } from '../../pages/ReportesSemana/horarioHelpers';
 
 interface InitializeExportHelpersParams {
   project: any;
@@ -22,8 +21,10 @@ interface InitializeExportHelpersReturn {
   jornadaTipoTexto: (iso: string, blockKey?: string) => string;
   jornadaTipoPersonaTexto: (pk: string, iso: string, blockKey?: string) => string;
   resolvePersonaBlockKey: (pk: string, iso: string, blockKey?: string) => string;
+  horarioPersonaTexto: (pk: string, iso: string, blockKey?: string) => string;
   horarioPrelightFn: (iso: string) => string;
   horarioPickupFn: (iso: string) => string;
+  horarioExtraByBlock: (blockKey: string, iso: string) => string;
   getPlanAllWeeks: () => { pre: any[]; pro: any[] };
 }
 
@@ -72,54 +73,25 @@ export async function initializeExportHelpers({
     return tipo ? translateJornadaType(tipo) : '';
   };
 
-  const resolvePersonaBlockKey = (pk: string, iso: string, blockKey?: string) => {
-    const parsed = parsePersonKey(pk);
-    const { day } = findWeekAndDay(iso);
-    if (!day) return String(blockKey || parsed.block || 'base');
+  const resolvePersonaBlockKey = (pk: string, iso: string, blockKey?: string) =>
+    resolvePersonBlockKey(pk, iso, findWeekAndDay, project, blockKey);
 
-    const preferredBlock = String(blockKey || parsed.block || 'base');
-    const resolvedRole = resolveExportRoleMeta(project, parsed.role);
-    const roleLabel = resolvedRole.displayRole || parsed.role;
-    const candidates = [
-      preferredBlock,
-      'base',
-      'pre',
-      'pick',
-      ...getExtraBlocks(day).map((_, index) => `extra:${index}`),
-      'extra',
-    ].filter((candidate, index, list) => list.indexOf(candidate) === index);
+  const tExport = (key: string, defaultValue?: string) =>
+    getTranslation(key, defaultValue || key);
+  const {
+    horarioTimesForBlock,
+    horarioExtraByIndex: horarioExtraByIndexFn,
+  } = createHorarioHelpers(findWeekAndDay, tExport);
 
-    const roleId = parsed.role;
-    for (const candidate of candidates) {
-      const scheduled = isPersonScheduledOnBlock(
-        iso,
-        roleLabel,
-        parsed.name,
-        findWeekAndDay,
-        candidate,
-        { roleId }
-      );
-      if (scheduled) return candidate;
-    }
+  const horarioExtraByBlock = (blockKey: string, iso: string) => {
+    const match = String(blockKey).match(/^extra:(\d+)$/);
+    if (!match) return '';
+    return horarioExtraByIndexFn(Number(match[1]))(iso);
+  };
 
-    const wantedName = norm(parsed.name);
-    const wantedRole = norm(stripRoleSuffix(parsed.role));
-    const matchesMember = (member: any) => {
-      if (norm(member?.name) !== wantedName) return false;
-      const memberRoleId = String(member?.roleId || '').trim();
-      if (roleId && memberRoleId) return memberRoleId === roleId;
-      const memberRole = norm(stripRoleSuffix(String(member?.role || '')));
-      return !wantedRole || !memberRole || memberRole === wantedRole;
-    };
-
-    if (getDayBlockList(day, 'base').some(matchesMember)) return 'base';
-    if (getDayBlockList(day, 'pre').some(matchesMember)) return 'pre';
-    if (getDayBlockList(day, 'pick').some(matchesMember)) return 'pick';
-    const extraIndex = getExtraBlocks(day).findIndex(block => (block.list || []).some(matchesMember));
-    if (extraIndex >= 0) return `extra:${extraIndex}`;
-    if (getDayBlockList(day, 'extra').some(matchesMember)) return 'extra';
-
-    return preferredBlock;
+  const horarioPersonaTexto = (pk: string, iso: string, blockKey?: string) => {
+    const resolvedBlockKey = resolvePersonaBlockKey(pk, iso, blockKey);
+    return horarioTimesForBlock(iso, resolvedBlockKey);
   };
 
   const jornadaTipoPersonaTexto = (pk: string, iso: string, blockKey?: string) => {
@@ -152,6 +124,8 @@ export async function initializeExportHelpers({
     jornadaTipoTexto,
     jornadaTipoPersonaTexto,
     resolvePersonaBlockKey,
+    horarioPersonaTexto,
+    horarioExtraByBlock,
     horarioPrelightFn,
     horarioPickupFn,
     getPlanAllWeeks,

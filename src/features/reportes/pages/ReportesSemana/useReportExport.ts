@@ -11,6 +11,7 @@ interface UseReportExportProps {
   horarioTexto: (iso: string) => string;
   jornadaTipoTexto: (iso: string, blockKey?: string) => string;
   jornadaTipoPersonaTexto: (pk: string, iso: string, blockKey?: string) => string;
+  horarioPersonaTexto?: (pk: string, iso: string, blockKey?: string) => string;
   resolvePersonaBlockKey: (pk: string, iso: string, blockKey?: string) => string;
   horarioPrelight: (iso: string) => string;
   horarioPickup: (iso: string) => string;
@@ -49,6 +50,7 @@ export function useReportExport({
   horarioTexto,
   jornadaTipoTexto,
   jornadaTipoPersonaTexto,
+  horarioPersonaTexto,
   resolvePersonaBlockKey,
   horarioPrelight,
   horarioPickup,
@@ -76,6 +78,7 @@ export function useReportExport({
       horarioTexto,
       jornadaTipoTexto,
       jornadaTipoPersonaTexto,
+      horarioPersonaTexto,
       resolvePersonaBlockKey,
       horarioPrelight,
       horarioPickup,
@@ -97,6 +100,7 @@ export function useReportExport({
       horarioTexto,
       jornadaTipoTexto,
       jornadaTipoPersonaTexto,
+      horarioPersonaTexto,
       resolvePersonaBlockKey,
       horarioPrelight,
       horarioPickup,
@@ -115,6 +119,7 @@ export function useReportExport({
         horarioTexto,
         jornadaTipoTexto,
         jornadaTipoPersonaTexto,
+        horarioPersonaTexto,
         resolvePersonaBlockKey,
         horarioPrelight,
         horarioPickup,

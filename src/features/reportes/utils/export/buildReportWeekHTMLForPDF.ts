@@ -22,6 +22,7 @@ export function buildReportWeekHTMLForPDF({
   horarioPrelight,
   horarioPickup,
   horarioExtraByBlock,
+  horarioPersonaTexto,
   reportLabels,
   groupedPersonKeys,
   CONCEPTS,
@@ -115,6 +116,7 @@ export function buildReportWeekHTMLForPDF({
     horarioPrelight,
     horarioPickup,
     horarioExtraByBlock,
+    horarioPersonaTexto,
     adjustConceptsForExport,
     horasExtraTipo
   );
