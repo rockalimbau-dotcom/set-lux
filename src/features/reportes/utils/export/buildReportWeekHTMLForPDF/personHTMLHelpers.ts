@@ -12,6 +12,11 @@ import {
 import { extractNumericValue } from '../../runtime';
 import { normalizeJornadaType } from '@shared/utils/jornadaTranslations';
 import { getNeedsDayTypePalette } from '@features/necesidades/utils/dayTypeColors';
+import {
+  formatJornadaCellForExport,
+  isRestJornadaLabel,
+  normalizeJornadaToneKey,
+} from '../reportJornadaDisplay';
 
 function scheduleForPerson(
   pk: string,
@@ -37,31 +42,8 @@ function scheduleForPerson(
   return typeof horarioTexto === 'function' ? horarioTexto(iso) : '';
 }
 
-function normalizeCellContent(jornadaType: string, schedule: string): string {
-  const safeType = String(jornadaType || '').trim();
-  const safeSchedule = String(schedule || '').trim();
-
-  if (!safeType) return safeSchedule;
-  if (!safeSchedule) return safeType;
-
-  const normalizedType = safeType.toLowerCase();
-  const normalizedSchedule = safeSchedule.toLowerCase();
-
-  if (normalizedSchedule === normalizedType) return safeType;
-  if (normalizedSchedule.startsWith(`${normalizedType}:`)) {
-    const stripped = safeSchedule.slice(safeType.length + 1).trim();
-    return stripped ? `${safeType} | ${stripped}` : safeType;
-  }
-
-  return `${safeType} | ${safeSchedule}`;
-}
-
 function normalizeToneKey(value: string): string {
-  return String(value || '')
-    .trim()
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '');
+  return normalizeJornadaToneKey(value);
 }
 
 function extractJornadaLabelForTone(value: string): string {
@@ -196,8 +178,8 @@ function generatePersonHeader(
                 ? jornadaTipoTexto(iso, currentBlockKey)
                 : '';
             const schedule = scheduleForPerson(pk, iso, finalData, horarioTexto, horarioPrelight, horarioPickup, horarioExtraByBlock, currentBlockKey);
-            const effectiveSchedule = normalizeToneKey(jornadaType).includes('descans') ? '' : schedule;
-            const displayValue = normalizeCellContent(jornadaType, effectiveSchedule);
+            const effectiveSchedule = isRestJornadaLabel(jornadaType) ? '' : schedule;
+            const displayValue = formatJornadaCellForExport(jornadaType, effectiveSchedule);
             const tone = getScheduleTone(jornadaType || schedule);
             return `<td style="border:1px solid ${tone.border};padding:6px;text-align:center;vertical-align:middle;background:${tone.bg};"><div class="td-label td-label-center" style="font-weight:700;color:${tone.text};">${esc(displayValue)}</div></td>`;
           }).join('')}
