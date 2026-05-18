@@ -53,23 +53,6 @@ export default function ReportesTab({ project, mode = 'semanal', readOnly = fals
   const { pre, pro } = usePlanWeeks(project);
   const allWeeks = [...pre, ...pro];
   const baseId = project?.id || project?.nombre || 'tmp';
-  const condKeys = [
-    `cond_${baseId}_semanal`,
-    `cond_${baseId}_mensual`,
-    `cond_${baseId}_diario`,
-  ];
-
-  // Usar useLocalStorage para cada clave de condiciones y crear un stamp
-  const [condSemanal] = useLocalStorage<any>(condKeys[0] || '', {});
-  const [condMensual] = useLocalStorage<any>(condKeys[1] || '', {});
-  const [condPublicidad] = useLocalStorage<any>(condKeys[2] || '', {});
-
-  const condStamp = useMemo(() => {
-    return [condSemanal, condMensual, condPublicidad]
-      .map(data => JSON.stringify(data))
-      .join('|');
-  }, [condSemanal, condMensual, condPublicidad]);
-
   const { hasTeam } = useTeamData(baseId);
   const hasWeeks = allWeeks.length > 0;
   const weeksWithPeople = allWeeks.filter(w => weekToPersonas(w).length > 0);

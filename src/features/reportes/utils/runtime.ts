@@ -10,7 +10,7 @@ interface Project {
   [key: string]: any;
 }
 
-interface CondParams {
+export interface CondParams {
   jornadaTrabajo: number;
   jornadaComida: number;
   cortesiaMin: number;
@@ -20,7 +20,9 @@ interface CondParams {
   nocturnoFin: string;
 }
 
-const DEFAULTS_BY_MODE: Record<'semanal' | 'mensual' | 'diario', CondParams> = {
+export type CondMode = 'semanal' | 'mensual' | 'diario';
+
+export const DEFAULTS_BY_MODE: Record<CondMode, CondParams> = {
   semanal: {
     jornadaTrabajo: 9,
     jornadaComida: 1,
@@ -50,7 +52,7 @@ const DEFAULTS_BY_MODE: Record<'semanal' | 'mensual' | 'diario', CondParams> = {
   },
 };
 
-const buildParams = (p: any, defaults: CondParams): CondParams => ({
+export const buildCondParams = (p: any, defaults: CondParams): CondParams => ({
   jornadaTrabajo: parseNum(p.jornadaTrabajo ?? String(defaults.jornadaTrabajo)),
   jornadaComida: parseNum(p.jornadaComida ?? String(defaults.jornadaComida)),
   cortesiaMin: parseNum(p.cortesiaMin ?? String(defaults.cortesiaMin)),
@@ -68,7 +70,7 @@ export function readCondParams(project: Project, mode?: 'semanal' | 'mensual' | 
       const obj = storage.getJSON<any>(key);
       if (!obj) return null;
       const p = obj.params || {};
-      return buildParams(p, defaults);
+      return buildCondParams(p, defaults);
     } catch {
       return null;
     }

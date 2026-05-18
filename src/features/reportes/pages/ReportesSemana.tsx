@@ -14,7 +14,6 @@ import { storage } from '@shared/services/localStorage.service';
 import { btnExport } from '@shared/utils/tailwindClasses';
 import { isPersonScheduledOnBlock, BLOCKS, getDayBlockList } from '../utils/plan';
 import {
-  readCondParams,
   getBlockWindow,
   buildDateTime,
   calcHorasExtraMin,
@@ -40,6 +39,7 @@ import { ReportesSemanaProps } from './ReportesSemana/ReportesSemanaTypes';
 import { useDietasOpciones } from './ReportesSemana/useDietasOpciones';
 import { useWeekData } from './ReportesSemana/useWeekData';
 import { createHorarioHelpers } from './ReportesSemana/horarioHelpers';
+import { useCondParams } from '../hooks/useCondParams';
 import { useReportStorageKeys } from './ReportesSemana/useReportStorageKeys';
 import { useFilteredSemana } from './ReportesSemana/useFilteredSemana';
 import { usePersonScheduledChecker } from './ReportesSemana/usePersonScheduledChecker';
@@ -566,10 +566,7 @@ export default function ReportesSemana({
     [renderedPeopleGroups]
   );
 
-  const params = useMemo(
-    () => readCondParams(project as AnyRecord, mode),
-    [project?.id, project?.nombre, mode]
-  );
+  const params = useCondParams(project as AnyRecord, mode);
 
   const materialPropioConfig = useMemo(() => {
     const model = loadCondModel(project as AnyRecord, mode);
@@ -677,7 +674,7 @@ export default function ReportesSemana({
     };
 
     return { getConfig };
-  }, [project?.id, project?.nombre, mode, peopleBase, peoplePre, peoplePick, peopleExtra]);
+  }, [project?.id, project?.nombre, mode, peopleBase, peoplePre, peoplePick, peopleExtra, params]);
 
   const getMaterialPropioConfig = useCallback(
     (
