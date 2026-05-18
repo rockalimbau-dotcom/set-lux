@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { AnyRecord } from '@shared/types/common';
 import { PRICE_ROLES } from '../shared.constants';
-import { SEMANAL_DERIVED_PRICE_KEYS } from '../shared/priceKeys';
-import { computeFromWeekly } from './semanalUtils';
+import { PRICE_KEY_SEXTO_DIA_HALF, SEMANAL_DERIVED_PRICE_KEYS } from '../shared/priceKeys';
+import { computeFromWeekly, computeSextoDiaHalfFromMediaJornada } from './semanalUtils';
 import { normalizeConditionRoleKey, sortConditionRoleKeys } from '../roleCatalog';
 
 interface UseSemanalHandlersProps {
@@ -87,6 +87,18 @@ export function useSemanalHandlers({ project, model: _model, setModel }: UseSema
         if (!row['Material propio tipo']) {
           row['Material propio tipo'] = 'semanal';
         }
+        next[priceKey][role] = row;
+        return next;
+      });
+      return;
+    }
+    if (header === 'Precio 1/2 jornada') {
+      setModel((m: AnyRecord) => {
+        const priceKey = sectionKey === 'base' ? 'prices' : sectionKey === 'prelight' ? 'pricesPrelight' : 'pricesPickup';
+        const next = { ...m, [priceKey]: { ...(m[priceKey] || {}) } };
+        const row = { ...(next[priceKey][role] || {}) } as Record<string, string>;
+        row['Precio 1/2 jornada'] = value;
+        row[PRICE_KEY_SEXTO_DIA_HALF] = computeSextoDiaHalfFromMediaJornada(value);
         next[priceKey][role] = row;
         return next;
       });

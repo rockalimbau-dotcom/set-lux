@@ -78,3 +78,10 @@ export const computeFromWeekly = (weeklyStr: string, params: any) => {
     'Horas extras': fmt(extra),
   };
 };
+
+/** Precio sexto día 1/2 jornada = Precio 1/2 jornada × FACTOR_SEXTO_DIA (misma regla que el cálculo desde semanal/mensual). */
+export const computeSextoDiaHalfFromMediaJornada = (mediaJornadaStr: string): string => {
+  const media = parseNum(mediaJornadaStr);
+  if (!Number.isFinite(media) || media === 0) return '';
+  return fmt(media * FACTOR_SEXTO_DIA);
+};

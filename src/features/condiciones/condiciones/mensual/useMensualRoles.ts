@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { AnyRecord } from '@shared/types/common';
 import { PRICE_ROLES } from '../shared.constants';
-import { MENSUAL_DERIVED_PRICE_KEYS } from '../shared/priceKeys';
+import { MENSUAL_DERIVED_PRICE_KEYS, PRICE_KEY_SEXTO_DIA_HALF } from '../shared/priceKeys';
 import { computeFromMonthly } from './mensualUtils';
+import { computeSextoDiaHalfFromMediaJornada } from '../semanal/semanalUtils';
 import { normalizeConditionRoleKey, sortConditionRoleKeys } from '../roleCatalog';
 
 interface UseMensualRolesProps {
@@ -152,6 +153,8 @@ export function useMensualRoles({ project, model, setModel }: UseMensualRolesPro
         MENSUAL_DERIVED_PRICE_KEYS.forEach(key => {
           row[key] = derived[key as keyof typeof derived] ?? '';
         });
+      } else if (header === 'Precio 1/2 jornada') {
+        row[PRICE_KEY_SEXTO_DIA_HALF] = computeSextoDiaHalfFromMediaJornada(val);
       }
 
       next[priceKey][role] = row;

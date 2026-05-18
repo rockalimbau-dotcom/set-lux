@@ -6,7 +6,7 @@ import {
   PRICE_KEY_SEXTO_DIA,
   PRICE_KEY_SEXTO_DIA_HALF,
 } from '../shared/priceKeys';
-import { computeFromWeekly } from './semanalUtils';
+import { computeFromWeekly, computeSextoDiaHalfFromMediaJornada } from './semanalUtils';
 
 describe('computeFromWeekly', () => {
   it('calculates festivos and sexto día from weekly price', () => {
@@ -25,5 +25,18 @@ describe('computeFromWeekly', () => {
     expect(derived[PRICE_KEY_FESTIVO]).toBe('175');
     expect(derived[PRICE_KEY_SEXTO_DIA]).toBe(String(100 * FACTOR_SEXTO_DIA));
     expect(derived[PRICE_KEY_SEXTO_DIA_HALF]).toBe(String(50 * FACTOR_SEXTO_DIA));
+  });
+});
+
+describe('computeSextoDiaHalfFromMediaJornada', () => {
+  it('applies FACTOR_SEXTO_DIA to media jornada string', () => {
+    expect(computeSextoDiaHalfFromMediaJornada('50')).toBe('75');
+    expect(computeSextoDiaHalfFromMediaJornada('40,5')).toBe('60.75');
+  });
+
+  it('returns empty when media jornada is empty or invalid', () => {
+    expect(computeSextoDiaHalfFromMediaJornada('')).toBe('');
+    expect(computeSextoDiaHalfFromMediaJornada('  ')).toBe('');
+    expect(computeSextoDiaHalfFromMediaJornada('0')).toBe('');
   });
 });
