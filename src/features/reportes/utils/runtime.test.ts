@@ -424,6 +424,7 @@ describe('runtime utils', () => {
         prevStart: null,
         prevISO: null,
         consecDesc: 0,
+        weekendInGap: false,
       });
     });
 
@@ -496,6 +497,99 @@ describe('runtime utils', () => {
       const result = findPrevWorkingContext('2024-01-19'); // Friday
 
       expect(result.consecDesc).toBe(3); // Tue, Wed, Thu were rest
+    });
+
+    it('should detect weekendInGap when a rest day falls on Saturday or Sunday', () => {
+      // Week of 2024-01-15 (Mon): Mon=Work, Tue=Work, Wed=Work, Thu=Work, Fri=Work, Sat=Work, Sun=Rest
+      // Week of 2024-01-22 (Mon): Mon=Work
+      const mockWeeks = [
+        {
+          startDate: '2024-01-15',
+          days: [
+            { tipo: 'Trabajo', start: '09:00', end: '17:00' }, // Mon
+            { tipo: 'Trabajo', start: '09:00', end: '17:00' }, // Tue
+            { tipo: 'Trabajo', start: '09:00', end: '17:00' }, // Wed
+            { tipo: 'Trabajo', start: '09:00', end: '17:00' }, // Thu
+            { tipo: 'Trabajo', start: '09:00', end: '17:00' }, // Fri
+            { tipo: 'Trabajo', start: '16:30', end: '19:30' }, // Sat (work)
+            { tipo: 'Descanso' },                               // Sun (rest)
+          ],
+        },
+        {
+          startDate: '2024-01-22',
+          days: [
+            { tipo: 'Trabajo', start: '12:45', end: '21:00' }, // Mon
+            { tipo: 'Trabajo', start: '09:00', end: '17:00' }, // Tue
+            { tipo: 'Trabajo', start: '09:00', end: '17:00' }, // Wed
+            { tipo: 'Trabajo', start: '09:00', end: '17:00' }, // Thu
+            { tipo: 'Trabajo', start: '09:00', end: '17:00' }, // Fri
+            { tipo: 'Descanso' },                               // Sat
+            { tipo: 'Descanso' },                               // Sun
+          ],
+        },
+      ];
+
+      const mockGetPlanAllWeeks = vi.fn(() => ({ pre: mockWeeks, pro: [] }));
+      const mockMondayOf = vi.fn(date => {
+        const d = new Date(date);
+        const day = d.getDay();
+        const diff = (day + 6) % 7;
+        d.setDate(d.getDate() - diff);
+        return d;
+      });
+      const mockToISO = vi.fn(date => {
+        const iso = date.toISOString().split('T')[0];
+        return iso;
+      });
+
+      const findPrevWorkingContext = findPrevWorkingContextFactory(
+        mockGetPlanAllWeeks,
+        mockMondayOf,
+        mockToISO
+      );
+
+      // Monday 2024-01-22: prev day is Sunday (rest, di=6 → weekend), then Saturday (work)
+      const result = findPrevWorkingContext('2024-01-22');
+
+      expect(result.consecDesc).toBe(1);
+      expect(result.weekendInGap).toBe(true);
+      expect(result.prevEnd).toBe('19:30');
+    });
+
+    it('should not set weekendInGap for mid-week rest days', () => {
+      const mockWeeks = [
+        {
+          startDate: '2024-01-15',
+          days: [
+            { tipo: 'Trabajo', start: '09:00', end: '17:00' }, // Mon
+            { tipo: 'Trabajo', start: '09:00', end: '17:00' }, // Tue
+            { tipo: 'Descanso' },                               // Wed (rest)
+            { tipo: 'Trabajo', start: '10:00', end: '18:00' }, // Thu
+            { tipo: 'Trabajo', start: '09:00', end: '17:00' }, // Fri
+            { tipo: 'Descanso' },                               // Sat
+            { tipo: 'Descanso' },                               // Sun
+          ],
+        },
+      ];
+
+      const mockGetPlanAllWeeks = vi.fn(() => ({ pre: mockWeeks, pro: [] }));
+      const mockMondayOf = vi.fn(date => new Date('2024-01-15'));
+      const mockToISO = vi.fn(date => {
+        const iso = date.toISOString().split('T')[0];
+        return iso;
+      });
+
+      const findPrevWorkingContext = findPrevWorkingContextFactory(
+        mockGetPlanAllWeeks,
+        mockMondayOf,
+        mockToISO
+      );
+
+      // Thursday: prev day is Wednesday (rest, di=2 → not weekend), then Tuesday (work)
+      const result = findPrevWorkingContext('2024-01-18');
+
+      expect(result.consecDesc).toBe(1);
+      expect(result.weekendInGap).toBe(false);
     });
   });
 

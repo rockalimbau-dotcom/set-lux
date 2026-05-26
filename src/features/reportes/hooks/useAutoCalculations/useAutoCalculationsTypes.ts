@@ -22,6 +22,7 @@ export interface PrevWorkingContext {
   prevStart: string | null;
   prevISO: string | null;
   consecDesc: number;
+  weekendInGap: boolean;
 }
 
 export interface Persona {

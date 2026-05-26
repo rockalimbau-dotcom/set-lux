@@ -40,7 +40,7 @@ export function computeBaseTurnAround(
   debugEnabled: boolean
 ): number {
   if (!start) return 0;
-  const { prevISO, consecDesc } = findPrevWorkingContext(iso);
+  const { prevISO, consecDesc, weekendInGap } = findPrevWorkingContext(iso);
   if (!prevISO) return 0;
   try {
     const prevCtx = findWeekAndDay(prevISO) as WeekAndDay;
@@ -58,12 +58,12 @@ export function computeBaseTurnAround(
 
     const taD = isFinite(params.taDiario) ? params.taDiario : 12;
     const taF = isFinite(params.taFinde) ? params.taFinde : 48;
-    const reqMin = Math.round((consecDesc >= 2 ? taF : taD) * 60);
+    const useWeekend = consecDesc >= 2 || weekendInGap;
+    const reqMin = Math.round((useWeekend ? taF : taD) * 60);
     const gapMin = Math.max(
       0,
       Math.round((currStartDT.getTime() - prevEndDT.getTime()) / 60000)
     );
-
 
     return ceilHours(Math.max(0, reqMin - gapMin));
   } catch {
@@ -84,7 +84,7 @@ export function computePrelightTurnAround(
   params: AutoCalculationsParams
 ): number {
   if (!start) return 0;
-  const { consecDesc } = findPrevWorkingContext(iso);
+  const { consecDesc, weekendInGap } = findPrevWorkingContext(iso);
   const prevISO = findPrevISOForBlock(iso, 'pre', findWeekAndDay, getBlockWindow);
   if (!prevISO) return 0;
   try {
@@ -103,7 +103,8 @@ export function computePrelightTurnAround(
 
     const taD = isFinite(params.taDiario) ? params.taDiario : 12;
     const taF = isFinite(params.taFinde) ? params.taFinde : 48;
-    const reqMin = Math.round((consecDesc >= 2 ? taF : taD) * 60);
+    const useWeekend = consecDesc >= 2 || weekendInGap;
+    const reqMin = Math.round((useWeekend ? taF : taD) * 60);
     const gapMin = Math.max(
       0,
       Math.round((currStartDT.getTime() - prevEndDT.getTime()) / 60000)
@@ -129,7 +130,7 @@ export function computePickupTurnAround(
   debugEnabled: boolean
 ): number {
   if (!start) return 0;
-  const { consecDesc } = findPrevWorkingContext(iso);
+  const { consecDesc, weekendInGap } = findPrevWorkingContext(iso);
   const prevISO = findPrevISOForBlock(iso, 'pick', findWeekAndDay, getBlockWindow);
   if (!prevISO) return 0;
   try {
@@ -148,7 +149,8 @@ export function computePickupTurnAround(
 
     const taD = isFinite(params.taDiario) ? params.taDiario : 12;
     const taF = isFinite(params.taFinde) ? params.taFinde : 48;
-    const reqMin = Math.round((consecDesc >= 2 ? taF : taD) * 60);
+    const useWeekend = consecDesc >= 2 || weekendInGap;
+    const reqMin = Math.round((useWeekend ? taF : taD) * 60);
     const gapMin = Math.max(
       0,
       Math.round((currStartDT.getTime() - prevEndDT.getTime()) / 60000)
@@ -174,7 +176,7 @@ export function computeExtraTurnAround(
   debugEnabled: boolean
 ): number {
   if (!start) return 0;
-  const { consecDesc } = findPrevWorkingContext(iso);
+  const { consecDesc, weekendInGap } = findPrevWorkingContext(iso);
   const prevISO = findPrevISOForBlock(iso, 'extra', findWeekAndDay, getBlockWindow);
   if (!prevISO) return 0;
   try {
@@ -193,7 +195,8 @@ export function computeExtraTurnAround(
 
     const taD = isFinite(params.taDiario) ? params.taDiario : 12;
     const taF = isFinite(params.taFinde) ? params.taFinde : 48;
-    const reqMin = Math.round((consecDesc >= 2 ? taF : taD) * 60);
+    const useWeekend = consecDesc >= 2 || weekendInGap;
+    const reqMin = Math.round((useWeekend ? taF : taD) * 60);
     const gapMin = Math.max(
       0,
       Math.round((currStartDT.getTime() - prevEndDT.getTime()) / 60000)

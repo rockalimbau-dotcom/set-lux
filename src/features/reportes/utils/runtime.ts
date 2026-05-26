@@ -283,6 +283,7 @@ export function findPrevWorkingContextFactory(
     prevStart: string | null;
     prevISO: string | null;
     consecDesc: number;
+    weekendInGap: boolean;
   } {
     const { pre, pro } = getPlanAllWeeks();
     const allWeeks = [...(pre || []), ...(pro || [])].slice();
@@ -294,7 +295,7 @@ export function findPrevWorkingContextFactory(
     const mondayStr = toYYYYMMDD(mondayOf(new Date(y, m - 1, d)));
     const wIdx = allWeeks.findIndex((w: any) => w.startDate === mondayStr);
     if (wIdx < 0)
-      return { prevEnd: null, prevStart: null, prevISO: null, consecDesc: 0 };
+      return { prevEnd: null, prevStart: null, prevISO: null, consecDesc: 0, weekendInGap: false };
 
     const js = new Date(y, m - 1, d).getDay();
     let di = (js + 6) % 7;
@@ -306,6 +307,7 @@ export function findPrevWorkingContextFactory(
     }
 
     let consecDesc = 0;
+    let weekendInGap = false;
     let steps = 0;
 
     while (wi >= 0 && steps < 120) {
@@ -319,12 +321,14 @@ export function findPrevWorkingContextFactory(
 
       if (day.tipo === 'Descanso') {
         consecDesc += 1;
+        if (di === 5 || di === 6) weekendInGap = true;
       } else {
         return {
           prevEnd: day.end || null,
           prevStart: day.start || null,
           prevISO: iso,
           consecDesc,
+          weekendInGap,
         };
       }
 
@@ -336,6 +340,6 @@ export function findPrevWorkingContextFactory(
       steps += 1;
     }
 
-    return { prevEnd: null, prevStart: null, prevISO: null, consecDesc };
+    return { prevEnd: null, prevStart: null, prevISO: null, consecDesc, weekendInGap };
   };
 }
