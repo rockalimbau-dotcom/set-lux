@@ -126,9 +126,24 @@ export default function useAutoCalculations({
       });
       const extraStr = typeof extras === 'string' ? extras : extras > 0 ? String(extras) : '';
 
-      // Calcular Turn Around según el bloque
+      // Verificar si la persona trabajó el día laborable anterior (para TA)
+      const { prevISO: prevWorkISO } = findPrevWorkingContext(iso);
+      const personWorkedPrevDay = prevWorkISO
+        ? isPersonScheduledOnBlock(
+            prevWorkISO,
+            determineRoleForCheck(personaRole(person), block),
+            personaName(person),
+            findWeekAndDay as any,
+            block,
+            { roleId: String((person as any)?.roleId || '').trim() || undefined }
+          )
+        : false;
+
+      // Calcular Turn Around según el bloque (solo si la persona trabajó el día anterior)
       let taHours = 0;
-      if (block === 'base') {
+      if (!personWorkedPrevDay) {
+        // noop — TA no aplica si la persona no trabajó el día laborable anterior
+      } else if (block === 'base') {
         taHours = computeBaseTurnAround(
           iso,
           start,
