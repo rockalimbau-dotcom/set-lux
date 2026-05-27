@@ -82,6 +82,18 @@ export function parseDietasValue(raw: unknown): { labels: string[]; ticket: numb
   const normalize = (s: string): string => {
     const t = s.toLowerCase().trim();
     
+    // Legacy / full diet (con desayuno incluido)
+    // Nota: en el formato guardado suele venir como tokens separados por '+'
+    // (ej: "dieta completa + desayuno" => "dieta completa" + "desayuno"),
+    // así que normalizamos por token para que cuente como overnight.
+    if (
+      t.includes('dieta completa') ||
+      t.includes('full diet + breakfast') ||
+      t.includes('full diet')
+    ) {
+      return 'Dieta con pernocta';
+    }
+
     // Normalizar dieta con pernocta (reconocer todas las traducciones)
     if (t.includes('dieta con pernocta') || 
         t.includes('dieta amb pernocta') ||
@@ -138,6 +150,16 @@ export function parseDietasValue(raw: unknown): { labels: string[]; ticket: numb
       uniq.push(l);
     }
   }
-  return { labels: uniq, ticket, other };
+  // Criterio: si hay "Dieta con pernocta" (overnight), no contarlas aparte como
+  // Comida/Cena para evitar doble conteo cuando el valor guardado viene en un formato legado.
+  const hasOvernight = uniq.some(l => String(l).trim().toLowerCase() === 'dieta con pernocta');
+  const finalLabels = hasOvernight
+    ? uniq.filter(l => {
+        const low = String(l).trim().toLowerCase();
+        return low !== 'comida' && low !== 'cena';
+      })
+    : uniq;
+
+  return { labels: finalLabels, ticket, other };
 }
 
