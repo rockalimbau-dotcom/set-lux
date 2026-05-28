@@ -244,12 +244,28 @@ export function makeRolePrices(project: any) {
       ? basePriceRows
       : (baseRoleCode ? getPriceTable(baseRoleCode) : priceTable);
     
-    // Si no encontramos en la tabla específica, usar base como fallback
-    const pickedRow = findPriceRow(roleCandidates, priceTable);
-    let row = pickedRow.row;
+    const strictRoleId = String(options?.roleId || '').trim();
+    let row: Record<string, unknown> = {};
+
+    if (strictRoleId) {
+      const strictPicked = findPriceRow([strictRoleId], priceTable);
+      if (strictPicked.row && Object.keys(strictPicked.row).length > 0) {
+        row = strictPicked.row;
+      } else {
+        const strictBasePicked = findPriceRow([strictRoleId], basePriceRows);
+        if (strictBasePicked.row && Object.keys(strictBasePicked.row).length > 0) {
+          row = strictBasePicked.row;
+        }
+      }
+    }
+
     if (!row || Object.keys(row).length === 0) {
-      const fallbackRow = findPriceRow(roleCandidates, basePriceRows);
-      row = fallbackRow.row;
+      const pickedRow = findPriceRow(roleCandidates, priceTable);
+      row = pickedRow.row;
+      if (!row || Object.keys(row).length === 0) {
+        const fallbackRow = findPriceRow(roleCandidates, basePriceRows);
+        row = fallbackRow.row;
+      }
     }
     
     // Para refuerzos, siempre buscar baseRow en basePriceRows (tabla base)

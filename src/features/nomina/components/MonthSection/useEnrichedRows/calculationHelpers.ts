@@ -1,3 +1,8 @@
+import {
+  resolveSemanalJornadaBillableDays,
+  type WorkedBreakdownSlice,
+} from './jornadaBillingHelpers';
+
 /**
  * Calculate totals for diario mode
  */
@@ -139,7 +144,8 @@ export function calculateStandardTotals(
   priceDays: number,
   materialPropioDays: number = 0,
   materialPropioWeeks: number = 0,
-  materialPropioUnique: number = 0
+  materialPropioUnique: number = 0,
+  breakdown?: WorkedBreakdownSlice
 ): {
   totalDias: number;
   totalHalfDays: number;
@@ -162,8 +168,11 @@ export function calculateStandardTotals(
       precioMensual > 0 && priceDays > 0 ? precioMensual / priceDays : effectivePr.jornada || 0;
     totalDias = totalDiasTrabajados * precioDiario;
   } else {
-    // Para semanal: usar precio jornada como antes
-    totalDias = workedDays * (effectivePr.jornada || 0);
+    // Semanal: importe = días del desglose facturables × precio jornada (sin sexto/travel/festivo)
+    const jornadaBillableDays = breakdown
+      ? resolveSemanalJornadaBillableDays(breakdown, workedDays, sextoDiaDays, sextoDiaHalfDays)
+      : Math.max(0, workedDays - (sextoDiaDays || 0) - (sextoDiaHalfDays || 0));
+    totalDias = jornadaBillableDays * (effectivePr.jornada || 0);
   }
   const totalHalfDays = (halfDays || 0) * (effectivePr.halfJornada || 0);
 

@@ -5,6 +5,14 @@ import { calculateTotalWorkingDays, determineRoleDisplay } from './rowHelpers';
 import { getEffectiveRolePrices } from './priceHelpers';
 import { getFilteredRowData, getValueWithOverride } from './filteredDataHelpers';
 import { calculateDiarioTotals, calculateStandardTotals } from './calculationHelpers';
+import {
+  buildPriceSegmentKey,
+  mergePriceSegments,
+  recalculateMergedRowTotals,
+  resolveSemanalJornadaBillableDays,
+  type PriceSegment,
+  type WorkedBreakdownSlice,
+} from './jornadaBillingHelpers';
 
 interface UseEnrichedRowsProps {
   rows: RowIn[];
@@ -137,6 +145,19 @@ export function useEnrichedRows({
         prelight,
         recogida,
       } = breakdown;
+
+      const breakdownSlice: WorkedBreakdownSlice = {
+        rodaje,
+        pruebasCamara,
+        oficina,
+        prelight,
+        recogida,
+        carga,
+        descarga,
+        localizar,
+        sextoDia: sextoDia || 0,
+        sextoDiaHalf: sextoDiaHalf || 0,
+      };
 
       const baseRoleLabel = roleLabelFromCode(baseRoleCode);
       
@@ -320,10 +341,22 @@ export function useEnrichedRows({
           priceDays,
           materialPropioDays,
           materialPropioWeeks,
-          materialPropioUnique
+          materialPropioUnique,
+          breakdownSlice
         );
         totals = standardTotals;
       }
+
+      const priceSegment: PriceSegment = {
+        segmentKey: buildPriceSegmentKey((r as any).roleId, roleForPriceLookup),
+        roleForPriceLookup,
+        roleId: (r as any).roleId || null,
+        roleLabel: (r as any).roleLabel || baseRoleLabel || null,
+        breakdown: breakdownSlice,
+        effectivePr,
+        isRefuerzo,
+        workedDaysFallback: workedDays,
+      };
 
       // Detectar qué precios faltan para mostrar mensajes
       const missingPrices = detectMissingPrices(
@@ -360,7 +393,16 @@ export function useEnrichedRows({
       const dietasLabel = buildDietasLabel(dietasMap, ticketValue, otherValue);
 
       const displayWorkedDays =
-        isRefuerzo || projectMode === 'mensual' ? workedDays : totalDiasTrabajados;
+        isRefuerzo || projectMode === 'mensual'
+          ? workedDays
+          : projectMode === 'semanal'
+          ? resolveSemanalJornadaBillableDays(
+              breakdownSlice,
+              workedDays,
+              sextoDia || 0,
+              sextoDiaHalf || 0
+            )
+          : totalDiasTrabajados;
 
       return {
         ...r,
@@ -434,6 +476,7 @@ export function useEnrichedRows({
             totalDias: totals.totalDias,
           },
         ],
+        _priceSegments: [priceSegment],
       };
     });
 
@@ -499,7 +542,14 @@ export function useEnrichedRows({
       existing._totalSextoDiaHalf += row._totalSextoDiaHalf || 0;
       existing._prelight += row._prelight || 0;
       existing._recogida += row._recogida || 0;
-      existing._totalDias += row._totalDias || 0;
+      if (projectMode === 'semanal') {
+        existing._priceSegments = mergePriceSegments(
+          (existing._priceSegments as PriceSegment[]) || [],
+          (row._priceSegments as PriceSegment[]) || []
+        );
+      } else {
+        existing._totalDias += row._totalDias || 0;
+      }
       existing._totalHalfDays += row._totalHalfDays || 0;
       existing._totalTravel += row._totalTravel || 0;
       existing._totalHolidays += row._totalHolidays || 0;
@@ -529,6 +579,10 @@ export function useEnrichedRows({
       } else if (existing._displayBlock === 'pick' && row._displayBlock === 'pre') {
         existing._displayBlock = 'pre';
       }
+    }
+
+    for (const mergedRow of mergedByVisibleRow.values()) {
+      recalculateMergedRowTotals(mergedRow, projectMode);
     }
 
     return Array.from(mergedByVisibleRow.values());
