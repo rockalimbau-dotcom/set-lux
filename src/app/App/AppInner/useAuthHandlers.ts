@@ -44,45 +44,7 @@ export function useAuthHandlers({
 
 //AQUI VA EL SUPUESTO REGISTRO DE LA PEÑA QUE QUIERA ENTRAR EN LA DEMO
 
-if(
-  !(login.user === 'admin' && login.pass === '1234') //SI ESTO NO SE CUMPLE, PUES VUELVE, MANERA DE TENER CONTROLADO A LA GENTE QUE TIENE ACCESO
-  && !(login.user === 'AinaGraupera-19-01' && login.pass === '1234')
-  && !(login.user === 'JoseCamacho-19-01' && login.pass === '1234')
-  && !(login.user === 'OriolMonguilod-19-01' && login.pass === '1234')
-  && !(login.user === 'JordiPlanas-24-01' && login.pass === '1234')
-  && !(login.user === 'AlbertCantallops' && login.pass === '1234')
-  && !(login.user === 'LluisMaymo' && login.pass === '1234')
-  && !(login.user === 'RicardDurany' && login.pass === '1234')
-  && !(login.user === 'JuanmaPerez' && login.pass === '1234')
-  && !(login.user === 'NicolasGarrido' && login.pass === '1234')
-  && !(login.user === 'RafaSuarez' && login.pass === '1234')
-  && !(login.user === 'PepZueras' && login.pass === '1234')
-  && !(login.user === 'MartiPluma' && login.pass === '1234')
-  && !(login.user === 'JamboLights' && login.pass === '1234')
-  && !(login.user === 'OscarVallejo' && login.pass === '1234')
-  && !(login.user === 'JorgeBarros' && login.pass === '1234')
-  && !(login.user === 'EricSole' && login.pass === '1234')
-  && !(login.user === 'AlexGracia' && login.pass === '1234')
-  && !(login.user === 'RaulPeña' && login.pass === '1234')
-  && !(login.user === 'XaviRuiz' && login.pass === '1234')
-  && !(login.user === 'Txaca' && login.pass === '1234') //Si lo utiliza
-  && !(login.user === 'AnaPortela' && login.pass === '1234') //Si lo utiliza
-  && !(login.user === 'JoseLuisRodriguez' && login.pass === '1234') //Si lo utiliza
-  && !(login.user === 'PeruHerrero' && login.pass === '1234') //Si lo utiliza
-  && !(login.user === 'SergioMorilla' && login.pass === '1234') //Si lo utiliza
-  && !(login.user === 'PabloAbad' && login.pass === '1234') //Si lo utiliza
-  && !(login.user === 'XaviSarasa' && login.pass === '1234') //Si lo utiliza
-  && !(login.user === 'JavierGuerrero' && login.pass === '1234') //Si lo utiliza
-  && !(login.user === 'GonzaloAsturias' && login.pass === '1234') //Si lo utiliza
-  && !(login.user === 'MarcLlusia' && login.pass === '1234') //Si lo utiliza
-  && !(login.user === 'JordiBiosca' && login.pass === '1234') //Si lo utiliza
-  && !(login.user === 'JorgeAznar' && login.pass === '1234') //Si lo utiliza
-  && !(login.user === 'EduPuma' && login.pass === '1234') //Si lo utiliza
-  && !(login.user === 'ToñoOjugas' && login.pass === '1234') //Si lo utiliza
-  && !(login.user === 'JuanAlcaide' && login.pass === '1234') //Si lo utiliza
-
-
-){
+if(login.user !== 'admin' && login.pass !== 'losvengadores'){
   setError(t('auth.invalidCredentials'));
   return;
 }
